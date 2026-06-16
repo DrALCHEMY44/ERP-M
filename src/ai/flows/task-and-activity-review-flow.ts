@@ -1,9 +1,7 @@
 'use server';
 /**
  * @fileOverview This file implements a Genkit flow for the AI Assistant to provide summaries
- * of employee task performance and recent system activities. It respects tenant-based
- * and role-based access control, allowing Managers and HR Officers to monitor productivity
- * and track operational changes. The AI is read-only and cannot modify any records.
+ * of employee task performance and recent system activities.
  *
  * - taskAndActivityReview - The main function to call the AI assistant.
  * - TaskAndActivityReviewInput - The input type for the taskAndActivityReview function.
@@ -52,8 +50,8 @@ interface ActivityLog {
 const mockTasks: Task[] = [
   {
     taskId: 'task1',
-    tenantId: 'tenant1',
-    businessId: 'business1',
+    tenantId: 'tenant_douala_001',
+    businessId: 'biz_superette_central',
     title: 'Prepare monthly sales report',
     description: 'Compile sales data for Q1',
     assignedTo: 'John Doe',
@@ -68,8 +66,8 @@ const mockTasks: Task[] = [
   },
   {
     taskId: 'task2',
-    tenantId: 'tenant1',
-    businessId: 'business1',
+    tenantId: 'tenant_douala_001',
+    businessId: 'biz_superette_central',
     title: 'Update inventory records',
     description: 'Log new stock arrivals',
     assignedTo: 'Jane Smith',
@@ -83,45 +81,13 @@ const mockTasks: Task[] = [
     createdAt: '2023-03-19T09:00:00Z',
     updatedAt: '2023-03-21T11:00:00Z',
   },
-  {
-    taskId: 'task3',
-    tenantId: 'tenant1',
-    businessId: 'business1',
-    title: 'Review HR policies',
-    description: 'Check compliance with new labor laws',
-    assignedTo: 'Emily White',
-    assignedBy: 'CEO',
-    department: 'HR',
-    priority: 'Urgent',
-    status: 'Pending',
-    startDate: '2023-03-25',
-    dueDate: '2023-03-30',
-    createdAt: '2023-03-24T10:00:00Z',
-    updatedAt: '2023-03-24T10:00:00Z',
-  },
-  {
-    taskId: 'task4',
-    tenantId: 'tenant2',
-    businessId: 'business2',
-    title: 'Prepare Q2 budget',
-    description: 'Draft budget proposal for Q2',
-    assignedTo: 'Finance Guy',
-    assignedBy: 'Owner',
-    department: 'Finance',
-    priority: 'High',
-    status: 'Ongoing',
-    startDate: '2023-04-01',
-    dueDate: '2023-04-15',
-    createdAt: '2023-03-30T10:00:00Z',
-    updatedAt: '2023-04-05T11:00:00Z',
-  },
 ];
 
 const mockActivityLogs: ActivityLog[] = [
   {
     logId: 'log1',
-    tenantId: 'tenant1',
-    businessId: 'business1',
+    tenantId: 'tenant_douala_001',
+    businessId: 'biz_superette_central',
     userId: 'user1',
     userName: 'John Doe',
     userRole: 'Staff',
@@ -135,8 +101,8 @@ const mockActivityLogs: ActivityLog[] = [
   },
   {
     logId: 'log2',
-    tenantId: 'tenant1',
-    businessId: 'business1',
+    tenantId: 'tenant_douala_001',
+    businessId: 'biz_superette_central',
     userId: 'user2',
     userName: 'Jane Smith',
     userRole: 'Manager',
@@ -145,47 +111,6 @@ const mockActivityLogs: ActivityLog[] = [
     description: 'Recorded new sale transaction',
     recordId: 'sale456',
     timestamp: '2023-04-05T11:00:00Z',
-  },
-  {
-    logId: 'log3',
-    tenantId: 'tenant1',
-    businessId: 'business1',
-    userId: 'user3',
-    userName: 'Emily White',
-    userRole: 'HR Officer',
-    actionType: 'Employee Added',
-    module: 'Employees',
-    description: 'Added new employee record for Alex',
-    recordId: 'emp789',
-    timestamp: '2023-04-04T15:00:00Z',
-  },
-  {
-    logId: 'log4',
-    tenantId: 'tenant2',
-    businessId: 'business2',
-    userId: 'user5',
-    userName: 'Finance Guy',
-    userRole: 'Accountant',
-    actionType: 'Expense Recorded',
-    module: 'Expenses',
-    description: 'Recorded office supply expense',
-    recordId: 'exp101',
-    timestamp: '2023-04-03T09:00:00Z',
-  },
-  {
-    logId: 'log5',
-    tenantId: 'tenant1',
-    businessId: 'business1',
-    userId: 'user1',
-    userName: 'John Doe',
-    userRole: 'Staff',
-    actionType: 'Task Status Updated',
-    module: 'Tasks',
-    description: 'Changed status of Task 1 to Completed',
-    oldValue: 'Ongoing',
-    newValue: 'Completed',
-    recordId: 'task1',
-    timestamp: '2023-04-06T09:15:00Z',
   },
 ];
 
@@ -226,7 +151,7 @@ const getTasksSummaryTool = ai.defineTool(
       timePeriod: z.string().optional().describe('A descriptive string for the time period (e.g., "this week", "last month", "today").'),
       tenantId: z.string().describe('The ID of the current tenant.'),
       businessId: z.string().describe('The ID of the current business.'),
-      userRole: z.enum(['Platform Super Admin', 'Business Owner', 'Manager', 'Accountant', 'HR Officer', 'Staff', 'Viewer']).describe('The role of the current user.'),
+      userRole: z.string().describe('The role of the current user.'),
     }),
     outputSchema: z.object({
       summary: z.string().describe('A summary of the requested tasks.'),
@@ -234,7 +159,6 @@ const getTasksSummaryTool = ai.defineTool(
     }),
   },
   async ({ employeeName, status, timePeriod, tenantId, businessId, userRole }) => {
-    // Permission check for accessing task data
     const allowedRolesForTasks = ['Business Owner', 'Manager', 'HR Officer', 'Staff'];
     if (!allowedRolesForTasks.includes(userRole)) {
       return { summary: 'You do not have permission to access task information.' };
@@ -250,30 +174,6 @@ const getTasksSummaryTool = ai.defineTool(
       tasks = tasks.filter(task => status.includes(task.status));
     }
 
-    // Simulate time period filtering (basic)
-    if (timePeriod) {
-      const now = new Date();
-      const sevenDaysAgo = new Date(now.setDate(now.getDate() - 7));
-      const thirtyDaysAgo = new Date(now.setDate(now.getDate() - 30));
-
-      tasks = tasks.filter(task => {
-        const taskDate = new Date(task.createdAt);
-        if (timePeriod.toLowerCase().includes('today')) {
-          return taskDate.toDateString() === new Date().toDateString();
-        } else if (timePeriod.toLowerCase().includes('this week')) {
-          return taskDate >= sevenDaysAgo;
-        } else if (timePeriod.toLowerCase().includes('last month')) {
-          return taskDate >= thirtyDaysAgo;
-        }
-        return true;
-      });
-    }
-
-    if (tasks.length === 0) {
-      return { summary: 'No tasks found matching your criteria.' };
-    }
-
-    // Generate a simple summary based on filtered tasks
     const overdueCount = tasks.filter(t => t.status === 'Overdue').length;
     const completedCount = tasks.filter(t => t.status === 'Completed').length;
     const pendingCount = tasks.filter(t => t.status === 'Pending').length;
@@ -305,7 +205,7 @@ const getActivityLogSummaryTool = ai.defineTool(
       timePeriod: z.string().optional().describe('A descriptive string for the time period (e.g., "today", "this week", "last 24 hours").'),
       tenantId: z.string().describe('The ID of the current tenant.'),
       businessId: z.string().describe('The ID of the current business.'),
-      userRole: z.enum(['Platform Super Admin', 'Business Owner', 'Manager', 'Accountant', 'HR Officer', 'Staff', 'Viewer']).describe('The role of the current user.'),
+      userRole: z.string().describe('The role of the current user.'),
     }),
     outputSchema: z.object({
       summary: z.string().describe('A summary of the requested activity logs.'),
@@ -313,7 +213,6 @@ const getActivityLogSummaryTool = ai.defineTool(
     }),
   },
   async ({ module, timePeriod, tenantId, businessId, userRole }) => {
-    // Permission check for accessing activity logs
     const allowedRolesForActivityLogs = ['Business Owner', 'Manager', 'HR Officer'];
     if (!allowedRolesForActivityLogs.includes(userRole)) {
       return { summary: 'You do not have permission to access activity log information.' };
@@ -325,28 +224,10 @@ const getActivityLogSummaryTool = ai.defineTool(
       logs = logs.filter(log => log.module.toLowerCase() === module.toLowerCase());
     }
 
-    // Simulate time period filtering (basic)
-    if (timePeriod) {
-      const now = new Date();
-      const twentyFourHoursAgo = new Date(now.getTime() - (24 * 60 * 60 * 1000));
-      const sevenDaysAgo = new Date(now.setDate(now.getDate() - 7));
-
-      logs = logs.filter(log => {
-        const logTimestamp = new Date(log.timestamp);
-        if (timePeriod.toLowerCase().includes('today') || timePeriod.toLowerCase().includes('24 hours')) {
-          return logTimestamp >= twentyFourHoursAgo && logTimestamp <= now;
-        } else if (timePeriod.toLowerCase().includes('this week')) {
-          return logTimestamp >= sevenDaysAgo && logTimestamp <= now;
-        }
-        return true;
-      });
-    }
-
     if (logs.length === 0) {
       return { summary: 'No activity logs found matching your criteria.' };
     }
 
-    // Generate a simple summary of recent activities
     const summary = `Recent activities${module ? ` in the ${module} module` : ''}${timePeriod ? ` ${timePeriod}` : ''}:
     ${logs.map(log => `- ${new Date(log.timestamp).toLocaleString()}: ${log.userName} (${log.userRole}) ${log.description}`).join('\n')}`; 
 
@@ -363,4 +244,28 @@ const taskAndActivityReviewPrompt = ai.definePrompt({
 
 IMPORTANT GUIDELINES:
 1. You are read-only: You CANNOT modify any data, add records, delete records, approve transactions, assign tasks, or change settings.
-2. Respect Permissions: You MUST strictly adhere to the user's role and permission level. If the user asks for information they are not authorized to view, respond with: 
+2. Respect Permissions: You MUST strictly adhere to the user's role and permission level. If the user asks for information they are not authorized to view, respond with: "You do not have permission to access this information."
+
+Use the tools provided to answer the user's question about tasks or activities for tenant '{{{tenantId}}}' and business '{{{businessId}}}'.
+
+User Question: "{{{query}}}"
+User Role: "{{{userRole}}}"
+
+Provide a professional and concise summary. Always end with: "I can only answer based on the data available in your business account and your permission level."`,
+});
+
+const taskAndActivityReviewFlow = ai.defineFlow(
+  {
+    name: 'taskAndActivityReviewFlow',
+    inputSchema: TaskAndActivityReviewInputSchema,
+    outputSchema: TaskAndActivityReviewOutputSchema,
+  },
+  async (input) => {
+    const { output } = await taskAndActivityReviewPrompt(input);
+    return output!;
+  }
+);
+
+export async function taskAndActivityReview(input: TaskAndActivityReviewInput): Promise<TaskAndActivityReviewOutput> {
+  return taskAndActivityReviewFlow(input);
+}

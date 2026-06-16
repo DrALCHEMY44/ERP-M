@@ -1,13 +1,14 @@
 "use client"
 
-import { useState } from "react"
-import { Sparkles, Send, Bot, User, Lock, AlertTriangle, ShieldCheck } from "lucide-react"
+import { useState, useRef, useEffect } from "react"
+import { Sparkles, Send, Bot, User, Lock, AlertTriangle, ShieldCheck, Loader2 } from "lucide-react"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Badge } from "@/components/ui/badge"
 import { MOCK_USER } from "@/lib/mock-data"
+import { masterAssistant } from "@/ai/flows/master-assistant-flow"
 
 type Message = {
   role: 'assistant' | 'user'
@@ -17,38 +18,58 @@ type Message = {
 
 export default function AIAssistantPage() {
   const [input, setInput] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
-      content: "Hello Jean-Pierre. I am your KoboCore AI Assistant. I have read-only access to Superette de l'Avenir's data for tenant Douala. How can I help you today? I can summarize your sales, check inventory, or review task performance.",
+      content: `Hello ${MOCK_USER.fullName.split(' ')[0]}. I am your KoboCore AI Assistant. I have read-only access to ${MOCK_USER.tenantId}'s data. How can I help you today? I can summarize your sales, check inventory, or review task performance.`,
       timestamp: new Date()
     }
   ])
 
-  const handleSend = () => {
-    if (!input.trim()) return
+  const scrollRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight
+    }
+  }, [messages])
+
+  const handleSend = async () => {
+    if (!input.trim() || isLoading) return
 
     const userMsg: Message = { role: 'user', content: input, timestamp: new Date() }
     setMessages(prev => [...prev, userMsg])
+    const currentInput = input
     setInput("")
+    setIsLoading(true)
 
-    // Simulate AI thinking and response
-    setTimeout(() => {
-      let aiContent = ""
-      const query = input.toLowerCase()
+    try {
+      const result = await masterAssistant({
+        query: currentInput,
+        tenantId: MOCK_USER.tenantId,
+        businessId: MOCK_USER.businessId,
+        userId: MOCK_USER.uid,
+        userRole: MOCK_USER.role,
+        permissions: MOCK_USER.permissions,
+      })
 
-      if (query.includes("delete") || query.includes("edit") || query.includes("change")) {
-        aiContent = "I can summarize and report on business information, but I cannot modify records. I am a read-only assistant."
-      } else if (query.includes("salary") || query.includes("payroll")) {
-         // Even though user is owner, showing RBAC logic simulation
-         aiContent = "As a Business Owner, you have access to salary data. Total payroll for this month is 1,250,000 FCFA. I can only answer based on the data available in your business account and your permission level."
-      } else {
-        aiContent = "I've analyzed your current business state. Sales today reached 150,000 FCFA. You have 2 overdue tasks that were due yesterday. Your stock of 'Savon Azur' is high, but 'Riz Long Grain' is critical. I can only answer based on the data available in your business account and your permission level."
+      const aiMsg: Message = { 
+        role: 'assistant', 
+        content: result.response, 
+        timestamp: new Date() 
       }
-
-      const aiMsg: Message = { role: 'assistant', content: aiContent, timestamp: new Date() }
       setMessages(prev => [...prev, aiMsg])
-    }, 1000)
+    } catch (error) {
+      const errorMsg: Message = { 
+        role: 'assistant', 
+        content: "I apologize, but I encountered an error while processing your request. Please try again or ask a different question.", 
+        timestamp: new Date() 
+      }
+      setMessages(prev => [...prev, errorMsg])
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -77,10 +98,10 @@ export default function AIAssistantPage() {
               <Bot className="size-5 text-accent" />
               <CardTitle className="text-base">KoboCore Smart Intelligence</CardTitle>
             </div>
-            <Badge variant="secondary" className="text-[10px] font-bold">GPT-4o Backend</Badge>
+            <Badge variant="secondary" className="text-[10px] font-bold">Genkit Powered</Badge>
           </CardHeader>
           <CardContent className="flex-1 overflow-hidden p-0">
-            <ScrollArea className="h-full p-4">
+            <ScrollArea className="h-full p-4" viewportRef={scrollRef}>
               <div className="flex flex-col gap-6">
                 {messages.map((msg, i) => (
                   <div key={i} className={`flex gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
@@ -103,6 +124,17 @@ export default function AIAssistantPage() {
                     </div>
                   </div>
                 ))}
+                {isLoading && (
+                  <div className="flex gap-3">
+                    <div className="size-8 rounded-lg bg-accent text-white flex items-center justify-center shrink-0">
+                      <Bot className="size-5" />
+                    </div>
+                    <div className="flex items-center gap-2 px-4 py-3 bg-accent/5 rounded-2xl border border-accent/10">
+                      <Loader2 className="size-4 animate-spin text-accent" />
+                      <span className="text-xs text-muted-foreground italic">Thinking...</span>
+                    </div>
+                  </div>
+                )}
               </div>
             </ScrollArea>
           </CardContent>
@@ -116,9 +148,10 @@ export default function AIAssistantPage() {
                 className="flex-1 focus-visible:ring-accent"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
+                disabled={isLoading}
               />
-              <Button type="submit" size="icon" className="bg-accent hover:bg-accent/90">
-                <Send className="size-4" />
+              <Button type="submit" size="icon" className="bg-accent hover:bg-accent/90" disabled={isLoading || !input.trim()}>
+                {isLoading ? <Loader2 className="size-4 animate-spin" /> : <Send className="size-4" />}
               </Button>
             </form>
           </CardFooter>
@@ -159,7 +192,10 @@ export default function AIAssistantPage() {
                     key={i} 
                     variant="ghost" 
                     className="justify-start text-xs font-normal h-auto py-2 px-3 hover:bg-accent/10 hover:text-accent"
-                    onClick={() => setInput(q)}
+                    onClick={() => {
+                      setInput(q)
+                    }}
+                    disabled={isLoading}
                   >
                     {q}
                   </Button>
