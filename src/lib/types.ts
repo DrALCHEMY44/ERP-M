@@ -1,0 +1,79 @@
+export type Role = 'Platform Super Admin' | 'Business Owner' | 'Manager' | 'Accountant' | 'HR Officer' | 'Staff' | 'Viewer';
+
+export type UserProfile = {
+  uid: string;
+  email: string;
+  fullName: string;
+  tenantId: string;
+  businessId: string;
+  role: Role;
+  permissions: string[];
+  photoURL?: string;
+  createdAt: string;
+};
+
+export type Business = {
+  id: string;
+  tenantId: string;
+  name: string;
+  type: string;
+  sector: string;
+  location: string;
+  city: string;
+  region: string;
+  phone: string;
+  email: string;
+  taxId?: string;
+  logo?: string;
+  createdAt: string;
+};
+
+export type Product = {
+  id: string;
+  tenantId: string;
+  businessId: string;
+  name: string;
+  category: string;
+  quantity: number;
+  costPrice: number;
+  sellingPrice: number;
+  supplierId: string;
+  expiryDate?: string;
+  lowStockLevel: number;
+  status: 'active' | 'inactive';
+  createdAt: string;
+};
+
+export type TaskStatus = 'Pending' | 'Ongoing' | 'Completed' | 'Cancelled' | 'Late' | 'Overdue';
+export type TaskPriority = 'Low' | 'Medium' | 'High' | 'Urgent';
+
+export type Task = {
+  id: string;
+  tenantId: string;
+  businessId: string;
+  title: string;
+  description: string;
+  assignedTo: string;
+  assignedToName: string;
+  assignedBy: string;
+  department: string;
+  priority: TaskPriority;
+  status: TaskStatus;
+  startDate: string;
+  dueDate: string;
+  completedAt?: string;
+  createdAt: string;
+};
+
+export type ActivityLog = {
+  id: string;
+  tenantId: string;
+  businessId: string;
+  userId: string;
+  userName: string;
+  userRole: string;
+  actionType: string;
+  module: string;
+  description: string;
+  timestamp: string;
+};
