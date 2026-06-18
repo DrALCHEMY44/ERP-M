@@ -1,0 +1,207 @@
+
+# -----------------------------------
+# Enumerated Types for Data Integrity
+# -----------------------------------
+
+enum SubscriptionTier {
+  BASIC
+  PREMIUM
+  ENTERPRISE
+}
+
+enum TransactionType {
+  SALE
+  EXPENSE
+}
+
+enum TaskStatus {
+  PENDING
+  ONGOING
+  COMPLETED
+  CANCELLED
+  LATE
+  OVERDUE
+}
+
+enum TaskPriority {
+    LOW
+    MEDIUM
+    HIGH
+    URGENT
+}
+
+enum EmployeeStatus {
+    ACTIVE
+    ON_LEAVE
+    SUSPENDED
+    TERMINATED
+}
+
+# -----------------------------------
+# Core Data Models
+# -----------------------------------
+
+type Tenant @table {
+  id: UUID! @pk @default(uuidv4())
+  name: String!
+  businessSector: String!
+  location: String!
+  ownerEmail: String! @unique
+  taxId: String
+  logoUrl: String
+  subscriptionTier: SubscriptionTier
+  createdAt: Timestamp! @default(now())
+}
+
+type User @table {
+  id: UUID! @pk @default(uuidv4())
+  tenantId: UUID!
+  businessId: UUID!
+  email: String! @unique
+  role: String!
+  department: String
+  phoneNumber: String
+  createdAt: Timestamp! @default(now())
+}
+
+type Business @table {
+  id: UUID! @pk @default(uuidv4())
+  tenantId: UUID!
+  name: String!
+  location: String!
+  businessType: String
+  region: String
+  createdAt: Timestamp! @default(now())
+}
+
+type Product @table {
+  id: UUID! @pk @default(uuidv4())
+  tenantId: UUID!
+  businessId: UUID!
+  name: String!
+  category: String
+  quantity: Int!
+  costPrice: Float
+  sellingPrice: Float!
+  expiryDate: Date
+  lowStockLevel: Int
+  createdBy: UUID!
+  createdAt: Timestamp! @default(now())
+  updatedAt: Timestamp
+}
+
+type Transaction @table {
+  id: UUID! @pk @default(uuidv4())
+  tenantId: UUID!
+  businessId: UUID!
+  type: TransactionType!
+  amount: Float!
+  date: Timestamp!
+  category: String
+  receiptUrl: String
+  recordedBy: UUID!
+  createdAt: Timestamp! @default(now())
+}
+
+type Task @table {
+  id: UUID! @pk @default(uuidv4())
+  tenantId: UUID!
+  businessId: UUID!
+  title: String!
+  description: String
+  status: TaskStatus!
+  priority: TaskPriority
+  dueDate: Timestamp!
+  assignedTo: User
+  createdBy: UUID!
+  createdAt: Timestamp! @default(now())
+  updatedAt: Timestamp
+}
+
+type TaskComment @table {
+  id: UUID! @pk @default(uuidv4())
+  tenantId: UUID!
+  businessId: UUID!
+  task: Task!
+  user: User!
+  content: String!
+  createdAt: Timestamp! @default(now())
+}
+
+type Employee @table {
+  id: UUID! @pk @default(uuidv4())
+  tenantId: UUID!
+  businessId: UUID!
+  fullName: String!
+  position: String!
+  salary: Float
+  department: String
+  startDate: Date
+  status: EmployeeStatus
+  createdAt: Timestamp! @default(now())
+}
+
+type Customer @table {
+  id: UUID! @pk @default(uuidv4())
+  tenantId: UUID!
+  businessId: UUID!
+  customerName: String!
+  phoneNumber: String
+  email: String
+  createdAt: Timestamp! @default(now())
+}
+
+type Supplier @table {
+  id: UUID! @pk @default(uuidv4())
+  tenantId: UUID!
+  businessId: UUID!
+  supplierName: String!
+  phoneNumber: String
+  email: String
+  createdAt: Timestamp! @default(now())
+}
+
+type Document @table {
+  id: UUID! @pk @default(uuidv4())
+  tenantId: UUID!
+  businessId: UUID!
+  title: String!
+  documentType: String!
+  fileUrl: String!
+  uploadedBy: UUID!
+  uploadedAt: Timestamp! @default(now())
+}
+
+type ActivityLog @table {
+  id: UUID! @pk @default(uuidv4())
+  tenantId: UUID!
+  businessId: UUID!
+  userId: UUID!
+  userName: String!
+  actionType: String!
+  module: String!
+  description: String
+  recordId: UUID
+  timestamp: Timestamp! @default(now())
+}
+
+type AIQuery @table {
+  id: UUID! @pk @default(uuidv4())
+  tenantId: UUID!
+  businessId: UUID!
+  userId: UUID!
+  queryText: String!
+  response: String
+  timestamp: Timestamp! @default(now())
+}
+
+type Notification @table {
+  id: UUID! @pk @default(uuidv4())
+  tenantId: UUID!
+  businessId: UUID!
+  userId: UUID!
+  message: String!
+  isRead: Boolean! @default(false)
+  createdAt: Timestamp! @default(now())
+}
+
