@@ -64,12 +64,17 @@ export type Sale = {
   createdAt: string;
 };
 
+// SYCOHADA Account Classes
+export type OHADAAccountClass = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
+
 export type Expense = {
   id: string;
   tenantId: string;
   businessId: string;
   category: 'Rent' | 'Utilities' | 'Salaries' | 'Supplies' | 'Marketing' | 'Transport' | 'Taxes' | 'Other';
+  ohadaAccount?: string; // e.g., 601, 621, 641
   amount: number;
+  taxAmount?: number; // VAT (TVA)
   date: string;
   description: string;
   receiptUrl?: string;
@@ -109,4 +114,18 @@ export type ActivityLog = {
   module: string;
   description: string;
   timestamp: string;
+};
+
+export type FinancialTransaction = {
+  id: string;
+  tenantId: string;
+  businessId: string;
+  type: 'DEBIT' | 'CREDIT';
+  accountClass: OHADAAccountClass;
+  accountNumber: string;
+  accountLabel: string;
+  amount: number;
+  description: string;
+  date: string;
+  reference: string;
 };
