@@ -100,7 +100,7 @@ export default function SuppliersPage() {
         </Card>
         <Card className="border-t-4 border-[#10b981] shadow-md bg-emerald-50/10">
           <CardHeader className="pb-2 p-4">
-            <CardDescription className="text-[10px] font-bold uppercase tracking-widest">Supply Health</CardTitle>
+            <CardDescription className="text-[10px] font-bold uppercase tracking-widest">Supply Health</CardDescription>
             <CardTitle className="text-2xl font-bold text-emerald-700">Optimal</CardTitle>
           </CardHeader>
         </Card>
