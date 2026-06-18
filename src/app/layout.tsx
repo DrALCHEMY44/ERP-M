@@ -1,3 +1,5 @@
+"use client"
+
 import type { Metadata } from "next";
 import { Inter, Space_Grotesk } from "next/font/google";
 import "./globals.css";
@@ -5,20 +7,30 @@ import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/s
 import { AppSidebar } from "@/components/app-sidebar";
 import { Separator } from "@/components/ui/separator";
 import { Toaster } from "@/components/ui/toaster";
+import { usePathname } from "next/navigation";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const spaceGrotesk = Space_Grotesk({ subsets: ["latin"], variable: "--font-space-grotesk" });
-
-export const metadata: Metadata = {
-  title: "SmartERP AI - Cameroonian SME Hub",
-  description: "AI-powered ERP for SMEs in Cameroon.",
-};
 
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const pathname = usePathname();
+  const isAuthPage = ['/login', '/register', '/create-business', '/join-business'].includes(pathname);
+
+  if (isAuthPage) {
+    return (
+      <html lang="en">
+        <body className={`${inter.variable} ${spaceGrotesk.variable} font-sans antialiased bg-background`}>
+          {children}
+          <Toaster />
+        </body>
+      </html>
+    );
+  }
+
   return (
     <html lang="en">
       <body className={`${inter.variable} ${spaceGrotesk.variable} font-sans antialiased`}>

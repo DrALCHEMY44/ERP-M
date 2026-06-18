@@ -11,7 +11,13 @@ import {
   Settings,
   Building2,
   BarChart3,
-  Sparkles
+  Sparkles,
+  UserCircle,
+  Truck,
+  FileText,
+  PieChart,
+  History,
+  ShieldCheck
 } from "lucide-react"
 
 import {
@@ -38,15 +44,42 @@ import { MOCK_USER } from "@/lib/mock-data"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 
-const navigation = [
-  { name: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
-  { name: "AI Assistant", icon: Sparkles, href: "/ai-assistant", accent: true },
-  { name: "Inventory", icon: Package, href: "/inventory" },
-  { name: "Sales", icon: ShoppingCart, href: "/sales" },
-  { name: "Expenses", icon: Receipt, href: "/expenses" },
-  { name: "Finance", icon: BarChart3, href: "/finance" },
-  { name: "Tasks", icon: Briefcase, href: "/tasks" },
-  { name: "Settings", icon: Settings, href: "/settings" },
+const groups = [
+  {
+    label: "Core",
+    items: [
+      { name: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
+      { name: "AI Assistant", icon: Sparkles, href: "/ai-assistant", accent: true },
+    ]
+  },
+  {
+    label: "Operations",
+    items: [
+      { name: "Inventory", icon: Package, href: "/inventory" },
+      { name: "Sales", icon: ShoppingCart, href: "/sales" },
+      { name: "Expenses", icon: Receipt, href: "/expenses" },
+      { name: "Finance", icon: BarChart3, href: "/finance" },
+    ]
+  },
+  {
+    label: "Management",
+    items: [
+      { name: "Tasks", icon: Briefcase, href: "/tasks" },
+      { name: "Employees", icon: Users, href: "/employees" },
+      { name: "Customers", icon: UserCircle, href: "/customers" },
+      { name: "Suppliers", icon: Truck, href: "/suppliers" },
+    ]
+  },
+  {
+    label: "Administration",
+    items: [
+      { name: "Documents", icon: FileText, href: "/documents" },
+      { name: "Reports", icon: PieChart, href: "/reports" },
+      { name: "Activity Logs", icon: History, href: "/activity-logs" },
+      { name: "Users", icon: ShieldCheck, href: "/user-management" },
+      { name: "Settings", icon: Settings, href: "/settings" },
+    ]
+  }
 ]
 
 export function AppSidebar() {
@@ -69,29 +102,33 @@ export function AppSidebar() {
         </div>
       </SidebarHeader>
 
-      <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-[10px] uppercase font-bold tracking-widest opacity-50 px-4 mb-2 text-white">Menu</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {navigation.map((item) => (
-                <SidebarMenuItem key={item.name}>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={pathname === item.href}
-                    tooltip={item.name}
-                    className={item.accent ? "text-primary font-bold" : ""}
-                  >
-                    <Link href={item.href}>
-                      <item.icon className="size-4" />
-                      <span>{item.name}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+      <SidebarContent className="gap-0">
+        {groups.map((group) => (
+          <SidebarGroup key={group.label}>
+            <SidebarGroupLabel className="text-[10px] uppercase font-bold tracking-widest opacity-50 px-4 mb-2 text-white">
+              {group.label}
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {group.items.map((item) => (
+                  <SidebarMenuItem key={item.name}>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={pathname === item.href}
+                      tooltip={item.name}
+                      className={item.accent ? "text-primary font-bold bg-primary/5" : ""}
+                    >
+                      <Link href={item.href}>
+                        <item.icon className="size-4" />
+                        <span>{item.name}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        ))}
       </SidebarContent>
 
       <SidebarFooter className="p-4 border-t border-sidebar-border">
@@ -110,7 +147,10 @@ export function AppSidebar() {
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
-            <DropdownMenuItem>Sign Out</DropdownMenuItem>
+            <Link href="/business-profile">
+              <DropdownMenuItem className="cursor-pointer">Business Profile</DropdownMenuItem>
+            </Link>
+            <DropdownMenuItem className="cursor-pointer text-destructive">Sign Out</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarFooter>
