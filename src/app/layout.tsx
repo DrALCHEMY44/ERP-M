@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react";
@@ -10,9 +11,10 @@ import { Toaster } from "@/components/ui/toaster";
 import { usePathname, useRouter } from "next/navigation";
 import { NotificationCenter } from "@/components/notifications/notification-center";
 import { LanguageProvider } from "@/components/language-provider";
-import { RotateCw, Loader2 } from "lucide-react";
+import { RotateCw, Loader2, ArrowLeft, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const spaceGrotesk = Space_Grotesk({ subsets: ["latin"], variable: "--font-space-grotesk" });
@@ -31,12 +33,13 @@ export default function RootLayout({
 
   const handleRefresh = () => {
     setIsRefreshing(true);
+    // Router refresh re-validates data without a full page reload in Next.js
     router.refresh();
     setTimeout(() => {
       setIsRefreshing(false);
       toast({
-        title: "System Synced",
-        description: "Your workspace data has been re-synchronized with the cloud.",
+        title: "System Synchronized",
+        description: "Your workspace data has been re-synced with the latest cloud records.",
       });
     }, 800);
   };
@@ -65,26 +68,55 @@ export default function RootLayout({
                   <div className="flex items-center gap-2">
                     <SidebarTrigger className="-ml-1" />
                     <Separator orientation="vertical" className="mr-2 h-4" />
+                    
+                    {/* Navigation Controls */}
+                    <div className="flex items-center gap-0.5 mr-2">
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-8 w-8 text-muted-foreground hover:text-primary transition-colors"
+                        onClick={() => window.history.back()}
+                        title="Go Back"
+                      >
+                        <ArrowLeft className="size-4" />
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-8 w-8 text-muted-foreground hover:text-primary transition-colors"
+                        onClick={() => window.history.forward()}
+                        title="Go Forward"
+                      >
+                        <ArrowRight className="size-4" />
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className={cn(
+                          "h-8 w-8 text-muted-foreground hover:text-primary transition-colors",
+                          isRefreshing && "text-primary"
+                        )}
+                        onClick={handleRefresh}
+                        disabled={isRefreshing}
+                        title="Sync/Refresh Workspace"
+                      >
+                        {isRefreshing ? (
+                          <Loader2 className="size-4 animate-spin" />
+                        ) : (
+                          <RotateCw className="size-4" />
+                        )}
+                      </Button>
+                    </div>
+                    
+                    <Separator orientation="vertical" className="mr-2 h-4 hidden sm:block" />
+                    
                     <div className="flex flex-col overflow-hidden">
                       <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-muted-foreground truncate">Tenant: Douala_001</span>
                       <span className="text-xs font-headline font-bold text-primary truncate max-w-[120px] md:max-w-none">Superette de l'Avenir</span>
                     </div>
                   </div>
+                  
                   <div className="flex items-center gap-2 md:gap-3">
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className="h-9 w-9 text-muted-foreground hover:text-primary transition-colors"
-                      onClick={handleRefresh}
-                      disabled={isRefreshing}
-                      title="Sync System Data"
-                    >
-                      {isRefreshing ? (
-                        <Loader2 className="size-5 animate-spin text-primary" />
-                      ) : (
-                        <RotateCw className="size-5" />
-                      )}
-                    </Button>
                     <Separator orientation="vertical" className="h-6" />
                     <NotificationCenter />
                     <Separator orientation="vertical" className="h-6 hidden md:block" />
