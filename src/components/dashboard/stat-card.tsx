@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { LucideIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -17,26 +18,28 @@ interface StatCardProps {
 
 export function StatCard({ title, value, description, icon: Icon, trend, className }: StatCardProps) {
   return (
-    <Card className={cn("overflow-hidden transition-all hover:shadow-md", className)}>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
-        <div className="rounded-md bg-primary/10 p-2 text-primary">
-          <Icon className="h-4 w-4" />
+    <Card className={cn("overflow-hidden transition-all hover:shadow-md border-sidebar-border/10", className)}>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-4">
+        <CardTitle className="text-[10px] md:text-xs font-bold uppercase tracking-widest text-muted-foreground">{title}</CardTitle>
+        <div className="rounded-md bg-primary/10 p-1.5 text-primary">
+          <Icon className="h-3.5 w-3.5 md:h-4 md:w-4" />
         </div>
       </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-bold tracking-tight">{value}</div>
+      <CardContent className="p-4 pt-0">
+        <div className="text-lg md:text-2xl font-bold tracking-tight truncate">
+          {value}
+        </div>
         {(description || trend) && (
-          <div className="mt-1 flex items-center gap-2 text-xs">
+          <div className="mt-1 flex items-center gap-1.5 text-[9px] md:text-xs">
             {trend && (
               <span className={cn(
-                "font-medium",
+                "font-bold",
                 trend.isPositive ? "text-emerald-600" : "text-destructive"
               )}>
-                {trend.isPositive ? "+" : ""}{trend.value}%
+                {trend.isPositive ? "↑" : "↓"} {trend.value}%
               </span>
             )}
-            <span className="text-muted-foreground">{description || trend?.label}</span>
+            <span className="text-muted-foreground truncate">{description || trend?.label}</span>
           </div>
         )}
       </CardContent>

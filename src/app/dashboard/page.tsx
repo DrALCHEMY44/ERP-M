@@ -2,7 +2,7 @@
 "use client"
 
 import { StatCard } from "@/components/dashboard/stat-card"
-import { ShoppingCart, Receipt, Users, TrendingUp, Package, Sparkles } from "lucide-react"
+import { ShoppingCart, Receipt, Users, TrendingUp, Sparkles } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -13,9 +13,9 @@ import Link from "next/link"
 export default function DashboardPage() {
   return (
     <div className="flex flex-col gap-6 md:gap-8">
-      <div>
-        <h2 className="text-2xl md:text-3xl font-bold tracking-tight">Bonjour, Jean-Pierre</h2>
-        <p className="text-sm md:text-base text-muted-foreground">Voici l'état actuel de votre entreprise à Douala.</p>
+      <div className="space-y-1">
+        <h2 className="text-xl md:text-3xl font-bold tracking-tight text-primary font-headline">Bonjour, Jean-Pierre</h2>
+        <p className="text-xs md:text-sm text-muted-foreground">Voici l'état actuel de votre entreprise à Douala.</p>
       </div>
 
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
@@ -47,91 +47,89 @@ export default function DashboardPage() {
 
       <div className="grid gap-4 grid-cols-1 lg:grid-cols-7">
         <Card className="lg:col-span-4 border-accent/20 bg-accent/5">
-          <CardHeader>
+          <CardHeader className="p-4 md:p-6">
             <div className="flex items-center gap-2">
               <Sparkles className="size-5 text-accent" />
-              <CardTitle className="text-accent text-lg">AI Performance Insights</CardTitle>
+              <CardTitle className="text-accent text-base md:text-lg font-headline">AI Performance Insights</CardTitle>
             </div>
-            <CardDescription>Generated based on real-time data analysis</CardDescription>
+            <CardDescription className="text-xs">Generated based on real-time data analysis</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <p className="text-sm leading-relaxed text-foreground/80">
+          <CardContent className="p-4 md:p-6 pt-0 space-y-4">
+            <p className="text-xs md:text-sm leading-relaxed text-foreground/80">
               Votre chiffre d'affaires ce mois-ci est en hausse de <strong>12.5%</strong> par rapport au mois dernier. 
               Cependant, nous observons une baisse de stock critique sur <strong>3 produits alimentaires</strong>. 
             </p>
             <div className="flex flex-wrap gap-2">
-              <Badge variant="outline" className="bg-accent/10 border-accent/20 text-accent font-bold text-[10px] md:text-xs">Riz Long Grain: Critical Stock</Badge>
-              <Badge variant="outline" className="bg-emerald-100 text-emerald-700 border-emerald-200 text-[10px] md:text-xs">High Profitability: Drinks</Badge>
+              <Badge variant="outline" className="bg-accent/10 border-accent/20 text-accent font-bold text-[10px]">Riz: Critical Stock</Badge>
+              <Badge variant="outline" className="bg-emerald-100 text-emerald-700 border-emerald-200 text-[10px]">High Profit: Drinks</Badge>
             </div>
           </CardContent>
         </Card>
 
         <Card className="lg:col-span-3">
-          <CardHeader>
-            <CardTitle className="text-lg">Task Overview</CardTitle>
-            <CardDescription>Current operational workload</CardDescription>
+          <CardHeader className="p-4 md:p-6">
+            <CardTitle className="text-base md:text-lg font-headline">Task Overview</CardTitle>
+            <CardDescription className="text-xs">Current operational workload</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex justify-between items-center text-sm">
+          <CardContent className="p-4 md:p-6 pt-0 space-y-3">
+            <div className="flex justify-between items-center text-xs md:text-sm">
               <span className="text-muted-foreground">Pending</span>
               <span className="font-bold">4</span>
             </div>
-            <div className="flex justify-between items-center text-sm">
-              <span className="text-muted-foreground text-destructive">Late/Overdue</span>
+            <div className="flex justify-between items-center text-xs md:text-sm">
+              <span className="text-muted-foreground text-destructive">Overdue</span>
               <span className="font-bold text-destructive">1</span>
             </div>
-            <div className="flex justify-between items-center text-sm">
+            <div className="flex justify-between items-center text-xs md:text-sm">
               <span className="text-muted-foreground text-emerald-600">Completed</span>
               <span className="font-bold text-emerald-600">12</span>
             </div>
             <Link href="/tasks" passHref>
-              <Button size="sm" className="w-full mt-2" variant="secondary">
-                Go to Tasks
+              <Button size="sm" className="w-full mt-2 text-xs" variant="secondary">
+                View All Tasks
               </Button>
             </Link>
           </CardContent>
         </Card>
       </div>
 
-      <div className="grid gap-4 grid-cols-1">
-        <Card>
-          <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div>
-              <CardTitle className="text-lg">Low Stock Alerts</CardTitle>
-              <CardDescription>Items needing replenishment</CardDescription>
-            </div>
-            <Link href="/inventory" passHref className="w-full sm:w-auto">
-              <Button size="sm" variant="ghost" className="w-full sm:w-auto">View Inventory</Button>
-            </Link>
-          </CardHeader>
-          <CardContent className="p-0 sm:p-6 sm:pt-0">
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Product</TableHead>
-                    <TableHead className="hidden md:table-cell">Category</TableHead>
-                    <TableHead>Stock</TableHead>
-                    <TableHead>Status</TableHead>
+      <Card className="overflow-hidden">
+        <CardHeader className="p-4 md:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <CardTitle className="text-base md:text-lg font-headline">Low Stock Alerts</CardTitle>
+            <CardDescription className="text-xs">Items needing replenishment</CardDescription>
+          </div>
+          <Link href="/inventory" passHref className="w-full sm:w-auto">
+            <Button size="sm" variant="ghost" className="w-full sm:w-auto text-xs">Full Inventory</Button>
+          </Link>
+        </CardHeader>
+        <CardContent className="p-0">
+          <div className="overflow-x-auto w-full">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-muted/50 whitespace-nowrap">
+                  <TableHead className="text-xs">Product</TableHead>
+                  <TableHead className="hidden md:table-cell text-xs">Category</TableHead>
+                  <TableHead className="text-xs">Stock</TableHead>
+                  <TableHead className="text-xs">Status</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {MOCK_PRODUCTS.filter(p => p.quantity <= p.lowStockLevel).map((product) => (
+                  <TableRow key={product.id}>
+                    <TableCell className="font-medium text-xs py-3">{product.name}</TableCell>
+                    <TableCell className="hidden md:table-cell text-xs py-3">{product.category}</TableCell>
+                    <TableCell className="text-xs py-3">{product.quantity}</TableCell>
+                    <TableCell className="py-3">
+                      <Badge variant="destructive" className="text-[9px] uppercase tracking-tighter">Critical</Badge>
+                    </TableCell>
                   </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {MOCK_PRODUCTS.filter(p => p.quantity <= p.lowStockLevel).map((product) => (
-                    <TableRow key={product.id}>
-                      <TableCell className="font-medium">{product.name}</TableCell>
-                      <TableCell className="hidden md:table-cell">{product.category}</TableCell>
-                      <TableCell>{product.quantity}</TableCell>
-                      <TableCell>
-                        <Badge variant="destructive" className="text-[10px]">Critical</Badge>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }
