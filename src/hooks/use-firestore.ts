@@ -1,7 +1,7 @@
 
 "use client"
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { 
   collection, 
   query, 
@@ -13,36 +13,37 @@ import {
   deleteDoc,
   DocumentData,
   QueryConstraint,
-  serverTimestamp,
-  getDocs
+  serverTimestamp
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { MOCK_USER, MOCK_CUSTOMERS, MOCK_PRODUCTS, MOCK_TASKS, MOCK_SALES, MOCK_EXPENSES, MOCK_ACTIVITY_LOGS } from '@/lib/mock-data';
+import { MOCK_USER, MOCK_CUSTOMERS, MOCK_PRODUCTS, MOCK_TASKS, MOCK_SALES, MOCK_EXPENSES, MOCK_ACTIVITY_LOGS, MOCK_TENANTS } from '@/lib/mock-data';
+
+interface FirestoreHookOptions {
+  extraConstraints?: QueryConstraint[];
+  bypassFilter?: boolean; // Set true for Super Admins to see all data
+}
 
 /**
  * A custom hook for Firestore real-time data with multi-tenant filtering.
- * Includes a LocalStorage fallback for prototyping when Firebase keys are not yet configured.
+ * Includes a LocalStorage fallback for prototyping.
  */
-export function useFirestore<T>(collectionName: string, extraConstraints: QueryConstraint[] = []) {
+export function useFirestore<T>(collectionName: string, options: FirestoreHookOptions = {}) {
+  const { extraConstraints = [], bypassFilter = false } = options;
   const [data, setData] = useState<T[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   
-  // Check if Firebase is using placeholder keys
   const isFirebaseConfigured = process.env.NEXT_PUBLIC_FIREBASE_API_KEY && 
                                process.env.NEXT_PUBLIC_FIREBASE_API_KEY !== "placeholder-key";
 
-  // Local storage keys for fallback
   const storageKey = `erp_fallback_${collectionName}`;
 
-  // Helper to get local data
   const getLocalData = (): T[] => {
     if (typeof window === 'undefined') return [];
     const saved = localStorage.getItem(storageKey);
     return saved ? JSON.parse(saved) : [];
   };
 
-  // Helper to save local data
   const saveLocalData = (newData: T[]) => {
     if (typeof window === 'undefined') return;
     localStorage.setItem(storageKey, JSON.stringify(newData));
@@ -51,12 +52,8 @@ export function useFirestore<T>(collectionName: string, extraConstraints: QueryC
   useEffect(() => {
     setLoading(true);
 
-    // If Firebase isn't configured, use LocalStorage fallback immediately
     if (!isFirebaseConfigured) {
-      console.warn(`Firebase not configured for ${collectionName}. Falling back to LocalStorage.`);
       const local = getLocalData();
-      
-      // Seed with mock data if local storage is empty for this collection
       if (local.length === 0) {
         let seeds: any[] = [];
         if (collectionName === 'customers') seeds = MOCK_CUSTOMERS;
@@ -65,6 +62,7 @@ export function useFirestore<T>(collectionName: string, extraConstraints: QueryC
         if (collectionName === 'sales') seeds = MOCK_SALES;
         if (collectionName === 'expenses') seeds = MOCK_EXPENSES;
         if (collectionName === 'activity_logs') seeds = MOCK_ACTIVITY_LOGS;
+        if (collectionName === 'tenants') seeds = MOCK_TENANTS;
         
         if (seeds.length > 0) {
           saveLocalData(seeds);
@@ -79,13 +77,16 @@ export function useFirestore<T>(collectionName: string, extraConstraints: QueryC
       return;
     }
 
-    // Standard Firestore Real-time listener
-    const q = query(
-      collection(db, collectionName),
-      where('tenantId', '==', MOCK_USER.tenantId),
-      where('businessId', '==', MOCK_USER.businessId),
-      ...extraConstraints
-    );
+    let q = query(collection(db, collectionName), ...extraConstraints);
+    
+    // Only apply tenant filter if not bypassed (e.g., for Super Admin)
+    if (!bypassFilter && collectionName !== 'tenants') {
+      q = query(
+        q, 
+        where('tenantId', '==', MOCK_USER.tenantId),
+        where('businessId', '==', MOCK_USER.businessId)
+      );
+    }
 
     const unsubscribe = onSnapshot(
       q,
@@ -94,9 +95,6 @@ export function useFirestore<T>(collectionName: string, extraConstraints: QueryC
         snapshot.forEach((doc) => {
           results.push({ id: doc.id, ...doc.data() } as T);
         });
-        
-        // If Firestore is empty but we have seeds, we could add them here, 
-        // but typically we want to start fresh in cloud.
         setData(results);
         setLoading(false);
       },
@@ -104,15 +102,15 @@ export function useFirestore<T>(collectionName: string, extraConstraints: QueryC
         console.error(`Error fetching ${collectionName}:`, err);
         setError(err);
         setLoading(false);
-        // Fallback on error
         setData(getLocalData());
       }
     );
 
     return () => unsubscribe();
-  }, [collectionName, isFirebaseConfigured]);
+  }, [collectionName, isFirebaseConfigured, bypassFilter]);
 
   const addRecord = useCallback(async (newData: Omit<T, 'id'>) => {
+    // Strip out undefined or ID fields before sending to Firestore
     const cleanData = Object.fromEntries(
       Object.entries(newData).filter(([k, v]) => v !== undefined && k !== 'id')
     );

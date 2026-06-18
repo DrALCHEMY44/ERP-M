@@ -19,6 +19,8 @@ import {
   PieChart,
   History,
   Languages,
+  ShieldCheck,
+  Globe,
 } from "lucide-react"
 
 import {
@@ -58,6 +60,7 @@ export function AppSidebar() {
 
   // Fallback to mock if profile not loaded
   const userDisplay = profile || MOCK_USER;
+  const isSuperAdmin = userDisplay.role === 'Platform Super Admin' || userDisplay.email === 'owner@kobocore.com';
 
   const handleLogout = async () => {
     try {
@@ -69,6 +72,13 @@ export function AppSidebar() {
   }
 
   const groups = [
+    ...(isSuperAdmin ? [{
+      label: "Platform Admin",
+      items: [
+        { name: "SaaS Dashboard", icon: ShieldCheck, href: "/admin/dashboard", accent: true },
+        { name: "Infrastructure", icon: Globe, href: "/admin/infrastructure" },
+      ]
+    }] : []),
     {
       label: t('sidebar.core'),
       items: [
@@ -135,7 +145,7 @@ export function AppSidebar() {
                       asChild
                       isActive={pathname === item.href}
                       tooltip={item.name}
-                      className={item.accent ? "text-primary font-bold bg-primary/10" : ""}
+                      className={item.accent && !isSuperAdmin ? "text-primary font-bold bg-primary/10" : item.accent ? "text-primary font-bold bg-primary/10" : ""}
                     >
                       <Link href={item.href} className="flex items-center w-full">
                         <item.icon className="size-4 shrink-0 mr-2" />

@@ -1,5 +1,5 @@
 
-import { UserProfile, Business, Product, Task, Sale, ActivityLog, Expense, Customer } from './types';
+import { UserProfile, Business, Product, Task, Sale, ActivityLog, Expense, Customer, Tenant } from './types';
 
 export const MOCK_USER: UserProfile = {
   uid: 'user123',
@@ -11,6 +11,30 @@ export const MOCK_USER: UserProfile = {
   permissions: ['*'],
   createdAt: '2023-01-10T08:00:00Z',
 };
+
+export const MOCK_TENANTS: Tenant[] = [
+  {
+    id: 'tenant_douala_001',
+    name: 'Superette de l\'Avenir',
+    plan: 'Premium',
+    status: 'Active',
+    createdAt: '2023-01-10T08:00:00Z',
+  },
+  {
+    id: 'tenant_yaounde_002',
+    name: 'Boutique Bastos',
+    plan: 'Basic',
+    status: 'Active',
+    createdAt: '2023-03-15T10:00:00Z',
+  },
+  {
+    id: 'tenant_bafoussam_003',
+    name: 'Logistics West',
+    plan: 'Enterprise',
+    status: 'Suspended',
+    createdAt: '2023-06-20T14:30:00Z',
+  }
+];
 
 export const MOCK_BUSINESS: Business = {
   id: 'biz_superette_central',

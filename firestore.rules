@@ -8,70 +8,81 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    // Helper: Get user data
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    // Helper: Check if user is Super Admin
+    function isSuperAdmin() {
+      return getUserData().role == 'Platform Super Admin';
+    }
+
     // Helper: Check if data belongs to user's tenant
     function belongsToTenant(data) {
-      return data.tenantId == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.tenantId;
+      return data.tenantId == getUserData().tenantId;
     }
     
     // Helper: Check user role from profile
     function hasRole(roles) {
-      let user = get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+      let user = getUserData();
       return user.role in roles || user.role == 'Business Owner' || user.role == 'Platform Super Admin';
     }
 
     // Global multi-tenant access check
     match /{collection}/{docId} {
-      allow read, write: if isSignedIn() && belongsToTenant(resource.data);
-      allow create: if isSignedIn() && request.resource.data.tenantId != null;
+      allow read, write: if isSignedIn() && (belongsToTenant(resource.data) || isSuperAdmin());
+      allow create: if isSignedIn() && (request.resource.data.tenantId != null || isSuperAdmin());
     }
 
     // Collection Specific Overrides
 
+    // Tenants: Only Super Admins can see all, Users can see their own
+    match /tenants/{tenantId} {
+      allow read: if isSignedIn() && (tenantId == getUserData().tenantId || isSuperAdmin());
+      allow write: if isSignedIn() && isSuperAdmin();
+    }
+
     // Users: Can read their own, Owners can read all in tenant
     match /users/{userId} {
-      allow read: if isSignedIn() && (request.auth.uid == userId || hasRole(['Business Owner', 'Manager']));
-      allow write: if isSignedIn() && (request.auth.uid == userId || hasRole(['Business Owner']));
+      allow read: if isSignedIn() && (request.auth.uid == userId || hasRole(['Business Owner', 'Manager']) || isSuperAdmin());
+      allow write: if isSignedIn() && (request.auth.uid == userId || hasRole(['Business Owner']) || isSuperAdmin());
     }
 
     // HR & Employees: Restricted to Owner, Manager, and HR
     match /employees/{empId} {
-      allow read, write: if isSignedIn() && belongsToTenant(resource.data) && hasRole(['HR Officer']);
+      allow read, write: if isSignedIn() && (belongsToTenant(resource.data) && hasRole(['HR Officer'])) || isSuperAdmin();
     }
     match /attendance/{attId} {
-      allow read, write: if isSignedIn() && belongsToTenant(resource.data) && hasRole(['HR Officer', 'Manager']);
+      allow read, write: if isSignedIn() && (belongsToTenant(resource.data) && hasRole(['HR Officer', 'Manager'])) || isSuperAdmin();
     }
 
     // Finance: Restricted to Owner, Accountant
     match /expenses/{expId} {
-      allow read, write: if isSignedIn() && belongsToTenant(resource.data) && hasRole(['Accountant']);
+      allow read, write: if isSignedIn() && (belongsToTenant(resource.data) && hasRole(['Accountant'])) || isSuperAdmin();
     }
     match /finance_reports/{repId} {
-      allow read: if isSignedIn() && belongsToTenant(resource.data) && hasRole(['Accountant']);
+      allow read: if isSignedIn() && (belongsToTenant(resource.data) && hasRole(['Accountant'])) || isSuperAdmin();
     }
 
     // Activity Logs: Append-only for users, no updates or deletes
     match /activity_logs/{logId} {
       allow create: if isSignedIn() && request.resource.data.tenantId != null;
-      allow read: if isSignedIn() && belongsToTenant(resource.data) && hasRole(['Manager']);
-      allow update, delete: if false;
+      allow read: if isSignedIn() && (belongsToTenant(resource.data) && hasRole(['Manager'])) || isSuperAdmin();
+      allow update, delete: if isSuperAdmin();
     }
 
     // AI Queries: Append-only
     match /ai_queries/{queryId} {
       allow create: if isSignedIn();
-      allow read: if isSignedIn() && belongsToTenant(resource.data);
+      allow read: if isSignedIn() && (belongsToTenant(resource.data) || isSuperAdmin());
       allow update, delete: if false;
-    }
-
-    // Documents: Restricted based on type if needed
-    match /documents/{docId} {
-      allow read, write: if isSignedIn() && belongsToTenant(resource.data);
     }
     
     // Settings: Only Owners and Super Admins
     match /settings/{setId} {
-      allow read: if isSignedIn() && belongsToTenant(resource.data);
-      allow write: if isSignedIn() && hasRole(['Business Owner']);
+      allow read: if isSignedIn() && (belongsToTenant(resource.data) || isSuperAdmin());
+      allow write: if isSignedIn() && (hasRole(['Business Owner']) || isSuperAdmin());
     }
   }
 }
