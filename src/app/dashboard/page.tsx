@@ -32,8 +32,10 @@ import { Sale, Product, Expense, Task, Customer, ActivityLog } from "@/lib/types
 import { businessPerformanceSummary } from "@/ai/flows/business-performance-summary-flow"
 import { MOCK_USER } from "@/lib/mock-data"
 import Link from "next/link"
+import { useTranslation } from "@/components/language-provider"
 
 export default function DashboardPage() {
+  const { t } = useTranslation();
   const { data: sales, loading: salesLoading } = useFirestore<Sale>('sales');
   const { data: products, loading: productsLoading } = useFirestore<Product>('products');
   const { data: expenses, loading: expensesLoading } = useFirestore<Expense>('expenses');
@@ -46,7 +48,6 @@ export default function DashboardPage() {
 
   const isSyncing = salesLoading || productsLoading || expensesLoading || tasksLoading || customersLoading || logsLoading;
 
-  // Memoize heavy aggregations to ensure UI responsiveness
   const stats = React.useMemo(() => {
     const totalSalesAmount = sales.reduce((acc, sale) => acc + sale.totalAmount, 0);
     const totalExpensesAmount = expenses.reduce((acc, exp) => acc + exp.amount, 0);
@@ -105,59 +106,57 @@ export default function DashboardPage() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="space-y-1">
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground font-headline">Executive Overview</h1>
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground font-headline">{t('dashboard.title')}</h1>
           <div className="flex items-center gap-2">
-            <p className="text-sm text-muted-foreground uppercase tracking-widest font-bold text-[10px]">Real-time Tenant Intelligence • Cameroon</p>
+            <p className="text-sm text-muted-foreground uppercase tracking-widest font-bold text-[10px]">{t('dashboard.subtitle')}</p>
             {isSyncing && <Loader2 className="size-3 animate-spin text-primary" />}
           </div>
         </div>
         <div className="flex items-center gap-2">
            <Button variant="outline" size="sm" className="text-[10px] font-bold uppercase tracking-widest bg-card" onClick={fetchAiSummary} disabled={isAiLoading || isSyncing}>
             {isAiLoading ? <Loader2 className="size-3 mr-2 animate-spin" /> : <Sparkles className="size-3 mr-2" />}
-            Refresh AI Insights
+            {t('dashboard.refreshAi')}
           </Button>
         </div>
       </div>
 
-      {/* Primary Financial Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
-          title="Total Sales"
+          title={t('dashboard.totalSales')}
           value={salesLoading ? "---" : `${stats.totalSalesAmount.toLocaleString()} FCFA`}
           icon={ShoppingCart}
           trend={{ value: 12, label: "Live synchronization", isPositive: true }}
           className="border-t-4 border-[#10b981] shadow-md"
         />
         <StatCard
-          title="Total Expenses"
+          title={t('dashboard.totalExpenses')}
           value={expensesLoading ? "---" : `${stats.totalExpensesAmount.toLocaleString()} FCFA`}
           icon={Receipt}
           trend={{ value: 4, label: "Live synchronization", isPositive: false }}
           className="border-t-4 border-[#f59e0b] shadow-md"
         />
         <StatCard
-          title="Net Profit"
+          title={t('dashboard.netProfit')}
           value={isSyncing ? "---" : `${stats.netProfit.toLocaleString()} FCFA`}
           icon={TrendingUp}
           trend={{ value: 18, label: "Live synchronization", isPositive: true }}
           className="border-t-4 border-[#3b82f6] shadow-md"
         />
         <StatCard
-          title="Low Stock Alerts"
+          title={t('dashboard.lowStock')}
           value={productsLoading ? "---" : stats.lowStockCount}
           icon={AlertTriangle}
           className="border-t-4 border-[#ef4444] shadow-md"
-          description={`${products.length} Items Tracked`}
+          description={`${products.length} ${t('common.inventory')}`}
         />
       </div>
 
-      {/* Management Quick Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
         {[
-          { icon: Users, label: "Team", value: 12 },
-          { icon: UserCircle, label: "Clients", value: customers.length, loading: customersLoading },
-          { icon: Truck, label: "Suppliers", value: 8 },
-          { icon: Briefcase, label: "Tasks", value: tasks.length, loading: tasksLoading },
+          { icon: Users, label: t('common.employees'), value: 12 },
+          { icon: UserCircle, label: t('common.customers'), value: customers.length, loading: customersLoading },
+          { icon: Truck, label: t('common.suppliers'), value: 8 },
+          { icon: Briefcase, label: t('common.tasks'), value: tasks.length, loading: tasksLoading },
         ].map((item, idx) => (
           <div key={idx} className="bg-card border p-3 rounded-xl shadow-sm">
             <div className="flex items-center gap-2 mb-1">
@@ -170,22 +169,20 @@ export default function DashboardPage() {
         <div className="bg-card border p-3 rounded-xl shadow-sm col-span-2 hidden lg:block">
            <div className="flex items-center gap-2 mb-1">
             <Briefcase className="size-3 text-muted-foreground" />
-            <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">Late Tasks</span>
+            <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">{t('dashboard.lateTasks')}</span>
           </div>
           <p className="text-lg font-bold text-destructive">{isSyncing ? "..." : stats.taskStats.overdue}</p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Left: AI & Main Chart */}
         <div className="lg:col-span-8 space-y-6">
-          {/* AI Generated Business Summary */}
           <Card className="bg-primary/5 border-primary/20 shadow-sm overflow-hidden">
             <CardHeader className="pb-3 border-b border-primary/10 bg-primary/10">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-sm font-bold flex items-center gap-2 text-primary">
                   <Sparkles className="size-4" />
-                  AI PERFORMANCE INSIGHTS
+                  {t('dashboard.aiInsights')}
                 </CardTitle>
                 <Badge variant="outline" className="text-[9px] uppercase tracking-tighter bg-white/50">Contextual Analysis</Badge>
               </div>
@@ -207,7 +204,7 @@ export default function DashboardPage() {
 
           <Card className="shadow-sm">
             <CardHeader>
-              <CardTitle className="text-lg font-bold">Revenue Performance</CardTitle>
+              <CardTitle className="text-lg font-bold">{t('dashboard.revenueTrend')}</CardTitle>
               <CardDescription className="text-xs uppercase font-bold tracking-tighter">Daily Sales Volume (FCFA)</CardDescription>
             </CardHeader>
             <CardContent className="h-[300px] w-full">
@@ -230,30 +227,12 @@ export default function DashboardPage() {
                 </ChartContainer>
             </CardContent>
           </Card>
-
-          {/* Task Status Matrix */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {[
-              { label: "Pending", value: stats.taskStats.pending, color: "text-muted-foreground" },
-              { label: "Ongoing", value: stats.taskStats.ongoing, color: "text-blue-600" },
-              { label: "Done", value: stats.taskStats.completed, color: "text-emerald-600" },
-              { label: "Overdue", value: stats.taskStats.overdue, color: "text-destructive", alert: true },
-            ].map((stat, i) => (
-              <Card key={i} className={stat.alert ? "border-destructive/20 bg-destructive/5" : "bg-card"}>
-                <CardContent className="p-4 flex flex-col items-center justify-center text-center">
-                  <span className={`text-[10px] font-bold uppercase mb-1 ${stat.color}`}>{stat.label}</span>
-                  {tasksLoading ? <Skeleton className="h-8 w-10" /> : <span className={`text-2xl font-bold ${stat.color}`}>{stat.value}</span>}
-                </CardContent>
-              </Card>
-            ))}
-          </div>
         </div>
 
-        {/* Right: Transactions & Logs */}
         <div className="lg:col-span-4 space-y-6">
           <Card className="shadow-sm h-fit">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-bold uppercase">Recent Sales</CardTitle>
+              <CardTitle className="text-sm font-bold uppercase">{t('dashboard.recentSales')}</CardTitle>
               <Link href="/sales">
                 <Button variant="ghost" size="icon" className="h-6 w-6"><ArrowRight className="size-4" /></Button>
               </Link>
@@ -283,7 +262,7 @@ export default function DashboardPage() {
 
           <Card className="shadow-sm h-fit">
              <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-bold uppercase">Activity Log</CardTitle>
+              <CardTitle className="text-sm font-bold uppercase">{t('dashboard.recentActivity')}</CardTitle>
               <History className="size-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>

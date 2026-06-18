@@ -18,8 +18,7 @@ import {
   FileText,
   PieChart,
   History,
-  ShieldCheck,
-  ClipboardList
+  Languages,
 } from "lucide-react"
 
 import {
@@ -40,52 +39,55 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Avatar, AvatarFallback } from "@/avatar"
 import { MOCK_USER } from "@/lib/mock-data"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-
-const groups = [
-  {
-    label: "Core",
-    items: [
-      { name: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
-      { name: "AI Assistant", icon: Sparkles, href: "/ai-assistant", accent: true },
-    ]
-  },
-  {
-    label: "Operations",
-    items: [
-      { name: "Inventory", icon: Package, href: "/inventory" },
-      { name: "Sales", icon: ShoppingCart, href: "/sales" },
-      { name: "Expenses", icon: Receipt, href: "/expenses" },
-      { name: "Finance", icon: BarChart3, href: "/finance" },
-    ]
-  },
-  {
-    label: "Management",
-    items: [
-      { name: "Tasks", icon: Briefcase, href: "/tasks" },
-      { name: "Employees", icon: Users, href: "/employees" },
-      { name: "Customers", icon: UserCircle, href: "/customers" },
-      { name: "Suppliers", icon: Truck, href: "/suppliers" },
-    ]
-  },
-  {
-    label: "Administration",
-    items: [
-      { name: "Reports Hub", icon: PieChart, href: "/reports" },
-      { name: "Documents", icon: FileText, href: "/documents" },
-      { name: "Activity Logs", icon: History, href: "/activity-logs" },
-      { name: "Settings", icon: Settings, href: "/settings" },
-    ]
-  }
-]
+import { useTranslation } from "@/components/language-provider"
 
 export function AppSidebar() {
   const pathname = usePathname()
   const { state } = useSidebar()
+  const { t, language, setLanguage } = useTranslation()
+
+  const groups = [
+    {
+      label: t('sidebar.core'),
+      items: [
+        { name: t('common.dashboard'), icon: LayoutDashboard, href: "/dashboard" },
+        { name: t('common.aiAssistant'), icon: Sparkles, href: "/ai-assistant", accent: true },
+      ]
+    },
+    {
+      label: t('sidebar.ops'),
+      items: [
+        { name: t('common.inventory'), icon: Package, href: "/inventory" },
+        { name: t('common.sales'), icon: ShoppingCart, href: "/sales" },
+        { name: t('common.expenses'), icon: Receipt, href: "/expenses" },
+        { name: t('common.finance'), icon: BarChart3, href: "/finance" },
+      ]
+    },
+    {
+      label: t('sidebar.mgmt'),
+      items: [
+        { name: t('common.tasks'), icon: Briefcase, href: "/tasks" },
+        { name: t('common.employees'), icon: Users, href: "/employees" },
+        { name: t('common.customers'), icon: UserCircle, href: "/customers" },
+        { name: t('common.suppliers'), icon: Truck, href: "/suppliers" },
+      ]
+    },
+    {
+      label: t('sidebar.admin'),
+      items: [
+        { name: t('common.reports'), icon: PieChart, href: "/reports" },
+        { name: t('common.documents'), icon: FileText, href: "/documents" },
+        { name: t('common.activityLogs'), icon: History, href: "/activity-logs" },
+        { name: t('common.settings'), icon: Settings, href: "/settings" },
+      ]
+    }
+  ]
 
   return (
     <Sidebar collapsible="icon" className="border-r border-sidebar-border">
@@ -97,7 +99,7 @@ export function AppSidebar() {
           {state !== "collapsed" && (
             <div className="flex flex-col">
               <span className="font-headline font-bold text-sm text-white uppercase tracking-tighter">SmartERP AI</span>
-              <span className="text-[10px] text-muted-foreground uppercase tracking-widest">SME Hub</span>
+              <span className="text-[10px] text-muted-foreground uppercase tracking-widest">{t('sidebar.smeHub')}</span>
             </div>
           )}
         </div>
@@ -136,9 +138,9 @@ export function AppSidebar() {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button className="flex items-center gap-3 w-full text-left outline-none">
-              <Avatar className="h-8 w-8 rounded-lg">
-                <AvatarFallback className="bg-primary text-primary-foreground text-xs font-bold">JK</AvatarFallback>
-              </Avatar>
+              <div className="h-8 w-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold text-xs">
+                {MOCK_USER.fullName.substring(0, 2).toUpperCase()}
+              </div>
               {state !== "collapsed" && (
                 <div className="flex flex-col flex-1 min-w-0">
                   <span className="text-xs font-medium truncate text-white">{MOCK_USER.fullName}</span>
@@ -148,10 +150,15 @@ export function AppSidebar() {
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuItem className="flex items-center gap-2" onClick={() => setLanguage(language === 'en' ? 'fr' : 'en')}>
+              <Languages className="size-4" />
+              <span>{language === 'en' ? 'Français' : 'English'}</span>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
             <Link href="/business-profile">
-              <DropdownMenuItem className="cursor-pointer">Business Profile</DropdownMenuItem>
+              <DropdownMenuItem className="cursor-pointer">{t('common.profile')}</DropdownMenuItem>
             </Link>
-            <DropdownMenuItem className="cursor-pointer text-destructive">Sign Out</DropdownMenuItem>
+            <DropdownMenuItem className="cursor-pointer text-destructive">{t('common.logout')}</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarFooter>
