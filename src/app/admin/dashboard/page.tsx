@@ -15,7 +15,8 @@ import {
   ArrowUpRight,
   Globe,
   Loader2,
-  Lock
+  Lock,
+  ShieldAlert
 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -47,7 +48,7 @@ export default function SuperAdminDashboard() {
   
   const [searchQuery, setSearchQuery] = React.useState("")
 
-  const isAdmin = profile?.role === 'Platform Super Admin' || profile?.email === 'owner@kobocore.com';
+  const isSuperAdmin = profile?.role === 'Platform Super Admin' || profile?.email === 'owner@kobocore.com';
 
   const filteredTenants = tenants.filter(t => 
     t.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -75,16 +76,29 @@ export default function SuperAdminDashboard() {
     }
   };
 
-  if (authLoading) return <div className="flex h-screen items-center justify-center"><Loader2 className="size-8 animate-spin text-primary" /></div>;
-
-  if (!isAdmin) {
+  if (authLoading) {
     return (
-      <div className="flex flex-col items-center justify-center h-[60vh] space-y-4 text-center">
-        <div className="bg-destructive/10 p-6 rounded-full text-destructive">
-          <Lock className="size-12" />
+      <div className="flex h-screen items-center justify-center">
+        <Loader2 className="size-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!isSuperAdmin) {
+    return (
+      <div className="flex flex-col items-center justify-center h-[70vh] space-y-6 text-center animate-in fade-in duration-500">
+        <div className="bg-destructive/10 p-8 rounded-full text-destructive shadow-sm border border-destructive/20">
+          <Lock className="size-16" />
         </div>
-        <h2 className="text-2xl font-bold">Unauthorized Access</h2>
-        <p className="text-muted-foreground max-w-md">This area is reserved for Platform Super Admins only. Your attempt has been logged for security audit.</p>
+        <div className="space-y-2">
+          <h2 className="text-3xl font-headline font-bold tracking-tight">Access Restricted</h2>
+          <p className="text-muted-foreground max-w-md mx-auto leading-relaxed">
+            This module is reserved for Platform Super Admins only. Your attempt to access global SaaS metrics has been logged for security audit.
+          </p>
+        </div>
+        <Button variant="outline" className="font-bold uppercase tracking-widest text-[10px]" onClick={() => window.location.href = '/dashboard'}>
+          Return to My Workspace
+        </Button>
       </div>
     );
   }
@@ -99,7 +113,7 @@ export default function SuperAdminDashboard() {
           </h1>
           <p className="text-sm text-muted-foreground uppercase tracking-widest font-bold text-[10px]">Super Admin Panel • Global Infrastructure Oversight</p>
         </div>
-        <Button className="bg-primary hover:bg-primary/90 font-bold uppercase text-[10px] tracking-widest px-8">
+        <Button className="bg-primary hover:bg-primary/90 font-bold uppercase text-[10px] tracking-widest px-8 shadow-lg">
           <Activity className="size-4 mr-2" /> System Health: 100%
         </Button>
       </div>
@@ -243,7 +257,7 @@ export default function SuperAdminDashboard() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Card className="bg-primary/5 border-primary/20 p-6 flex flex-col gap-4">
            <div className="flex items-center gap-3">
-             <div className="p-2 bg-primary rounded-lg text-white">
+             <div className="p-2 bg-primary rounded-lg text-white shadow-md">
                <ShieldCheck className="size-6" />
              </div>
              <div>
@@ -257,7 +271,7 @@ export default function SuperAdminDashboard() {
         </Card>
         <Card className="bg-muted/50 border p-6 flex flex-col gap-4">
            <div className="flex items-center gap-3">
-             <div className="p-2 bg-blue-600 rounded-lg text-white">
+             <div className="p-2 bg-blue-600 rounded-lg text-white shadow-md">
                <ArrowUpRight className="size-6" />
              </div>
              <div>
