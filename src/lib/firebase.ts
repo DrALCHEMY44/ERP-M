@@ -19,4 +19,10 @@ const db = getFirestore(app);
 const auth = getAuth(app);
 const storage = getStorage(app);
 
+/**
+ * SQL INTEGRATION NOTE:
+ * When using Firebase Data Connect, you will import the generated SDK
+ * from '@/lib/dataconnect-sdk' instead of using Firestore 'db' for SQL modules.
+ */
+
 export { app, db, auth, storage };
