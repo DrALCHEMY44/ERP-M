@@ -1,4 +1,3 @@
-
 "use client"
 
 import * as React from "react"
@@ -58,19 +57,18 @@ export function ProductDialog({ product, open, onOpenChange, onSave }: ProductDi
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(productSchema),
     defaultValues: {
-      name: product?.name || "",
-      category: product?.category || "",
-      quantity: product?.quantity || 0,
-      costPrice: product?.costPrice || 0,
-      sellingPrice: product?.sellingPrice || 0,
-      lowStockLevel: product?.lowStockLevel || 10,
-      supplierId: product?.supplierId || "",
-      expiryDate: product?.expiryDate || "",
-      status: product?.status || "active",
+      name: "",
+      category: "",
+      quantity: 0,
+      costPrice: 0,
+      sellingPrice: 0,
+      lowStockLevel: 5,
+      supplierId: "",
+      expiryDate: "",
+      status: "active",
     },
   })
 
-  // Update form when product changes
   React.useEffect(() => {
     if (product) {
       form.reset({
@@ -80,7 +78,7 @@ export function ProductDialog({ product, open, onOpenChange, onSave }: ProductDi
         costPrice: product.costPrice,
         sellingPrice: product.sellingPrice,
         lowStockLevel: product.lowStockLevel,
-        supplierId: product.supplierId,
+        supplierId: product.supplierId || "",
         expiryDate: product.expiryDate || "",
         status: product.status,
       })
@@ -91,161 +89,162 @@ export function ProductDialog({ product, open, onOpenChange, onSave }: ProductDi
         quantity: 0,
         costPrice: 0,
         sellingPrice: 0,
-        lowStockLevel: 10,
+        lowStockLevel: 5,
         supplierId: "",
         expiryDate: "",
         status: "active",
       })
     }
-  }, [product, form])
+  }, [product, open, form])
 
   const onSubmit = (values: ProductFormValues) => {
     onSave({
       ...values,
-      id: product?.id,
       tenantId: MOCK_USER.tenantId,
       businessId: MOCK_USER.businessId,
-      createdAt: product?.createdAt || new Date().toISOString(),
     } as Product)
     onOpenChange(false)
   }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <DialogHeader>
-              <DialogTitle>{product ? "Edit Product" : "Add New Product"}</DialogTitle>
+              <DialogTitle className="font-headline font-bold text-xl">{product ? "Edit Product" : "New Inventory Item"}</DialogTitle>
               <DialogDescription>
-                Fill in the details for your inventory item.
+                Sync with Cloud Firestore database.
               </DialogDescription>
             </DialogHeader>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4">
               <FormField
                 control={form.control}
                 name="name"
                 render={({ field }) => (
-                  <FormItem className="col-span-2">
-                    <FormLabel>Product Name</FormLabel>
+                  <FormItem>
+                    <FormLabel className="text-[10px] font-bold uppercase tracking-widest">Product Name</FormLabel>
                     <FormControl>
-                      <Input placeholder="e.g. Riz Long Grain 5kg" {...field} />
+                      <Input placeholder="e.g. Riz de Maroua" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
 
-              <FormField
-                control={form.control}
-                name="category"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Category</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="category"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-[10px] font-bold uppercase tracking-widest">Category</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="Food">Food & Beverage</SelectItem>
+                          <SelectItem value="Cleaning">Cleaning Supplies</SelectItem>
+                          <SelectItem value="Electronics">Electronics</SelectItem>
+                          <SelectItem value="Construction">Construction</SelectItem>
+                          <SelectItem value="Other">Other</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="status"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-[10px] font-bold uppercase tracking-widest">Status</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Status" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="active">Active</SelectItem>
+                          <SelectItem value="inactive">Inactive</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="quantity"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-[10px] font-bold uppercase tracking-widest">Quantity</FormLabel>
                       <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select category" />
-                        </SelectTrigger>
+                        <Input type="number" {...field} />
                       </FormControl>
-                      <SelectContent>
-                        <SelectItem value="Food">Food & Beverage</SelectItem>
-                        <SelectItem value="Cleaning">Cleaning Supplies</SelectItem>
-                        <SelectItem value="Electronics">Electronics</SelectItem>
-                        <SelectItem value="Clothing">Clothing</SelectItem>
-                        <SelectItem value="Other">Other</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="status"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Status</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="lowStockLevel"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-[10px] font-bold uppercase tracking-widest">Alert Threshold</FormLabel>
                       <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select status" />
-                        </SelectTrigger>
+                        <Input type="number" {...field} />
                       </FormControl>
-                      <SelectContent>
-                        <SelectItem value="active">Active</SelectItem>
-                        <SelectItem value="inactive">Inactive</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
-              <FormField
-                control={form.control}
-                name="quantity"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Quantity in Stock</FormLabel>
-                    <FormControl>
-                      <Input type="number" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="lowStockLevel"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Low Stock Alert Level</FormLabel>
-                    <FormControl>
-                      <Input type="number" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="costPrice"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Cost Price (FCFA)</FormLabel>
-                    <FormControl>
-                      <Input type="number" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="sellingPrice"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Selling Price (FCFA)</FormLabel>
-                    <FormControl>
-                      <Input type="number" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="costPrice"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-[10px] font-bold uppercase tracking-widest">Cost Price (FCFA)</FormLabel>
+                      <FormControl>
+                        <Input type="number" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="sellingPrice"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-[10px] font-bold uppercase tracking-widest">Selling Price (FCFA)</FormLabel>
+                      <FormControl>
+                        <Input type="number" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
               <FormField
                 control={form.control}
                 name="expiryDate"
                 render={({ field }) => (
-                  <FormItem className="col-span-2">
-                    <FormLabel>Expiry Date (Optional)</FormLabel>
+                  <FormItem>
+                    <FormLabel className="text-[10px] font-bold uppercase tracking-widest">Expiry Date (If applicable)</FormLabel>
                     <FormControl>
                       <Input type="date" {...field} />
                     </FormControl>
@@ -255,12 +254,12 @@ export function ProductDialog({ product, open, onOpenChange, onSave }: ProductDi
               />
             </div>
 
-            <DialogFooter>
+            <DialogFooter className="pt-4">
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                 Cancel
               </Button>
-              <Button type="submit" className="bg-primary hover:bg-primary/90">
-                {product ? "Update Product" : "Save Product"}
+              <Button type="submit" className="bg-primary hover:bg-primary/90 uppercase font-bold text-xs tracking-widest">
+                {product ? "Update Database" : "Save Product"}
               </Button>
             </DialogFooter>
           </form>
