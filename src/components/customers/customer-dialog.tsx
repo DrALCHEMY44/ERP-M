@@ -77,15 +77,21 @@ export function CustomerDialog({ customer, open, onOpenChange, onSave }: Custome
   }, [customer, form])
 
   const onSubmit = (values: CustomerFormValues) => {
-    onSave({
+    const payload: Partial<Customer> = {
       ...values,
-      id: customer?.id,
       tenantId: MOCK_USER.tenantId,
       businessId: MOCK_USER.businessId,
       createdAt: customer?.createdAt || new Date().toISOString(),
       totalOrders: customer?.totalOrders || 0,
       totalSpent: customer?.totalSpent || 0,
-    } as Customer)
+    }
+    
+    // Only include ID if it exists (prevents undefined field error)
+    if (customer?.id) {
+      payload.id = customer.id;
+    }
+
+    onSave(payload)
     onOpenChange(false)
   }
 

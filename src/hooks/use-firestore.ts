@@ -59,8 +59,14 @@ export function useFirestore<T>(collectionName: string, extraConstraints: QueryC
 
   const addRecord = useCallback(async (newData: Omit<T, 'id'>) => {
     try {
+      // Remove 'id' if it exists and filter out undefined values which Firestore doesn't support
+      const { id: _id, ...dataToSave } = newData as any;
+      const cleanData = Object.fromEntries(
+        Object.entries(dataToSave).filter(([_, v]) => v !== undefined)
+      );
+
       const docRef = await addDoc(collection(db, collectionName), {
-        ...newData,
+        ...cleanData,
         tenantId: MOCK_USER.tenantId,
         businessId: MOCK_USER.businessId,
         createdAt: new Date().toISOString(),
@@ -76,8 +82,14 @@ export function useFirestore<T>(collectionName: string, extraConstraints: QueryC
   const updateRecord = useCallback(async (id: string, updatedData: Partial<T>) => {
     try {
       const docRef = doc(db, collectionName, id);
+      // Remove 'id' from payload and filter undefined
+      const { id: _id, ...dataToUpdate } = updatedData as any;
+      const cleanData = Object.fromEntries(
+        Object.entries(dataToUpdate).filter(([_, v]) => v !== undefined)
+      );
+
       await updateDoc(docRef, {
-        ...updatedData,
+        ...cleanData,
         updatedAt: new Date().toISOString(),
         serverUpdatedAt: serverTimestamp(),
       } as DocumentData);

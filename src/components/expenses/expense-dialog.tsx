@@ -84,14 +84,19 @@ export function ExpenseDialog({ expense, open, onOpenChange, onSave }: ExpenseDi
   }, [expense, form])
 
   const onSubmit = (values: ExpenseFormValues) => {
-    onSave({
+    const payload: Partial<Expense> = {
       ...values,
-      id: expense?.id,
       tenantId: MOCK_USER.tenantId,
       businessId: MOCK_USER.businessId,
       recordedBy: MOCK_USER.uid,
       createdAt: expense?.createdAt || new Date().toISOString(),
-    } as Expense)
+    }
+    
+    if (expense?.id) {
+      payload.id = expense.id;
+    }
+
+    onSave(payload)
     onOpenChange(false)
   }
 

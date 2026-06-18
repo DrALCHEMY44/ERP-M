@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -96,15 +97,20 @@ export function TaskDialog({ task, open, onOpenChange, onSave }: TaskDialogProps
   }, [task, open, form])
 
   const onSubmit = (values: TaskFormValues) => {
-    onSave({
+    const payload: Partial<Task> = {
       ...values,
-      id: task?.id,
       tenantId: MOCK_USER.tenantId,
       businessId: MOCK_USER.businessId,
       assignedBy: MOCK_USER.uid,
       assignedTo: task?.assignedTo || `staff_${Math.random().toString(36).substr(2, 4)}`,
       completedAt: values.status === 'Completed' ? new Date().toISOString() : undefined,
-    } as Task)
+    }
+    
+    if (task?.id) {
+      payload.id = task.id;
+    }
+
+    onSave(payload)
     onOpenChange(false)
   }
 

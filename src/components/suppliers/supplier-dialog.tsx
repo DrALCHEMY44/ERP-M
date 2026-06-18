@@ -92,14 +92,19 @@ export function SupplierDialog({ supplier, open, onOpenChange, onSave }: Supplie
   }, [supplier, open, form])
 
   const onSubmit = (values: SupplierFormValues) => {
-    onSave({
+    const payload: Partial<Supplier> = {
       ...values,
-      id: supplier?.id,
       tenantId: MOCK_USER.tenantId,
       businessId: MOCK_USER.businessId,
       productsSupplied: values.productsSupplied.split(",").map(s => s.trim()),
       createdAt: supplier?.createdAt || new Date().toISOString(),
-    } as Supplier)
+    }
+    
+    if (supplier?.id) {
+      payload.id = supplier.id;
+    }
+
+    onSave(payload)
     onOpenChange(false)
   }
 
