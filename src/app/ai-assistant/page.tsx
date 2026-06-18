@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { Sparkles, Send, Bot, User, Lock, AlertTriangle, ShieldCheck, Loader2 } from "lucide-react"
+import { Bot, User, Lock, AlertTriangle, ShieldCheck, Loader2, Send } from "lucide-react"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -22,7 +22,7 @@ export default function AIAssistantPage() {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
-      content: `Hello ${MOCK_USER.fullName.split(' ')[0]}. I am your KoboCore AI Assistant. I have read-only access to ${MOCK_USER.tenantId}'s data. How can I help you today? I can summarize your sales, check inventory, or review task performance.`,
+      content: `Hello ${MOCK_USER.fullName.split(' ')[0]}. I am your SmartERP AI Assistant. I have read-only access to ${MOCK_USER.tenantId}'s data. How can I help you today?`,
       timestamp: new Date()
     }
   ])
@@ -63,7 +63,7 @@ export default function AIAssistantPage() {
     } catch (error) {
       const errorMsg: Message = { 
         role: 'assistant', 
-        content: "I apologize, but I encountered an error while processing your request. Please try again or ask a different question.", 
+        content: "I apologize, but I encountered an error while processing your request. Please try again.", 
         timestamp: new Date() 
       }
       setMessages(prev => [...prev, errorMsg])
@@ -82,11 +82,11 @@ export default function AIAssistantPage() {
         <div className="flex items-center gap-2">
            <Badge variant="outline" className="flex items-center gap-1.5 py-1.5 px-3 bg-accent/10 border-accent/30 text-accent">
               <ShieldCheck className="size-3.5" />
-              Role: {MOCK_USER.role}
+              {MOCK_USER.role}
            </Badge>
            <Badge variant="outline" className="flex items-center gap-1.5 py-1.5 px-3 bg-secondary">
               <Lock className="size-3.5" />
-              Read-Only Mode
+              Read-Only
            </Badge>
         </div>
       </div>
@@ -96,9 +96,8 @@ export default function AIAssistantPage() {
           <CardHeader className="border-b py-3 px-4 flex flex-row items-center justify-between">
             <div className="flex items-center gap-2">
               <Bot className="size-5 text-accent" />
-              <CardTitle className="text-base">KoboCore Smart Intelligence</CardTitle>
+              <CardTitle className="text-base">SmartERP Intelligence</CardTitle>
             </div>
-            <Badge variant="secondary" className="text-[10px] font-bold">Genkit Powered</Badge>
           </CardHeader>
           <CardContent className="flex-1 overflow-hidden p-0">
             <ScrollArea className="h-full p-4" viewportRef={scrollRef}>
@@ -118,9 +117,6 @@ export default function AIAssistantPage() {
                        }`}>
                          {msg.content}
                        </div>
-                       <span className="text-[10px] text-muted-foreground px-1">
-                         {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                       </span>
                     </div>
                   </div>
                 ))}
@@ -139,10 +135,7 @@ export default function AIAssistantPage() {
             </ScrollArea>
           </CardContent>
           <CardFooter className="p-4 border-t">
-            <form 
-              onSubmit={(e) => { e.preventDefault(); handleSend(); }}
-              className="flex w-full items-center gap-3"
-            >
+            <form onSubmit={(e) => { e.preventDefault(); handleSend(); }} className="flex w-full items-center gap-3">
               <Input 
                 placeholder="Ask about sales, tasks, or inventory..." 
                 className="flex-1 focus-visible:ring-accent"
@@ -169,38 +162,9 @@ export default function AIAssistantPage() {
               </div>
               <div className="flex gap-2">
                 <Lock className="size-4 text-blue-500 shrink-0" />
-                <p>Data is strictly isolated to your tenant ID: {MOCK_USER.tenantId}.</p>
-              </div>
-              <div className="p-3 bg-muted rounded-md italic">
-                "I can only answer based on the data available in your business account and your permission level."
+                <p>Data is strictly isolated to your tenant ID.</p>
               </div>
             </CardContent>
-          </Card>
-
-          <Card>
-             <CardHeader className="pb-3">
-                <CardTitle className="text-sm">Suggested Questions</CardTitle>
-             </CardHeader>
-             <CardContent className="flex flex-col gap-2">
-                {[
-                  "What were total sales today?",
-                  "Which products are low in stock?",
-                  "Show overdue tasks by employee",
-                  "Monthly performance summary"
-                ].map((q, i) => (
-                  <Button 
-                    key={i} 
-                    variant="ghost" 
-                    className="justify-start text-xs font-normal h-auto py-2 px-3 hover:bg-accent/10 hover:text-accent"
-                    onClick={() => {
-                      setInput(q)
-                    }}
-                    disabled={isLoading}
-                  >
-                    {q}
-                  </Button>
-                ))}
-             </CardContent>
           </Card>
         </div>
       </div>
