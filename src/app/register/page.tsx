@@ -33,9 +33,11 @@ export default function RegisterPage() {
       const user = userCredential.user
 
       // 2. Create Firestore Profile
-      // For this prototype, we assign a default tenantId if they are the first user
-      const tenantId = `tenant_${Math.random().toString(36).substr(2, 6)}`
-      const businessId = `biz_${Math.random().toString(36).substr(2, 6)}`
+      // Check if this is the admin email
+      const isAdminEmail = email.toLowerCase() === 'admin@smarterp.ai';
+      
+      const tenantId = isAdminEmail ? 'system_root' : `tenant_${Math.random().toString(36).substr(2, 6)}`
+      const businessId = isAdminEmail ? 'platform_master' : `biz_${Math.random().toString(36).substr(2, 6)}`
       
       await setDoc(doc(db, "users", user.uid), {
         uid: user.uid,
@@ -43,13 +45,13 @@ export default function RegisterPage() {
         fullName: fullName,
         tenantId: tenantId,
         businessId: businessId,
-        role: "Business Owner",
+        role: isAdminEmail ? "Platform Super Admin" : "Business Owner",
         permissions: ["*"],
         createdAt: new Date().toISOString(),
       })
 
       toast({
-        title: "Account Created",
+        title: isAdminEmail ? "Super Admin Account Created" : "Account Created",
         description: "Welcome to SmartERP AI. Setting up your workspace...",
       })
       router.push("/dashboard")

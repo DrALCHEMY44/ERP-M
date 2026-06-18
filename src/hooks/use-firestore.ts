@@ -16,6 +16,7 @@ import {
   serverTimestamp
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { useAuth } from '@/hooks/use-auth';
 import { MOCK_USER, MOCK_CUSTOMERS, MOCK_PRODUCTS, MOCK_TASKS, MOCK_SALES, MOCK_EXPENSES, MOCK_ACTIVITY_LOGS, MOCK_TENANTS } from '@/lib/mock-data';
 
 interface FirestoreHookOptions {
@@ -33,6 +34,8 @@ export function useFirestore<T>(collectionName: string, options: FirestoreHookOp
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   
+  const { user, profile, loading: authLoading } = useAuth();
+
   const isFirebaseConfigured = process.env.NEXT_PUBLIC_FIREBASE_API_KEY && 
                                process.env.NEXT_PUBLIC_FIREBASE_API_KEY !== "placeholder-key";
 
@@ -50,6 +53,9 @@ export function useFirestore<T>(collectionName: string, options: FirestoreHookOp
   };
 
   useEffect(() => {
+    // If auth is still loading, wait before initializing Firestore queries
+    if (authLoading && isFirebaseConfigured) return;
+
     setLoading(true);
 
     if (!isFirebaseConfigured) {
@@ -77,14 +83,18 @@ export function useFirestore<T>(collectionName: string, options: FirestoreHookOp
       return;
     }
 
+    // Determine tenant context from real profile or fallback to mock for dev
+    const activeTenantId = profile?.tenantId || MOCK_USER.tenantId;
+    const activeBusinessId = profile?.businessId || MOCK_USER.businessId;
+
     let q = query(collection(db, collectionName), ...extraConstraints);
     
     // Only apply tenant filter if not bypassed (e.g., for Super Admin)
-    if (!bypassFilter && collectionName !== 'tenants') {
+    if (!bypassFilter && collectionName !== 'tenants' && collectionName !== 'users') {
       q = query(
         q, 
-        where('tenantId', '==', MOCK_USER.tenantId),
-        where('businessId', '==', MOCK_USER.businessId)
+        where('tenantId', '==', activeTenantId),
+        where('businessId', '==', activeBusinessId)
       );
     }
 
@@ -107,7 +117,7 @@ export function useFirestore<T>(collectionName: string, options: FirestoreHookOp
     );
 
     return () => unsubscribe();
-  }, [collectionName, isFirebaseConfigured, bypassFilter]);
+  }, [collectionName, isFirebaseConfigured, bypassFilter, profile, authLoading]);
 
   const addRecord = useCallback(async (newData: Omit<T, 'id'>) => {
     // Strip out undefined or ID fields before sending to Firestore
@@ -115,10 +125,13 @@ export function useFirestore<T>(collectionName: string, options: FirestoreHookOp
       Object.entries(newData).filter(([k, v]) => v !== undefined && k !== 'id')
     );
 
+    const activeTenantId = profile?.tenantId || MOCK_USER.tenantId;
+    const activeBusinessId = profile?.businessId || MOCK_USER.businessId;
+
     const payload = {
       ...cleanData,
-      tenantId: MOCK_USER.tenantId,
-      businessId: MOCK_USER.businessId,
+      tenantId: activeTenantId,
+      businessId: activeBusinessId,
       createdAt: new Date().toISOString(),
     };
 
@@ -142,7 +155,7 @@ export function useFirestore<T>(collectionName: string, options: FirestoreHookOp
       console.error(`Error adding to ${collectionName}:`, err);
       throw err;
     }
-  }, [collectionName, isFirebaseConfigured]);
+  }, [collectionName, isFirebaseConfigured, profile]);
 
   const updateRecord = useCallback(async (id: string, updatedData: Partial<T>) => {
     const cleanData = Object.fromEntries(

@@ -57,13 +57,17 @@ export function AppSidebar() {
   const router = useRouter()
   const { state } = useSidebar()
   const { t, language, setLanguage } = useTranslation()
-  const { profile, loading: authLoading } = useAuth()
+  const { user: authUser, profile, loading: authLoading } = useAuth()
 
   // Use profile if available, otherwise fallback to mock ONLY if we are in local dev
   const currentUser = profile || (process.env.NEXT_PUBLIC_FIREBASE_API_KEY === "placeholder-key" ? MOCK_USER : null);
 
-  // Platform Owner Bypass
-  const isSuperAdmin = currentUser?.role === 'Platform Super Admin' || currentUser?.email === 'admin@smarterp.ai';
+  // Platform Owner Bypass - Robust check using both Auth User and Firestore Profile
+  const adminEmail = "admin@smarterp.ai";
+  const isSuperAdmin = 
+    (authUser?.email?.toLowerCase() === adminEmail) || 
+    (profile?.role === 'Platform Super Admin') ||
+    (profile?.email?.toLowerCase() === adminEmail);
 
   const handleLogout = async () => {
     try {
