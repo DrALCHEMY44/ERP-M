@@ -1,14 +1,48 @@
+
 "use client"
 
 import * as React from "react"
 import Link from "next/link"
-import { Building2, ArrowRight } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { Building2, ArrowRight, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { signInWithEmailAndPassword } from "firebase/auth"
+import { auth } from "@/lib/firebase"
+import { useToast } from "@/hooks/use-toast"
 
 export default function LoginPage() {
+  const [email, setEmail] = React.useState("")
+  const [password, setPassword] = React.useState("")
+  const [isLoading, setIsLoading] = React.useState(false)
+  const router = useRouter()
+  const { toast } = useToast()
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!email || !password) return
+    
+    setIsLoading(true)
+    try {
+      await signInWithEmailAndPassword(auth, email, password)
+      toast({
+        title: "Login Successful",
+        description: "Welcome back to your business workspace.",
+      })
+      router.push("/dashboard")
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Authentication Failed",
+        description: error.message || "Invalid credentials. Please try again.",
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-muted/30 p-4">
       <div className="w-full max-w-md space-y-8">
@@ -21,26 +55,41 @@ export default function LoginPage() {
         </div>
 
         <Card className="border-t-4 border-primary shadow-xl">
-          <CardHeader>
-            <CardTitle>Welcome Back</CardTitle>
-            <CardDescription>Enter your credentials to access your business workspace.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Work Email</Label>
-              <Input id="email" type="email" placeholder="jean.pierre@business.cm" />
-            </div>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="password">Password</Label>
-                <Button variant="link" className="px-0 h-auto text-xs">Forgot password?</Button>
+          <form onSubmit={handleLogin}>
+            <CardHeader>
+              <CardTitle>Welcome Back</CardTitle>
+              <CardDescription>Enter your credentials to access your business workspace.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email">Work Email</Label>
+                <Input 
+                  id="email" 
+                  type="email" 
+                  placeholder="jean.pierre@business.cm" 
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
               </div>
-              <Input id="password" type="password" />
-            </div>
-            <Button className="w-full font-bold uppercase tracking-widest" asChild>
-              <Link href="/dashboard">Login <ArrowRight className="ml-2 size-4" /></Link>
-            </Button>
-          </CardContent>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="password">Password</Label>
+                  <Button variant="link" type="button" className="px-0 h-auto text-xs">Forgot password?</Button>
+                </div>
+                <Input 
+                  id="password" 
+                  type="password" 
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+              </div>
+              <Button className="w-full font-bold uppercase tracking-widest" disabled={isLoading}>
+                {isLoading ? <Loader2 className="size-4 animate-spin" /> : "Login"} <ArrowRight className="ml-2 size-4" />
+              </Button>
+            </CardContent>
+          </form>
           <CardFooter className="flex flex-col gap-4 border-t pt-4 bg-muted/10">
             <div className="text-center text-xs text-muted-foreground">
               New to SmartERP?{" "}

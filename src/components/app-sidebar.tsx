@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -42,13 +43,30 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { MOCK_USER } from "@/lib/mock-data"
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { useTranslation } from "@/components/language-provider"
+import { signOut } from "firebase/auth"
+import { auth } from "@/lib/firebase"
+import { useAuth } from "@/hooks/use-auth"
 
 export function AppSidebar() {
   const pathname = usePathname()
+  const router = useRouter()
   const { state } = useSidebar()
   const { t, language, setLanguage } = useTranslation()
+  const { profile } = useAuth()
+
+  // Fallback to mock if profile not loaded
+  const userDisplay = profile || MOCK_USER;
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth)
+      router.push("/login")
+    } catch (error) {
+      console.error("Logout error", error)
+    }
+  }
 
   const groups = [
     {
@@ -137,12 +155,12 @@ export function AppSidebar() {
           <DropdownMenuTrigger asChild>
             <button className="flex items-center gap-3 w-full text-left outline-none hover:opacity-80 transition-opacity">
               <div className="h-8 w-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold text-xs shrink-0">
-                {MOCK_USER.fullName.substring(0, 2).toUpperCase()}
+                {userDisplay.fullName.substring(0, 2).toUpperCase()}
               </div>
               {state !== "collapsed" && (
                 <div className="flex flex-col flex-1 min-w-0">
-                  <span className="text-xs font-medium truncate text-white">{MOCK_USER.fullName}</span>
-                  <span className="text-[10px] text-muted-foreground truncate uppercase">{MOCK_USER.role}</span>
+                  <span className="text-xs font-medium truncate text-white">{userDisplay.fullName}</span>
+                  <span className="text-[10px] text-muted-foreground truncate uppercase">{userDisplay.role}</span>
                 </div>
               )}
             </button>
@@ -156,7 +174,7 @@ export function AppSidebar() {
             <Link href="/business-profile">
               <DropdownMenuItem className="cursor-pointer">{t('common.profile')}</DropdownMenuItem>
             </Link>
-            <DropdownMenuItem className="cursor-pointer text-destructive">{t('common.logout')}</DropdownMenuItem>
+            <DropdownMenuItem className="cursor-pointer text-destructive" onClick={handleLogout}>{t('common.logout')}</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarFooter>

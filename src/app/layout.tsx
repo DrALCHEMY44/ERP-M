@@ -15,6 +15,7 @@ import { RotateCw, Loader2, ArrowLeft, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/hooks/use-auth";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const spaceGrotesk = Space_Grotesk({ subsets: ["latin"], variable: "--font-space-grotesk" });
@@ -28,12 +29,18 @@ export default function RootLayout({
   const router = useRouter();
   const { toast } = useToast();
   const [isRefreshing, setIsRefreshing] = React.useState(false);
+  const { user, loading: authLoading, profile } = useAuth();
 
   const isAuthPage = ['/login', '/register', '/create-business', '/join-business'].includes(pathname);
 
+  React.useEffect(() => {
+    if (!authLoading && !user && !isAuthPage) {
+      router.push('/login');
+    }
+  }, [user, authLoading, isAuthPage, router]);
+
   const handleRefresh = () => {
     setIsRefreshing(true);
-    // Router refresh re-validates data without a full page reload in Next.js
     router.refresh();
     setTimeout(() => {
       setIsRefreshing(false);
@@ -43,6 +50,19 @@ export default function RootLayout({
       });
     }, 800);
   };
+
+  if (authLoading) {
+    return (
+      <html lang="en">
+        <body className={`${inter.variable} ${spaceGrotesk.variable} flex h-screen items-center justify-center bg-background`}>
+          <div className="flex flex-col items-center gap-2">
+            <Loader2 className="size-8 animate-spin text-primary" />
+            <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Initializing SmartERP AI...</p>
+          </div>
+        </body>
+      </html>
+    );
+  }
 
   return (
     <html lang="en">
@@ -69,7 +89,6 @@ export default function RootLayout({
                     <SidebarTrigger className="-ml-1" />
                     <Separator orientation="vertical" className="mr-2 h-4" />
                     
-                    {/* Navigation Controls */}
                     <div className="flex items-center gap-0.5 mr-2">
                       <Button 
                         variant="ghost" 
@@ -111,8 +130,12 @@ export default function RootLayout({
                     <Separator orientation="vertical" className="mr-2 h-4 hidden sm:block" />
                     
                     <div className="flex flex-col overflow-hidden">
-                      <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-muted-foreground truncate">Tenant: Douala_001</span>
-                      <span className="text-xs font-headline font-bold text-primary truncate max-w-[120px] md:max-w-none">Superette de l'Avenir</span>
+                      <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-muted-foreground truncate">
+                        Tenant: {profile?.tenantId || 'Syncing...'}
+                      </span>
+                      <span className="text-xs font-headline font-bold text-primary truncate max-w-[120px] md:max-w-none">
+                        {profile?.fullName ? `SME Hub • ${profile.fullName.split(' ')[0]}` : 'SmartERP Workspace'}
+                      </span>
                     </div>
                   </div>
                   
@@ -121,7 +144,7 @@ export default function RootLayout({
                     <NotificationCenter />
                     <Separator orientation="vertical" className="h-6 hidden md:block" />
                     <div className="h-8 w-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold text-xs shrink-0">
-                      JK
+                      {profile?.fullName?.substring(0, 2).toUpperCase() || '??'}
                     </div>
                   </div>
                 </header>

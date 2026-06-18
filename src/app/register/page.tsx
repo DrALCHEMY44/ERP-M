@@ -1,14 +1,69 @@
+
 "use client"
 
 import * as React from "react"
 import Link from "next/link"
-import { Building2, Sparkles, ShieldCheck } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { Building2, Sparkles, ShieldCheck, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { createUserWithEmailAndPassword } from "firebase/auth"
+import { doc, setDoc } from "firebase/firestore"
+import { auth, db } from "@/lib/firebase"
+import { useToast } from "@/hooks/use-toast"
 
 export default function RegisterPage() {
+  const [fullName, setFullName] = React.useState("")
+  const [email, setEmail] = React.useState("")
+  const [password, setPassword] = React.useState("")
+  const [isLoading, setIsLoading] = React.useState(false)
+  const router = useRouter()
+  const { toast } = useToast()
+
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!email || !password || !fullName) return
+
+    setIsLoading(true)
+    try {
+      // 1. Create Auth User
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password)
+      const user = userCredential.user
+
+      // 2. Create Firestore Profile
+      // For this prototype, we assign a default tenantId if they are the first user
+      const tenantId = `tenant_${Math.random().toString(36).substr(2, 6)}`
+      const businessId = `biz_${Math.random().toString(36).substr(2, 6)}`
+      
+      await setDoc(doc(db, "users", user.uid), {
+        uid: user.uid,
+        email: user.email,
+        fullName: fullName,
+        tenantId: tenantId,
+        businessId: businessId,
+        role: "Business Owner",
+        permissions: ["*"],
+        createdAt: new Date().toISOString(),
+      })
+
+      toast({
+        title: "Account Created",
+        description: "Welcome to SmartERP AI. Setting up your workspace...",
+      })
+      router.push("/dashboard")
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Registration Failed",
+        description: error.message || "Could not create account. Please try again.",
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-muted/30 p-4">
       <div className="w-full max-w-lg space-y-8">
@@ -22,62 +77,49 @@ export default function RegisterPage() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Card className="border-t-4 border-primary hover:shadow-lg transition-shadow cursor-pointer">
-            <CardHeader className="p-4">
-              <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-2">
-                <Sparkles className="size-4" />
-              </div>
-              <CardTitle className="text-sm">Create Business</CardTitle>
-              <CardDescription className="text-[10px]">Start a new multi-tenant workspace for your SME.</CardDescription>
-            </CardHeader>
-            <CardFooter className="p-4 pt-0">
-              <Button size="sm" className="w-full text-[10px] font-bold uppercase" asChild>
-                <Link href="/create-business">Select</Link>
-              </Button>
-            </CardFooter>
-          </Card>
-
-          <Card className="border-t-4 border-emerald-500 hover:shadow-lg transition-shadow cursor-pointer">
-            <CardHeader className="p-4">
-              <div className="h-8 w-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 mb-2">
-                <ShieldCheck className="size-4" />
-              </div>
-              <CardTitle className="text-sm">Join Existing</CardTitle>
-              <CardDescription className="text-[10px]">Use an invitation code from your manager.</CardDescription>
-            </CardHeader>
-            <CardFooter className="p-4 pt-0">
-              <Button size="sm" variant="outline" className="w-full text-[10px] font-bold uppercase" asChild>
-                <Link href="/join-business">Join</Link>
-              </Button>
-            </CardFooter>
-          </Card>
-        </div>
-
         <Card className="shadow-xl">
-          <CardHeader>
-            <CardTitle>Individual Sign Up</CardTitle>
-            <CardDescription>First, create your personal admin account.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+          <form onSubmit={handleRegister}>
+            <CardHeader>
+              <CardTitle>Business Owner Registration</CardTitle>
+              <CardDescription>Start managing your SME with AI intelligence today.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="fname">Full Name</Label>
-                <Input id="fname" placeholder="Jean-Pierre" />
+                <Input 
+                  id="fname" 
+                  placeholder="Jean-Pierre Kamga" 
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  required
+                />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" placeholder="jp@business.cm" />
+                <Label htmlFor="email">Email Address</Label>
+                <Input 
+                  id="email" 
+                  type="email" 
+                  placeholder="jp@business.cm" 
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
               </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Create Password</Label>
-              <Input id="password" type="password" />
-            </div>
-            <Button className="w-full font-bold uppercase tracking-widest">
-              Continue Registration
-            </Button>
-          </CardContent>
+              <div className="space-y-2">
+                <Label htmlFor="password">Create Password</Label>
+                <Input 
+                  id="password" 
+                  type="password" 
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+              </div>
+              <Button className="w-full font-bold uppercase tracking-widest" disabled={isLoading}>
+                {isLoading ? <Loader2 className="size-4 animate-spin" /> : "Continue Registration"}
+              </Button>
+            </CardContent>
+          </form>
           <CardFooter className="flex justify-center border-t py-4 bg-muted/10">
             <div className="text-center text-xs text-muted-foreground">
               Already have an account?{" "}
