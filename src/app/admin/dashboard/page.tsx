@@ -1,22 +1,17 @@
-
 "use client"
 
 import * as React from "react"
 import { 
   Building2, 
   Users, 
-  CreditCard, 
   ShieldCheck, 
   TrendingUp, 
   Activity, 
   Search, 
-  Filter, 
   MoreVertical,
   ArrowUpRight,
   Globe,
-  Loader2,
-  Lock,
-  ShieldAlert
+  Loader2
 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -47,9 +42,6 @@ export default function SuperAdminDashboard() {
   const { data: users, loading: usersLoading } = useFirestore<UserProfile>('users', { bypassFilter: true });
   
   const [searchQuery, setSearchQuery] = React.useState("")
-
-  // Platform Owner Bypass
-  const isSuperAdmin = profile?.role === 'Platform Super Admin' || profile?.email === 'admin@smarterp.ai';
 
   const filteredTenants = tenants.filter(t => 
     t.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -85,25 +77,6 @@ export default function SuperAdminDashboard() {
     );
   }
 
-  if (!isSuperAdmin) {
-    return (
-      <div className="flex flex-col items-center justify-center h-[70vh] space-y-6 text-center animate-in fade-in duration-500">
-        <div className="bg-destructive/10 p-8 rounded-full text-destructive shadow-sm border border-destructive/20">
-          <Lock className="size-16" />
-        </div>
-        <div className="space-y-2">
-          <h2 className="text-3xl font-headline font-bold tracking-tight">Access Restricted</h2>
-          <p className="text-muted-foreground max-w-md mx-auto leading-relaxed">
-            This module is reserved for Platform Super Admins only. Your attempt to access global SaaS metrics has been logged for security audit.
-          </p>
-        </div>
-        <Button variant="outline" className="font-bold uppercase tracking-widest text-[10px]" onClick={() => window.location.href = '/dashboard'}>
-          Return to My Workspace
-        </Button>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -112,7 +85,7 @@ export default function SuperAdminDashboard() {
             <ShieldCheck className="size-8 text-primary" />
             SaaS Platform Command
           </h1>
-          <p className="text-sm text-muted-foreground uppercase tracking-widest font-bold text-[10px]">Super Admin Panel • Global Infrastructure Oversight</p>
+          <p className="text-sm text-muted-foreground uppercase tracking-widest font-bold text-[10px]">Platform Overview (Public for testing)</p>
         </div>
         <Button className="bg-primary hover:bg-primary/90 font-bold uppercase text-[10px] tracking-widest px-8 shadow-lg">
           <Activity className="size-4 mr-2" /> System Health: 100%
@@ -253,37 +226,6 @@ export default function SuperAdminDashboard() {
             </TableBody>
           </Table>
         </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Card className="bg-primary/5 border-primary/20 p-6 flex flex-col gap-4">
-           <div className="flex items-center gap-3">
-             <div className="p-2 bg-primary rounded-lg text-white shadow-md">
-               <ShieldCheck className="size-6" />
-             </div>
-             <div>
-               <h4 className="font-bold text-sm uppercase">Infrastructure Security</h4>
-               <p className="text-[10px] text-muted-foreground font-bold uppercase">Multi-tenant encryption protocols active.</p>
-             </div>
-           </div>
-           <p className="text-xs text-muted-foreground leading-relaxed">
-             All tenant data is strictly isolated using Firestore Rules and unique identifiers. Super Admin access is restricted to operational management and billing oversight.
-           </p>
-        </Card>
-        <Card className="bg-muted/50 border p-6 flex flex-col gap-4">
-           <div className="flex items-center gap-3">
-             <div className="p-2 bg-blue-600 rounded-lg text-white shadow-md">
-               <ArrowUpRight className="size-6" />
-             </div>
-             <div>
-               <h4 className="font-bold text-sm uppercase">Revenue Projections</h4>
-               <p className="text-[10px] text-muted-foreground font-bold uppercase">Next Billing Cycle: {new Date().toLocaleDateString('default', { month: 'long', year: 'numeric' })}</p>
-             </div>
-           </div>
-           <p className="text-xs text-muted-foreground leading-relaxed">
-             SmartERP AI is scaling efficiently. Your current SME retention rate is high, with a projected 15% growth in Enterprise tier upgrades this quarter.
-           </p>
-        </Card>
       </div>
     </div>
   )

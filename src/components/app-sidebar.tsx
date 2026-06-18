@@ -1,4 +1,3 @@
-
 "use client"
 
 import * as React from "react"
@@ -44,7 +43,6 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu"
-import { MOCK_USER } from "@/lib/mock-data"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { useTranslation } from "@/components/language-provider"
@@ -57,16 +55,7 @@ export function AppSidebar() {
   const router = useRouter()
   const { state } = useSidebar()
   const { t, language, setLanguage } = useTranslation()
-  const { user: authUser, profile, loading: authLoading } = useAuth()
-
-  // Robust check for Super Admin status
-  const isSuperAdmin = React.useMemo(() => {
-    const adminEmail = "admin@smarterp.ai";
-    return (
-      authUser?.email?.toLowerCase() === adminEmail || 
-      profile?.role === 'Platform Super Admin'
-    );
-  }, [authUser, profile]);
+  const { profile, loading: authLoading } = useAuth()
 
   const handleLogout = async () => {
     try {
@@ -77,13 +66,14 @@ export function AppSidebar() {
     }
   }
 
+  // All groups are now visible to everyone
   const groups = [
-    ...(isSuperAdmin ? [{
+    {
       label: "Platform Administration",
       items: [
         { name: "SaaS Dashboard", icon: ShieldCheck, href: "/admin/dashboard", accent: true },
       ]
-    }] : []),
+    },
     {
       label: t('sidebar.core'),
       items: [

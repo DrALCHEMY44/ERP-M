@@ -1,4 +1,3 @@
-
 "use client"
 
 import * as React from "react"
@@ -12,8 +11,7 @@ import {
   FileCheck, 
   ShieldCheck,
   MoreVertical,
-  Loader2,
-  Lock
+  Loader2
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -27,8 +25,6 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { useFirestore } from "@/hooks/use-firestore"
 import { BusinessDocument, DocumentType } from "@/lib/types"
-import { MOCK_USER } from "@/lib/mock-data"
-import { hasPermission } from "@/lib/permissions"
 import { useToast } from "@/hooks/use-toast"
 import { DocumentDialog } from "@/components/documents/document-dialog"
 
@@ -38,8 +34,6 @@ export default function DocumentsPage() {
   const [isDialogOpen, setIsDialogOpen] = React.useState(false)
   const [searchQuery, setSearchQuery] = React.useState("")
   const [selectedType, setSelectedType] = React.useState<DocumentType | 'All'>('All')
-
-  const isAuthorized = hasPermission(MOCK_USER.role, 'viewDocuments');
 
   const filteredDocs = documents.filter(doc => {
     const matchesSearch = doc.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
@@ -66,20 +60,6 @@ export default function DocumentsPage() {
         toast({ variant: "destructive", title: "Error", description: "Failed to delete record." });
       }
     }
-  }
-
-  if (!isAuthorized) {
-    return (
-      <div className="flex flex-col items-center justify-center h-[60vh] space-y-4 text-center p-4">
-        <div className="bg-muted p-6 rounded-full">
-          <Lock className="size-12 text-muted-foreground" />
-        </div>
-        <h2 className="text-xl font-bold">Secure Vault Restricted</h2>
-        <p className="text-muted-foreground max-w-md text-sm">
-          You do not have the required security clearance to view business documents. Contact your SME Administrator.
-        </p>
-      </div>
-    );
   }
 
   if (loading) {
@@ -215,29 +195,6 @@ export default function DocumentsPage() {
           )}
         </div>
       </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="p-4 bg-emerald-500/5 border border-emerald-500/20 rounded-xl flex items-center gap-4">
-          <ShieldCheck className="size-8 text-emerald-600 opacity-50" />
-          <div>
-            <h4 className="text-sm font-bold uppercase tracking-tight text-emerald-700">Encryption Active</h4>
-            <p className="text-[10px] text-muted-foreground uppercase font-bold">All files are encrypted at rest with AES-256.</p>
-          </div>
-        </div>
-        <div className="p-4 bg-blue-500/5 border border-blue-500/20 rounded-xl flex items-center gap-4">
-          <FileCheck className="size-8 text-blue-600 opacity-50" />
-          <div>
-            <h4 className="text-sm font-bold uppercase tracking-tight text-blue-700">SYCOHADA Ready</h4>
-            <p className="text-[10px] text-muted-foreground uppercase font-bold">Compliant with OHADA digital archive standards.</p>
-          </div>
-        </div>
-      </div>
-
-      <DocumentDialog 
-        open={isDialogOpen}
-        onOpenChange={setIsDialogOpen}
-        onSave={handleSave}
-      />
     </div>
   )
 }

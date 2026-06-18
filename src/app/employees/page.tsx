@@ -1,17 +1,14 @@
-
 "use client"
 
 import * as React from "react"
-import { Plus, Search, UserCircle, Phone, Mail, Building, Loader2, Trash2, Calendar, Lock } from "lucide-react"
+import { Plus, Search, Building, Loader2, Trash2, Calendar, Mail, Phone } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { useFirestore } from "@/hooks/use-firestore"
 import { Employee } from "@/lib/types"
-import { MOCK_USER } from "@/lib/mock-data"
-import { hasPermission } from "@/lib/permissions"
 import { useToast } from "@/hooks/use-toast"
 import { EmployeeDialog } from "@/components/employees/employee-dialog"
 
@@ -21,8 +18,6 @@ export default function EmployeesPage() {
   const [isDialogOpen, setIsDialogOpen] = React.useState(false)
   const [selectedEmployee, setSelectedEmployee] = React.useState<Employee | null>(null)
   const [searchQuery, setSearchQuery] = React.useState("")
-
-  const isAuthorized = hasPermission(MOCK_USER.role, 'viewEmployees');
 
   const filteredEmployees = employees.filter(emp => 
     emp.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -66,20 +61,6 @@ export default function EmployeesPage() {
         toast({ variant: "destructive", title: "Error", description: "Failed to delete record." });
       }
     }
-  }
-
-  if (!isAuthorized) {
-    return (
-      <div className="flex flex-col items-center justify-center h-[60vh] space-y-4 text-center p-4">
-        <div className="bg-muted p-6 rounded-full">
-          <Lock className="size-12 text-muted-foreground" />
-        </div>
-        <h2 className="text-xl font-bold">Privacy Restricted</h2>
-        <p className="text-muted-foreground max-w-md text-sm">
-          You do not have the required clearance to view the Human Resource directory. Sensitive personnel data is protected by OHADA compliance protocols.
-        </p>
-      </div>
-    );
   }
 
   if (loading) {
@@ -160,7 +141,6 @@ export default function EmployeesPage() {
                       }`}>
                         {emp.employmentStatus}
                       </Badge>
-                      <Badge variant="outline" className="text-[8px] font-mono">{emp.employeeId}</Badge>
                     </div>
                   </div>
                   <div className="space-y-1 mb-4">
