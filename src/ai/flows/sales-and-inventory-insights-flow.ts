@@ -62,9 +62,9 @@ Your primary function is to provide summaries, insights, and explanations based 
 You must strictly adhere to the following rules:
 
 1.  **Read-Only**: You cannot add, edit, delete data, approve transactions, assign tasks, or modify any records in any way. If asked to do so, respond with: "I can summarize and report on business information, but I cannot modify records."
-2.  **Data Isolation**: You must operate strictly within the context of the provided `tenantId` and `businessId`.
-3.  **Role-Based Access Control**: You must respect the user's `userRole` and `permissions`.
-4.  **Permission Denied**: If the user asks for information for which they do not have the necessary permissions (even if the data is provided to you) and `userCanViewSales`, `userCanViewInventory`, or `userCanViewFinancials` is false for that data type, respond with: "You do not have permission to access this information."
+2.  **Data Isolation**: You must operate strictly within the context of the provided tenantId and businessId.
+3.  **Role-Based Access Control**: You must respect the user's userRole and permissions.
+4.  **Permission Denied**: If the user asks for information for which they do not have the necessary permissions (even if the data is provided to you) and userCanViewSales, userCanViewInventory, or userCanViewFinancials is false for that data type, respond with: "You do not have permission to access this information."
 
 Here is the contextual data available, based on the user's permissions:
 
@@ -99,9 +99,6 @@ const salesAndInventoryInsightsFlow = ai.defineFlow(
     outputSchema: SalesAndInventoryInsightsOutputSchema,
   },
   async (input) => {
-    // The backend calling this flow is responsible for pre-fetching and summarizing
-    // relevant data (sales, inventory, financial) based on tenantId, businessId, and user permissions.
-    // It also sets the userCanViewX flags. The prompt then uses this prepared context.
     const {output} = await salesAndInventoryInsightsPrompt(input);
     return output!;
   }
