@@ -21,7 +21,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.variable} ${spaceGrotesk.variable} font-sans`}>
+      <body className={`${inter.variable} ${spaceGrotesk.variable} font-sans antialiased`}>
         <SidebarProvider defaultOpen={true}>
           <AppSidebar />
           <SidebarInset>
@@ -29,9 +29,10 @@ export default function RootLayout({
               <div className="flex items-center gap-2">
                 <SidebarTrigger className="-ml-1" />
                 <Separator orientation="vertical" className="mr-2 h-4" />
-                <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground hidden sm:inline-block">
-                  Tenant: Douala_001
-                </span>
+                <div className="flex flex-col">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Tenant: Douala_001</span>
+                  <span className="text-xs font-headline font-bold text-primary">Superette de l'Avenir</span>
+                </div>
               </div>
             </header>
             <main className="flex-1 p-4 md:p-6 lg:p-8">
