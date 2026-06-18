@@ -1,7 +1,8 @@
+
 "use client"
 
 import * as React from "react"
-import { Plus, Search, Filter, AlertTriangle, Package, Download } from "lucide-react"
+import { Plus, Search, Filter, AlertTriangle, Package, Download, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -14,22 +15,23 @@ import {
 } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { MOCK_PRODUCTS } from "@/lib/mock-data"
 import { ProductDialog } from "@/components/inventory/product-dialog"
 import { Product } from "@/lib/types"
+import { useFirestore } from "@/hooks/use-firestore"
 
 export default function InventoryPage() {
+  const { data: products, loading, addRecord, updateRecord } = useFirestore<Product>('products');
   const [isDialogOpen, setIsDialogOpen] = React.useState(false)
   const [selectedProduct, setSelectedProduct] = React.useState<Product | null>(null)
   const [searchQuery, setSearchQuery] = React.useState("")
 
-  const filteredProducts = MOCK_PRODUCTS.filter(p => 
+  const filteredProducts = products.filter(p => 
     p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     p.category.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
-  const lowStockItems = MOCK_PRODUCTS.filter(p => p.quantity <= p.lowStockLevel)
-  const totalValue = MOCK_PRODUCTS.reduce((acc, p) => acc + (p.quantity * p.costPrice), 0)
+  const lowStockItems = products.filter(p => p.quantity <= p.lowStockLevel)
+  const totalValue = products.reduce((acc, p) => acc + (p.quantity * p.costPrice), 0)
 
   const handleEdit = (product: Product) => {
     setSelectedProduct(product)
@@ -41,12 +43,28 @@ export default function InventoryPage() {
     setIsDialogOpen(true)
   }
 
+  const handleSave = async (productData: Partial<Product>) => {
+    if (selectedProduct?.id) {
+      await updateRecord(selectedProduct.id, productData);
+    } else {
+      await addRecord(productData as Omit<Product, 'id'>);
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex h-[60vh] items-center justify-center">
+        <Loader2 className="size-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="space-y-1">
           <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Inventory Tracking</h1>
-          <p className="text-sm text-muted-foreground">Manage your stock levels, pricing, and suppliers (Douala Central Hub).</p>
+          <p className="text-sm text-muted-foreground">Manage your stock levels, pricing, and suppliers (Live Database).</p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" className="hidden sm:flex">
@@ -82,11 +100,11 @@ export default function InventoryPage() {
         </Card>
         <Card className="border-t-4 border-emerald-500 shadow-md bg-emerald-50/10">
           <CardHeader className="pb-2 p-4">
-            <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Active Categories</CardTitle>
+            <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Database Status</CardTitle>
           </CardHeader>
           <CardContent className="p-4 pt-0">
-            <div className="text-xl md:text-2xl font-bold">5 Categories</div>
-            <p className="text-[10px] text-muted-foreground mt-1 uppercase font-bold tracking-tighter">Food, Cleaning, Electronics...</p>
+            <div className="text-xl md:text-2xl font-bold text-emerald-700">Online</div>
+            <p className="text-[10px] text-muted-foreground mt-1 uppercase font-bold tracking-tighter">Connected to Cloud Firestore</p>
           </CardContent>
         </Card>
       </div>
@@ -151,7 +169,7 @@ export default function InventoryPage() {
               ) : (
                 <TableRow>
                   <TableCell colSpan={6} className="h-24 text-center">
-                    No products found.
+                    {searchQuery ? "No matching products found." : "No products in your database yet."}
                   </TableCell>
                 </TableRow>
               )}
@@ -164,7 +182,7 @@ export default function InventoryPage() {
         product={selectedProduct}
         open={isDialogOpen}
         onOpenChange={setIsDialogOpen}
-        onSave={(p) => console.log("Saved Product:", p)}
+        onSave={handleSave}
       />
     </div>
   )
