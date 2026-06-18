@@ -1,4 +1,3 @@
-
 export type Role = 'Platform Super Admin' | 'Business Owner' | 'Manager' | 'Accountant' | 'HR Officer' | 'Staff' | 'Viewer';
 
 export type UserProfile = {
@@ -138,6 +137,14 @@ export type Employee = {
 export type TaskStatus = 'Pending' | 'Ongoing' | 'Completed' | 'Cancelled' | 'Late' | 'Overdue';
 export type TaskPriority = 'Low' | 'Medium' | 'High' | 'Urgent';
 
+export type TaskComment = {
+  id: string;
+  userId: string;
+  userName: string;
+  text: string;
+  createdAt: string;
+};
+
 export type Task = {
   id: string;
   tenantId: string;
@@ -147,13 +154,17 @@ export type Task = {
   assignedTo: string;
   assignedToName: string;
   assignedBy: string;
+  assignedByName?: string;
   department: string;
   priority: TaskPriority;
   status: TaskStatus;
   startDate: string;
   dueDate: string;
   completedAt?: string;
+  comments?: TaskComment[];
+  attachments?: string[];
   createdAt: string;
+  updatedAt?: string;
 };
 
 export type ActivityLog = {
@@ -197,4 +208,4 @@ export type FinancialTransaction = {
   description: string;
   date: string;
   reference: string;
-};
+}

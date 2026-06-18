@@ -1,23 +1,58 @@
 "use client"
 
 import * as React from "react"
-import { Plus, Search, CheckCircle2, Clock, AlertCircle, Filter, Calendar as CalendarIcon } from "lucide-react"
+import { Plus, Search, CheckCircle2, Clock, AlertCircle, Filter, Calendar as CalendarIcon, Loader2, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { MOCK_TASKS } from "@/lib/mock-data"
 import { TaskDialog } from "@/components/tasks/task-dialog"
-import { Task } from "@/lib/types"
+import { Task, TaskStatus } from "@/lib/types"
+import { useFirestore } from "@/hooks/use-firestore"
+import { useToast } from "@/hooks/use-toast"
+import { isBefore, parseISO, startOfDay } from "date-fns"
 
 export default function TasksPage() {
+  const { data: tasks, loading, addRecord, updateRecord, deleteRecord } = useFirestore<Task>('tasks');
+  const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = React.useState(false)
   const [selectedTask, setSelectedTask] = React.useState<Task | null>(null)
+  const [searchQuery, setSearchQuery] = React.useState("")
 
-  const pendingCount = MOCK_TASKS.filter(t => t.status === 'Pending').length
-  const overdueCount = MOCK_TASKS.filter(t => t.status === 'Overdue' || t.status === 'Late').length
-  const ongoingCount = MOCK_TASKS.filter(t => t.status === 'Ongoing').length
+  // Automatic overdue detection logic
+  const getTaskStatus = (task: Task): TaskStatus => {
+    if (task.status === 'Completed') return 'Completed';
+    if (task.status === 'Cancelled') return 'Cancelled';
+    
+    const today = startOfDay(new Date());
+    const dueDate = startOfDay(parseISO(task.dueDate));
+    
+    if (isBefore(dueDate, today)) {
+      return 'Overdue';
+    }
+    return task.status;
+  };
+
+  const processedTasks = React.useMemo(() => {
+    return tasks.map(task => ({
+      ...task,
+      displayStatus: getTaskStatus(task)
+    })).filter(task => 
+      task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      task.assignedToName.toLowerCase().includes(searchQuery.toLowerCase())
+    ).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  }, [tasks, searchQuery]);
+
+  const stats = React.useMemo(() => {
+    const total = processedTasks.length;
+    const pending = processedTasks.filter(t => t.displayStatus === 'Pending').length;
+    const ongoing = processedTasks.filter(t => t.displayStatus === 'Ongoing').length;
+    const completed = processedTasks.filter(t => t.displayStatus === 'Completed').length;
+    const overdue = processedTasks.filter(t => t.displayStatus === 'Overdue').length;
+    
+    return { total, pending, ongoing, completed, overdue };
+  }, [processedTasks]);
 
   const handleEdit = (task: Task) => {
     setSelectedTask(task)
@@ -27,6 +62,35 @@ export default function TasksPage() {
   const handleAddNew = () => {
     setSelectedTask(null)
     setIsDialogOpen(true)
+  }
+
+  const handleSave = async (taskData: Partial<Task>) => {
+    try {
+      if (selectedTask?.id) {
+        await updateRecord(selectedTask.id, taskData);
+        toast({ title: "Task Updated", description: "Operational tracking updated successfully." });
+      } else {
+        await addRecord(taskData as Omit<Task, 'id'>);
+        toast({ title: "Task Created", description: "Assignment has been sent to the cloud." });
+      }
+    } catch (e) {
+      toast({ variant: "destructive", title: "Error", description: "Could not save task details." });
+    }
+  }
+
+  const handleDelete = async (id: string) => {
+    if (confirm("Permanently delete this task assignment?")) {
+      await deleteRecord(id);
+      toast({ title: "Task Deleted", description: "Record removed from workspace." });
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex h-[60vh] items-center justify-center">
+        <Loader2 className="size-8 animate-spin text-primary" />
+      </div>
+    );
   }
 
   return (
@@ -41,26 +105,26 @@ export default function TasksPage() {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className="border-t-4 border-blue-500 shadow-md">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card className="border-t-4 border-blue-500 shadow-md bg-blue-50/10">
           <CardHeader className="pb-2 p-4">
-            <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Active Tasks</CardTitle>
+            <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Active Load</CardTitle>
           </CardHeader>
           <CardContent className="p-4 pt-0">
-            <div className="text-2xl font-bold">{MOCK_TASKS.length}</div>
+            <div className="text-2xl font-bold">{stats.total} Tasks</div>
             <div className="flex items-center gap-1 mt-1">
               <Clock className="size-3 text-blue-500" />
-              <span className="text-[9px] text-muted-foreground uppercase">{ongoingCount} Ongoing</span>
+              <span className="text-[9px] text-muted-foreground uppercase">{stats.ongoing} Currently Ongoing</span>
             </div>
           </CardContent>
         </Card>
-        <Card className="border-t-4 border-amber-500 shadow-md">
+        <Card className="border-t-4 border-amber-500 shadow-md bg-amber-50/10">
           <CardHeader className="pb-2 p-4">
             <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Pending Action</CardTitle>
           </CardHeader>
-          <CardContent className="p-4 pt-0">
-            <div className="text-2xl font-bold">{pendingCount}</div>
-            <p className="text-[9px] text-muted-foreground uppercase mt-1 italic">Waiting for start</p>
+          <CardContent className="p-4 pt-0 text-amber-700">
+            <div className="text-2xl font-bold">{stats.pending}</div>
+            <p className="text-[9px] uppercase mt-1 italic font-bold">Waiting for start</p>
           </CardContent>
         </Card>
         <Card className="border-t-4 border-red-500 shadow-md bg-red-50/10">
@@ -69,19 +133,19 @@ export default function TasksPage() {
           </CardHeader>
           <CardContent className="p-4 pt-0 flex items-center justify-between">
             <div>
-              <div className="text-2xl font-bold text-red-600">{overdueCount}</div>
-              <p className="text-[9px] text-muted-foreground uppercase mt-1 font-bold">Action Required</p>
+              <div className="text-2xl font-bold text-red-600">{stats.overdue}</div>
+              <p className="text-[9px] text-muted-foreground uppercase mt-1 font-bold">Requires Immediate Attention</p>
             </div>
             <AlertCircle className="size-6 text-red-500 opacity-50" />
           </CardContent>
         </Card>
-        <Card className="border-t-4 border-emerald-500 shadow-md">
+        <Card className="border-t-4 border-emerald-500 shadow-md bg-emerald-50/10">
           <CardHeader className="pb-2 p-4">
             <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Performance</CardTitle>
           </CardHeader>
           <CardContent className="p-4 pt-0">
-            <div className="text-2xl font-bold text-emerald-600">85%</div>
-            <p className="text-[9px] text-muted-foreground uppercase mt-1">Completion Rate</p>
+            <div className="text-2xl font-bold text-emerald-600">{stats.total > 0 ? Math.round((stats.completed / stats.total) * 100) : 0}%</div>
+            <p className="text-[9px] text-muted-foreground uppercase mt-1 font-bold tracking-tighter">Completion Rate (All Time)</p>
           </CardContent>
         </Card>
       </div>
@@ -90,12 +154,15 @@ export default function TasksPage() {
         <div className="p-4 border-b flex flex-col md:flex-row gap-4 items-center">
           <div className="relative w-full md:w-96">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-            <Input placeholder="Search tasks or employees..." className="pl-9 bg-muted/20" />
+            <Input 
+              placeholder="Search tasks or employees..." 
+              className="pl-9 bg-muted/20"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
           </div>
           <div className="flex items-center gap-2 ml-auto">
-            <Button variant="outline" size="sm" className="text-xs">
-              <Filter className="size-3.5 mr-2" /> All Filters
-            </Button>
+            <Badge variant="outline" className="text-[10px] font-bold uppercase">Real-time Cloud Sync</Badge>
           </div>
         </div>
 
@@ -103,7 +170,7 @@ export default function TasksPage() {
           <Table>
             <TableHeader className="bg-muted/50">
               <TableRow>
-                <TableHead>Task Title</TableHead>
+                <TableHead>Task Details</TableHead>
                 <TableHead>Assigned To</TableHead>
                 <TableHead>Priority</TableHead>
                 <TableHead>Due Date</TableHead>
@@ -112,40 +179,64 @@ export default function TasksPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {MOCK_TASKS.map((task) => (
-                <TableRow key={task.id} className="hover:bg-muted/20">
-                  <TableCell>
-                    <div className="flex flex-col">
-                      <span className="font-medium text-sm">{task.title}</span>
-                      <span className="text-[10px] text-muted-foreground uppercase">{task.department}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-xs font-medium">{task.assignedToName}</TableCell>
-                  <TableCell>
-                    <Badge variant={task.priority === 'Urgent' ? 'destructive' : 'secondary'} className="text-[9px] uppercase tracking-tighter">
-                      {task.priority}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-xs">
-                    <div className="flex items-center gap-1.5">
-                      <CalendarIcon className="size-3 text-muted-foreground" />
-                      {new Date(task.dueDate).toLocaleDateString()}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge className={`text-[9px] uppercase font-bold ${
-                      task.status === 'Overdue' ? 'bg-red-100 text-red-700' :
-                      task.status === 'Completed' ? 'bg-emerald-100 text-emerald-700' :
-                      'bg-blue-100 text-blue-700'
-                    }`}>
-                      {task.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <Button variant="ghost" size="sm" onClick={() => handleEdit(task)} className="text-[10px] uppercase font-bold">Edit</Button>
+              {processedTasks.length > 0 ? (
+                processedTasks.map((task) => (
+                  <TableRow key={task.id} className="hover:bg-muted/20">
+                    <TableCell>
+                      <div className="flex flex-col">
+                        <span className="font-bold text-sm">{task.title}</span>
+                        <span className="text-[10px] text-muted-foreground uppercase font-medium">{task.department} • Ref: {task.id.substring(0,6)}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                         <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary">
+                           {task.assignedToName[0]}
+                         </div>
+                         <span className="text-xs font-medium">{task.assignedToName}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={
+                        task.priority === 'Urgent' ? 'destructive' : 
+                        task.priority === 'High' ? 'default' : 'secondary'
+                      } className="text-[9px] uppercase tracking-tighter font-bold">
+                        {task.priority}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-xs">
+                      <div className={`flex items-center gap-1.5 ${task.displayStatus === 'Overdue' ? 'text-destructive font-bold' : ''}`}>
+                        <CalendarIcon className="size-3" />
+                        {new Date(task.dueDate).toLocaleDateString()}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge className={`text-[9px] uppercase font-bold ${
+                        task.displayStatus === 'Overdue' ? 'bg-red-100 text-red-700' :
+                        task.displayStatus === 'Completed' ? 'bg-emerald-100 text-emerald-700' :
+                        task.displayStatus === 'Ongoing' ? 'bg-blue-100 text-blue-700' :
+                        'bg-muted text-muted-foreground'
+                      }`}>
+                        {task.displayStatus}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                       <div className="flex items-center justify-end gap-1">
+                        <Button variant="ghost" size="sm" onClick={() => handleEdit(task)} className="text-[10px] uppercase font-bold tracking-widest">Edit</Button>
+                        <Button variant="ghost" size="icon" onClick={() => handleDelete(task.id!)} className="h-8 w-8 text-destructive">
+                          <Trash2 className="size-4" />
+                        </Button>
+                       </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={6} className="h-24 text-center text-muted-foreground italic">
+                    {searchQuery ? "No tasks match your search." : "No tasks assigned yet."}
                   </TableCell>
                 </TableRow>
-              ))}
+              )}
             </TableBody>
           </Table>
         </div>
@@ -155,7 +246,7 @@ export default function TasksPage() {
         task={selectedTask}
         open={isDialogOpen}
         onOpenChange={setIsDialogOpen}
-        onSave={(t) => console.log("Task Saved:", t)}
+        onSave={handleSave}
       />
     </div>
   )
