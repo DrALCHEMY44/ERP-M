@@ -1,3 +1,4 @@
+
 export type Role = 'Platform Super Admin' | 'Business Owner' | 'Manager' | 'Accountant' | 'HR Officer' | 'Staff' | 'Viewer';
 
 export type UserProfile = {
@@ -41,6 +42,25 @@ export type Product = {
   expiryDate?: string;
   lowStockLevel: number;
   status: 'active' | 'inactive';
+  createdAt: string;
+};
+
+export type SaleItem = {
+  productId: string;
+  quantity: number;
+  priceAtSale: number;
+};
+
+export type Sale = {
+  id: string;
+  tenantId: string;
+  businessId: string;
+  customerId?: string;
+  productsSold: SaleItem[];
+  totalAmount: number;
+  paymentMethod: 'Cash' | 'Mobile Money' | 'Bank Transfer' | 'Credit';
+  saleDate: string;
+  recordedBy: string;
   createdAt: string;
 };
 

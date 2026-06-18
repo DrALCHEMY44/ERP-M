@@ -1,4 +1,5 @@
-import { UserProfile, Business, Product, Task } from './types';
+
+import { UserProfile, Business, Product, Task, Sale } from './types';
 
 export const MOCK_USER: UserProfile = {
   uid: 'user123',
@@ -57,6 +58,37 @@ export const MOCK_PRODUCTS: Product[] = [
   },
 ];
 
+export const MOCK_SALES: Sale[] = [
+  {
+    id: 'SALE-1001',
+    tenantId: 'tenant_douala_001',
+    businessId: 'biz_superette_central',
+    customerId: 'cust1',
+    productsSold: [
+      { productId: 'prod1', quantity: 2, priceAtSale: 5500 }
+    ],
+    totalAmount: 11000,
+    paymentMethod: 'Cash',
+    saleDate: '2024-05-21T09:30:00Z',
+    recordedBy: 'user123',
+    createdAt: '2024-05-21T09:30:00Z',
+  },
+  {
+    id: 'SALE-1002',
+    tenantId: 'tenant_douala_001',
+    businessId: 'biz_superette_central',
+    customerId: 'cust2',
+    productsSold: [
+      { productId: 'prod2', quantity: 10, priceAtSale: 550 }
+    ],
+    totalAmount: 5500,
+    paymentMethod: 'Mobile Money',
+    saleDate: '2024-05-21T11:45:00Z',
+    recordedBy: 'user123',
+    createdAt: '2024-05-21T11:45:00Z',
+  }
+];
+
 export const MOCK_TASKS: Task[] = [
   {
     id: 'task1',
@@ -73,21 +105,5 @@ export const MOCK_TASKS: Task[] = [
     startDate: '2024-05-20',
     dueDate: '2024-05-22',
     createdAt: '2024-05-19T14:00:00Z',
-  },
-  {
-    id: 'task2',
-    tenantId: 'tenant_douala_001',
-    businessId: 'biz_superette_central',
-    title: 'Monthly Inventory Audit',
-    description: 'Verify all physical stock counts against system records.',
-    assignedTo: 'user123',
-    assignedToName: 'Jean-Pierre Kamga',
-    assignedBy: 'user123',
-    department: 'Management',
-    priority: 'Medium',
-    status: 'Ongoing',
-    startDate: '2024-05-01',
-    dueDate: '2024-05-30',
-    createdAt: '2024-04-28T09:00:00Z',
   }
 ];
