@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -17,7 +18,8 @@ import {
   FileText,
   PieChart,
   History,
-  ShieldCheck
+  ShieldCheck,
+  ClipboardList
 } from "lucide-react"
 
 import {
@@ -74,7 +76,7 @@ const groups = [
     label: "Administration",
     items: [
       { name: "Documents", icon: FileText, href: "/documents" },
-      { name: "Reports", icon: PieChart, href: "/reports" },
+      { name: "Task Reports", icon: ClipboardList, href: "/reports/tasks" },
       { name: "Activity Logs", icon: History, href: "/activity-logs" },
       { name: "Users", icon: ShieldCheck, href: "/user-management" },
       { name: "Settings", icon: Settings, href: "/settings" },
