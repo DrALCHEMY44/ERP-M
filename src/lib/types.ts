@@ -45,6 +45,20 @@ export type Product = {
   createdAt: string;
 };
 
+export type Customer = {
+  id: string;
+  tenantId: string;
+  businessId: string;
+  name: string;
+  phone: string;
+  email: string;
+  location: string;
+  notes?: string;
+  totalOrders: number;
+  totalSpent: number;
+  createdAt: string;
+};
+
 export type SaleItem = {
   productId: string;
   quantity: number;

@@ -1,5 +1,5 @@
 
-import { UserProfile, Business, Product, Task, Sale, ActivityLog, Expense } from './types';
+import { UserProfile, Business, Product, Task, Sale, ActivityLog, Expense, Customer } from './types';
 
 export const MOCK_USER: UserProfile = {
   uid: 'user123',
@@ -26,6 +26,48 @@ export const MOCK_BUSINESS: Business = {
   taxId: 'M012345678901L',
   createdAt: '2023-01-10T08:00:00Z',
 };
+
+export const MOCK_CUSTOMERS: Customer[] = [
+  {
+    id: 'cust1',
+    tenantId: 'tenant_douala_001',
+    businessId: 'biz_superette_central',
+    name: 'Samuel Eto\'o',
+    phone: '+237 677 123 456',
+    email: 'samuel.etoo@football.cm',
+    location: 'Bonanjo, Douala',
+    notes: 'Premium customer, prefers Mobile Money.',
+    totalOrders: 15,
+    totalSpent: 450000,
+    createdAt: '2023-05-10T08:00:00Z',
+  },
+  {
+    id: 'cust2',
+    tenantId: 'tenant_douala_001',
+    businessId: 'biz_superette_central',
+    name: 'Nathalie Koah',
+    phone: '+237 699 987 654',
+    email: 'n.koah@style.cm',
+    location: 'Bastos, Yaoundé',
+    notes: 'Frequent buyer of cleaning supplies.',
+    totalOrders: 8,
+    totalSpent: 120500,
+    createdAt: '2023-08-15T14:30:00Z',
+  },
+  {
+    id: 'cust3',
+    tenantId: 'tenant_douala_001',
+    businessId: 'biz_superette_central',
+    name: 'Amadou Baba',
+    phone: '+237 655 443 322',
+    email: 'baba.amadou@trader.cm',
+    location: 'Maroua',
+    notes: 'Wholesale client for bulk rice.',
+    totalOrders: 24,
+    totalSpent: 2850000,
+    createdAt: '2023-02-20T10:00:00Z',
+  }
+];
 
 export const MOCK_PRODUCTS: Product[] = [
   {
