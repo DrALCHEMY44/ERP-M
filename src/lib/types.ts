@@ -57,6 +57,21 @@ export type Customer = {
   notes?: string;
   totalOrders: number;
   totalSpent: number;
+  purchaseHistory?: string[]; // Array of Sale IDs
+  createdAt: string;
+};
+
+export type Supplier = {
+  id: string;
+  tenantId: string;
+  businessId: string;
+  name: string;
+  phone: string;
+  email: string;
+  location: string;
+  productsSupplied: string[]; // Names or IDs of products
+  paymentStatus: 'Paid' | 'Pending' | 'Partial' | 'Overdue';
+  notes?: string;
   createdAt: string;
 };
 

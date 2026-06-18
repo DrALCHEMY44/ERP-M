@@ -2,7 +2,7 @@
 "use client"
 
 import * as React from "react"
-import { Plus, Search, UserCircle, Phone, Mail, MapPin, TrendingUp, ShoppingBag, MoreHorizontal } from "lucide-react"
+import { Plus, Search, UserCircle, Phone, Mail, MapPin, ShoppingBag, Loader2, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -15,23 +15,26 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { MOCK_CUSTOMERS } from "@/lib/mock-data"
-import { CustomerDialog } from "@/components/customers/customer-dialog"
+import { useFirestore } from "@/hooks/use-firestore"
 import { Customer } from "@/lib/types"
+import { CustomerDialog } from "@/components/customers/customer-dialog"
+import { useToast } from "@/hooks/use-toast"
 
 export default function CustomersPage() {
+  const { data: customers, loading, addRecord, updateRecord, deleteRecord } = useFirestore<Customer>('customers');
+  const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = React.useState(false)
   const [selectedCustomer, setSelectedCustomer] = React.useState<Customer | null>(null)
   const [searchQuery, setSearchQuery] = React.useState("")
 
-  const filteredCustomers = MOCK_CUSTOMERS.filter(c => 
+  const filteredCustomers = customers.filter(c => 
     c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     c.phone.includes(searchQuery) ||
     c.location.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
-  const totalSpent = MOCK_CUSTOMERS.reduce((acc, c) => acc + c.totalSpent, 0)
-  const totalOrders = MOCK_CUSTOMERS.reduce((acc, c) => acc + c.totalOrders, 0)
+  const totalSpent = customers.reduce((acc, c) => acc + (c.totalSpent || 0), 0)
+  const totalOrders = customers.reduce((acc, c) => acc + (c.totalOrders || 0), 0)
 
   const handleEdit = (customer: Customer) => {
     setSelectedCustomer(customer)
@@ -41,6 +44,35 @@ export default function CustomersPage() {
   const handleAddNew = () => {
     setSelectedCustomer(null)
     setIsDialogOpen(true)
+  }
+
+  const handleSave = async (data: Partial<Customer>) => {
+    try {
+      if (selectedCustomer?.id) {
+        await updateRecord(selectedCustomer.id, data);
+        toast({ title: "Customer Updated", description: `${data.name}'s profile has been synchronized.` });
+      } else {
+        await addRecord(data as Omit<Customer, 'id'>);
+        toast({ title: "Customer Added", description: `${data.name} is now in your directory.` });
+      }
+    } catch (e) {
+      toast({ variant: "destructive", title: "Error", description: "Failed to save customer data." });
+    }
+  }
+
+  const handleDelete = async (id: string) => {
+    if (confirm("Are you sure you want to delete this customer? This action is permanent.")) {
+      await deleteRecord(id);
+      toast({ title: "Customer Removed", description: "Data deleted from cloud database." });
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex h-[60vh] items-center justify-center">
+        <Loader2 className="size-8 animate-spin text-primary" />
+      </div>
+    );
   }
 
   return (
@@ -59,7 +91,7 @@ export default function CustomersPage() {
         <Card className="border-t-4 border-[#3b82f6] shadow-md bg-blue-50/10">
           <CardHeader className="pb-2 p-4">
             <CardDescription className="text-[10px] font-bold uppercase tracking-widest">Total Clients</CardDescription>
-            <CardTitle className="text-2xl font-bold text-blue-700">{MOCK_CUSTOMERS.length}</CardTitle>
+            <CardTitle className="text-2xl font-bold text-blue-700">{customers.length}</CardTitle>
           </CardHeader>
         </Card>
         <Card className="border-t-4 border-[#10b981] shadow-md bg-emerald-50/10">
@@ -77,7 +109,7 @@ export default function CustomersPage() {
         <Card className="border-t-4 border-primary shadow-md bg-primary/5">
           <CardHeader className="pb-2 p-4">
             <CardDescription className="text-[10px] font-bold uppercase tracking-widest">Retention Rate</CardDescription>
-            <CardTitle className="text-2xl font-bold text-primary">78%</CardTitle>
+            <CardTitle className="text-2xl font-bold text-primary">Live Sync</CardTitle>
           </CardHeader>
         </Card>
       </div>
@@ -118,7 +150,7 @@ export default function CustomersPage() {
                         </div>
                         <div className="flex flex-col">
                           <span className="font-bold text-sm">{customer.name}</span>
-                          <span className="text-[10px] text-muted-foreground uppercase font-medium">ID: {customer.id}</span>
+                          <span className="text-[10px] text-muted-foreground uppercase font-medium">ID: {customer.id?.substring(0, 8)}</span>
                         </div>
                       </div>
                     </TableCell>
@@ -145,17 +177,22 @@ export default function CustomersPage() {
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <Badge variant="secondary" className="text-[10px] font-bold uppercase tracking-widest px-2">
-                          <ShoppingBag className="size-3 mr-1" /> {customer.totalOrders} Orders
+                          <ShoppingBag className="size-3 mr-1" /> {customer.totalOrders || 0} Orders
                         </Badge>
                       </div>
                     </TableCell>
                     <TableCell className="text-right font-bold text-emerald-700 text-sm">
-                      {customer.totalSpent.toLocaleString()} FCFA
+                      {(customer.totalSpent || 0).toLocaleString()} FCFA
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button variant="ghost" size="sm" onClick={() => handleEdit(customer)} className="text-[10px] uppercase font-bold tracking-widest">
-                        Details
-                      </Button>
+                       <div className="flex items-center justify-end gap-1">
+                        <Button variant="ghost" size="sm" onClick={() => handleEdit(customer)} className="text-[10px] uppercase font-bold tracking-widest">
+                          Edit
+                        </Button>
+                        <Button variant="ghost" size="icon" onClick={() => handleDelete(customer.id!)} className="h-8 w-8 text-destructive">
+                          <Trash2 className="size-4" />
+                        </Button>
+                       </div>
                     </TableCell>
                   </TableRow>
                 ))
@@ -175,7 +212,7 @@ export default function CustomersPage() {
         customer={selectedCustomer}
         open={isDialogOpen}
         onOpenChange={setIsDialogOpen}
-        onSave={(c) => console.log("Customer Saved:", c)}
+        onSave={handleSave}
       />
     </div>
   )
