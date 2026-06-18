@@ -25,6 +25,7 @@ export type Business = {
   phone: string;
   email: string;
   taxId?: string;
+  description?: string;
   logo?: string;
   createdAt: string;
 };
