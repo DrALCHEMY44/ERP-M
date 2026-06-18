@@ -75,10 +75,9 @@ const groups = [
   {
     label: "Administration",
     items: [
+      { name: "Reports Hub", icon: PieChart, href: "/reports" },
       { name: "Documents", icon: FileText, href: "/documents" },
-      { name: "Task Reports", icon: ClipboardList, href: "/reports/tasks" },
       { name: "Activity Logs", icon: History, href: "/activity-logs" },
-      { name: "Users", icon: ShieldCheck, href: "/user-management" },
       { name: "Settings", icon: Settings, href: "/settings" },
     ]
   }
