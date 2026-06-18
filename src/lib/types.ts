@@ -97,6 +97,29 @@ export type Expense = {
   createdAt: string;
 };
 
+export type EmployeeStatus = 'Active' | 'On Leave' | 'Suspended' | 'Terminated';
+export type PaymentStatus = 'Paid' | 'Pending' | 'Partial' | 'Overdue';
+
+export type Employee = {
+  id?: string;
+  employeeId: string;
+  tenantId: string;
+  businessId: string;
+  fullName: string;
+  position: string;
+  department: string;
+  salary: number;
+  contact: string;
+  email: string;
+  startDate: string;
+  employmentStatus: EmployeeStatus;
+  attendance: number; // Percentage
+  salaryPaymentStatus: PaymentStatus;
+  createdBy: string;
+  createdAt: string;
+  updatedAt?: string;
+};
+
 export type TaskStatus = 'Pending' | 'Ongoing' | 'Completed' | 'Cancelled' | 'Late' | 'Overdue';
 export type TaskPriority = 'Low' | 'Medium' | 'High' | 'Urgent';
 

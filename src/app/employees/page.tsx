@@ -1,14 +1,95 @@
+
 "use client"
 
 import * as React from "react"
-import { Plus, Search, UserCircle, Phone, Mail, Building } from "lucide-react"
+import { Plus, Search, UserCircle, Phone, Mail, Building, Loader2, Trash2, Calendar, Lock } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { useFirestore } from "@/hooks/use-firestore"
+import { Employee } from "@/lib/types"
+import { MOCK_USER } from "@/lib/mock-data"
+import { hasPermission } from "@/lib/permissions"
+import { useToast } from "@/hooks/use-toast"
+import { EmployeeDialog } from "@/components/employees/employee-dialog"
 
 export default function EmployeesPage() {
+  const { data: employees, loading, addRecord, updateRecord, deleteRecord } = useFirestore<Employee>('employees');
+  const { toast } = useToast();
+  const [isDialogOpen, setIsDialogOpen] = React.useState(false)
+  const [selectedEmployee, setSelectedEmployee] = React.useState<Employee | null>(null)
+  const [searchQuery, setSearchQuery] = React.useState("")
+
+  const isAuthorized = hasPermission(MOCK_USER.role, 'viewEmployees');
+
+  const filteredEmployees = employees.filter(emp => 
+    emp.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    emp.position.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    emp.department.toLowerCase().includes(searchQuery.toLowerCase())
+  )
+
+  const activeCount = employees.filter(e => e.employmentStatus === 'Active').length;
+  const pendingPayrollCount = employees.filter(e => e.salaryPaymentStatus !== 'Paid').length;
+
+  const handleEdit = (employee: Employee) => {
+    setSelectedEmployee(employee)
+    setIsDialogOpen(true)
+  }
+
+  const handleAddNew = () => {
+    setSelectedEmployee(null)
+    setIsDialogOpen(true)
+  }
+
+  const handleSave = async (employeeData: Partial<Employee>) => {
+    try {
+      if (selectedEmployee?.id) {
+        await updateRecord(selectedEmployee.id, employeeData);
+        toast({ title: "Employee Updated", description: `${employeeData.fullName}'s records have been modified.` });
+      } else {
+        await addRecord(employeeData as Omit<Employee, 'id'>);
+        toast({ title: "Employee Added", description: `${employeeData.fullName} is now part of your SME.` });
+      }
+    } catch (e) {
+      toast({ variant: "destructive", title: "Error", description: "Could not save employee data." });
+    }
+  }
+
+  const handleDelete = async (id: string) => {
+    if (confirm("Permanently delete this employee's records? This action is immutable.")) {
+      try {
+        await deleteRecord(id);
+        toast({ title: "Employee Removed", description: "Record deleted from secure cloud storage." });
+      } catch (e) {
+        toast({ variant: "destructive", title: "Error", description: "Failed to delete record." });
+      }
+    }
+  }
+
+  if (!isAuthorized) {
+    return (
+      <div className="flex flex-col items-center justify-center h-[60vh] space-y-4 text-center p-4">
+        <div className="bg-muted p-6 rounded-full">
+          <Lock className="size-12 text-muted-foreground" />
+        </div>
+        <h2 className="text-xl font-bold">Privacy Restricted</h2>
+        <p className="text-muted-foreground max-w-md text-sm">
+          You do not have the required clearance to view the Human Resource directory. Sensitive personnel data is protected by OHADA compliance protocols.
+        </p>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="flex h-[60vh] items-center justify-center">
+        <Loader2 className="size-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -16,35 +97,37 @@ export default function EmployeesPage() {
           <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Human Resources</h1>
           <p className="text-sm text-muted-foreground">Manage your team, positions, and payroll (SYCOHADA Compliant).</p>
         </div>
-        <Button className="bg-primary hover:bg-primary/90 text-white font-bold uppercase text-xs tracking-widest shadow-lg">
+        <Button onClick={handleAddNew} className="bg-primary hover:bg-primary/90 text-white font-bold uppercase text-xs tracking-widest shadow-lg">
           <Plus className="size-4 mr-2" /> Add Employee
         </Button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="border-t-4 border-blue-500 shadow-md">
+        <Card className="border-t-4 border-blue-500 shadow-md bg-blue-50/10">
           <CardHeader className="pb-2 p-4">
             <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Total Staff</CardTitle>
           </CardHeader>
           <CardContent className="p-4 pt-0">
-            <div className="text-2xl font-bold text-blue-700">12 Employees</div>
+            <div className="text-2xl font-bold text-blue-700">{employees.length} Employees</div>
+            <p className="text-[9px] text-muted-foreground mt-1 uppercase font-bold tracking-tighter">{activeCount} Currently Active</p>
           </CardContent>
         </Card>
-        <Card className="border-t-4 border-emerald-500 shadow-md">
+        <Card className="border-t-4 border-emerald-500 shadow-md bg-emerald-50/10">
           <CardHeader className="pb-2 p-4">
             <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Payroll Status</CardTitle>
           </CardHeader>
           <CardContent className="p-4 pt-0">
-            <div className="text-2xl font-bold text-emerald-700">Fully Paid</div>
-            <p className="text-[9px] text-muted-foreground mt-1 uppercase">Cycle: May 2024</p>
+            <div className="text-2xl font-bold text-emerald-700">{pendingPayrollCount === 0 ? "Fully Paid" : `${pendingPayrollCount} Pending`}</div>
+            <p className="text-[9px] text-muted-foreground mt-1 uppercase font-bold tracking-tighter">Cycle: {new Date().toLocaleString('default', { month: 'long', year: 'numeric' })}</p>
           </CardContent>
         </Card>
-        <Card className="border-t-4 border-amber-500 shadow-md">
+        <Card className="border-t-4 border-amber-500 shadow-md bg-amber-50/10">
           <CardHeader className="pb-2 p-4">
-            <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Leave Requests</CardTitle>
+            <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Average Attendance</CardTitle>
           </CardHeader>
           <CardContent className="p-4 pt-0">
-            <div className="text-2xl font-bold text-amber-600">2 Pending</div>
+            <div className="text-2xl font-bold text-amber-600">92%</div>
+            <p className="text-[9px] text-muted-foreground mt-1 uppercase font-bold tracking-tighter">Last 30 Days Oversight</p>
           </CardContent>
         </Card>
       </div>
@@ -53,46 +136,79 @@ export default function EmployeesPage() {
         <div className="flex items-center gap-4 mb-6">
           <div className="relative flex-1 max-w-sm">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-            <Input placeholder="Search employees..." className="pl-9 bg-muted/20" />
+            <Input 
+              placeholder="Search by name, position or dept..." 
+              className="pl-9 bg-muted/20" 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
           </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[
-            { name: "Marie Claire", role: "Store Manager", dept: "Operations", status: "Active" },
-            { name: "John Doe", role: "Sales Rep", dept: "Sales", status: "Active" },
-            { name: "Abena Samuel", role: "Accountant", dept: "Finance", status: "Active" },
-          ].map((emp, i) => (
-            <Card key={i} className="group hover:border-primary/50 transition-colors">
-              <CardContent className="p-6">
-                <div className="flex items-start justify-between mb-4">
-                  <Avatar className="h-12 w-12 rounded-lg border-2 border-muted group-hover:border-primary/30 transition-colors">
-                    <AvatarFallback className="bg-primary/10 text-primary font-bold">{emp.name[0]}{emp.name.split(' ')[1]?.[0]}</AvatarFallback>
-                  </Avatar>
-                  <Badge variant="secondary" className="text-[9px] uppercase font-bold tracking-tighter bg-emerald-100 text-emerald-700">{emp.status}</Badge>
-                </div>
-                <div className="space-y-1 mb-4">
-                  <h3 className="font-headline font-bold text-lg">{emp.name}</h3>
-                  <p className="text-xs text-muted-foreground flex items-center gap-1.5 uppercase font-medium">
-                    <Building className="size-3" /> {emp.role} • {emp.dept}
-                  </p>
-                </div>
-                <div className="pt-4 border-t flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Button size="icon" variant="ghost" className="h-8 w-8 rounded-full bg-muted/50 text-muted-foreground hover:text-primary">
-                      <Phone className="size-3.5" />
-                    </Button>
-                    <Button size="icon" variant="ghost" className="h-8 w-8 rounded-full bg-muted/50 text-muted-foreground hover:text-primary">
-                      <Mail className="size-3.5" />
-                    </Button>
+          {filteredEmployees.length > 0 ? (
+            filteredEmployees.map((emp) => (
+              <Card key={emp.id} className="group hover:border-primary/50 transition-colors shadow-sm overflow-hidden">
+                <CardContent className="p-6">
+                  <div className="flex items-start justify-between mb-4">
+                    <Avatar className="h-12 w-12 rounded-lg border-2 border-muted group-hover:border-primary/30 transition-colors">
+                      <AvatarFallback className="bg-primary/10 text-primary font-bold">{emp.fullName[0]}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex flex-col items-end gap-1">
+                      <Badge variant="secondary" className={`text-[9px] uppercase font-bold tracking-tighter ${
+                        emp.employmentStatus === 'Active' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'
+                      }`}>
+                        {emp.employmentStatus}
+                      </Badge>
+                      <Badge variant="outline" className="text-[8px] font-mono">{emp.employeeId}</Badge>
+                    </div>
                   </div>
-                  <Button variant="outline" size="sm" className="text-[10px] font-bold uppercase tracking-widest">Details</Button>
+                  <div className="space-y-1 mb-4">
+                    <h3 className="font-headline font-bold text-lg truncate">{emp.fullName}</h3>
+                    <p className="text-xs text-muted-foreground flex items-center gap-1.5 uppercase font-medium">
+                      <Building className="size-3" /> {emp.position} • {emp.department}
+                    </p>
+                    <p className="text-[10px] text-primary font-bold flex items-center gap-1.5 mt-2">
+                      <Calendar className="size-3" /> Started: {new Date(emp.startDate).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <div className="pt-4 border-t flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Button size="icon" variant="ghost" className="h-8 w-8 rounded-full bg-muted/50 text-muted-foreground hover:text-primary">
+                        <Phone className="size-3.5" />
+                      </Button>
+                      <Button size="icon" variant="ghost" className="h-8 w-8 rounded-full bg-muted/50 text-muted-foreground hover:text-primary">
+                        <Mail className="size-3.5" />
+                      </Button>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Button variant="outline" size="sm" onClick={() => handleEdit(emp)} className="text-[10px] font-bold uppercase tracking-widest h-8 px-3">Edit</Button>
+                      <Button variant="ghost" size="icon" onClick={() => handleDelete(emp.id!)} className="h-8 w-8 text-destructive hover:bg-destructive/10">
+                        <Trash2 className="size-3.5" />
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+                <div className="bg-muted/30 px-6 py-2 border-t flex items-center justify-between text-[10px] font-bold uppercase">
+                  <span className="text-muted-foreground">Salary: {emp.salary.toLocaleString()} FCFA</span>
+                  <span className={emp.salaryPaymentStatus === 'Paid' ? 'text-emerald-600' : 'text-amber-600'}>{emp.salaryPaymentStatus}</span>
                 </div>
-              </CardContent>
-            </Card>
-          ))}
+              </Card>
+            ))
+          ) : (
+            <div className="col-span-full py-12 text-center text-muted-foreground italic">
+              No employee records found matching your search.
+            </div>
+          )}
         </div>
       </div>
+
+      <EmployeeDialog 
+        employee={selectedEmployee}
+        open={isDialogOpen}
+        onOpenChange={setIsDialogOpen}
+        onSave={handleSave}
+      />
     </div>
   )
 }
