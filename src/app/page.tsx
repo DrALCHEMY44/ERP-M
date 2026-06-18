@@ -1,6 +1,6 @@
+import { redirect } from "next/navigation";
 
-import { redirect } from "next/navigation"
-
-export default function HomePage() {
-  redirect("/dashboard")
+export default function RootPage() {
+  // In a real app, check auth status here.
+  redirect("/dashboard");
 }

@@ -1,181 +1,99 @@
-
 "use client"
 
 import * as React from "react"
 import { 
   Plus, 
-  Search, 
+  Calendar, 
   Clock, 
   CheckCircle2, 
   AlertCircle,
   MoreVertical,
-  Calendar as CalendarIcon,
-  User
+  User2
 } from "lucide-react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { MOCK_TASKS } from "@/lib/mock-data"
-import { Task, TaskStatus, TaskPriority } from "@/lib/types"
 import { TaskDialog } from "@/components/tasks/task-dialog"
-import { useToast } from "@/hooks/use-toast"
-import { cn } from "@/lib/utils"
+import { Task } from "@/lib/types"
+
+const priorityColors = {
+  Low: "bg-blue-100 text-blue-700 border-blue-200",
+  Medium: "bg-yellow-100 text-yellow-700 border-yellow-200",
+  High: "bg-orange-100 text-orange-700 border-orange-200",
+  Urgent: "bg-red-100 text-red-700 border-red-200",
+}
+
+const statusIcons = {
+  Pending: Clock,
+  Ongoing: Clock,
+  Completed: CheckCircle2,
+  Cancelled: AlertCircle,
+  Late: AlertCircle,
+  Overdue: AlertCircle,
+}
 
 export default function TasksPage() {
-  const [tasks, setTasks] = React.useState<Task[]>(MOCK_TASKS)
   const [isDialogOpen, setIsDialogOpen] = React.useState(false)
   const [selectedTask, setSelectedTask] = React.useState<Task | null>(null)
-  const { toast } = useToast()
-
-  const handleAddTask = () => {
-    setSelectedTask(null)
-    setIsDialogOpen(true)
-  }
-
-  const handleEditTask = (task: Task) => {
-    setSelectedTask(task)
-    setIsDialogOpen(true)
-  }
-
-  const handleSaveTask = (taskData: Partial<Task>) => {
-    if (selectedTask) {
-      setTasks(prev => prev.map(t => t.id === selectedTask.id ? { ...t, ...taskData } as Task : t))
-      toast({ title: "Task Updated", description: "Changes saved successfully." })
-    } else {
-      const newTask = { 
-        ...taskData, 
-        id: `task-${Date.now()}`,
-        createdAt: new Date().toISOString() 
-      } as Task
-      setTasks(prev => [newTask, ...prev])
-      toast({ title: "Task Created", description: "New task assigned to employee." })
-    }
-  }
-
-  const getStatusColor = (status: TaskStatus) => {
-    switch (status) {
-      case 'Completed': return 'bg-emerald-100 text-emerald-700 border-emerald-200'
-      case 'Overdue':
-      case 'Late': return 'bg-destructive/10 text-destructive border-destructive/20'
-      case 'Ongoing': return 'bg-blue-100 text-blue-700 border-blue-200'
-      default: return 'bg-secondary text-secondary-foreground'
-    }
-  }
-
-  const completedCount = tasks.filter(t => t.status === 'Completed').length
-  const overdueCount = tasks.filter(t => t.status === 'Overdue' || t.status === 'Late').length
-  const totalCount = tasks.length
-  const completionRate = totalCount > 0 ? (completedCount / totalCount) * 100 : 0
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-primary font-headline">Task Management</h2>
-          <p className="text-sm text-muted-foreground">Monitor employee workloads and operational progress.</p>
+        <div className="space-y-1">
+          <h1 className="text-3xl font-bold tracking-tight">Operations Tasks</h1>
+          <p className="text-muted-foreground">Manage employee workload and project deadlines.</p>
         </div>
-        <Button onClick={handleAddTask} size="sm" className="bg-accent hover:bg-accent/90 flex items-center gap-2 w-full sm:w-auto">
-          <Plus className="size-4" />
-          Assign New Task
+        <Button onClick={() => { setSelectedTask(null); setIsDialogOpen(true); }} className="bg-primary hover:bg-primary/90">
+          <Plus className="size-4 mr-2" /> Assign Task
         </Button>
       </div>
 
-      <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-[10px] font-medium text-muted-foreground uppercase">Workload Progress</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-lg font-bold mb-2">{completedCount} / {totalCount} Tasks Done</div>
-            <Progress value={completionRate} className="h-1.5" />
-          </CardContent>
-        </Card>
-        <Card className="border-l-4 border-l-destructive">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-[10px] font-medium text-muted-foreground uppercase">Critical Alerts</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-lg font-bold flex items-center gap-2 text-destructive">
-              {overdueCount} Overdue
-              <AlertCircle className="size-4" />
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-[10px] font-medium text-muted-foreground uppercase">Due Today</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-lg font-bold">2 Tasks</div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Tabs defaultValue="all" className="w-full">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
-          <TabsList className="w-full sm:w-auto">
-            <TabsTrigger value="all" className="flex-1 sm:flex-none">All Tasks</TabsTrigger>
-            <TabsTrigger value="active" className="flex-1 sm:flex-none">Active</TabsTrigger>
-            <TabsTrigger value="completed" className="flex-1 sm:flex-none">Completed</TabsTrigger>
-          </TabsList>
-          <div className="relative w-full sm:w-64">
-            <Search className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
-            <Input placeholder="Search tasks..." className="pl-9 h-9" />
-          </div>
-        </div>
-
-        <TabsContent value="all" className="space-y-3">
-          {tasks.map((task) => (
-            <Card key={task.id} className="group hover:border-accent/50 transition-all shadow-sm">
-              <CardContent className="p-3 md:p-4">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex items-start gap-3 flex-1 overflow-hidden">
-                    <div className={cn(
-                      "size-8 md:size-10 rounded-full flex items-center justify-center shrink-0",
-                      task.status === 'Completed' ? "bg-emerald-100 text-emerald-600" : "bg-primary/10 text-primary"
-                    )}>
-                      {task.status === 'Completed' ? <CheckCircle2 className="size-4 md:size-5" /> : <Clock className="size-4 md:size-5" />}
-                    </div>
-                    <div className="space-y-1 overflow-hidden">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <h3 className="font-semibold text-xs md:text-sm leading-none truncate max-w-[200px] md:max-w-none">{task.title}</h3>
-                        <Badge variant="outline" className={cn("text-[8px] md:text-[10px] py-0 h-4 md:h-5 px-1 md:px-1.5", getStatusColor(task.status))}>
-                          {task.status}
-                        </Badge>
-                      </div>
-                      <p className="text-[10px] md:text-xs text-muted-foreground line-clamp-1">{task.description}</p>
-                      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 pt-1">
-                        <div className="flex items-center gap-1 text-[9px] md:text-[10px] text-muted-foreground">
-                          <User className="size-2.5" />
-                          <span>Assignee: <strong className="text-foreground">{task.assignedToName}</strong></span>
-                        </div>
-                        <div className="flex items-center gap-1 text-[9px] md:text-[10px] text-muted-foreground">
-                          <CalendarIcon className="size-2.5" />
-                          <span className={cn(task.status === 'Overdue' && "text-destructive font-bold")}>
-                            Due: {new Date(task.dueDate).toLocaleDateString('fr-CM')}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <Button variant="ghost" size="icon" className="shrink-0 h-8 w-8" onClick={() => handleEditTask(task)}>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {MOCK_TASKS.map((task) => {
+          const StatusIcon = statusIcons[task.status]
+          return (
+            <Card key={task.id} className="group hover:shadow-md transition-all border-sidebar-border/10">
+              <CardHeader className="pb-2">
+                <div className="flex justify-between items-start mb-2">
+                  <Badge variant="outline" className={`${priorityColors[task.priority]} font-bold`}>
+                    {task.priority}
+                  </Badge>
+                  <Button variant="ghost" size="icon" className="h-8 w-8 -mr-2">
                     <MoreVertical className="size-4" />
                   </Button>
                 </div>
+                <CardTitle className="text-lg group-hover:text-primary transition-colors">{task.title}</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4 pb-4">
+                <p className="text-sm text-muted-foreground line-clamp-2">{task.description}</p>
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <Calendar className="size-3" />
+                  <span>Due: {new Date(task.dueDate).toLocaleDateString()}</span>
+                </div>
               </CardContent>
+              <CardFooter className="pt-0 flex items-center justify-between border-t mt-auto p-4 bg-muted/20">
+                <div className="flex items-center gap-2">
+                  <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-bold">
+                    {task.assignedToName[0]}
+                  </div>
+                  <span className="text-xs font-medium">{task.assignedToName}</span>
+                </div>
+                <div className="flex items-center gap-1.5 text-xs font-semibold">
+                  <StatusIcon className={`size-3 ${task.status === 'Overdue' ? 'text-destructive' : 'text-primary'}`} />
+                  <span className={task.status === 'Overdue' ? 'text-destructive' : ''}>{task.status}</span>
+                </div>
+              </CardFooter>
             </Card>
-          ))}
-        </TabsContent>
-      </Tabs>
+          )
+        })}
+      </div>
 
       <TaskDialog 
-        open={isDialogOpen} 
-        onOpenChange={setIsDialogOpen} 
         task={selectedTask}
-        onSave={handleSaveTask}
+        open={isDialogOpen}
+        onOpenChange={setIsDialogOpen}
+        onSave={(t) => console.log("Saved task:", t)}
       />
     </div>
   )

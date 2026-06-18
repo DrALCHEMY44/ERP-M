@@ -1,4 +1,3 @@
-
 "use client"
 
 import * as React from "react"
@@ -6,189 +5,141 @@ import {
   Plus, 
   Search, 
   Filter, 
-  MoreVertical, 
-  Edit, 
-  Trash2, 
-  AlertTriangle, 
-  FileDown
+  ArrowUpDown, 
+  MoreHorizontal, 
+  Download,
+  AlertCircle
 } from "lucide-react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { Badge } from "@/components/ui/badge"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { MOCK_PRODUCTS } from "@/lib/mock-data"
-import { Product } from "@/lib/types"
 import { ProductDialog } from "@/components/inventory/product-dialog"
-import { useToast } from "@/hooks/use-toast"
+import { Product } from "@/lib/types"
 
 export default function InventoryPage() {
-  const [products, setProducts] = React.useState<Product[]>(MOCK_PRODUCTS)
-  const [searchQuery, setSearchQuery] = React.useState("")
   const [isDialogOpen, setIsDialogOpen] = React.useState(false)
   const [selectedProduct, setSelectedProduct] = React.useState<Product | null>(null)
-  const { toast } = useToast()
 
-  const filteredProducts = products.filter(p => 
-    p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    p.category.toLowerCase().includes(searchQuery.toLowerCase())
-  )
-
-  const handleAddProduct = () => {
-    setSelectedProduct(null)
-    setIsDialogOpen(true)
-  }
-
-  const handleEditProduct = (product: Product) => {
+  const handleEdit = (product: Product) => {
     setSelectedProduct(product)
     setIsDialogOpen(true)
   }
 
-  const handleDeleteProduct = (productId: string) => {
-    setProducts(prev => prev.filter(p => p.id !== productId))
-    toast({
-      title: "Product Deleted",
-      description: "The product has been removed from inventory.",
-    })
+  const handleAddNew = () => {
+    setSelectedProduct(null)
+    setIsDialogOpen(true)
   }
-
-  const handleSaveProduct = (productData: Partial<Product>) => {
-    if (selectedProduct) {
-      setProducts(prev => prev.map(p => p.id === selectedProduct.id ? { ...p, ...productData } as Product : p))
-      toast({ title: "Product Updated", description: `${productData.name} updated successfully.` })
-    } else {
-      const newProduct = { ...productData, id: `prod${Date.now()}` } as Product
-      setProducts(prev => [newProduct, ...prev])
-      toast({ title: "Product Added", description: `${productData.name} added to inventory.` })
-    }
-  }
-
-  const totalItems = products.reduce((acc, p) => acc + p.quantity, 0)
-  const lowStockCount = products.filter(p => p.quantity <= p.lowStockLevel).length
-  const inventoryValue = products.reduce((acc, p) => acc + (p.quantity * p.costPrice), 0)
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-primary">Inventory</h2>
-          <p className="text-sm text-muted-foreground">Manage your stock, categories, and supply alerts in FCFA.</p>
+        <div className="space-y-1">
+          <h1 className="text-3xl font-bold tracking-tight">Inventory</h1>
+          <p className="text-muted-foreground">Track and manage your stock levels across branches.</p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" className="hidden sm:flex items-center gap-2">
-            <FileDown className="size-4" />
-            Export CSV
+          <Button variant="outline" size="sm" className="hidden sm:flex">
+            <Download className="size-4 mr-2" /> Export
           </Button>
-          <Button onClick={handleAddProduct} size="sm" className="bg-accent hover:bg-accent/90 flex items-center gap-2 w-full sm:w-auto">
-            <Plus className="size-4" />
-            Add Product
+          <Button onClick={handleAddNew} className="bg-primary hover:bg-primary/90">
+            <Plus className="size-4 mr-2" /> New Product
           </Button>
         </div>
       </div>
 
-      <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
-        <Card className="border-l-4 border-l-blue-500">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-[10px] font-medium text-muted-foreground uppercase">Total Units</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-xl md:text-2xl font-bold">{totalItems}</div>
-          </CardContent>
-        </Card>
-        <Card className="border-l-4 border-l-amber-500">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-[10px] font-medium text-muted-foreground uppercase">Low Stock Alert</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-xl md:text-2xl font-bold flex items-center gap-2 text-amber-600">
-              {lowStockCount}
-              {lowStockCount > 0 && <AlertTriangle className="size-4 animate-pulse" />}
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="border-l-4 border-l-emerald-500">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-[10px] font-medium text-muted-foreground uppercase">Inventory Value</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-xl md:text-2xl font-bold">{inventoryValue.toLocaleString()} FCFA</div>
-          </CardContent>
-        </Card>
+      <div className="flex flex-col sm:flex-row gap-4 items-center">
+        <div className="relative w-full sm:max-w-xs">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+          <Input placeholder="Search products..." className="pl-9" />
+        </div>
+        <Button variant="ghost" size="sm" className="w-full sm:w-auto">
+          <Filter className="size-4 mr-2" /> Filter
+        </Button>
       </div>
 
-      <Card>
-        <CardHeader className="px-4 py-4 border-b">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-             <CardTitle className="text-base md:text-lg font-headline">Product Catalog</CardTitle>
-             <div className="flex items-center gap-2 w-full md:w-auto">
-                <div className="relative flex-1 md:w-64">
-                   <Search className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
-                   <Input 
-                     placeholder="Search products..." 
-                     className="pl-9"
-                     value={searchQuery}
-                     onChange={(e) => setSearchQuery(e.target.value)}
-                   />
-                </div>
-                <Button variant="outline" size="icon" className="shrink-0">
-                   <Filter className="size-4" />
-                </Button>
-             </div>
-          </div>
-        </CardHeader>
-        <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow className="bg-muted/50 whitespace-nowrap">
-                  <TableHead>Product</TableHead>
-                  <TableHead className="hidden md:table-cell">Category</TableHead>
-                  <TableHead className="text-right">Quantity</TableHead>
-                  <TableHead className="text-right hidden sm:table-cell">Selling Price</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredProducts.map((product) => (
-                  <TableRow key={product.id}>
-                    <TableCell className="font-medium text-xs md:text-sm">{product.name}</TableCell>
-                    <TableCell className="hidden md:table-cell text-xs">{product.category}</TableCell>
-                    <TableCell className="text-right text-xs md:text-sm">
-                      <span className={product.quantity <= product.lowStockLevel ? "text-destructive font-bold" : ""}>
-                        {product.quantity}
-                      </span>
-                      {product.quantity <= product.lowStockLevel && (
-                         <div className="text-[8px] text-destructive font-bold uppercase block">Low</div>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-right hidden sm:table-cell text-xs md:text-sm">{product.sellingPrice.toLocaleString()} FCFA</TableCell>
-                    <TableCell>
-                      <Badge variant={product.status === 'active' ? "outline" : "secondary"} className={product.status === 'active' ? "bg-emerald-50 text-emerald-700 border-emerald-200 text-[10px]" : "text-[10px]"}>
-                        {product.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon"><MoreVertical className="size-4" /></Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => handleEditProduct(product)}><Edit className="mr-2 size-4" /> Edit</DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleDeleteProduct(product.id)} className="text-destructive"><Trash2 className="mr-2 size-4" /> Delete</DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="border rounded-xl bg-card shadow-sm overflow-hidden">
+        <Table>
+          <TableHeader className="bg-muted/50">
+            <TableRow>
+              <TableHead className="w-[250px]">Product Name</TableHead>
+              <TableHead>Category</TableHead>
+              <TableHead>Stock Level</TableHead>
+              <TableHead>Price (FCFA)</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {MOCK_PRODUCTS.map((product) => (
+              <TableRow key={product.id} className="hover:bg-muted/30 transition-colors">
+                <TableCell className="font-medium">{product.name}</TableCell>
+                <TableCell>
+                  <Badge variant="outline" className="font-normal">{product.category}</Badge>
+                </TableCell>
+                <TableCell>
+                  <div className="flex items-center gap-2">
+                    <span className={product.quantity <= product.lowStockLevel ? "text-destructive font-bold" : ""}>
+                      {product.quantity}
+                    </span>
+                    {product.quantity <= product.lowStockLevel && (
+                      <AlertCircle className="size-3 text-destructive" />
+                    )}
+                  </div>
+                </TableCell>
+                <TableCell>{product.sellingPrice.toLocaleString()}</TableCell>
+                <TableCell>
+                  <Badge 
+                    variant={product.status === 'active' ? 'default' : 'secondary'}
+                    className={product.status === 'active' ? 'bg-emerald-500 hover:bg-emerald-600' : ''}
+                  >
+                    {product.status}
+                  </Badge>
+                </TableCell>
+                <TableCell className="text-right">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-8 w-8">
+                        <MoreHorizontal className="size-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                      <DropdownMenuItem onClick={() => handleEdit(product)}>Edit Details</DropdownMenuItem>
+                      <DropdownMenuItem>Adjust Stock</DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem className="text-destructive">Delete Product</DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
 
-      <ProductDialog open={isDialogOpen} onOpenChange={setIsDialogOpen} product={selectedProduct} onSave={handleSaveProduct} />
+      <ProductDialog 
+        product={selectedProduct}
+        open={isDialogOpen}
+        onOpenChange={setIsDialogOpen}
+        onSave={(p) => console.log("Saved product:", p)}
+      />
     </div>
   )
 }

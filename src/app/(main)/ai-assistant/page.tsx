@@ -1,179 +1,135 @@
-
 "use client"
 
-import { useState, useRef, useEffect } from "react"
-import { Bot, User, Lock, AlertTriangle, ShieldCheck, Loader2, Send } from "lucide-react"
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import * as React from "react"
+import { 
+  Send, 
+  Bot, 
+  User, 
+  Sparkles,
+  Info,
+  ShieldAlert
+} from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Badge } from "@/components/ui/badge"
-import { MOCK_USER } from "@/lib/mock-data"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { masterAssistant } from "@/ai/flows/master-assistant-flow"
+import { MOCK_USER } from "@/lib/mock-data"
 
-type Message = {
-  role: 'assistant' | 'user'
+interface Message {
+  role: "assistant" | "user"
   content: string
-  timestamp: Date
 }
 
 export default function AIAssistantPage() {
-  const [input, setInput] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      role: 'assistant',
-      content: `Bonjour ${MOCK_USER.fullName.split(' ')[0]}. Je suis votre Assistant SmartERP AI. J'ai un accès en lecture seule à vos données d'entreprise. Comment puis-je vous aider aujourd'hui ?`,
-      timestamp: new Date()
-    }
+  const [messages, setMessages] = React.useState<Message[]>([
+    { role: "assistant", content: "Hello Jean-Pierre! I am your SmartERP AI assistant. How can I help you manage your business in Douala today?" }
   ])
-
-  const scrollRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight
-    }
-  }, [messages])
+  const [input, setInput] = React.useState("")
+  const [isLoading, setIsLoading] = React.useState(false)
+  const scrollRef = React.useRef<HTMLDivElement>(null)
 
   const handleSend = async () => {
     if (!input.trim() || isLoading) return
 
-    const userMsg: Message = { role: 'user', content: input, timestamp: new Date() }
-    setMessages(prev => [...prev, userMsg])
-    const currentInput = input
+    const userMsg = input.trim()
     setInput("")
+    setMessages(prev => [...prev, { role: "user", content: userMsg }])
     setIsLoading(true)
 
     try {
-      const result = await masterAssistant({
-        query: currentInput,
+      const response = await masterAssistant({
+        query: userMsg,
         tenantId: MOCK_USER.tenantId,
         businessId: MOCK_USER.businessId,
         userId: MOCK_USER.uid,
         userRole: MOCK_USER.role,
         permissions: MOCK_USER.permissions,
       })
-
-      const aiMsg: Message = { 
-        role: 'assistant', 
-        content: result.response, 
-        timestamp: new Date() 
-      }
-      setMessages(prev => [...prev, aiMsg])
+      setMessages(prev => [...prev, { role: "assistant", content: response.response }])
     } catch (error) {
-      const errorMsg: Message = { 
-        role: 'assistant', 
-        content: "Désolé, j'ai rencontré une erreur lors du traitement de votre demande. Veuillez réessayer.", 
-        timestamp: new Date() 
-      }
-      setMessages(prev => [...prev, errorMsg])
+      setMessages(prev => [...prev, { role: "assistant", content: "I'm sorry, I encountered an error processing your request. Please try again." }])
     } finally {
       setIsLoading(false)
     }
   }
 
+  React.useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight
+    }
+  }, [messages])
+
   return (
-    <div className="flex flex-col h-[calc(100vh-160px)] md:h-[calc(100vh-140px)] gap-4 md:gap-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-2xl md:text-3xl font-bold tracking-tight">AI Business Assistant</h2>
-          <p className="text-xs md:text-sm text-muted-foreground">Intelligence décisionnelle en lecture seule pour votre PME.</p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-           <Badge variant="outline" className="flex items-center gap-1.5 py-1 px-2 md:px-3 bg-accent/10 border-accent/30 text-accent text-[10px] md:text-xs">
-              <ShieldCheck className="size-3" />
-              Rôle: {MOCK_USER.role}
-           </Badge>
-           <Badge variant="outline" className="flex items-center gap-1.5 py-1 px-2 md:px-3 bg-secondary text-[10px] md:text-xs">
-              <Lock className="size-3" />
-              Lecture Seule
-           </Badge>
-        </div>
+    <div className="flex flex-col h-[calc(100vh-10rem)] max-w-4xl mx-auto">
+      <div className="flex flex-col gap-2 mb-4">
+        <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
+          <Sparkles className="size-6 text-primary" />
+          AI Business Assistant
+        </h1>
+        <p className="text-muted-foreground">Ask me about your sales, inventory, tasks, or financial health.</p>
       </div>
 
-      <div className="grid lg:grid-cols-4 gap-4 md:gap-6 flex-1 min-h-0">
-        <Card className="lg:col-span-3 flex flex-col min-h-0 border-accent/20">
-          <CardHeader className="border-b py-2 px-4 flex flex-row items-center justify-between shrink-0">
-            <div className="flex items-center gap-2">
-              <Bot className="size-4 md:size-5 text-accent" />
-              <CardTitle className="text-sm md:text-base font-headline">SmartERP Intelligence</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent className="flex-1 overflow-hidden p-0 relative">
-            <ScrollArea className="h-full p-3 md:p-4" viewportRef={scrollRef}>
-              <div className="flex flex-col gap-4 md:gap-6 pb-4">
-                {messages.map((msg, i) => (
-                  <div key={i} className={`flex gap-2 md:gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
-                    <div className={`size-7 md:size-8 rounded-lg flex items-center justify-center shrink-0 ${
-                      msg.role === 'assistant' ? 'bg-accent text-white' : 'bg-primary text-white'
-                    }`}>
-                      {msg.role === 'assistant' ? <Bot className="size-4 md:size-5" /> : <User className="size-4 md:size-5" />}
-                    </div>
-                    <div className={`flex flex-col gap-1 max-w-[85%] md:max-w-[80%] ${msg.role === 'user' ? 'items-end' : ''}`}>
-                       <div className={`rounded-2xl p-3 md:p-4 text-xs md:text-sm leading-relaxed shadow-sm ${
-                         msg.role === 'assistant' 
-                          ? 'bg-accent/5 border border-accent/10 text-foreground' 
-                          : 'bg-primary text-white'
-                       }`}>
-                         {msg.content}
-                       </div>
-                       <span className="text-[9px] md:text-[10px] text-muted-foreground px-2">
-                          {msg.timestamp.toLocaleTimeString('fr-CM', { hour: '2-digit', minute: '2-digit' })}
-                       </span>
-                    </div>
+      <Alert className="mb-4 bg-primary/5 border-primary/20">
+        <ShieldAlert className="size-4 text-primary" />
+        <AlertTitle className="text-primary font-bold">Read-Only Assistant</AlertTitle>
+        <AlertDescription className="text-xs">
+          I can analyze and report on your data, but I cannot modify records or change settings.
+        </AlertDescription>
+      </Alert>
+
+      <div className="flex-1 bg-card border rounded-2xl shadow-sm flex flex-col overflow-hidden">
+        <ScrollArea className="flex-1 p-4 md:p-6" ref={scrollRef}>
+          <div className="space-y-6">
+            {messages.map((msg, i) => (
+              <div key={i} className={`flex gap-4 ${msg.role === 'assistant' ? 'justify-start' : 'justify-end'}`}>
+                {msg.role === 'assistant' && (
+                  <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center shrink-0">
+                    <Bot className="size-5 text-white" />
                   </div>
-                ))}
-                {isLoading && (
-                  <div className="flex gap-2 md:gap-3">
-                    <div className="size-7 md:size-8 rounded-lg bg-accent text-white flex items-center justify-center shrink-0">
-                      <Bot className="size-4 md:size-5" />
-                    </div>
-                    <div className="flex items-center gap-2 px-3 md:px-4 py-2 md:py-3 bg-accent/5 rounded-2xl border border-accent/10">
-                      <Loader2 className="size-3 md:size-4 animate-spin text-accent" />
-                      <span className="text-[10px] md:text-xs text-muted-foreground italic">Analyse des données en cours...</span>
-                    </div>
+                )}
+                <div className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm ${
+                  msg.role === 'assistant' 
+                    ? 'bg-muted text-foreground' 
+                    : 'bg-primary text-primary-foreground'
+                }`}>
+                  {msg.content}
+                </div>
+                {msg.role === 'user' && (
+                  <div className="h-8 w-8 rounded-full bg-secondary flex items-center justify-center shrink-0 border">
+                    <User className="size-5 text-muted-foreground" />
                   </div>
                 )}
               </div>
-            </ScrollArea>
-          </CardContent>
-          <CardFooter className="p-3 md:p-4 border-t shrink-0">
-            <form onSubmit={(e) => { e.preventDefault(); handleSend(); }} className="flex w-full items-center gap-2 md:gap-3">
-              <Input 
-                placeholder="Posez une question sur vos ventes, stocks, ou tâches..." 
-                className="flex-1 focus-visible:ring-accent text-xs md:text-sm h-9 md:h-10"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                disabled={isLoading}
-              />
-              <Button type="submit" size="icon" className="bg-accent hover:bg-accent/90 shrink-0 h-9 w-9 md:h-10 md:w-10" disabled={isLoading || !input.trim()}>
-                {isLoading ? <Loader2 className="size-4 animate-spin" /> : <Send className="size-4" />}
-              </Button>
-            </form>
-          </CardFooter>
-        </Card>
+            ))}
+            {isLoading && (
+              <div className="flex gap-4 justify-start animate-pulse">
+                <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center shrink-0" />
+                <div className="h-10 w-32 bg-muted rounded-2xl" />
+              </div>
+            )}
+          </div>
+        </ScrollArea>
 
-        <div className="hidden lg:flex flex-col gap-6">
-          <Card className="border-accent/10">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-headline">Safety & Governance</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4 text-xs text-muted-foreground">
-              <div className="flex gap-2">
-                <AlertTriangle className="size-4 text-amber-500 shrink-0" />
-                <p>L'IA ne peut pas modifier les enregistrements ni approuver les transactions.</p>
-              </div>
-              <div className="flex gap-2">
-                <Lock className="size-4 text-blue-500 shrink-0" />
-                <p>Vos données sont isolées et ne sont jamais partagées avec d'autres entreprises.</p>
-              </div>
-              <div className="flex gap-2">
-                <ShieldCheck className="size-4 text-emerald-500 shrink-0" />
-                <p>L'IA respecte strictement vos permissions de module (RH, Finance, etc.).</p>
-              </div>
-            </CardContent>
-          </Card>
+        <div className="p-4 border-t bg-muted/20">
+          <form 
+            onSubmit={(e) => { e.preventDefault(); handleSend(); }}
+            className="flex gap-2"
+          >
+            <Input 
+              placeholder="e.g., Show me high priority tasks for this week..." 
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              className="bg-background rounded-full px-6"
+            />
+            <Button size="icon" className="rounded-full shrink-0" disabled={isLoading}>
+              <Send className="size-4" />
+            </Button>
+          </form>
+          <p className="text-[10px] text-center mt-3 text-muted-foreground uppercase tracking-widest font-bold">
+            Secure Cameroonian SME Intelligence
+          </p>
         </div>
       </div>
     </div>
