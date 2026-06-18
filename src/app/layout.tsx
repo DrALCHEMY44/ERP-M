@@ -7,9 +7,12 @@ import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/s
 import { AppSidebar } from "@/components/app-sidebar";
 import { Separator } from "@/components/ui/separator";
 import { Toaster } from "@/components/ui/toaster";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { NotificationCenter } from "@/components/notifications/notification-center";
 import { LanguageProvider } from "@/components/language-provider";
+import { RotateCw, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const spaceGrotesk = Space_Grotesk({ subsets: ["latin"], variable: "--font-space-grotesk" });
@@ -20,7 +23,23 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const pathname = usePathname();
+  const router = useRouter();
+  const { toast } = useToast();
+  const [isRefreshing, setIsRefreshing] = React.useState(false);
+
   const isAuthPage = ['/login', '/register', '/create-business', '/join-business'].includes(pathname);
+
+  const handleRefresh = () => {
+    setIsRefreshing(true);
+    router.refresh();
+    setTimeout(() => {
+      setIsRefreshing(false);
+      toast({
+        title: "System Synced",
+        description: "Your workspace data has been re-synchronized with the cloud.",
+      });
+    }, 800);
+  };
 
   return (
     <html lang="en">
@@ -51,7 +70,22 @@ export default function RootLayout({
                       <span className="text-xs font-headline font-bold text-primary truncate max-w-[120px] md:max-w-none">Superette de l'Avenir</span>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 md:gap-4">
+                  <div className="flex items-center gap-2 md:gap-3">
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-9 w-9 text-muted-foreground hover:text-primary transition-colors"
+                      onClick={handleRefresh}
+                      disabled={isRefreshing}
+                      title="Sync System Data"
+                    >
+                      {isRefreshing ? (
+                        <Loader2 className="size-5 animate-spin text-primary" />
+                      ) : (
+                        <RotateCw className="size-5" />
+                      )}
+                    </Button>
+                    <Separator orientation="vertical" className="h-6" />
                     <NotificationCenter />
                     <Separator orientation="vertical" className="h-6 hidden md:block" />
                     <div className="h-8 w-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold text-xs shrink-0">
