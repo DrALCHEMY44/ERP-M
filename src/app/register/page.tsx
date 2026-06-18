@@ -32,21 +32,31 @@ export default function RegisterPage() {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password)
       const user = userCredential.user
 
-      // 2. Create Firestore Profile
-      // Check if this is the admin email
+      // 2. Determine Role and Context
       const isAdminEmail = email.toLowerCase() === 'admin@smarterp.ai';
       
       const tenantId = isAdminEmail ? 'system_root' : `tenant_${Math.random().toString(36).substr(2, 6)}`
       const businessId = isAdminEmail ? 'platform_master' : `biz_${Math.random().toString(36).substr(2, 6)}`
+      const userRole = isAdminEmail ? "Platform Super Admin" : "Business Owner"
       
+      // 3. Create Firestore Profile
       await setDoc(doc(db, "users", user.uid), {
         uid: user.uid,
         email: user.email,
         fullName: fullName,
         tenantId: tenantId,
         businessId: businessId,
-        role: isAdminEmail ? "Platform Super Admin" : "Business Owner",
+        role: userRole,
         permissions: ["*"],
+        createdAt: new Date().toISOString(),
+      })
+
+      // 4. Create Tenant Document for platform visibility
+      await setDoc(doc(db, "tenants", tenantId), {
+        id: tenantId,
+        name: isAdminEmail ? "Platform Infrastructure" : `${fullName}'s SME`,
+        plan: isAdminEmail ? "Enterprise" : "Basic",
+        status: "Active",
         createdAt: new Date().toISOString(),
       })
 

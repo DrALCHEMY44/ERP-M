@@ -59,15 +59,14 @@ export function AppSidebar() {
   const { t, language, setLanguage } = useTranslation()
   const { user: authUser, profile, loading: authLoading } = useAuth()
 
-  // Use profile if available, otherwise fallback to mock ONLY if we are in local dev
-  const currentUser = profile || (process.env.NEXT_PUBLIC_FIREBASE_API_KEY === "placeholder-key" ? MOCK_USER : null);
-
-  // Platform Owner Bypass - Robust check using both Auth User and Firestore Profile
-  const adminEmail = "admin@smarterp.ai";
-  const isSuperAdmin = 
-    (authUser?.email?.toLowerCase() === adminEmail) || 
-    (profile?.role === 'Platform Super Admin') ||
-    (profile?.email?.toLowerCase() === adminEmail);
+  // Robust check for Super Admin status
+  const isSuperAdmin = React.useMemo(() => {
+    const adminEmail = "admin@smarterp.ai";
+    return (
+      authUser?.email?.toLowerCase() === adminEmail || 
+      profile?.role === 'Platform Super Admin'
+    );
+  }, [authUser, profile]);
 
   const handleLogout = async () => {
     try {
@@ -181,12 +180,12 @@ export function AppSidebar() {
           <DropdownMenuTrigger asChild>
             <button className="flex items-center gap-3 w-full text-left outline-none hover:opacity-80 transition-opacity">
               <div className="h-8 w-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold text-xs shrink-0">
-                {currentUser?.fullName?.substring(0, 2).toUpperCase() || '??'}
+                {profile?.fullName?.substring(0, 2).toUpperCase() || '??'}
               </div>
               {state !== "collapsed" && (
                 <div className="flex flex-col flex-1 min-w-0">
-                  <span className="text-xs font-medium truncate">{currentUser?.fullName || 'User'}</span>
-                  <span className="text-[10px] text-muted-foreground truncate uppercase">{currentUser?.role || 'Member'}</span>
+                  <span className="text-xs font-medium truncate">{profile?.fullName || 'User'}</span>
+                  <span className="text-[10px] text-muted-foreground truncate uppercase">{profile?.role || 'Member'}</span>
                 </div>
               )}
             </button>
