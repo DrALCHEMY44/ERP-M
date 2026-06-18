@@ -1,4 +1,3 @@
-
 "use client"
 
 import * as React from "react"
@@ -7,17 +6,16 @@ import { Language, translations } from "@/lib/i18n/translations"
 interface LanguageContextType {
   language: Language
   setLanguage: (lang: Language) => void
-  t: any // Simplified for this implementation
+  t: any 
 }
 
 const LanguageContext = React.createContext<LanguageContextType | undefined>(undefined)
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const [language, setLanguageState] = React.useState<Language>('en')
-  const [isMounted, setIsMounted] = React.useState(false)
 
   React.useEffect(() => {
-    // Detect browser language or saved preference
+    // Client-only check for preference
     const saved = localStorage.getItem('app_lang') as Language
     if (saved && (saved === 'en' || saved === 'fr')) {
       setLanguageState(saved)
@@ -29,7 +27,6 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
         setLanguageState('en')
       }
     }
-    setIsMounted(true)
   }, [])
 
   const setLanguage = (lang: Language) => {
@@ -41,13 +38,11 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     const keys = path.split('.')
     let current: any = translations[language]
     for (const key of keys) {
-      if (current[key] === undefined) return path
+      if (!current || current[key] === undefined) return path
       current = current[key]
     }
     return current
   }, [language])
-
-  if (!isMounted) return null
 
   return (
     <LanguageContext.Provider value={{ language, setLanguage, t }}>
