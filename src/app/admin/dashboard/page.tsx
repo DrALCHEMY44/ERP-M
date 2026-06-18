@@ -48,7 +48,8 @@ export default function SuperAdminDashboard() {
   
   const [searchQuery, setSearchQuery] = React.useState("")
 
-  const isSuperAdmin = profile?.role === 'Platform Super Admin' || profile?.email === 'owner@kobocore.com';
+  // Platform Owner Bypass
+  const isSuperAdmin = profile?.role === 'Platform Super Admin' || profile?.email === 'admin@smarterp.ai';
 
   const filteredTenants = tenants.filter(t => 
     t.name.toLowerCase().includes(searchQuery.toLowerCase()) ||

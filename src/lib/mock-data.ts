@@ -3,11 +3,11 @@ import { UserProfile, Business, Product, Task, Sale, ActivityLog, Expense, Custo
 
 export const MOCK_USER: UserProfile = {
   uid: 'user123',
-  email: 'owner@kobocore.com',
-  fullName: 'Jean-Pierre Kamga',
-  tenantId: 'tenant_douala_001',
-  businessId: 'biz_superette_central',
-  role: 'Business Owner',
+  email: 'admin@smarterp.ai',
+  fullName: 'Platform Administrator',
+  tenantId: 'system_root',
+  businessId: 'platform_master',
+  role: 'Platform Super Admin',
   permissions: ['*'],
   createdAt: '2023-01-10T08:00:00Z',
 };

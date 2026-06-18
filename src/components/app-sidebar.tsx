@@ -62,7 +62,8 @@ export function AppSidebar() {
   // Use profile if available, otherwise fallback to mock ONLY if we are in local dev
   const currentUser = profile || (process.env.NEXT_PUBLIC_FIREBASE_API_KEY === "placeholder-key" ? MOCK_USER : null);
 
-  const isSuperAdmin = currentUser?.role === 'Platform Super Admin' || currentUser?.email === 'owner@kobocore.com';
+  // Platform Owner Bypass
+  const isSuperAdmin = currentUser?.role === 'Platform Super Admin' || currentUser?.email === 'admin@smarterp.ai';
 
   const handleLogout = async () => {
     try {
