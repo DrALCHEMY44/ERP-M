@@ -1,3 +1,4 @@
+
 export type Role = 'Platform Super Admin' | 'Business Owner' | 'Manager' | 'Accountant' | 'HR Officer' | 'Staff' | 'Viewer';
 
 export type UserProfile = {
@@ -93,7 +94,6 @@ export type Sale = {
   createdAt: string;
 };
 
-// SYCOHADA Account Classes
 export type OHADAAccountClass = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
 
 export type Expense = {
@@ -177,6 +177,10 @@ export type ActivityLog = {
   actionType: string;
   module: string;
   description: string;
+  oldValue?: string;
+  newValue?: string;
+  recordId?: string;
+  deviceInfo?: string;
   timestamp: string;
 };
 

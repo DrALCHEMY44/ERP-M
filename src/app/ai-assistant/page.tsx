@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -8,6 +9,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { masterAssistant } from "@/ai/flows/master-assistant-flow"
 import { MOCK_USER } from "@/lib/mock-data"
+import { logActivity } from "@/lib/audit-logger"
 
 interface Message {
   role: "assistant" | "user"
@@ -30,6 +32,13 @@ export default function AIAssistantPage() {
     setIsLoading(true)
 
     try {
+      // Log the user's AI query for the audit trail
+      await logActivity({
+        actionType: 'AI_QUERY',
+        module: 'AI Assistant',
+        description: `User asked AI: "${userMsg.substring(0, 50)}${userMsg.length > 50 ? '...' : ''}"`,
+      });
+
       const response = await masterAssistant({
         query: userMsg,
         tenantId: MOCK_USER.tenantId,
@@ -116,7 +125,7 @@ export default function AIAssistantPage() {
             className="flex gap-2"
           >
             <Input 
-              placeholder="Ask me: 'What are my total sales today?' or 'Show me overdue tasks'..." 
+              placeholder="Ask me: 'Who edited this product?' or 'What are the recent changes?'..." 
               value={input}
               onChange={(e) => setInput(e.target.value)}
               className="bg-background rounded-full px-6 shadow-inner h-12 border-primary/20 focus-visible:ring-primary"
@@ -127,10 +136,10 @@ export default function AIAssistantPage() {
           </form>
           <div className="flex items-center justify-center gap-4 mt-3">
              <p className="text-[8px] text-muted-foreground uppercase tracking-widest font-bold">
-               Secure Data Sync: Douala_001
+               Secure Audit Sync: Douala_001
              </p>
              <p className="text-[8px] text-primary uppercase tracking-widest font-bold">
-               OHADA Compliant Engine
+               Immutable Log Protocol
              </p>
           </div>
         </div>

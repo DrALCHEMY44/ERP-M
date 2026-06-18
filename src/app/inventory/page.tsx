@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -18,6 +19,7 @@ import { ProductDialog } from "@/components/inventory/product-dialog"
 import { Product } from "@/lib/types"
 import { useFirestore } from "@/hooks/use-firestore"
 import { useToast } from "@/hooks/use-toast"
+import { logActivity } from "@/lib/audit-logger"
 
 export default function InventoryPage() {
   const { data: products, loading, addRecord, updateRecord, deleteRecord } = useFirestore<Product>('products');
@@ -45,9 +47,17 @@ export default function InventoryPage() {
   }
 
   const handleDelete = async (id: string) => {
-    if (confirm("Are you sure you want to delete this product?")) {
+    const productToDelete = products.find(p => p.id === id);
+    if (confirm(`Are you sure you want to delete ${productToDelete?.name}?`)) {
       try {
         await deleteRecord(id);
+        await logActivity({
+          actionType: 'DELETE_PRODUCT',
+          module: 'Inventory',
+          description: `User deleted product: ${productToDelete?.name}`,
+          recordId: id,
+          oldValue: productToDelete
+        });
         toast({ title: "Product Deleted", description: "Item has been removed from your inventory." });
       } catch (e) {
         toast({ variant: "destructive", title: "Error", description: "Could not delete product." });
@@ -59,9 +69,24 @@ export default function InventoryPage() {
     try {
       if (selectedProduct?.id) {
         await updateRecord(selectedProduct.id, productData);
+        await logActivity({
+          actionType: 'UPDATE_PRODUCT',
+          module: 'Inventory',
+          description: `User updated product: ${productData.name}`,
+          recordId: selectedProduct.id,
+          oldValue: selectedProduct,
+          newValue: productData
+        });
         toast({ title: "Product Updated", description: `${productData.name} has been modified.` });
       } else {
-        await addRecord(productData as Omit<Product, 'id'>);
+        const newId = await addRecord(productData as Omit<Product, 'id'>);
+        await logActivity({
+          actionType: 'ADD_PRODUCT',
+          module: 'Inventory',
+          description: `User added new product: ${productData.name}`,
+          recordId: newId,
+          newValue: productData
+        });
         toast({ title: "Product Added", description: `${productData.name} is now in your stock.` });
       }
     } catch (e) {

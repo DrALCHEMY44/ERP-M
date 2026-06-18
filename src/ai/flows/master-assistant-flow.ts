@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview Master AI Assistant Flow for SmartERP AI with strict RBAC.
@@ -6,6 +7,8 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
+import { db } from '@/lib/firebase';
+import { collection, query, where, getDocs, limit, orderBy } from 'firebase/firestore';
 
 const MasterAssistantInputSchema = z.object({
   query: z.string().describe('The user\'s natural language question.'),
@@ -77,37 +80,15 @@ const getInventoryAndOpsTool = ai.defineTool(
   }
 );
 
-const getHRAndStaffTool = ai.defineTool(
-  {
-    name: 'getHRAndStaff',
-    description: 'Fetches employee directory, attendance, and salary info. Restricted to Owner and HR Officer.',
-    inputSchema: z.object({
-      userRole: z.string(),
-      includeSalaries: z.boolean().default(false),
-    }),
-    outputSchema: z.any(),
-  },
-  async (input) => {
-    const authorizedRoles = ['Business Owner', 'HR Officer'];
-    if (!authorizedRoles.includes(input.userRole)) {
-      return { error: 'You do not have permission to access HR information.' };
-    }
-
-    return {
-      totalStaff: 12,
-      activeToday: 11,
-      attendanceRate: '92%',
-      salaryExpenditure: input.includeSalaries ? '2,400,000 FCFA' : 'Access Restricted',
-    };
-  }
-);
-
 const getAuditLogsTool = ai.defineTool(
   {
     name: 'getAuditLogs',
-    description: 'Fetches activity logs. Restricted to Owner and Manager.',
+    description: 'Fetches activity logs from the audit trail. Allows answering "Who did what". Restricted to Owner and Manager.',
     inputSchema: z.object({
       userRole: z.string(),
+      tenantId: z.string(),
+      businessId: z.string(),
+      limit: z.number().default(20),
     }),
     outputSchema: z.any(),
   },
@@ -115,12 +96,24 @@ const getAuditLogsTool = ai.defineTool(
     if (!['Business Owner', 'Manager'].includes(input.userRole)) {
       return { error: 'You do not have permission to access system activity logs.' };
     }
-    return {
-      recentLogs: [
-        { user: 'Marie Claire', action: 'Update Stock', time: '2 mins ago' },
-        { user: 'Accountant', action: 'Record Expense', time: '1 hour ago' }
-      ]
-    };
+    
+    try {
+      const q = query(
+        collection(db, 'activity_logs'),
+        where('tenantId', '==', input.tenantId),
+        where('businessId', '==', input.businessId),
+        orderBy('timestamp', 'desc'),
+        limit(input.limit)
+      );
+      
+      const snapshot = await getDocs(q);
+      const logs = snapshot.docs.map(doc => doc.data());
+      
+      return { logs };
+    } catch (error) {
+      console.error('AI Tool Error (AuditLogs):', error);
+      return { error: 'Failed to fetch audit records from secure vault.' };
+    }
   }
 );
 
@@ -128,7 +121,7 @@ const masterAssistantPrompt = ai.definePrompt({
   name: 'masterAssistantPrompt',
   input: { schema: MasterAssistantInputSchema },
   output: { schema: MasterAssistantOutputSchema },
-  tools: [getFinanceDataTool, getInventoryAndOpsTool, getHRAndStaffTool, getAuditLogsTool],
+  tools: [getFinanceDataTool, getInventoryAndOpsTool, getAuditLogsTool],
   prompt: `You are the SmartERP AI Assistant for Cameroonian SMEs. You must apply strict Role-Based Access Control.
 
 USER PROFILE:
@@ -147,7 +140,8 @@ ROLE-SPECIFIC GUIDELINES:
 GUARDRAILS:
 1. READ-ONLY: If asked to modify, say: "I can summarize and report on business information, but I cannot modify records."
 2. PERMISSIONS: If tools return an error or if you identify a sensitive request unauthorized for role '{{{userRole}}}', say: "You do not have permission to access this information."
-3. MANDATORY FOOTER: Always end with: "I can only answer based on the data available in your business account and your permission level."
+3. AUDIT TRAIL: Use getAuditLogs tool to answer questions about system changes, edits, or who performed specific actions.
+4. MANDATORY FOOTER: Always end with: "I can only answer based on the data available in your business account and your permission level."
 
 Query: "{{{query}}}"
 `,
