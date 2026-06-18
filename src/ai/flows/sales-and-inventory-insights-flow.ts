@@ -2,10 +2,7 @@
 'use server';
 /**
  * @fileOverview An AI assistant flow for providing insights into sales and inventory data.
- *
- * - salesAndInventoryInsights - A function that handles sales and inventory queries from a manager.
- * - SalesAndInventoryInsightsInput - The input type for the salesAndInventoryInsights function.
- * - SalesAndInventoryInsightsOutput - The return type for the salesAndInventoryInsights function.
+ * This assistant is STRICTLY read-only and context-aware.
  */
 
 import {ai} from '@/ai/genkit';
@@ -16,30 +13,13 @@ const SalesAndInventoryInsightsInputSchema = z.object({
   tenantId: z.string().describe('The ID of the tenant the user belongs to.'),
   businessId: z.string().describe('The ID of the business the user is currently operating within.'),
   userRole: z.string().describe('The role of the current user (e.g., Manager, Accountant).'),
-  permissions: z
-    .array(z.string())
-    .describe('A list of permissions the current user possesses (e.g., viewSales, manageInventory).'),
-  salesSummary: z
-    .string()
-    .optional()
-    .describe('A summarized string of recent sales data for the current business, if available and permitted.'),
-  lowStockProducts: z
-    .string()
-    .optional()
-    .describe('A summarized string of products currently low in stock for the current business, if available and permitted.'),
-  generalBusinessSummary: z
-    .string()
-    .optional()
-    .describe('A summarized string of general business performance (e.g., profit/loss) if available and permitted by role.'),
-  userCanViewSales: z
-    .boolean()
-    .describe('True if the user has explicit permission to view sales data.'),
-  userCanViewInventory: z
-    .boolean()
-    .describe('True if the user has explicit permission to view inventory data.'),
-  userCanViewFinancials: z
-    .boolean()
-    .describe('True if the user has explicit permission to view financial data.'),
+  permissions: z.array(z.string()).describe('User permissions.'),
+  salesSummary: z.string().optional().describe('Contextual sales data.'),
+  lowStockProducts: z.string().optional().describe('Contextual inventory data.'),
+  generalBusinessSummary: z.string().optional().describe('Contextual financial data.'),
+  userCanViewSales: z.boolean(),
+  userCanViewInventory: z.boolean(),
+  userCanViewFinancials: z.boolean(),
 });
 export type SalesAndInventoryInsightsInput = z.infer<typeof SalesAndInventoryInsightsInputSchema>;
 
@@ -58,39 +38,20 @@ const salesAndInventoryInsightsPrompt = ai.definePrompt({
   name: 'salesAndInventoryInsightsPrompt',
   input: {schema: SalesAndInventoryInsightsInputSchema},
   output: {schema: SalesAndInventoryInsightsOutputSchema},
-  prompt: `You are a read-only AI Assistant for SmartERP AI, designed to help managers in Cameroon make informed operational decisions.
-Your primary function is to provide summaries, insights, and explanations based *only* on the provided business data.
-You must strictly adhere to the following rules:
+  prompt: `You are a read-only AI Assistant for SmartERP AI, designed for Cameroonian SMEs.
+Strictly adhere to these guardrails:
+1. READ-ONLY: You cannot modify records. If asked, say: "I can summarize and report on business information, but I cannot modify records."
+2. MULTI-TENANCY: Only answer based on tenant '{{{tenantId}}}'.
+3. PERMISSIONS: Respect role '{{{userRole}}}'. If unauthorized, say: "You do not have permission to access this information."
 
-1.  **Read-Only**: You cannot add, edit, delete data, approve transactions, assign tasks, or modify any records in any way. If asked to do so, respond with: "I can summarize and report on business information, but I cannot modify records."
-2.  **Data Isolation**: You must operate strictly within the context of the provided tenantId and businessId.
-3.  **Role-Based Access Control**: You must respect the user's userRole and permissions.
-4.  **Permission Denied**: If the user asks for information for which they do not have the necessary permissions (even if the data is provided to you) and userCanViewSales, userCanViewInventory, or userCanViewFinancials is false for that data type, respond with: "You do not have permission to access this information."
+Available Context:
+{{#if salesSummary}}Sales: {{{salesSummary}}}{{/if}}
+{{#if lowStockProducts}}Low Stock: {{{lowStockProducts}}}{{/if}}
+{{#if generalBusinessSummary}}Finance: {{{generalBusinessSummary}}}{{/if}}
 
-Here is the contextual data available, based on the user's permissions:
+Question: "{{{question}}}"
 
-{{#if salesSummary}}
-**Recent Sales Summary (Permitted):**
-{{{salesSummary}}}
-{{/if}}
-
-{{#if lowStockProducts}}
-**Low Stock Products (Permitted):**
-{{{lowStockProducts}}}
-{{/if}}
-
-{{#if generalBusinessSummary}}
-**General Business Performance Summary (Permitted):**
-{{{generalBusinessSummary}}}
-{{/if}}
-
----
-User Question: "{{{question}}}"
-
-Provide a concise and helpful answer based on the available data and the user's permissions. If a specific data type is not provided or the user lacks permission, state that the information is unavailable or unauthorized. Do not fabricate information.
-
-Remember to include this message where appropriate at the end of your answer: "I can only answer based on the data available in your business account and your permission level."
-`,
+Always end with: "I can only answer based on the data available in your business account and your permission level."`,
 });
 
 const salesAndInventoryInsightsFlow = ai.defineFlow(

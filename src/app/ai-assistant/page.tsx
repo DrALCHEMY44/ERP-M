@@ -23,7 +23,7 @@ export default function AIAssistantPage() {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
-      content: `Hello ${MOCK_USER.fullName.split(' ')[0]}. I am your SmartERP AI Assistant. I have read-only access to your business data. How can I help you today?`,
+      content: `Bonjour ${MOCK_USER.fullName.split(' ')[0]}. Je suis votre Assistant SmartERP AI. J'ai un accès en lecture seule à vos données d'entreprise. Comment puis-je vous aider aujourd'hui ?`,
       timestamp: new Date()
     }
   ])
@@ -64,7 +64,7 @@ export default function AIAssistantPage() {
     } catch (error) {
       const errorMsg: Message = { 
         role: 'assistant', 
-        content: "I apologize, but I encountered an error while processing your request. Please try again.", 
+        content: "Désolé, j'ai rencontré une erreur lors du traitement de votre demande. Veuillez réessayer.", 
         timestamp: new Date() 
       }
       setMessages(prev => [...prev, errorMsg])
@@ -74,26 +74,26 @@ export default function AIAssistantPage() {
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-160px)] md:h-[calc(100vh-140px)] gap-4 md:gap-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="flex flex-col h-[calc(100vh-160px)] md:h-[calc(100vh-140px)] gap-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div>
-          <h2 className="text-2xl md:text-3xl font-bold tracking-tight">AI Assistant</h2>
-          <p className="text-xs md:text-sm text-muted-foreground">Context-aware business intelligence at your fingertips.</p>
+          <h2 className="text-xl md:text-3xl font-bold tracking-tight">AI Assistant</h2>
+          <p className="text-[10px] md:text-sm text-muted-foreground">Intelligence décisionnelle en lecture seule pour votre PME.</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-           <Badge variant="outline" className="flex items-center gap-1.5 py-1 px-2 md:px-3 bg-accent/10 border-accent/30 text-accent text-[10px] md:text-xs">
+           <Badge variant="outline" className="flex items-center gap-1 py-1 px-2 bg-accent/5 border-accent/20 text-accent text-[9px] md:text-xs">
               <ShieldCheck className="size-3" />
               {MOCK_USER.role}
            </Badge>
-           <Badge variant="outline" className="flex items-center gap-1.5 py-1 px-2 md:px-3 bg-secondary text-[10px] md:text-xs">
+           <Badge variant="outline" className="flex items-center gap-1 py-1 px-2 bg-secondary text-[9px] md:text-xs">
               <Lock className="size-3" />
-              Read-Only
+              Lecture Seule
            </Badge>
         </div>
       </div>
 
-      <div className="grid lg:grid-cols-4 gap-4 md:gap-6 flex-1 min-h-0">
-        <Card className="lg:col-span-3 flex flex-col min-h-0 border-accent/20">
+      <div className="grid lg:grid-cols-4 gap-4 flex-1 min-h-0">
+        <Card className="lg:col-span-3 flex flex-col min-h-0 border-accent/20 shadow-sm">
           <CardHeader className="border-b py-2 px-4 flex flex-row items-center justify-between shrink-0">
             <div className="flex items-center gap-2">
               <Bot className="size-4 md:size-5 text-accent" />
@@ -119,7 +119,7 @@ export default function AIAssistantPage() {
                          {msg.content}
                        </div>
                        <span className="text-[9px] md:text-[10px] text-muted-foreground px-2">
-                          {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          {msg.timestamp.toLocaleTimeString('fr-CM', { hour: '2-digit', minute: '2-digit' })}
                        </span>
                     </div>
                   </div>
@@ -129,9 +129,9 @@ export default function AIAssistantPage() {
                     <div className="size-7 md:size-8 rounded-lg bg-accent text-white flex items-center justify-center shrink-0">
                       <Bot className="size-4 md:size-5" />
                     </div>
-                    <div className="flex items-center gap-2 px-3 md:px-4 py-2 md:py-3 bg-accent/5 rounded-2xl border border-accent/10">
-                      <Loader2 className="size-3 md:size-4 animate-spin text-accent" />
-                      <span className="text-[10px] md:text-xs text-muted-foreground italic">Thinking...</span>
+                    <div className="flex items-center gap-2 px-3 py-2 bg-accent/5 rounded-2xl border border-accent/10">
+                      <Loader2 className="size-3 animate-spin text-accent" />
+                      <span className="text-[10px] text-muted-foreground italic">Analyse des données...</span>
                     </div>
                   </div>
                 )}
@@ -139,9 +139,9 @@ export default function AIAssistantPage() {
             </ScrollArea>
           </CardContent>
           <CardFooter className="p-3 md:p-4 border-t shrink-0">
-            <form onSubmit={(e) => { e.preventDefault(); handleSend(); }} className="flex w-full items-center gap-2 md:gap-3">
+            <form onSubmit={(e) => { e.preventDefault(); handleSend(); }} className="flex w-full items-center gap-2">
               <Input 
-                placeholder="Ask about sales, tasks..." 
+                placeholder="Posez une question sur vos ventes ou stocks..." 
                 className="flex-1 focus-visible:ring-accent text-xs md:text-sm h-9 md:h-10"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
@@ -154,19 +154,23 @@ export default function AIAssistantPage() {
           </CardFooter>
         </Card>
 
-        <div className="hidden lg:flex flex-col gap-6">
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-headline">Safety & Restrictions</CardTitle>
+        <div className="hidden lg:flex flex-col gap-4">
+          <Card className="border-accent/10">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Sécurité & Gouvernance</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4 text-xs text-muted-foreground">
+            <CardContent className="space-y-4 text-xs text-muted-foreground/80">
               <div className="flex gap-2">
                 <AlertTriangle className="size-4 text-amber-500 shrink-0" />
-                <p>The AI cannot modify records or perform actions like approvals.</p>
+                <p>L'IA est strictement en lecture seule et ne peut modifier aucun enregistrement.</p>
               </div>
               <div className="flex gap-2">
                 <Lock className="size-4 text-blue-500 shrink-0" />
-                <p>Data is strictly isolated to your business account.</p>
+                <p>Accès exclusif aux données du tenant : {MOCK_USER.tenantId}.</p>
+              </div>
+              <div className="flex gap-2">
+                <ShieldCheck className="size-4 text-emerald-500 shrink-0" />
+                <p>Permissions basées sur votre rôle de {MOCK_USER.role}.</p>
               </div>
             </CardContent>
           </Card>
