@@ -20,6 +20,7 @@ import { Product } from "@/lib/types"
 import { useFirestore } from "@/hooks/use-firestore"
 import { useToast } from "@/hooks/use-toast"
 import { logActivity } from "@/lib/audit-logger"
+import { createNotification } from "@/lib/notifications"
 
 export default function InventoryPage() {
   const { data: products, loading, addRecord, updateRecord, deleteRecord } = useFirestore<Product>('products');
@@ -77,6 +78,19 @@ export default function InventoryPage() {
           oldValue: selectedProduct,
           newValue: productData
         });
+        
+        // Low stock notification
+        if (productData.quantity !== undefined && productData.quantity <= (productData.lowStockLevel || selectedProduct.lowStockLevel)) {
+          await createNotification({
+            title: "Low Stock Alert",
+            message: `Product "${productData.name}" has reached low stock level (${productData.quantity} left).`,
+            type: "warning",
+            module: "Inventory",
+            targetRoles: ["Business Owner", "Manager", "Staff"],
+            link: "/inventory"
+          });
+        }
+
         toast({ title: "Product Updated", description: `${productData.name} has been modified.` });
       } else {
         const newId = await addRecord(productData as Omit<Product, 'id'>);

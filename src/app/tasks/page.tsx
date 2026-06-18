@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -12,6 +13,7 @@ import { Task, TaskStatus } from "@/lib/types"
 import { useFirestore } from "@/hooks/use-firestore"
 import { useToast } from "@/hooks/use-toast"
 import { isBefore, parseISO, startOfDay } from "date-fns"
+import { createNotification } from "@/lib/notifications"
 
 export default function TasksPage() {
   const { data: tasks, loading, addRecord, updateRecord, deleteRecord } = useFirestore<Task>('tasks');
@@ -44,6 +46,27 @@ export default function TasksPage() {
     ).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   }, [tasks, searchQuery]);
 
+  // Effect to trigger overdue notifications once
+  React.useEffect(() => {
+    const checkOverdue = async () => {
+      const overdueTasks = processedTasks.filter(t => t.displayStatus === 'Overdue' && t.status !== 'Overdue');
+      for (const t of overdueTasks) {
+        await createNotification({
+          title: "Task Overdue",
+          message: `The task "${t.title}" is now past its deadline (${t.dueDate}).`,
+          type: "error",
+          module: "Tasks",
+          targetRoles: ["Business Owner", "Manager"],
+          targetUserId: t.assignedTo,
+          link: "/tasks"
+        });
+        // We update the status in DB to prevent multiple notifications
+        await updateRecord(t.id, { status: 'Overdue' });
+      }
+    };
+    if (processedTasks.length > 0) checkOverdue();
+  }, [processedTasks]);
+
   const stats = React.useMemo(() => {
     const total = processedTasks.length;
     const pending = processedTasks.filter(t => t.displayStatus === 'Pending').length;
@@ -70,7 +93,18 @@ export default function TasksPage() {
         await updateRecord(selectedTask.id, taskData);
         toast({ title: "Task Updated", description: "Operational tracking updated successfully." });
       } else {
-        await addRecord(taskData as Omit<Task, 'id'>);
+        const taskId = await addRecord(taskData as Omit<Task, 'id'>);
+        
+        // Notify assignee
+        await createNotification({
+          title: "New Task Assigned",
+          message: `You have been assigned a new task: "${taskData.title}". Priority: ${taskData.priority}.`,
+          type: "info",
+          module: "Tasks",
+          targetUserId: taskData.assignedTo,
+          link: "/tasks"
+        });
+
         toast({ title: "Task Created", description: "Assignment has been sent to the cloud." });
       }
     } catch (e) {

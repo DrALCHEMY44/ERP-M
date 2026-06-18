@@ -200,16 +200,17 @@ export type BusinessDocument = {
   description?: string;
 };
 
-export type FinancialTransaction = {
-  id: string;
+export type AppNotification = {
+  id?: string;
   tenantId: string;
   businessId: string;
-  type: 'DEBIT' | 'CREDIT';
-  accountClass: OHADAAccountClass;
-  accountNumber: string;
-  accountLabel: string;
-  amount: number;
-  description: string;
-  date: string;
-  reference: string;
-}
+  targetUserId?: string;
+  targetRoles?: Role[];
+  title: string;
+  message: string;
+  type: 'info' | 'warning' | 'error' | 'success';
+  module: string;
+  readBy: string[];
+  createdAt: string;
+  link?: string;
+};

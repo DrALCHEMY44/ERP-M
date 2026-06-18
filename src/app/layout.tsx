@@ -1,3 +1,4 @@
+
 "use client"
 
 import type { Metadata } from "next";
@@ -8,6 +9,7 @@ import { AppSidebar } from "@/components/app-sidebar";
 import { Separator } from "@/components/ui/separator";
 import { Toaster } from "@/components/ui/toaster";
 import { usePathname } from "next/navigation";
+import { NotificationCenter } from "@/components/notifications/notification-center";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const spaceGrotesk = Space_Grotesk({ subsets: ["latin"], variable: "--font-space-grotesk" });
@@ -37,13 +39,20 @@ export default function RootLayout({
         <SidebarProvider defaultOpen={true}>
           <AppSidebar />
           <SidebarInset>
-            <header className="flex h-16 shrink-0 items-center gap-2 px-4 border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10">
+            <header className="flex h-16 shrink-0 items-center justify-between gap-2 px-4 border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10">
               <div className="flex items-center gap-2">
                 <SidebarTrigger className="-ml-1" />
                 <Separator orientation="vertical" className="mr-2 h-4" />
                 <div className="flex flex-col">
                   <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Tenant: Douala_001</span>
                   <span className="text-xs font-headline font-bold text-primary">Superette de l'Avenir</span>
+                </div>
+              </div>
+              <div className="flex items-center gap-4">
+                <NotificationCenter />
+                <Separator orientation="vertical" className="h-6" />
+                <div className="h-8 w-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold text-xs">
+                  JK
                 </div>
               </div>
             </header>
