@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -38,11 +39,42 @@
 @layer base {
   * {
     @apply border-border;
+    -webkit-tap-highlight-color: transparent;
   }
   body {
-    @apply bg-background text-foreground font-body antialiased;
+    @apply bg-background text-foreground font-body antialiased overflow-x-hidden;
+    /* Prevent rubber banding on mobile while allowing scroll */
+    position: relative;
+    width: 100%;
+    height: 100%;
   }
   h1, h2, h3, h4, h5, h6 {
     @apply font-headline;
+  }
+
+  /* Improve touch targets for mobile buttons */
+  button, [role="button"], a {
+    @apply min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0 flex items-center justify-center;
+  }
+
+  /* Custom scrollbar for mobile tables */
+  .overflow-x-auto {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--muted-foreground)) transparent;
+  }
+  
+  .overflow-x-auto::-webkit-scrollbar {
+    height: 4px;
+  }
+  
+  .overflow-x-auto::-webkit-scrollbar-thumb {
+    background-color: hsl(var(--muted-foreground) / 0.3);
+    border-radius: 10px;
+  }
+}
+
+@layer components {
+  .mobile-safe-area {
+    padding-bottom: env(safe-area-inset-bottom);
   }
 }
