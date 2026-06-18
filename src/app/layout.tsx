@@ -32,7 +32,7 @@ export default function RootLayout({
               <Separator orientation="vertical" className="mr-2 h-4" />
               <div className="flex flex-1 items-center justify-between">
                  <div className="flex flex-col text-left">
-                    <h1 className="text-sm font-semibold tracking-tight">SmartERP AI</h1>
+                    <h1 className="text-sm font-semibold tracking-tight uppercase tracking-widest font-headline">SmartERP AI</h1>
                     <p className="text-[10px] text-muted-foreground uppercase">Tenant: {MOCK_USER.tenantId}</p>
                  </div>
                  <div className="hidden md:flex items-center gap-2 px-3 py-1 rounded-full bg-accent/10 border border-accent/20">

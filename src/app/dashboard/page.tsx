@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { MOCK_PRODUCTS } from "@/lib/mock-data"
+import Link from "next/link"
 
 export default function DashboardPage() {
   return (
@@ -48,7 +49,7 @@ export default function DashboardPage() {
           <CardHeader>
             <div className="flex items-center gap-2">
               <Sparkles className="size-5 text-accent" />
-              <CardTitle className="text-accent">AI Performance Insights</CardTitle>
+              <CardTitle className="text-accent text-lg">AI Performance Insights</CardTitle>
             </div>
             <CardDescription>Generated based on real-time data analysis</CardDescription>
           </CardHeader>
@@ -66,7 +67,7 @@ export default function DashboardPage() {
 
         <Card className="lg:col-span-3">
           <CardHeader>
-            <CardTitle>Task Overview</CardTitle>
+            <CardTitle className="text-lg">Task Overview</CardTitle>
             <CardDescription>Current operational workload</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -82,9 +83,11 @@ export default function DashboardPage() {
               <span className="text-muted-foreground text-emerald-600">Completed</span>
               <span className="font-bold text-emerald-600">12</span>
             </div>
-            <Button size="sm" className="w-full mt-2" variant="secondary">
-              Go to Tasks
-            </Button>
+            <Link href="/tasks" passHref>
+              <Button size="sm" className="w-full mt-2" variant="secondary">
+                Go to Tasks
+              </Button>
+            </Link>
           </CardContent>
         </Card>
       </div>
@@ -93,10 +96,12 @@ export default function DashboardPage() {
         <Card className="lg:col-span-7">
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
-              <CardTitle>Low Stock Alerts</CardTitle>
+              <CardTitle className="text-lg">Low Stock Alerts</CardTitle>
               <CardDescription>Items needing replenishment</CardDescription>
             </div>
-            <Button size="sm" variant="ghost">View Inventory</Button>
+            <Link href="/inventory" passHref>
+              <Button size="sm" variant="ghost">View Inventory</Button>
+            </Link>
           </CardHeader>
           <CardContent>
             <Table>
