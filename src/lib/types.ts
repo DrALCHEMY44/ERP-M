@@ -64,6 +64,19 @@ export type Sale = {
   createdAt: string;
 };
 
+export type Expense = {
+  id: string;
+  tenantId: string;
+  businessId: string;
+  category: 'Rent' | 'Utilities' | 'Salaries' | 'Supplies' | 'Marketing' | 'Transport' | 'Taxes' | 'Other';
+  amount: number;
+  date: string;
+  description: string;
+  receiptUrl?: string;
+  recordedBy: string;
+  createdAt: string;
+};
+
 export type TaskStatus = 'Pending' | 'Ongoing' | 'Completed' | 'Cancelled' | 'Late' | 'Overdue';
 export type TaskPriority = 'Low' | 'Medium' | 'High' | 'Urgent';
 

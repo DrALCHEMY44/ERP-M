@@ -1,5 +1,5 @@
 
-import { UserProfile, Business, Product, Task, Sale, ActivityLog } from './types';
+import { UserProfile, Business, Product, Task, Sale, ActivityLog, Expense } from './types';
 
 export const MOCK_USER: UserProfile = {
   uid: 'user123',
@@ -71,6 +71,42 @@ export const MOCK_SALES: Sale[] = [
     recordedBy: 'user123',
     createdAt: '2024-05-21T09:30:00Z',
   },
+];
+
+export const MOCK_EXPENSES: Expense[] = [
+  {
+    id: 'EXP-2001',
+    tenantId: 'tenant_douala_001',
+    businessId: 'biz_superette_central',
+    category: 'Rent',
+    amount: 150000,
+    date: '2024-05-01',
+    description: 'Monthly warehouse rent',
+    recordedBy: 'user123',
+    createdAt: '2024-05-01T10:00:00Z',
+  },
+  {
+    id: 'EXP-2002',
+    tenantId: 'tenant_douala_001',
+    businessId: 'biz_superette_central',
+    category: 'Utilities',
+    amount: 45000,
+    date: '2024-05-05',
+    description: 'Electricity bill (ENEO)',
+    recordedBy: 'user123',
+    createdAt: '2024-05-05T14:30:00Z',
+  },
+  {
+    id: 'EXP-2003',
+    tenantId: 'tenant_douala_001',
+    businessId: 'biz_superette_central',
+    category: 'Transport',
+    amount: 12500,
+    date: '2024-05-10',
+    description: 'Fuel for delivery truck',
+    recordedBy: 'user123',
+    createdAt: '2024-05-10T09:00:00Z',
+  }
 ];
 
 export const MOCK_TASKS: Task[] = [
