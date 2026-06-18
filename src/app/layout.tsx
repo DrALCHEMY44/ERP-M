@@ -7,7 +7,7 @@ import { Separator } from "@/components/ui/separator";
 import { MOCK_USER } from "@/lib/mock-data";
 
 export const metadata: Metadata = {
-  title: 'KoboCore ERP | AI-Powered Resource Management',
+  title: 'SmartERP AI | Multi-Tenant SME Resource Hub',
   description: 'An AI-powered Enterprise Resource Planning platform for SMEs in Cameroon.',
 };
 
