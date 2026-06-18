@@ -82,103 +82,94 @@ export default function TasksPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight text-primary font-headline">Task Management</h2>
-          <p className="text-muted-foreground">Assign, track, and monitor operational workloads.</p>
+          <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-primary font-headline">Tasks</h2>
+          <p className="text-sm text-muted-foreground">Assign and monitor operational workloads.</p>
         </div>
-        <Button onClick={handleAddTask} className="bg-accent hover:bg-accent/90 flex items-center gap-2">
+        <Button onClick={handleAddTask} size="sm" className="bg-accent hover:bg-accent/90 flex items-center gap-2 w-full sm:w-auto">
           <Plus className="size-4" />
           Create Task
         </Button>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground uppercase">Workload Progress</CardTitle>
+            <CardTitle className="text-[10px] font-medium text-muted-foreground uppercase">Progress</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold mb-2">{completedCount} / {totalCount} Tasks</div>
-            <Progress value={completionRate} className="h-2" />
-            <p className="text-xs text-muted-foreground mt-2">{completionRate.toFixed(0)}% completion rate</p>
+            <div className="text-lg font-bold mb-2">{completedCount} / {totalCount} Done</div>
+            <Progress value={completionRate} className="h-1.5" />
           </CardContent>
         </Card>
         <Card className="border-l-4 border-l-destructive">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground uppercase">Critical Warnings</CardTitle>
+            <CardTitle className="text-[10px] font-medium text-muted-foreground uppercase">Alerts</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold flex items-center gap-2 text-destructive">
+            <div className="text-lg font-bold flex items-center gap-2 text-destructive">
               {overdueCount} Overdue
-              <AlertCircle className="size-5" />
+              <AlertCircle className="size-4" />
             </div>
-            <p className="text-xs text-muted-foreground mt-2">Requires immediate supervisor attention</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground uppercase">Today's Focus</CardTitle>
+            <CardTitle className="text-[10px] font-medium text-muted-foreground uppercase">Today</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">4 Due Today</div>
-            <div className="flex gap-1 mt-2">
-               <Badge variant="outline" className="text-[10px]">2 Urgent</Badge>
-               <Badge variant="outline" className="text-[10px]">Sales Dept</Badge>
-            </div>
+            <div className="text-lg font-bold">4 Due Soon</div>
           </CardContent>
         </Card>
       </div>
 
       <Tabs defaultValue="all" className="w-full">
-        <div className="flex items-center justify-between mb-4">
-          <TabsList>
-            <TabsTrigger value="all">All Tasks</TabsTrigger>
-            <TabsTrigger value="active">Active</TabsTrigger>
-            <TabsTrigger value="completed">Completed</TabsTrigger>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+          <TabsList className="w-full sm:w-auto">
+            <TabsTrigger value="all" className="flex-1 sm:flex-none">All</TabsTrigger>
+            <TabsTrigger value="active" className="flex-1 sm:flex-none">Active</TabsTrigger>
+            <TabsTrigger value="completed" className="flex-1 sm:flex-none">Done</TabsTrigger>
           </TabsList>
-          <div className="relative w-64">
+          <div className="relative w-full sm:w-64">
             <Search className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
             <Input placeholder="Search tasks..." className="pl-9 h-9" />
           </div>
         </div>
 
-        <TabsContent value="all" className="space-y-4">
+        <TabsContent value="all" className="space-y-3">
           {tasks.map((task) => (
             <Card key={task.id} className="group hover:border-accent/50 transition-colors">
-              <CardContent className="p-4">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex items-start gap-4 flex-1">
+              <CardContent className="p-3 md:p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-start gap-3 flex-1 overflow-hidden">
                     <div className={cn(
-                      "size-10 rounded-full flex items-center justify-center shrink-0",
+                      "size-8 md:size-10 rounded-full flex items-center justify-center shrink-0",
                       task.status === 'Completed' ? "bg-emerald-100 text-emerald-600" : "bg-primary/10 text-primary"
                     )}>
-                      {task.status === 'Completed' ? <CheckCircle2 className="size-5" /> : <Clock className="size-5" />}
+                      {task.status === 'Completed' ? <CheckCircle2 className="size-4 md:size-5" /> : <Clock className="size-4 md:size-5" />}
                     </div>
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-semibold text-sm leading-none group-hover:text-accent transition-colors">{task.title}</h3>
-                        <Badge variant="outline" className={cn("text-[10px] py-0 h-5 px-1.5", getStatusColor(task.status))}>
+                    <div className="space-y-1 overflow-hidden">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h3 className="font-semibold text-xs md:text-sm leading-none truncate max-w-[150px] md:max-w-none">{task.title}</h3>
+                        <Badge variant="outline" className={cn("text-[8px] md:text-[10px] py-0 h-4 md:h-5 px-1 md:px-1.5", getStatusColor(task.status))}>
                           {task.status}
                         </Badge>
-                        <span className={cn("text-[10px] font-bold uppercase", getPriorityColor(task.priority))}>
-                          {task.priority}
-                        </span>
                       </div>
-                      <p className="text-xs text-muted-foreground line-clamp-1">{task.description}</p>
-                      <div className="flex items-center gap-4 pt-2">
-                        <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
-                          <User className="size-3" />
-                          <span>Assigned to: <strong className="text-foreground">{task.assignedToName}</strong></span>
+                      <p className="text-[10px] md:text-xs text-muted-foreground line-clamp-1">{task.description}</p>
+                      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 pt-1">
+                        <div className="flex items-center gap-1 text-[9px] md:text-[10px] text-muted-foreground">
+                          <User className="size-2.5" />
+                          <span><strong className="text-foreground">{task.assignedToName}</strong></span>
                         </div>
-                        <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
-                          <CalendarIcon className="size-3" />
-                          <span>Due: <strong className={cn(task.status === 'Overdue' && "text-destructive")}>{new Date(task.dueDate).toLocaleDateString()}</strong></span>
+                        <div className="flex items-center gap-1 text-[9px] md:text-[10px] text-muted-foreground">
+                          <CalendarIcon className="size-2.5" />
+                          <span className={cn(task.status === 'Overdue' && "text-destructive")}>{new Date(task.dueDate).toLocaleDateString()}</span>
                         </div>
                       </div>
                     </div>
                   </div>
-                  <Button variant="ghost" size="icon" className="shrink-0" onClick={() => handleEditTask(task)}>
+                  <Button variant="ghost" size="icon" className="shrink-0 h-8 w-8" onClick={() => handleEditTask(task)}>
                     <MoreVertical className="size-4" />
                   </Button>
                 </div>

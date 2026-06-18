@@ -71,120 +71,121 @@ export default function InventoryPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight text-primary">Inventory Management</h2>
-          <p className="text-muted-foreground">Monitor and manage your business stock and supplies.</p>
+          <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-primary">Inventory</h2>
+          <p className="text-sm text-muted-foreground">Monitor and manage your business stock and supplies.</p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" className="flex items-center gap-2">
+          <Button variant="outline" size="sm" className="hidden sm:flex items-center gap-2">
             <FileDown className="size-4" />
-            Export CSV
+            Export
           </Button>
-          <Button onClick={handleAddProduct} className="bg-accent hover:bg-accent/90 flex items-center gap-2">
+          <Button onClick={handleAddProduct} size="sm" className="bg-accent hover:bg-accent/90 flex items-center gap-2 w-full sm:w-auto">
             <Plus className="size-4" />
             Add Product
           </Button>
         </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
         <Card className="border-l-4 border-l-blue-500">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground uppercase">Total Items</CardTitle>
+            <CardTitle className="text-[10px] font-medium text-muted-foreground uppercase">Total Items</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalItems}</div>
+            <div className="text-xl md:text-2xl font-bold">{totalItems}</div>
           </CardContent>
         </Card>
         <Card className="border-l-4 border-l-amber-500">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground uppercase">Low Stock Alerts</CardTitle>
+            <CardTitle className="text-[10px] font-medium text-muted-foreground uppercase">Low Stock Alerts</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold flex items-center gap-2">
+            <div className="text-xl md:text-2xl font-bold flex items-center gap-2">
               {lowStockCount}
-              {lowStockCount > 0 && <AlertTriangle className="size-5 text-amber-500 animate-pulse" />}
+              {lowStockCount > 0 && <AlertTriangle className="size-4 text-amber-500 animate-pulse" />}
             </div>
           </CardContent>
         </Card>
         <Card className="border-l-4 border-l-emerald-500">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground uppercase">Stock Value</CardTitle>
+            <CardTitle className="text-[10px] font-medium text-muted-foreground uppercase">Stock Value</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{inventoryValue.toLocaleString()} FCFA</div>
+            <div className="text-xl md:text-2xl font-bold">{inventoryValue.toLocaleString()} FCFA</div>
           </CardContent>
         </Card>
       </div>
 
       <Card>
-        <CardHeader className="px-6 py-4 border-b">
+        <CardHeader className="px-4 py-4 border-b">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-             <CardTitle className="text-lg font-headline">Product Catalog</CardTitle>
-             <div className="flex items-center gap-2">
-                <div className="relative w-full md:w-64">
+             <CardTitle className="text-base md:text-lg font-headline">Product Catalog</CardTitle>
+             <div className="flex items-center gap-2 w-full md:w-auto">
+                <div className="relative flex-1 md:w-64">
                    <Search className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
                    <Input 
-                     placeholder="Search products..." 
+                     placeholder="Search..." 
                      className="pl-9"
                      value={searchQuery}
                      onChange={(e) => setSearchQuery(e.target.value)}
                    />
                 </div>
-                <Button variant="outline" size="icon">
+                <Button variant="outline" size="icon" className="shrink-0">
                    <Filter className="size-4" />
                 </Button>
              </div>
           </div>
         </CardHeader>
         <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow className="bg-muted/50">
-                <TableHead>Product Name</TableHead>
-                <TableHead>Category</TableHead>
-                <TableHead className="text-right">Stock</TableHead>
-                <TableHead className="text-right">Selling Price</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredProducts.map((product) => (
-                <TableRow key={product.id}>
-                  <TableCell className="font-medium">{product.name}</TableCell>
-                  <TableCell><Badge variant="secondary">{product.category}</Badge></TableCell>
-                  <TableCell className="text-right">
-                    <span className={product.quantity <= product.lowStockLevel ? "text-destructive font-bold" : ""}>
-                      {product.quantity}
-                    </span>
-                    {product.quantity <= product.lowStockLevel && (
-                       <div className="text-[10px] text-destructive font-bold uppercase">Low Stock</div>
-                    )}
-                  </TableCell>
-                  <TableCell className="text-right">{product.sellingPrice.toLocaleString()} FCFA</TableCell>
-                  <TableCell>
-                    <Badge variant={product.status === 'active' ? "outline" : "secondary"} className={product.status === 'active' ? "bg-emerald-50 text-emerald-700 border-emerald-200" : ""}>
-                      {product.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon"><MoreVertical className="size-4" /></Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => handleEditProduct(product)}><Edit className="mr-2 size-4" /> Edit</DropdownMenuItem>
-                        <DropdownMenuItem className="text-blue-600"><ArrowUpDown className="mr-2 size-4" /> Stock Movement</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleDeleteProduct(product.id)} className="text-destructive"><Trash2 className="mr-2 size-4" /> Delete</DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-muted/50 whitespace-nowrap">
+                  <TableHead>Product Name</TableHead>
+                  <TableHead className="hidden md:table-cell">Category</TableHead>
+                  <TableHead className="text-right">Stock</TableHead>
+                  <TableHead className="text-right hidden sm:table-cell">Price</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {filteredProducts.map((product) => (
+                  <TableRow key={product.id}>
+                    <TableCell className="font-medium text-xs md:text-sm">{product.name}</TableCell>
+                    <TableCell className="hidden md:table-cell text-xs">{product.category}</TableCell>
+                    <TableCell className="text-right text-xs md:text-sm">
+                      <span className={product.quantity <= product.lowStockLevel ? "text-destructive font-bold" : ""}>
+                        {product.quantity}
+                      </span>
+                      {product.quantity <= product.lowStockLevel && (
+                         <div className="text-[8px] text-destructive font-bold uppercase block">Low</div>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-right hidden sm:table-cell text-xs md:text-sm">{product.sellingPrice.toLocaleString()} FCFA</TableCell>
+                    <TableCell>
+                      <Badge variant={product.status === 'active' ? "outline" : "secondary"} className={product.status === 'active' ? "bg-emerald-50 text-emerald-700 border-emerald-200 text-[10px]" : "text-[10px]"}>
+                        {product.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon"><MoreVertical className="size-4" /></Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => handleEditProduct(product)}><Edit className="mr-2 size-4" /> Edit</DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleDeleteProduct(product.id)} className="text-destructive"><Trash2 className="mr-2 size-4" /> Delete</DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
 

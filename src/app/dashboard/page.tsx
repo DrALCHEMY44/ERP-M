@@ -12,13 +12,13 @@ import Link from "next/link"
 
 export default function DashboardPage() {
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-6 md:gap-8">
       <div>
-        <h2 className="text-3xl font-bold tracking-tight">Bonjour, Jean-Pierre</h2>
-        <p className="text-muted-foreground">Voici l'état actuel de votre entreprise à Douala.</p>
+        <h2 className="text-2xl md:text-3xl font-bold tracking-tight">Bonjour, Jean-Pierre</h2>
+        <p className="text-sm md:text-base text-muted-foreground">Voici l'état actuel de votre entreprise à Douala.</p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard 
           title="Total Sales" 
           value="4,500,000 FCFA" 
@@ -45,7 +45,7 @@ export default function DashboardPage() {
         />
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+      <div className="grid gap-4 grid-cols-1 lg:grid-cols-7">
         <Card className="lg:col-span-4 border-accent/20 bg-accent/5">
           <CardHeader>
             <div className="flex items-center gap-2">
@@ -60,8 +60,8 @@ export default function DashboardPage() {
               Cependant, nous observons une baisse de stock critique sur <strong>3 produits alimentaires</strong>. 
             </p>
             <div className="flex flex-wrap gap-2">
-              <Badge variant="outline" className="bg-accent/10 border-accent/20 text-accent font-bold">Riz Long Grain: Critical Stock</Badge>
-              <Badge variant="outline" className="bg-emerald-100 text-emerald-700 border-emerald-200">High Profitability: Drinks</Badge>
+              <Badge variant="outline" className="bg-accent/10 border-accent/20 text-accent font-bold text-[10px] md:text-xs">Riz Long Grain: Critical Stock</Badge>
+              <Badge variant="outline" className="bg-emerald-100 text-emerald-700 border-emerald-200 text-[10px] md:text-xs">High Profitability: Drinks</Badge>
             </div>
           </CardContent>
         </Card>
@@ -93,40 +93,42 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-        <Card className="lg:col-span-7">
-          <CardHeader className="flex flex-row items-center justify-between">
+      <div className="grid gap-4 grid-cols-1">
+        <Card>
+          <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
               <CardTitle className="text-lg">Low Stock Alerts</CardTitle>
               <CardDescription>Items needing replenishment</CardDescription>
             </div>
-            <Link href="/inventory" passHref>
-              <Button size="sm" variant="ghost">View Inventory</Button>
+            <Link href="/inventory" passHref className="w-full sm:w-auto">
+              <Button size="sm" variant="ghost" className="w-full sm:w-auto">View Inventory</Button>
             </Link>
           </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Product</TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead>Current Stock</TableHead>
-                  <TableHead>Status</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {MOCK_PRODUCTS.filter(p => p.quantity <= p.lowStockLevel).map((product) => (
-                  <TableRow key={product.id}>
-                    <TableCell className="font-medium">{product.name}</TableCell>
-                    <TableCell>{product.category}</TableCell>
-                    <TableCell>{product.quantity}</TableCell>
-                    <TableCell>
-                      <Badge variant="destructive">Critical</Badge>
-                    </TableCell>
+          <CardContent className="p-0 sm:p-6 sm:pt-0">
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Product</TableHead>
+                    <TableHead className="hidden md:table-cell">Category</TableHead>
+                    <TableHead>Stock</TableHead>
+                    <TableHead>Status</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {MOCK_PRODUCTS.filter(p => p.quantity <= p.lowStockLevel).map((product) => (
+                    <TableRow key={product.id}>
+                      <TableCell className="font-medium">{product.name}</TableCell>
+                      <TableCell className="hidden md:table-cell">{product.category}</TableCell>
+                      <TableCell>{product.quantity}</TableCell>
+                      <TableCell>
+                        <Badge variant="destructive" className="text-[10px]">Critical</Badge>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           </CardContent>
         </Card>
       </div>

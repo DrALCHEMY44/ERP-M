@@ -23,7 +23,7 @@ export default function AIAssistantPage() {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
-      content: `Hello ${MOCK_USER.fullName.split(' ')[0]}. I am your SmartERP AI Assistant. I have read-only access to ${MOCK_USER.tenantId}'s data. How can I help you today?`,
+      content: `Hello ${MOCK_USER.fullName.split(' ')[0]}. I am your SmartERP AI Assistant. I have read-only access to your business data. How can I help you today?`,
       timestamp: new Date()
     }
   ])
@@ -74,84 +74,87 @@ export default function AIAssistantPage() {
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-140px)] gap-6">
+    <div className="flex flex-col h-[calc(100vh-160px)] md:h-[calc(100vh-140px)] gap-4 md:gap-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">AI Assistant</h2>
-          <p className="text-muted-foreground">Context-aware business intelligence at your fingertips.</p>
+          <h2 className="text-2xl md:text-3xl font-bold tracking-tight">AI Assistant</h2>
+          <p className="text-xs md:text-sm text-muted-foreground">Context-aware business intelligence at your fingertips.</p>
         </div>
-        <div className="flex items-center gap-2">
-           <Badge variant="outline" className="flex items-center gap-1.5 py-1.5 px-3 bg-accent/10 border-accent/30 text-accent">
-              <ShieldCheck className="size-3.5" />
+        <div className="flex flex-wrap items-center gap-2">
+           <Badge variant="outline" className="flex items-center gap-1.5 py-1 px-2 md:px-3 bg-accent/10 border-accent/30 text-accent text-[10px] md:text-xs">
+              <ShieldCheck className="size-3" />
               {MOCK_USER.role}
            </Badge>
-           <Badge variant="outline" className="flex items-center gap-1.5 py-1.5 px-3 bg-secondary">
-              <Lock className="size-3.5" />
+           <Badge variant="outline" className="flex items-center gap-1.5 py-1 px-2 md:px-3 bg-secondary text-[10px] md:text-xs">
+              <Lock className="size-3" />
               Read-Only
            </Badge>
         </div>
       </div>
 
-      <div className="grid lg:grid-cols-4 gap-6 flex-1 min-h-0">
+      <div className="grid lg:grid-cols-4 gap-4 md:gap-6 flex-1 min-h-0">
         <Card className="lg:col-span-3 flex flex-col min-h-0 border-accent/20">
-          <CardHeader className="border-b py-3 px-4 flex flex-row items-center justify-between">
+          <CardHeader className="border-b py-2 px-4 flex flex-row items-center justify-between shrink-0">
             <div className="flex items-center gap-2">
-              <Bot className="size-5 text-accent" />
-              <CardTitle className="text-base font-headline">SmartERP Intelligence</CardTitle>
+              <Bot className="size-4 md:size-5 text-accent" />
+              <CardTitle className="text-sm md:text-base font-headline">SmartERP Intelligence</CardTitle>
             </div>
           </CardHeader>
-          <CardContent className="flex-1 overflow-hidden p-0">
-            <ScrollArea className="h-full p-4" viewportRef={scrollRef}>
-              <div className="flex flex-col gap-6">
+          <CardContent className="flex-1 overflow-hidden p-0 relative">
+            <ScrollArea className="h-full p-3 md:p-4" viewportRef={scrollRef}>
+              <div className="flex flex-col gap-4 md:gap-6 pb-4">
                 {messages.map((msg, i) => (
-                  <div key={i} className={`flex gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
-                    <div className={`size-8 rounded-lg flex items-center justify-center shrink-0 ${
+                  <div key={i} className={`flex gap-2 md:gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
+                    <div className={`size-7 md:size-8 rounded-lg flex items-center justify-center shrink-0 ${
                       msg.role === 'assistant' ? 'bg-accent text-white' : 'bg-primary text-white'
                     }`}>
-                      {msg.role === 'assistant' ? <Bot className="size-5" /> : <User className="size-5" />}
+                      {msg.role === 'assistant' ? <Bot className="size-4 md:size-5" /> : <User className="size-4 md:size-5" />}
                     </div>
-                    <div className={`flex flex-col gap-1 max-w-[80%] ${msg.role === 'user' ? 'items-end' : ''}`}>
-                       <div className={`rounded-2xl p-4 text-sm leading-relaxed shadow-sm ${
+                    <div className={`flex flex-col gap-1 max-w-[85%] md:max-w-[80%] ${msg.role === 'user' ? 'items-end' : ''}`}>
+                       <div className={`rounded-2xl p-3 md:p-4 text-xs md:text-sm leading-relaxed shadow-sm ${
                          msg.role === 'assistant' 
                           ? 'bg-accent/5 border border-accent/10 text-foreground' 
                           : 'bg-primary text-white'
                        }`}>
                          {msg.content}
                        </div>
+                       <span className="text-[9px] md:text-[10px] text-muted-foreground px-2">
+                          {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                       </span>
                     </div>
                   </div>
                 ))}
                 {isLoading && (
-                  <div className="flex gap-3">
-                    <div className="size-8 rounded-lg bg-accent text-white flex items-center justify-center shrink-0">
-                      <Bot className="size-5" />
+                  <div className="flex gap-2 md:gap-3">
+                    <div className="size-7 md:size-8 rounded-lg bg-accent text-white flex items-center justify-center shrink-0">
+                      <Bot className="size-4 md:size-5" />
                     </div>
-                    <div className="flex items-center gap-2 px-4 py-3 bg-accent/5 rounded-2xl border border-accent/10">
-                      <Loader2 className="size-4 animate-spin text-accent" />
-                      <span className="text-xs text-muted-foreground italic">Thinking...</span>
+                    <div className="flex items-center gap-2 px-3 md:px-4 py-2 md:py-3 bg-accent/5 rounded-2xl border border-accent/10">
+                      <Loader2 className="size-3 md:size-4 animate-spin text-accent" />
+                      <span className="text-[10px] md:text-xs text-muted-foreground italic">Thinking...</span>
                     </div>
                   </div>
                 )}
               </div>
             </ScrollArea>
           </CardContent>
-          <CardFooter className="p-4 border-t">
-            <form onSubmit={(e) => { e.preventDefault(); handleSend(); }} className="flex w-full items-center gap-3">
+          <CardFooter className="p-3 md:p-4 border-t shrink-0">
+            <form onSubmit={(e) => { e.preventDefault(); handleSend(); }} className="flex w-full items-center gap-2 md:gap-3">
               <Input 
-                placeholder="Ask about sales, tasks, or inventory..." 
-                className="flex-1 focus-visible:ring-accent"
+                placeholder="Ask about sales, tasks..." 
+                className="flex-1 focus-visible:ring-accent text-xs md:text-sm h-9 md:h-10"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 disabled={isLoading}
               />
-              <Button type="submit" size="icon" className="bg-accent hover:bg-accent/90" disabled={isLoading || !input.trim()}>
+              <Button type="submit" size="icon" className="bg-accent hover:bg-accent/90 shrink-0 h-9 w-9 md:h-10 md:w-10" disabled={isLoading || !input.trim()}>
                 {isLoading ? <Loader2 className="size-4 animate-spin" /> : <Send className="size-4" />}
               </Button>
             </form>
           </CardFooter>
         </Card>
 
-        <div className="flex flex-col gap-6">
+        <div className="hidden lg:flex flex-col gap-6">
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-headline">Safety & Restrictions</CardTitle>
@@ -163,7 +166,7 @@ export default function AIAssistantPage() {
               </div>
               <div className="flex gap-2">
                 <Lock className="size-4 text-blue-500 shrink-0" />
-                <p>Data is strictly isolated to your tenant ID.</p>
+                <p>Data is strictly isolated to your business account.</p>
               </div>
             </CardContent>
           </Card>

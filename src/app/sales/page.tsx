@@ -51,110 +51,112 @@ export default function SalesPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight text-primary font-headline">Sales Management</h2>
-          <p className="text-muted-foreground">Track revenue and manage customer transactions.</p>
+          <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-primary font-headline">Sales</h2>
+          <p className="text-sm text-muted-foreground">Track revenue and manage customer transactions.</p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" className="flex items-center gap-2">
+          <Button variant="outline" size="sm" className="hidden sm:flex items-center gap-2">
             <FileText className="size-4" />
-            Export Report
+            Report
           </Button>
-          <Button onClick={() => setIsDialogOpen(true)} className="bg-accent hover:bg-accent/90 flex items-center gap-2">
+          <Button onClick={() => setIsDialogOpen(true)} size="sm" className="bg-accent hover:bg-accent/90 flex items-center gap-2 w-full sm:w-auto">
             <Plus className="size-4" />
             Record Sale
           </Button>
         </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
         <Card className="border-l-4 border-l-primary transition-all hover:shadow-md">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-widest">Total Revenue</CardTitle>
+            <CardTitle className="text-[10px] font-medium text-muted-foreground uppercase tracking-widest">Revenue</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalRevenue.toLocaleString()} FCFA</div>
-            <div className="flex items-center text-xs text-emerald-600 mt-1">
+            <div className="text-xl md:text-2xl font-bold">{totalRevenue.toLocaleString()} FCFA</div>
+            <div className="flex items-center text-[10px] text-emerald-600 mt-1">
               <ArrowUpRight className="size-3 mr-1" />
-              8% growth this month
+              8% growth
             </div>
           </CardContent>
         </Card>
         <Card className="border-l-4 border-l-blue-500 transition-all hover:shadow-md">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-widest">Transactions</CardTitle>
+            <CardTitle className="text-[10px] font-medium text-muted-foreground uppercase tracking-widest">Transactions</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{salesCount}</div>
-            <p className="text-xs text-muted-foreground mt-1">Today: 12 sales</p>
+            <div className="text-xl md:text-2xl font-bold">{salesCount}</div>
+            <p className="text-[10px] text-muted-foreground mt-1">Today: 12 sales</p>
           </CardContent>
         </Card>
         <Card className="border-l-4 border-l-purple-500 transition-all hover:shadow-md">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-widest">Avg. Sale</CardTitle>
+            <CardTitle className="text-[10px] font-medium text-muted-foreground uppercase tracking-widest">Avg. Sale</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{avgSale.toLocaleString(undefined, { maximumFractionDigits: 0 })} FCFA</div>
-            <p className="text-xs text-muted-foreground mt-1">Stable vs last week</p>
+            <div className="text-xl md:text-2xl font-bold">{avgSale.toLocaleString(undefined, { maximumFractionDigits: 0 })} FCFA</div>
+            <p className="text-[10px] text-muted-foreground mt-1">Stable vs last week</p>
           </CardContent>
         </Card>
       </div>
 
       <Card>
-        <CardHeader className="px-6 py-4 border-b flex flex-row items-center justify-between">
-          <CardTitle className="text-lg font-headline flex items-center gap-2">
+        <CardHeader className="px-4 py-4 border-b flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <CardTitle className="text-base md:text-lg font-headline flex items-center gap-2">
             <ShoppingCart className="size-5 text-muted-foreground" />
             Recent Transactions
           </CardTitle>
-          <div className="flex items-center gap-2">
-            <div className="relative w-64">
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <div className="relative flex-1 sm:w-64">
               <Search className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
               <Input 
-                placeholder="Search sales..." 
+                placeholder="Search..." 
                 className="pl-9"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-            <Button variant="outline" size="icon">
+            <Button variant="outline" size="icon" className="shrink-0">
               <Filter className="size-4" />
             </Button>
           </div>
         </CardHeader>
         <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow className="bg-muted/50 text-[11px] uppercase tracking-wider">
-                <TableHead>Transaction ID</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Payment</TableHead>
-                <TableHead className="text-right">Amount</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredSales.map((sale) => (
-                <TableRow key={sale.id} className="group">
-                  <TableCell className="font-mono text-xs font-bold">{sale.id}</TableCell>
-                  <TableCell className="text-xs">
-                    {new Date(sale.saleDate).toLocaleDateString()}
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="outline" className="bg-secondary/50 font-normal">
-                      {sale.paymentMethod}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right font-bold text-primary">
-                    {sale.totalAmount.toLocaleString()} FCFA
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 transition-opacity">View Details</Button>
-                  </TableCell>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-muted/50 text-[10px] uppercase tracking-wider whitespace-nowrap">
+                  <TableHead>ID</TableHead>
+                  <TableHead>Date</TableHead>
+                  <TableHead className="hidden md:table-cell">Payment</TableHead>
+                  <TableHead className="text-right">Amount</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {filteredSales.map((sale) => (
+                  <TableRow key={sale.id} className="group whitespace-nowrap">
+                    <TableCell className="font-mono text-[10px] md:text-xs font-bold">{sale.id}</TableCell>
+                    <TableCell className="text-[10px] md:text-xs">
+                      {new Date(sale.saleDate).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell className="hidden md:table-cell">
+                      <Badge variant="outline" className="bg-secondary/50 font-normal text-[10px]">
+                        {sale.paymentMethod}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right font-bold text-primary text-xs md:text-sm">
+                      {sale.totalAmount.toLocaleString()} FCFA
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button variant="ghost" size="sm" className="h-8 text-[10px]">View</Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
 
