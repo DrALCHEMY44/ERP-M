@@ -169,6 +169,22 @@ export type ActivityLog = {
   timestamp: string;
 };
 
+export type DocumentType = 'Receipt' | 'Invoice' | 'Contract' | 'License' | 'Report' | 'Employee' | 'Supplier' | 'Other';
+
+export type BusinessDocument = {
+  id?: string;
+  tenantId: string;
+  businessId: string;
+  name: string;
+  type: DocumentType;
+  fileUrl: string;
+  fileSize?: string;
+  uploadedBy: string;
+  uploadedByName: string;
+  uploadedAt: string;
+  description?: string;
+};
+
 export type FinancialTransaction = {
   id: string;
   tenantId: string;
