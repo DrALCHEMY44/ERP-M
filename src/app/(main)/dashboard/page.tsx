@@ -16,7 +16,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart"
-import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Line, LineChart } from "recharts"
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts"
 
 const salesData = [
   { name: "Mon", total: 120000 },
@@ -42,24 +42,27 @@ export default function DashboardPage() {
           value="3,500,000 FCFA"
           icon={ShoppingCart}
           trend={{ value: 12, label: "vs last month", isPositive: true }}
+          className="border-emerald-500/50 border-t-4"
         />
         <StatCard
           title="Monthly Expenses"
           value="1,800,000 FCFA"
           icon={Receipt}
           trend={{ value: 4, label: "vs last month", isPositive: false }}
+          className="border-amber-500/50 border-t-4"
         />
         <StatCard
           title="Net Profit"
           value="1,700,000 FCFA"
           icon={TrendingUp}
           trend={{ value: 18, label: "vs last month", isPositive: true }}
+          className="border-emerald-500/50 border-t-4"
         />
         <StatCard
           title="Low Stock Items"
           value="12"
           icon={AlertTriangle}
-          className="bg-destructive/5"
+          className="border-destructive border-t-4 bg-destructive/5"
           description="Action required immediately"
         />
       </div>
