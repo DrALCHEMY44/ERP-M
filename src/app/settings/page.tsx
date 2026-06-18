@@ -7,7 +7,7 @@ import {
   Globe, 
   Wallet, 
   Users, 
-  ShieldLock, 
+  ShieldCheck, 
   Save, 
   Loader2, 
   Plus, 
@@ -104,7 +104,7 @@ export default function SettingsPage() {
               <Users className="size-3.5 mr-2" /> Team
             </TabsTrigger>
             <TabsTrigger value="security" className="text-xs font-bold uppercase tracking-widest px-6 h-full data-[state=active]:bg-background data-[state=active]:shadow-sm">
-              <ShieldLock className="size-3.5 mr-2" /> Security
+              <ShieldCheck className="size-3.5 mr-2" /> Security
             </TabsTrigger>
           </TabsList>
         </div>
@@ -288,7 +288,7 @@ export default function SettingsPage() {
 
       <div className="pt-6 border-t flex items-center justify-between bg-card/50 p-4 rounded-xl border-dashed">
         <div className="flex items-center gap-2">
-          <ShieldLock className="size-5 text-primary opacity-50" />
+          <ShieldCheck className="size-5 text-primary opacity-50" />
           <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">
             Tenant: {MOCK_USER.tenantId} • Multi-Tenant Encryption Active
           </p>
