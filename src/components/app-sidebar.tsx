@@ -1,4 +1,3 @@
-
 "use client"
 
 import * as React from "react"
@@ -41,7 +40,6 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu"
-import { Avatar, AvatarFallback } from "@/avatar"
 import { MOCK_USER } from "@/lib/mock-data"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
@@ -91,24 +89,24 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon" className="border-r border-sidebar-border">
-      <SidebarHeader className="h-16 flex items-center px-4">
+      <SidebarHeader className="h-16 flex items-center px-4 shrink-0">
         <div className="flex items-center gap-3">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground shrink-0">
             <Building2 className="size-5" />
           </div>
           {state !== "collapsed" && (
-            <div className="flex flex-col">
-              <span className="font-headline font-bold text-sm text-white uppercase tracking-tighter">SmartERP AI</span>
-              <span className="text-[10px] text-muted-foreground uppercase tracking-widest">{t('sidebar.smeHub')}</span>
+            <div className="flex flex-col overflow-hidden">
+              <span className="font-headline font-bold text-sm text-white uppercase tracking-tighter truncate">SmartERP AI</span>
+              <span className="text-[10px] text-muted-foreground uppercase tracking-widest truncate">{t('sidebar.smeHub')}</span>
             </div>
           )}
         </div>
       </SidebarHeader>
 
-      <SidebarContent className="gap-0">
+      <SidebarContent className="gap-0 py-2">
         {groups.map((group) => (
-          <SidebarGroup key={group.label}>
-            <SidebarGroupLabel className="text-[10px] uppercase font-bold tracking-widest opacity-50 px-4 mb-2 text-white">
+          <SidebarGroup key={group.label} className="py-2">
+            <SidebarGroupLabel className="text-[10px] uppercase font-bold tracking-widest opacity-60 px-4 mb-2 text-white/70">
               {group.label}
             </SidebarGroupLabel>
             <SidebarGroupContent>
@@ -119,11 +117,11 @@ export function AppSidebar() {
                       asChild
                       isActive={pathname === item.href}
                       tooltip={item.name}
-                      className={item.accent ? "text-primary font-bold bg-primary/5" : ""}
+                      className={item.accent ? "text-primary font-bold bg-primary/10" : ""}
                     >
-                      <Link href={item.href}>
-                        <item.icon className="size-4" />
-                        <span>{item.name}</span>
+                      <Link href={item.href} className="flex items-center w-full">
+                        <item.icon className="size-4 shrink-0 mr-2" />
+                        <span className="truncate">{item.name}</span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -134,11 +132,11 @@ export function AppSidebar() {
         ))}
       </SidebarContent>
 
-      <SidebarFooter className="p-4 border-t border-sidebar-border">
+      <SidebarFooter className="p-4 border-t border-sidebar-border shrink-0">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="flex items-center gap-3 w-full text-left outline-none">
-              <div className="h-8 w-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold text-xs">
+            <button className="flex items-center gap-3 w-full text-left outline-none hover:opacity-80 transition-opacity">
+              <div className="h-8 w-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold text-xs shrink-0">
                 {MOCK_USER.fullName.substring(0, 2).toUpperCase()}
               </div>
               {state !== "collapsed" && (
@@ -149,8 +147,8 @@ export function AppSidebar() {
               )}
             </button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56">
-            <DropdownMenuItem className="flex items-center gap-2" onClick={() => setLanguage(language === 'en' ? 'fr' : 'en')}>
+          <DropdownMenuContent align="end" className="w-56" side="right">
+            <DropdownMenuItem className="flex items-center gap-2 cursor-pointer" onClick={() => setLanguage(language === 'en' ? 'fr' : 'en')}>
               <Languages className="size-4" />
               <span>{language === 'en' ? 'Français' : 'English'}</span>
             </DropdownMenuItem>
