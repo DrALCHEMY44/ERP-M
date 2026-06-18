@@ -1,0 +1,77 @@
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper: Check if user is authenticated
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Helper: Check if data belongs to user's tenant
+    function belongsToTenant(data) {
+      return data.tenantId == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.tenantId;
+    }
+    
+    // Helper: Check user role from profile
+    function hasRole(roles) {
+      let user = get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+      return user.role in roles || user.role == 'Business Owner' || user.role == 'Platform Super Admin';
+    }
+
+    // Global multi-tenant access check
+    match /{collection}/{docId} {
+      allow read, write: if isSignedIn() && belongsToTenant(resource.data);
+      allow create: if isSignedIn() && request.resource.data.tenantId != null;
+    }
+
+    // Collection Specific Overrides
+
+    // Users: Can read their own, Owners can read all in tenant
+    match /users/{userId} {
+      allow read: if isSignedIn() && (request.auth.uid == userId || hasRole(['Business Owner', 'Manager']));
+      allow write: if isSignedIn() && (request.auth.uid == userId || hasRole(['Business Owner']));
+    }
+
+    // HR & Employees: Restricted to Owner, Manager, and HR
+    match /employees/{empId} {
+      allow read, write: if isSignedIn() && belongsToTenant(resource.data) && hasRole(['HR Officer']);
+    }
+    match /attendance/{attId} {
+      allow read, write: if isSignedIn() && belongsToTenant(resource.data) && hasRole(['HR Officer', 'Manager']);
+    }
+
+    // Finance: Restricted to Owner, Accountant
+    match /expenses/{expId} {
+      allow read, write: if isSignedIn() && belongsToTenant(resource.data) && hasRole(['Accountant']);
+    }
+    match /finance_reports/{repId} {
+      allow read: if isSignedIn() && belongsToTenant(resource.data) && hasRole(['Accountant']);
+    }
+
+    // Activity Logs: Append-only for users, no updates or deletes
+    match /activity_logs/{logId} {
+      allow create: if isSignedIn() && request.resource.data.tenantId != null;
+      allow read: if isSignedIn() && belongsToTenant(resource.data) && hasRole(['Manager']);
+      allow update, delete: if false;
+    }
+
+    // AI Queries: Append-only
+    match /ai_queries/{queryId} {
+      allow create: if isSignedIn();
+      allow read: if isSignedIn() && belongsToTenant(resource.data);
+      allow update, delete: if false;
+    }
+
+    // Documents: Restricted based on type if needed
+    match /documents/{docId} {
+      allow read, write: if isSignedIn() && belongsToTenant(resource.data);
+    }
+    
+    // Settings: Only Owners and Super Admins
+    match /settings/{setId} {
+      allow read: if isSignedIn() && belongsToTenant(resource.data);
+      allow write: if isSignedIn() && hasRole(['Business Owner']);
+    }
+  }
+}

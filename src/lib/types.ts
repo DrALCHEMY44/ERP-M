@@ -13,6 +13,14 @@ export type UserProfile = {
   createdAt: string;
 };
 
+export type Tenant = {
+  id: string;
+  name: string;
+  plan: 'Basic' | 'Premium' | 'Enterprise';
+  status: 'Active' | 'Suspended';
+  createdAt: string;
+};
+
 export type Business = {
   id: string;
   tenantId: string;
@@ -30,10 +38,21 @@ export type Business = {
   createdAt: string;
 };
 
+export type Branch = {
+  id: string;
+  tenantId: string;
+  businessId: string;
+  name: string;
+  location: string;
+  managerId?: string;
+  createdAt: string;
+};
+
 export type Product = {
   id: string;
   tenantId: string;
   businessId: string;
+  branchId?: string;
   name: string;
   category: string;
   quantity: number;
@@ -44,6 +63,18 @@ export type Product = {
   lowStockLevel: number;
   status: 'active' | 'inactive';
   createdAt: string;
+};
+
+export type InventoryMovement = {
+  id: string;
+  tenantId: string;
+  businessId: string;
+  productId: string;
+  type: 'IN' | 'OUT' | 'ADJUSTMENT' | 'TRANSFER';
+  quantity: number;
+  reason: string;
+  userId: string;
+  timestamp: string;
 };
 
 export type Customer = {
@@ -57,7 +88,7 @@ export type Customer = {
   notes?: string;
   totalOrders: number;
   totalSpent: number;
-  purchaseHistory?: string[]; // Array of Sale IDs
+  purchaseHistory?: string[];
   createdAt: string;
 };
 
@@ -69,7 +100,7 @@ export type Supplier = {
   phone: string;
   email: string;
   location: string;
-  productsSupplied: string[]; // Names or IDs of products
+  productsSupplied: string[];
   paymentStatus: 'Paid' | 'Pending' | 'Partial' | 'Overdue';
   notes?: string;
   createdAt: string;
@@ -85,6 +116,7 @@ export type Sale = {
   id: string;
   tenantId: string;
   businessId: string;
+  branchId?: string;
   customerId?: string;
   productsSold: SaleItem[];
   totalAmount: number;
@@ -94,16 +126,15 @@ export type Sale = {
   createdAt: string;
 };
 
-export type OHADAAccountClass = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
-
 export type Expense = {
   id: string;
   tenantId: string;
   businessId: string;
+  branchId?: string;
   category: 'Rent' | 'Utilities' | 'Salaries' | 'Supplies' | 'Marketing' | 'Transport' | 'Taxes' | 'Other';
-  ohadaAccount?: string; // e.g., 601, 621, 641
+  ohadaAccount?: string;
   amount: number;
-  taxAmount?: number; // VAT (TVA)
+  taxAmount?: number;
   date: string;
   description: string;
   receiptUrl?: string;
@@ -127,11 +158,22 @@ export type Employee = {
   email: string;
   startDate: string;
   employmentStatus: EmployeeStatus;
-  attendance: number; // Percentage
+  attendance: number;
   salaryPaymentStatus: PaymentStatus;
   createdBy: string;
   createdAt: string;
-  updatedAt?: string;
+};
+
+export type Attendance = {
+  id: string;
+  tenantId: string;
+  businessId: string;
+  employeeId: string;
+  date: string;
+  checkIn: string;
+  checkOut?: string;
+  status: 'Present' | 'Absent' | 'Late' | 'Excused';
+  notes?: string;
 };
 
 export type TaskStatus = 'Pending' | 'Ongoing' | 'Completed' | 'Cancelled' | 'Late' | 'Overdue';
@@ -139,6 +181,9 @@ export type TaskPriority = 'Low' | 'Medium' | 'High' | 'Urgent';
 
 export type TaskComment = {
   id: string;
+  tenantId: string;
+  businessId: string;
+  taskId: string;
   userId: string;
   userName: string;
   text: string;
@@ -154,17 +199,39 @@ export type Task = {
   assignedTo: string;
   assignedToName: string;
   assignedBy: string;
-  assignedByName?: string;
   department: string;
   priority: TaskPriority;
   status: TaskStatus;
   startDate: string;
   dueDate: string;
   completedAt?: string;
-  comments?: TaskComment[];
   attachments?: string[];
   createdAt: string;
   updatedAt?: string;
+};
+
+export type BusinessDocument = {
+  id?: string;
+  tenantId: string;
+  businessId: string;
+  name: string;
+  type: 'Receipt' | 'Invoice' | 'Contract' | 'License' | 'Report' | 'Employee' | 'Supplier' | 'Other';
+  fileUrl: string;
+  fileSize?: string;
+  uploadedBy: string;
+  uploadedByName: string;
+  uploadedAt: string;
+  description?: string;
+};
+
+export type AIQueryLog = {
+  id: string;
+  tenantId: string;
+  businessId: string;
+  userId: string;
+  query: string;
+  response: string;
+  timestamp: string;
 };
 
 export type ActivityLog = {
@@ -184,20 +251,16 @@ export type ActivityLog = {
   timestamp: string;
 };
 
-export type DocumentType = 'Receipt' | 'Invoice' | 'Contract' | 'License' | 'Report' | 'Employee' | 'Supplier' | 'Other';
-
-export type BusinessDocument = {
-  id?: string;
+export type Invitation = {
+  id: string;
   tenantId: string;
   businessId: string;
-  name: string;
-  type: DocumentType;
-  fileUrl: string;
-  fileSize?: string;
-  uploadedBy: string;
-  uploadedByName: string;
-  uploadedAt: string;
-  description?: string;
+  email: string;
+  role: Role;
+  invitedBy: string;
+  status: 'Pending' | 'Accepted' | 'Expired';
+  expiresAt: string;
+  createdAt: string;
 };
 
 export type AppNotification = {
@@ -213,4 +276,27 @@ export type AppNotification = {
   readBy: string[];
   createdAt: string;
   link?: string;
+};
+
+export type BusinessSettings = {
+  id: string;
+  tenantId: string;
+  businessId: string;
+  currency: string;
+  timezone: string;
+  fiscalYearStart: string;
+  taxRate: number;
+  lowStockThreshold: number;
+  updatedAt: string;
+};
+
+export type Report = {
+  id: string;
+  tenantId: string;
+  businessId: string;
+  name: string;
+  type: string;
+  data: any;
+  generatedBy: string;
+  createdAt: string;
 };
