@@ -32,7 +32,7 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-bold tracking-tight">Executive Dashboard</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-foreground font-headline">Executive Dashboard</h1>
         <p className="text-muted-foreground">Welcome back, Jean-Pierre. Here is what's happening today in your business.</p>
       </div>
 
@@ -42,33 +42,33 @@ export default function DashboardPage() {
           value="3,500,000 FCFA"
           icon={ShoppingCart}
           trend={{ value: 12, label: "vs last month", isPositive: true }}
-          className="border-emerald-500/50 border-t-4"
+          className="border-emerald-500 border-t-4 shadow-sm"
         />
         <StatCard
           title="Monthly Expenses"
           value="1,800,000 FCFA"
           icon={Receipt}
           trend={{ value: 4, label: "vs last month", isPositive: false }}
-          className="border-amber-500/50 border-t-4"
+          className="border-amber-500 border-t-4 shadow-sm"
         />
         <StatCard
           title="Net Profit"
           value="1,700,000 FCFA"
           icon={TrendingUp}
           trend={{ value: 18, label: "vs last month", isPositive: true }}
-          className="border-emerald-500/50 border-t-4"
+          className="border-blue-500 border-t-4 shadow-sm"
         />
         <StatCard
           title="Low Stock Items"
           value="12"
           icon={AlertTriangle}
-          className="border-destructive border-t-4 bg-destructive/5"
+          className="border-red-500 border-t-4 bg-red-50/50 shadow-sm"
           description="Action required immediately"
         />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-7 gap-6">
-        <Card className="lg:col-span-4">
+        <Card className="lg:col-span-4 border-sidebar-border/10 shadow-sm">
           <CardHeader>
             <CardTitle>Sales performance</CardTitle>
             <CardDescription>Daily sales volume in FCFA (Littoral Region)</CardDescription>
@@ -93,7 +93,7 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="lg:col-span-3">
+        <Card className="lg:col-span-3 border-sidebar-border/10 shadow-sm">
           <CardHeader>
             <CardTitle>Recent Activity</CardTitle>
             <CardDescription>Latest system-wide events</CardDescription>
@@ -122,7 +122,7 @@ export default function DashboardPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <Card>
+        <Card className="border-sidebar-border/10 shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between">
             <div className="space-y-1">
               <CardTitle>Task Overview</CardTitle>
@@ -141,7 +141,7 @@ export default function DashboardPage() {
               </div>
               <div className="grid grid-cols-2 gap-2 pt-2">
                 <div className="bg-muted/50 p-2 rounded-lg text-center">
-                  <p className="text-xl font-bold text-destructive">5</p>
+                  <p className="text-xl font-bold text-red-500">5</p>
                   <p className="text-[10px] uppercase text-muted-foreground">Overdue</p>
                 </div>
                 <div className="bg-muted/50 p-2 rounded-lg text-center">
@@ -153,7 +153,7 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-sidebar-border/10 shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between">
             <div className="space-y-1">
               <CardTitle>Inventory Health</CardTitle>
@@ -177,7 +177,7 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-sidebar-border/10 shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between">
             <div className="space-y-1">
               <CardTitle>Human Resources</CardTitle>
