@@ -8,6 +8,16 @@ An AI-powered Enterprise Resource Planning platform for SMEs in Cameroon.
 
 The application is built with Next.js and utilizes Genkit for AI functionalities, with a Cloud Firestore backend.
 
+### Database Setup (Firebase)
+
+To connect to your live database:
+1. Go to the [Firebase Console](https://console.firebase.google.com/).
+2. Create a new project.
+3. Add a **Web App** to your project.
+4. Copy the configuration values into your `.env` file.
+5. Enable **Authentication** (Email/Password) and **Cloud Firestore** in the Firebase sidebar.
+6. Deploy the rules found in `firestore.rules`.
+
 ### Project Structure
 
 - `src/app/`: Root routes and core modules (Dashboard, Inventory, Sales, Tasks, AI Assistant).
