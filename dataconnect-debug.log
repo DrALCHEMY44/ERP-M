@@ -1,0 +1,94 @@
+I0621 01:09:37.436101   20384 load.go:31] Reloading schema and connectors...
+W0621 01:09:37.551945   20384 control.go:68] [/emulator/studio-8058744913-5a601-service 8e51] connector "example" has errors: example\queries.gql:28:5: Cannot query field "nodes" on type "Tenant". Did you mean "name"?
+example\queries.gql:68:5: Cannot query field "nodes" on type "User". Did you mean "role"?
+example\queries.gql:67:3: Unknown argument "filter" on field "Query.user".
+example\queries.gql:106:5: Cannot query field "nodes" on type "Business". Did you mean "name"?
+example\queries.gql:105:3: Unknown argument "filter" on field "Query.business".
+example\queries.gql:149:5: Cannot query field "nodes" on type "Product". Did you mean "name"?
+example\queries.gql:148:3: Unknown argument "filter" on field "Query.product".
+example\queries.gql:195:5: Cannot query field "nodes" on type "Transaction".
+example\queries.gql:194:3: Unknown argument "filter" on field "Query.transaction".
+example\queries.gql:243:5: Cannot query field "nodes" on type "Task".
+example\queries.gql:242:3: Unknown argument "filter" on field "Query.task".
+example\queries.gql:291:5: Cannot query field "nodes" on type "Employee".
+example\queries.gql:290:3: Unknown argument "filter" on field "Query.employee".
+example\queries.gql:331:5: Cannot query field "nodes" on type "Customer".
+example\queries.gql:330:3: Unknown argument "filter" on field "Query.customer".
+example\queries.gql:368:5: Cannot query field "nodes" on type "Supplier".
+example\queries.gql:367:3: Unknown argument "filter" on field "Query.supplier".
+example\queries.gql:406:5: Cannot query field "nodes" on type "Document".
+example\queries.gql:405:3: Unknown argument "filter" on field "Query.document".
+
+sources: example\mutations.gql [1201B] example\queries.gql [7155B] 
+I0621 01:09:37.551945   20384 control.go:94] [/emulator/studio-8058744913-5a601-service 8e51] UpdateResources(): done
+Main schema: sources: schema\schema.gql [3187B] 
+Connector "example": sources: example\mutations.gql [1201B] example\queries.gql [7155B] 
+E0621 01:09:37.557478   20384 load.go:73] Could not load sources: 
+Errors: example\queries.gql:28:5: Cannot query field "nodes" on type "Tenant". Did you mean "name"?
+example\queries.gql:68:5: Cannot query field "nodes" on type "User". Did you mean "role"?
+example\queries.gql:67:3: Unknown argument "filter" on field "Query.user".
+example\queries.gql:106:5: Cannot query field "nodes" on type "Business". Did you mean "name"?
+example\queries.gql:105:3: Unknown argument "filter" on field "Query.business".
+example\queries.gql:149:5: Cannot query field "nodes" on type "Product". Did you mean "name"?
+example\queries.gql:148:3: Unknown argument "filter" on field "Query.product".
+example\queries.gql:195:5: Cannot query field "nodes" on type "Transaction".
+example\queries.gql:194:3: Unknown argument "filter" on field "Query.transaction".
+example\queries.gql:243:5: Cannot query field "nodes" on type "Task".
+example\queries.gql:242:3: Unknown argument "filter" on field "Query.task".
+example\queries.gql:291:5: Cannot query field "nodes" on type "Employee".
+example\queries.gql:290:3: Unknown argument "filter" on field "Query.employee".
+example\queries.gql:331:5: Cannot query field "nodes" on type "Customer".
+example\queries.gql:330:3: Unknown argument "filter" on field "Query.customer".
+example\queries.gql:368:5: Cannot query field "nodes" on type "Supplier".
+example\queries.gql:367:3: Unknown argument "filter" on field "Query.supplier".
+example\queries.gql:406:5: Cannot query field "nodes" on type "Document".
+example\queries.gql:405:3: Unknown argument "filter" on field "Query.document".
+I0621 01:09:37.561527   20384 collector.go:107] schema extensions wrote into "C:\\Users\\kali\\Pictures\\project\\ERP-M\\dataconnect\\.dataconnect\\schema"
+Generated sources: main\implicit.gql [4401B] main\input.gql [149225B] main\relation.gql [67022B] main\query.gql [17789B] main\mutation.gql [48090B] prelude.gql [73219B] 
+I0621 01:09:37.561527   20384 load.go:74] Finished reloading
+I0621 01:09:37.563541   20384 dev.go:105] Listening on address (HTTP + gRPC): 127.0.0.1:9399
+I0621 01:09:37.565054   20384 dev.go:105] Listening on address (HTTP + gRPC): [::1]:9399
+W0621 01:09:40.736066   20384 control.go:68] [/emulator/studio-8058744913-5a601-service 5853] connector "example" has errors: example\queries.gql:28:5: Cannot query field "nodes" on type "Tenant". Did you mean "name"?
+example\queries.gql:68:5: Cannot query field "nodes" on type "User". Did you mean "role"?
+example\queries.gql:67:3: Unknown argument "filter" on field "Query.user".
+example\queries.gql:106:5: Cannot query field "nodes" on type "Business". Did you mean "name"?
+example\queries.gql:105:3: Unknown argument "filter" on field "Query.business".
+example\queries.gql:149:5: Cannot query field "nodes" on type "Product". Did you mean "name"?
+example\queries.gql:148:3: Unknown argument "filter" on field "Query.product".
+example\queries.gql:195:5: Cannot query field "nodes" on type "Transaction".
+example\queries.gql:194:3: Unknown argument "filter" on field "Query.transaction".
+example\queries.gql:243:5: Cannot query field "nodes" on type "Task".
+example\queries.gql:242:3: Unknown argument "filter" on field "Query.task".
+example\queries.gql:291:5: Cannot query field "nodes" on type "Employee".
+example\queries.gql:290:3: Unknown argument "filter" on field "Query.employee".
+example\queries.gql:331:5: Cannot query field "nodes" on type "Customer".
+example\queries.gql:330:3: Unknown argument "filter" on field "Query.customer".
+example\queries.gql:368:5: Cannot query field "nodes" on type "Supplier".
+example\queries.gql:367:3: Unknown argument "filter" on field "Query.supplier".
+example\queries.gql:406:5: Cannot query field "nodes" on type "Document".
+example\queries.gql:405:3: Unknown argument "filter" on field "Query.document".
+
+sources: example\mutations.gql [1201B] example\queries.gql [7155B] 
+I0621 01:09:40.736066   20384 control.go:94] [/emulator/studio-8058744913-5a601-service 5853] UpdateResources(): done
+Main schema: sources: schema\schema.gql [3187B] 
+Connector "example": sources: example\mutations.gql [1201B] example\queries.gql [7155B] 
+I0621 01:09:40.736066   20384 service.go:148] [/emulator/studio-8058744913-5a601-service 5853] while configuring to server.Settings{ConnectionString:"dbname='studio-8058744913-5a601-database' host='127.0.0.1' port='5432' sslmode='disable' dbname='studio-8058744913-5a601-database'", MaxOpenConnection:0, UseDummy:false, EnableGoogleMLIntegration:false, SchemaValidationMode:""}, failed to reload last live sources: 
+Errors: example\queries.gql:28:5: Cannot query field "nodes" on type "Tenant". Did you mean "name"?
+example\queries.gql:68:5: Cannot query field "nodes" on type "User". Did you mean "role"?
+example\queries.gql:67:3: Unknown argument "filter" on field "Query.user".
+example\queries.gql:106:5: Cannot query field "nodes" on type "Business". Did you mean "name"?
+example\queries.gql:105:3: Unknown argument "filter" on field "Query.business".
+example\queries.gql:149:5: Cannot query field "nodes" on type "Product". Did you mean "name"?
+example\queries.gql:148:3: Unknown argument "filter" on field "Query.product".
+example\queries.gql:195:5: Cannot query field "nodes" on type "Transaction".
+example\queries.gql:194:3: Unknown argument "filter" on field "Query.transaction".
+example\queries.gql:243:5: Cannot query field "nodes" on type "Task".
+example\queries.gql:242:3: Unknown argument "filter" on field "Query.task".
+example\queries.gql:291:5: Cannot query field "nodes" on type "Employee".
+example\queries.gql:290:3: Unknown argument "filter" on field "Query.employee".
+example\queries.gql:331:5: Cannot query field "nodes" on type "Customer".
+example\queries.gql:330:3: Unknown argument "filter" on field "Query.customer".
+example\queries.gql:368:5: Cannot query field "nodes" on type "Supplier".
+example\queries.gql:367:3: Unknown argument "filter" on field "Query.supplier".
+example\queries.gql:406:5: Cannot query field "nodes" on type "Document".
+example\queries.gql:405:3: Unknown argument "filter" on field "Query.document".

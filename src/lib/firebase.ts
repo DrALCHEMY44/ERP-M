@@ -1,8 +1,9 @@
-
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import { getStorage } from "firebase/storage";
+// Import the core runtime
+import { getDataConnect } from "firebase/data-connect";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -19,10 +20,11 @@ const db = getFirestore(app);
 const auth = getAuth(app);
 const storage = getStorage(app);
 
-/**
- * SQL INTEGRATION NOTE:
- * When using Firebase Data Connect, you will import the generated SDK
- * from '@/lib/dataconnect-sdk' instead of using Firestore 'db' for SQL modules.
- */
-
+// Initialize Data Connect using the explicit configuration
+// Initialize Data Connect with the correct property names
+export const dataConnect = getDataConnect({
+  service: "studio-8058744913-5a601-service",
+  location: "us-east4",
+  connector: "example" 
+});
 export { app, db, auth, storage };

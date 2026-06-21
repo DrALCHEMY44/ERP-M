@@ -1,4 +1,11 @@
+<<<<<<< HEAD
 connectorId: example
+=======
+connectorId: "example"
+operations:
+  - "./mutations.gql"
+  - "./queries.gql"
+>>>>>>> 546aacf70afe81cbee3ea5f2edbc661c271990b8
 generate:
   javascriptSdk:
     - outputDir: ../../src/dataconnect-generated
@@ -6,3 +13,7 @@ generate:
       packageJsonDir: ../..
       react: true
       angular: false
+<<<<<<< HEAD
+=======
+      clientCache: {}
+>>>>>>> 546aacf70afe81cbee3ea5f2edbc661c271990b8

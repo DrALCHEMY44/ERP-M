@@ -12,6 +12,7 @@ For each operation, there is a wrapper hook that can be used to call the operati
 
 Here are all of the hooks that get generated:
 ```ts
+<<<<<<< HEAD
 import { useListMovies, useListUsers, useListUserReviews, useGetMovieById, useSearchMovie, useCreateMovie, useUpsertUser, useAddReview, useDeleteReview } from '@dataconnect/generated/react';
 // The types of these hooks are available in react/index.d.ts
 
@@ -32,6 +33,30 @@ const { data, isPending, isSuccess, isError, error } = useUpsertUser(upsertUserV
 const { data, isPending, isSuccess, isError, error } = useAddReview(addReviewVars);
 
 const { data, isPending, isSuccess, isError, error } = useDeleteReview(deleteReviewVars);
+=======
+import { useCreateTenant, useUpdateTenant, useDeleteTenant, useCreateUser, useUpdateUser, useDeleteUser, useCreateBusiness, useUpdateBusiness, useDeleteBusiness, useCreateProduct } from '@dataconnect/generated/react';
+// The types of these hooks are available in react/index.d.ts
+
+const { data, isPending, isSuccess, isError, error } = useCreateTenant(createTenantVars);
+
+const { data, isPending, isSuccess, isError, error } = useUpdateTenant(updateTenantVars);
+
+const { data, isPending, isSuccess, isError, error } = useDeleteTenant(deleteTenantVars);
+
+const { data, isPending, isSuccess, isError, error } = useCreateUser(createUserVars);
+
+const { data, isPending, isSuccess, isError, error } = useUpdateUser(updateUserVars);
+
+const { data, isPending, isSuccess, isError, error } = useDeleteUser(deleteUserVars);
+
+const { data, isPending, isSuccess, isError, error } = useCreateBusiness(createBusinessVars);
+
+const { data, isPending, isSuccess, isError, error } = useUpdateBusiness(updateBusinessVars);
+
+const { data, isPending, isSuccess, isError, error } = useDeleteBusiness(deleteBusinessVars);
+
+const { data, isPending, isSuccess, isError, error } = useCreateProduct(createProductVars);
+>>>>>>> 546aacf70afe81cbee3ea5f2edbc661c271990b8
 
 ```
 
@@ -70,6 +95,7 @@ If a user is not using a supported framework, they can use the generated SDK dir
 Here's an example of how to use it with the first 5 operations:
 
 ```js
+<<<<<<< HEAD
 import { listMovies, listUsers, listUserReviews, getMovieById, searchMovie, createMovie, upsertUser, addReview, deleteReview } from '@dataconnect/generated';
 
 
@@ -99,6 +125,40 @@ const { data } = await AddReview(dataConnect, addReviewVars);
 
 // Operation DeleteReview:  For variables, look at type DeleteReviewVars in ../index.d.ts
 const { data } = await DeleteReview(dataConnect, deleteReviewVars);
+=======
+import { createTenant, updateTenant, deleteTenant, createUser, updateUser, deleteUser, createBusiness, updateBusiness, deleteBusiness, createProduct } from '@dataconnect/generated';
+
+
+// Operation CreateTenant:  For variables, look at type CreateTenantVars in ../index.d.ts
+const { data } = await CreateTenant(dataConnect, createTenantVars);
+
+// Operation UpdateTenant:  For variables, look at type UpdateTenantVars in ../index.d.ts
+const { data } = await UpdateTenant(dataConnect, updateTenantVars);
+
+// Operation DeleteTenant:  For variables, look at type DeleteTenantVars in ../index.d.ts
+const { data } = await DeleteTenant(dataConnect, deleteTenantVars);
+
+// Operation CreateUser:  For variables, look at type CreateUserVars in ../index.d.ts
+const { data } = await CreateUser(dataConnect, createUserVars);
+
+// Operation UpdateUser:  For variables, look at type UpdateUserVars in ../index.d.ts
+const { data } = await UpdateUser(dataConnect, updateUserVars);
+
+// Operation DeleteUser:  For variables, look at type DeleteUserVars in ../index.d.ts
+const { data } = await DeleteUser(dataConnect, deleteUserVars);
+
+// Operation CreateBusiness:  For variables, look at type CreateBusinessVars in ../index.d.ts
+const { data } = await CreateBusiness(dataConnect, createBusinessVars);
+
+// Operation UpdateBusiness:  For variables, look at type UpdateBusinessVars in ../index.d.ts
+const { data } = await UpdateBusiness(dataConnect, updateBusinessVars);
+
+// Operation DeleteBusiness:  For variables, look at type DeleteBusinessVars in ../index.d.ts
+const { data } = await DeleteBusiness(dataConnect, deleteBusinessVars);
+
+// Operation CreateProduct:  For variables, look at type CreateProductVars in ../index.d.ts
+const { data } = await CreateProduct(dataConnect, createProductVars);
+>>>>>>> 546aacf70afe81cbee3ea5f2edbc661c271990b8
 
 
 ```
