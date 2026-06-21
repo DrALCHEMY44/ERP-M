@@ -1,0 +1,1570 @@
+extend type Mutation {
+  """
+  ✨ Insert a single `AIQuery` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  aIQuery_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: AIQuery_Data!
+  ): AIQuery_KeyOutput! @fdc_generated(from: "AIQuery", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `ActivityLog` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  activityLog_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: ActivityLog_Data!
+  ): ActivityLog_KeyOutput! @fdc_generated(from: "ActivityLog", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `Business` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  business_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: Business_Data!
+  ): Business_KeyOutput! @fdc_generated(from: "Business", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `Customer` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  customer_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: Customer_Data!
+  ): Customer_KeyOutput! @fdc_generated(from: "Customer", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `Document` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  document_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: Document_Data!
+  ): Document_KeyOutput! @fdc_generated(from: "Document", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `Employee` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  employee_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: Employee_Data!
+  ): Employee_KeyOutput! @fdc_generated(from: "Employee", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `Notification` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  notification_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: Notification_Data!
+  ): Notification_KeyOutput! @fdc_generated(from: "Notification", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `Product` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  product_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: Product_Data!
+  ): Product_KeyOutput! @fdc_generated(from: "Product", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `Supplier` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  supplier_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: Supplier_Data!
+  ): Supplier_KeyOutput! @fdc_generated(from: "Supplier", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `Task` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  task_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: Task_Data!
+  ): Task_KeyOutput! @fdc_generated(from: "Task", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `TaskComment` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  taskComment_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: TaskComment_Data!
+  ): TaskComment_KeyOutput! @fdc_generated(from: "TaskComment", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `Tenant` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  tenant_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: Tenant_Data!
+  ): Tenant_KeyOutput! @fdc_generated(from: "Tenant", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `Transaction` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  transaction_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: Transaction_Data!
+  ): Transaction_KeyOutput! @fdc_generated(from: "Transaction", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `User` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  user_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: User_Data!
+  ): User_KeyOutput! @fdc_generated(from: "User", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert `AIQuery` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  aIQuery_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [AIQuery_Data!]!
+  ): [AIQuery_KeyOutput!]! @fdc_generated(from: "AIQuery", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `ActivityLog` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  activityLog_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [ActivityLog_Data!]!
+  ): [ActivityLog_KeyOutput!]! @fdc_generated(from: "ActivityLog", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `Business` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  business_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [Business_Data!]!
+  ): [Business_KeyOutput!]! @fdc_generated(from: "Business", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `Customer` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  customer_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [Customer_Data!]!
+  ): [Customer_KeyOutput!]! @fdc_generated(from: "Customer", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `Document` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  document_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [Document_Data!]!
+  ): [Document_KeyOutput!]! @fdc_generated(from: "Document", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `Employee` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  employee_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [Employee_Data!]!
+  ): [Employee_KeyOutput!]! @fdc_generated(from: "Employee", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `Notification` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  notification_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [Notification_Data!]!
+  ): [Notification_KeyOutput!]! @fdc_generated(from: "Notification", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `Product` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  product_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [Product_Data!]!
+  ): [Product_KeyOutput!]! @fdc_generated(from: "Product", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `Supplier` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  supplier_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [Supplier_Data!]!
+  ): [Supplier_KeyOutput!]! @fdc_generated(from: "Supplier", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `Task` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  task_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [Task_Data!]!
+  ): [Task_KeyOutput!]! @fdc_generated(from: "Task", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `TaskComment` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  taskComment_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [TaskComment_Data!]!
+  ): [TaskComment_KeyOutput!]! @fdc_generated(from: "TaskComment", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `Tenant` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  tenant_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [Tenant_Data!]!
+  ): [Tenant_KeyOutput!]! @fdc_generated(from: "Tenant", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `Transaction` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  transaction_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [Transaction_Data!]!
+  ): [Transaction_KeyOutput!]! @fdc_generated(from: "Transaction", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `User` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  user_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [User_Data!]!
+  ): [User_KeyOutput!]! @fdc_generated(from: "User", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert or update a single `AIQuery` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `AIQuery`.
+  """
+  aIQuery_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: AIQuery_Data!
+  ): AIQuery_KeyOutput! @fdc_generated(from: "AIQuery", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `ActivityLog` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `ActivityLog`.
+  """
+  activityLog_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: ActivityLog_Data!
+  ): ActivityLog_KeyOutput! @fdc_generated(from: "ActivityLog", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `Business` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Business`.
+  """
+  business_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: Business_Data!
+  ): Business_KeyOutput! @fdc_generated(from: "Business", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `Customer` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Customer`.
+  """
+  customer_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: Customer_Data!
+  ): Customer_KeyOutput! @fdc_generated(from: "Customer", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `Document` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Document`.
+  """
+  document_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: Document_Data!
+  ): Document_KeyOutput! @fdc_generated(from: "Document", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `Employee` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Employee`.
+  """
+  employee_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: Employee_Data!
+  ): Employee_KeyOutput! @fdc_generated(from: "Employee", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `Notification` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Notification`.
+  """
+  notification_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: Notification_Data!
+  ): Notification_KeyOutput! @fdc_generated(from: "Notification", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `Product` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Product`.
+  """
+  product_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: Product_Data!
+  ): Product_KeyOutput! @fdc_generated(from: "Product", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `Supplier` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Supplier`.
+  """
+  supplier_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: Supplier_Data!
+  ): Supplier_KeyOutput! @fdc_generated(from: "Supplier", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `Task` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Task`.
+  """
+  task_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: Task_Data!
+  ): Task_KeyOutput! @fdc_generated(from: "Task", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `TaskComment` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `TaskComment`.
+  """
+  taskComment_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: TaskComment_Data!
+  ): TaskComment_KeyOutput! @fdc_generated(from: "TaskComment", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `Tenant` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Tenant`.
+  """
+  tenant_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: Tenant_Data!
+  ): Tenant_KeyOutput! @fdc_generated(from: "Tenant", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `Transaction` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Transaction`.
+  """
+  transaction_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: Transaction_Data!
+  ): Transaction_KeyOutput! @fdc_generated(from: "Transaction", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `User` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `User`.
+  """
+  user_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: User_Data!
+  ): User_KeyOutput! @fdc_generated(from: "User", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update `AIQuery` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `AIQuery`.
+  """
+  aIQuery_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [AIQuery_Data!]!
+  ): [AIQuery_KeyOutput!]! @fdc_generated(from: "AIQuery", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `ActivityLog` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `ActivityLog`.
+  """
+  activityLog_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [ActivityLog_Data!]!
+  ): [ActivityLog_KeyOutput!]! @fdc_generated(from: "ActivityLog", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `Business` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Business`.
+  """
+  business_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [Business_Data!]!
+  ): [Business_KeyOutput!]! @fdc_generated(from: "Business", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `Customer` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Customer`.
+  """
+  customer_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [Customer_Data!]!
+  ): [Customer_KeyOutput!]! @fdc_generated(from: "Customer", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `Document` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Document`.
+  """
+  document_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [Document_Data!]!
+  ): [Document_KeyOutput!]! @fdc_generated(from: "Document", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `Employee` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Employee`.
+  """
+  employee_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [Employee_Data!]!
+  ): [Employee_KeyOutput!]! @fdc_generated(from: "Employee", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `Notification` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Notification`.
+  """
+  notification_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [Notification_Data!]!
+  ): [Notification_KeyOutput!]! @fdc_generated(from: "Notification", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `Product` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Product`.
+  """
+  product_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [Product_Data!]!
+  ): [Product_KeyOutput!]! @fdc_generated(from: "Product", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `Supplier` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Supplier`.
+  """
+  supplier_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [Supplier_Data!]!
+  ): [Supplier_KeyOutput!]! @fdc_generated(from: "Supplier", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `Task` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Task`.
+  """
+  task_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [Task_Data!]!
+  ): [Task_KeyOutput!]! @fdc_generated(from: "Task", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `TaskComment` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `TaskComment`.
+  """
+  taskComment_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [TaskComment_Data!]!
+  ): [TaskComment_KeyOutput!]! @fdc_generated(from: "TaskComment", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `Tenant` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Tenant`.
+  """
+  tenant_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [Tenant_Data!]!
+  ): [Tenant_KeyOutput!]! @fdc_generated(from: "Tenant", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `Transaction` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Transaction`.
+  """
+  transaction_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [Transaction_Data!]!
+  ): [Transaction_KeyOutput!]! @fdc_generated(from: "Transaction", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `User` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `User`.
+  """
+  user_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [User_Data!]!
+  ): [User_KeyOutput!]! @fdc_generated(from: "User", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Update a single `AIQuery` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `AIQuery` or `null` if not found.
+  """
+  aIQuery_update(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: AIQuery_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: AIQuery_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: AIQuery_Data!
+  ): AIQuery_KeyOutput @fdc_generated(from: "AIQuery", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `ActivityLog` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `ActivityLog` or `null` if not found.
+  """
+  activityLog_update(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: ActivityLog_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: ActivityLog_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: ActivityLog_Data!
+  ): ActivityLog_KeyOutput @fdc_generated(from: "ActivityLog", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `Business` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Business` or `null` if not found.
+  """
+  business_update(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Business_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Business_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: Business_Data!
+  ): Business_KeyOutput @fdc_generated(from: "Business", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `Customer` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Customer` or `null` if not found.
+  """
+  customer_update(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Customer_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Customer_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: Customer_Data!
+  ): Customer_KeyOutput @fdc_generated(from: "Customer", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `Document` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Document` or `null` if not found.
+  """
+  document_update(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Document_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Document_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: Document_Data!
+  ): Document_KeyOutput @fdc_generated(from: "Document", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `Employee` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Employee` or `null` if not found.
+  """
+  employee_update(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Employee_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Employee_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: Employee_Data!
+  ): Employee_KeyOutput @fdc_generated(from: "Employee", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `Notification` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Notification` or `null` if not found.
+  """
+  notification_update(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Notification_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Notification_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: Notification_Data!
+  ): Notification_KeyOutput @fdc_generated(from: "Notification", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `Product` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Product` or `null` if not found.
+  """
+  product_update(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Product_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Product_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: Product_Data!
+  ): Product_KeyOutput @fdc_generated(from: "Product", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `Supplier` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Supplier` or `null` if not found.
+  """
+  supplier_update(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Supplier_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Supplier_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: Supplier_Data!
+  ): Supplier_KeyOutput @fdc_generated(from: "Supplier", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `Task` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Task` or `null` if not found.
+  """
+  task_update(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Task_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Task_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: Task_Data!
+  ): Task_KeyOutput @fdc_generated(from: "Task", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `TaskComment` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `TaskComment` or `null` if not found.
+  """
+  taskComment_update(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: TaskComment_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: TaskComment_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: TaskComment_Data!
+  ): TaskComment_KeyOutput @fdc_generated(from: "TaskComment", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `Tenant` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Tenant` or `null` if not found.
+  """
+  tenant_update(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Tenant_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Tenant_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: Tenant_Data!
+  ): Tenant_KeyOutput @fdc_generated(from: "Tenant", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `Transaction` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Transaction` or `null` if not found.
+  """
+  transaction_update(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Transaction_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Transaction_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: Transaction_Data!
+  ): Transaction_KeyOutput @fdc_generated(from: "Transaction", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `User` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `User` or `null` if not found.
+  """
+  user_update(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: User_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: User_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: User_Data!
+  ): User_KeyOutput @fdc_generated(from: "User", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update `AIQuery` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  aIQuery_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: AIQuery_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: AIQuery_Data!
+  ): Int! @fdc_generated(from: "AIQuery", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `ActivityLog` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  activityLog_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: ActivityLog_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: ActivityLog_Data!
+  ): Int! @fdc_generated(from: "ActivityLog", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `Business` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  business_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: Business_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: Business_Data!
+  ): Int! @fdc_generated(from: "Business", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `Customer` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  customer_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: Customer_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: Customer_Data!
+  ): Int! @fdc_generated(from: "Customer", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `Document` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  document_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: Document_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: Document_Data!
+  ): Int! @fdc_generated(from: "Document", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `Employee` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  employee_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: Employee_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: Employee_Data!
+  ): Int! @fdc_generated(from: "Employee", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `Notification` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  notification_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: Notification_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: Notification_Data!
+  ): Int! @fdc_generated(from: "Notification", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `Product` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  product_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: Product_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: Product_Data!
+  ): Int! @fdc_generated(from: "Product", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `Supplier` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  supplier_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: Supplier_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: Supplier_Data!
+  ): Int! @fdc_generated(from: "Supplier", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `Task` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  task_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: Task_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: Task_Data!
+  ): Int! @fdc_generated(from: "Task", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `TaskComment` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  taskComment_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: TaskComment_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: TaskComment_Data!
+  ): Int! @fdc_generated(from: "TaskComment", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `Tenant` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  tenant_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: Tenant_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: Tenant_Data!
+  ): Int! @fdc_generated(from: "Tenant", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `Transaction` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  transaction_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: Transaction_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: Transaction_Data!
+  ): Int! @fdc_generated(from: "Transaction", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `User` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  user_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: User_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: User_Data!
+  ): Int! @fdc_generated(from: "User", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Delete a single `AIQuery` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  aIQuery_delete(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: AIQuery_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: AIQuery_FirstRow
+  ): AIQuery_KeyOutput @fdc_generated(from: "AIQuery", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `ActivityLog` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  activityLog_delete(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: ActivityLog_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: ActivityLog_FirstRow
+  ): ActivityLog_KeyOutput @fdc_generated(from: "ActivityLog", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `Business` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  business_delete(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Business_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Business_FirstRow
+  ): Business_KeyOutput @fdc_generated(from: "Business", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `Customer` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  customer_delete(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Customer_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Customer_FirstRow
+  ): Customer_KeyOutput @fdc_generated(from: "Customer", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `Document` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  document_delete(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Document_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Document_FirstRow
+  ): Document_KeyOutput @fdc_generated(from: "Document", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `Employee` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  employee_delete(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Employee_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Employee_FirstRow
+  ): Employee_KeyOutput @fdc_generated(from: "Employee", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `Notification` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  notification_delete(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Notification_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Notification_FirstRow
+  ): Notification_KeyOutput @fdc_generated(from: "Notification", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `Product` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  product_delete(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Product_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Product_FirstRow
+  ): Product_KeyOutput @fdc_generated(from: "Product", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `Supplier` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  supplier_delete(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Supplier_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Supplier_FirstRow
+  ): Supplier_KeyOutput @fdc_generated(from: "Supplier", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `Task` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  task_delete(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Task_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Task_FirstRow
+  ): Task_KeyOutput @fdc_generated(from: "Task", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `TaskComment` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  taskComment_delete(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: TaskComment_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: TaskComment_FirstRow
+  ): TaskComment_KeyOutput @fdc_generated(from: "TaskComment", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `Tenant` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  tenant_delete(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Tenant_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Tenant_FirstRow
+  ): Tenant_KeyOutput @fdc_generated(from: "Tenant", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `Transaction` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  transaction_delete(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Transaction_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Transaction_FirstRow
+  ): Transaction_KeyOutput @fdc_generated(from: "Transaction", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `User` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  user_delete(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: User_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: User_FirstRow
+  ): User_KeyOutput @fdc_generated(from: "User", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete `AIQuery` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  aIQuery_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: AIQuery_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "AIQuery", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `ActivityLog` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  activityLog_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: ActivityLog_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "ActivityLog", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `Business` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  business_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: Business_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "Business", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `Customer` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  customer_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: Customer_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "Customer", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `Document` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  document_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: Document_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "Document", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `Employee` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  employee_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: Employee_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "Employee", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `Notification` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  notification_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: Notification_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "Notification", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `Product` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  product_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: Product_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "Product", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `Supplier` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  supplier_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: Supplier_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "Supplier", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `Task` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  task_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: Task_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "Task", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `TaskComment` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  taskComment_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: TaskComment_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "TaskComment", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `Tenant` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  tenant_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: Tenant_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "Tenant", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `Transaction` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  transaction_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: Transaction_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "Transaction", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `User` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  user_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: User_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "User", purpose: DELETE_MULTIPLE)
+}

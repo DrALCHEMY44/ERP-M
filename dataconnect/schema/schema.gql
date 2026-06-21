@@ -1,0 +1,181 @@
+enum TransactionType {
+  SALE
+  EXPENSE
+}
+
+enum TaskStatus {
+  PENDING
+  ONGOING
+  COMPLETED
+  LATE
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+type Tenant @table {
+  id: UUID! @default(expr: "uuidV4()")
+  name: String!
+  businessSector: String!
+  location: String!
+  ownerEmail: String!
+  taxId: String
+  logoUrl: String
+  subscriptionTier: String
+  createdAt: Timestamp! @default(expr: "request.time")
+}
+
+type User @table {
+  id: UUID! @default(expr: "uuidV4()")
+  tenantId: UUID!
+  businessId: UUID!
+  email: String!
+  role: String!
+  department: String
+  phoneNumber: String
+  createdAt: Timestamp! @default(expr: "request.time")
+}
+
+type Business @table {
+  id: UUID! @default(expr: "uuidV4()")
+  tenantId: UUID!
+  name: String!
+  location: String!
+  businessType: String
+  region: String
+  createdAt: Timestamp! @default(expr: "request.time")
+}
+
+type Product @table {
+  id: UUID! @default(expr: "uuidV4()")
+  tenantId: UUID!
+  businessId: UUID!
+  name: String!
+  category: String
+  quantity: Int!
+  costPrice: Float
+  sellingPrice: Float!
+  expiryDate: Date
+  lowStockLevel: Int
+  createdBy: UUID!
+  createdAt: Timestamp! @default(expr: "request.time")
+  updatedAt: Timestamp
+}
+
+type Transaction @table {
+  id: UUID! @default(expr: "uuidV4()")
+  tenantId: UUID!
+  businessId: UUID!
+  type: String!
+  amount: Float!
+  date: Timestamp!
+  category: String
+  receiptUrl: String
+  recordedBy: UUID!
+  createdAt: Timestamp! @default(expr: "request.time")
+}
+
+type Task @table {
+  id: UUID! @default(expr: "uuidV4()")
+  tenantId: UUID!
+  businessId: UUID!
+  title: String!
+  description: String
+  status: String!
+  priority: String
+  dueDate: Timestamp!
+  assignedTo: User
+  createdBy: UUID!
+  createdAt: Timestamp! @default(expr: "request.time")
+  updatedAt: Timestamp
+}
+
+type TaskComment @table {
+  id: UUID! @default(expr: "uuidV4()")
+  tenantId: UUID!
+  businessId: UUID!
+  task: Task!
+  user: User!
+  content: String!
+  createdAt: Timestamp! @default(expr: "request.time")
+}
+
+type Employee @table {
+  id: UUID! @default(expr: "uuidV4()")
+  tenantId: UUID!
+  businessId: UUID!
+  fullName: String!
+  position: String!
+  salary: Float
+  department: String
+  startDate: Date
+  status: String
+  createdAt: Timestamp! @default(expr: "request.time")
+}
+
+type Customer @table {
+  id: UUID! @default(expr: "uuidV4()")
+  tenantId: UUID!
+  businessId: UUID!
+  customerName: String!
+  phoneNumber: String
+  email: String
+  createdAt: Timestamp! @default(expr: "request.time")
+}
+
+type Supplier @table {
+  id: UUID! @default(expr: "uuidV4()")
+  tenantId: UUID!
+  businessId: UUID!
+  supplierName: String!
+  phoneNumber: String
+  email: String
+  createdAt: Timestamp! @default(expr: "request.time")
+}
+
+type Document @table {
+  id: UUID! @default(expr: "uuidV4()")
+  tenantId: UUID!
+  businessId: UUID!
+  title: String!
+  documentType: String!
+  fileUrl: String!
+  uploadedBy: UUID!
+  uploadedAt: Timestamp! @default(expr: "request.time")
+}
+
+type ActivityLog @table {
+  id: UUID! @default(expr: "uuidV4()")
+  tenantId: UUID!
+  businessId: UUID!
+  userId: UUID!
+  userName: String!
+  actionType: String!
+  module: String!
+  description: String
+  recordId: UUID
+  timestamp: Timestamp! @default(expr: "request.time")
+}
+
+type AIQuery @table {
+  id: UUID! @default(expr: "uuidV4()")
+  tenantId: UUID!
+  businessId: UUID!
+  userId: UUID!
+  queryText: String!
+  response: String
+  timestamp: Timestamp! @default(expr: "request.time")
+}
+
+type Notification @table {
+  id: UUID! @default(expr: "uuidV4()")
+  tenantId: UUID!
+  businessId: UUID!
+  userId: UUID!
+  message: String!
+  isRead: Boolean! @default(value: false)
+  createdAt: Timestamp! @default(expr: "request.time")
+}

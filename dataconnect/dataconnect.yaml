@@ -1,0 +1,12 @@
+specVersion: "v1"
+serviceId: "studio-8058744913-5a601-service"
+location: "us-east4"
+schema:
+  source: "./schema"
+  datasource:
+    postgresql:
+      database: "studio-8058744913-5a601-database"
+      cloudSql:
+        instanceId: "studio-8058744913-5a601:us-east4:studio-8058744913-5a601-instance"
+connectorDirs:
+  - "./example"

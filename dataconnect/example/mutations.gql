@@ -1,0 +1,129 @@
+# -----------------------------------
+# Tenant Mutations
+# -----------------------------------
+mutation CreateTenant($data: Tenant_Data!) {
+  tenant_insert(data: $data)
+}
+mutation UpdateTenant($id: UUID!, $data: Tenant_Data!) {
+  tenant_update(id: $id, data: $data)
+}
+mutation DeleteTenant($id: UUID!) {
+  tenant_delete(id: $id)
+}
+
+# -----------------------------------
+# User Mutations
+# -----------------------------------
+mutation CreateUser($data: User_Data!) {
+  user_insert(data: $data)
+}
+mutation UpdateUser($id: UUID!, $data: User_Data!) {
+  user_update(id: $id, data: $data)
+}
+mutation DeleteUser($id: UUID!) {
+  user_delete(id: $id)
+}
+
+# -----------------------------------
+# Business Mutations
+# -----------------------------------
+mutation CreateBusiness($data: Business_Data!) {
+  business_insert(data: $data)
+}
+mutation UpdateBusiness($id: UUID!, $data: Business_Data!) {
+  business_update(id: $id, data: $data)
+}
+mutation DeleteBusiness($id: UUID!) {
+  business_delete(id: $id)
+}
+
+# -----------------------------------
+# Product Mutations
+# -----------------------------------
+mutation CreateProduct($data: Product_Data!) {
+  product_insert(data: $data)
+}
+mutation UpdateProduct($id: UUID!, $data: Product_Data!) {
+  product_update(id: $id, data: $data)
+}
+mutation DeleteProduct($id: UUID!) {
+  product_delete(id: $id)
+}
+
+# -----------------------------------
+# Transaction Mutations
+# -----------------------------------
+mutation CreateTransaction($data: Transaction_Data!) {
+  transaction_insert(data: $data)
+}
+mutation UpdateTransaction($id: UUID!, $data: Transaction_Data!) {
+  transaction_update(id: $id, data: $data)
+}
+mutation DeleteTransaction($id: UUID!) {
+  transaction_delete(id: $id)
+}
+
+# -----------------------------------
+# Task Mutations
+# -----------------------------------
+mutation CreateTask($data: Task_Data!) {
+  task_insert(data: $data)
+}
+mutation UpdateTask($id: UUID!, $data: Task_Data!) {
+  task_update(id: $id, data: $data)
+}
+mutation DeleteTask($id: UUID!) {
+  task_delete(id: $id)
+}
+
+# -----------------------------------
+# Employee Mutations
+# -----------------------------------
+mutation CreateEmployee($data: Employee_Data!) {
+  employee_insert(data: $data)
+}
+mutation UpdateEmployee($id: UUID!, $data: Employee_Data!) {
+  employee_update(id: $id, data: $data)
+}
+mutation DeleteEmployee($id: UUID!) {
+  employee_delete(id: $id)
+}
+
+# -----------------------------------
+# Customer Mutations
+# -----------------------------------
+mutation CreateCustomer($data: Customer_Data!) {
+  customer_insert(data: $data)
+}
+mutation UpdateCustomer($id: UUID!, $data: Customer_Data!) {
+  customer_update(id: $id, data: $data)
+}
+mutation DeleteCustomer($id: UUID!) {
+  customer_delete(id: $id)
+}
+
+# -----------------------------------
+# Supplier Mutations
+# -----------------------------------
+mutation CreateSupplier($data: Supplier_Data!) {
+  supplier_insert(data: $data)
+}
+mutation UpdateSupplier($id: UUID!, $data: Supplier_Data!) {
+  supplier_update(id: $id, data: $data)
+}
+mutation DeleteSupplier($id: UUID!) {
+  supplier_delete(id: $id)
+}
+
+# -----------------------------------
+# Document Mutations
+# -----------------------------------
+mutation CreateDocument($data: Document_Data!) {
+  document_insert(data: $data)
+}
+mutation UpdateDocument($id: UUID!, $data: Document_Data!) {
+  document_update(id: $id, data: $data)
+}
+mutation DeleteDocument($id: UUID!) {
+  document_delete(id: $id)
+}

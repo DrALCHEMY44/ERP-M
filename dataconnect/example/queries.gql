@@ -1,0 +1,84 @@
+# -----------------------------------
+# Tenant Queries
+# -----------------------------------
+query ListTenants {
+  tenants {
+    id
+    name
+    businessSector
+  }
+}
+
+# -----------------------------------
+# User & Business Queries
+# -----------------------------------
+query ListUsers($tenantId: UUID!) {
+  users(where: { tenantId: { eq: $tenantId } }) {
+    id
+    email
+    role
+  }
+}
+
+query ListBusinesses($tenantId: UUID!) {
+  businesses(where: { tenantId: { eq: $tenantId } }) {
+    id
+    name
+    location
+  }
+}
+
+# -----------------------------------
+# Data Queries
+# -----------------------------------
+query ListProducts($businessId: UUID!) {
+  products(where: { businessId: { eq: $businessId } }) {
+    id
+    name
+    sellingPrice
+  }
+}
+
+query ListTransactions($businessId: UUID!) {
+  transactions(where: { businessId: { eq: $businessId } }) {
+    id
+    type
+    amount
+  }
+}
+
+query ListTasks($businessId: UUID!) {
+  tasks(where: { businessId: { eq: $businessId } }) {
+    id
+    title
+    status
+  }
+}
+
+query ListEmployees($businessId: UUID!) {
+  employees(where: { businessId: { eq: $businessId } }) {
+    id
+    fullName
+  }
+}
+
+query ListCustomers($businessId: UUID!) {
+  customers(where: { businessId: { eq: $businessId } }) {
+    id
+    customerName
+  }
+}
+
+query ListSuppliers($businessId: UUID!) {
+  suppliers(where: { businessId: { eq: $businessId } }) {
+    id
+    supplierName
+  }
+}
+
+query ListDocuments($businessId: UUID!) {
+  documents(where: { businessId: { eq: $businessId } }) {
+    id
+    title
+  }
+}
