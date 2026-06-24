@@ -1,164 +1,648 @@
-<<<<<<< HEAD
-# Example mutations for a simple movie app
+# --- Tenant ---
 
-# Create a movie based on user input
-mutation CreateMovie($title: String!, $genre: String!, $imageUrl: String!)
-@auth(level: USER_EMAIL_VERIFIED, insecureReason: "Any email verified users can create a new movie.") {
-  movie_insert(data: { title: $title, genre: $genre, imageUrl: $imageUrl })
-}
-
-# Upsert (update or insert) a user's username based on their auth.uid
-mutation UpsertUser($username: String!) @auth(level: USER) {
-  # The "auth.uid" server value ensures that users can only register their own user.
-  user_upsert(data: { id_expr: "auth.uid", username: $username })
-}
-
-# Add a review for a movie
-mutation AddReview($movieId: UUID!, $rating: Int!, $reviewText: String!)
-@auth(level: USER) {
-  review_upsert(
-    data: {
-      userId_expr: "auth.uid"
-      movieId: $movieId
-      rating: $rating
-      reviewText: $reviewText
-      # reviewDate defaults to today in the schema. No need to set it manually.
-    }
-  )
+mutation CreateTenant(
+  $name: String!
+  $businessSector: String!
+  $location: String!
+  $ownerEmail: String!
+  $taxId: String
+  $logoUrl: String
+  $subscriptionTier: String
+) @auth(level: USER, insecureReason: "Multi-tenant ERP: tenant isolation enforced at the application layer") {
+  tenant_insert(data: {
+    name: $name
+    businessSector: $businessSector
+    location: $location
+    ownerEmail: $ownerEmail
+    taxId: $taxId
+    logoUrl: $logoUrl
+    subscriptionTier: $subscriptionTier
+    createdAt_expr: "request.time"
+  })
 }
 
-# Logged in user can delete their review for a movie
-mutation DeleteReview($movieId: UUID!) @auth(level: USER) {
-  # The "auth.uid" server value ensures that users can only delete their own reviews.
-  review_delete(key: { userId_expr: "auth.uid", movieId: $movieId })
-=======
-# -----------------------------------
-# Tenant Mutations
-# -----------------------------------
-mutation CreateTenant($data: Tenant_Data!) {
-  tenant_insert(data: $data)
+mutation UpdateTenant(
+  $id: String!
+  $name: String
+  $businessSector: String
+  $location: String
+  $ownerEmail: String
+  $taxId: String
+  $logoUrl: String
+  $subscriptionTier: String
+) @auth(level: USER, insecureReason: "Multi-tenant ERP: tenant isolation enforced at the application layer") {
+  tenant_update(id: $id, data: {
+    name: $name
+    businessSector: $businessSector
+    location: $location
+    ownerEmail: $ownerEmail
+    taxId: $taxId
+    logoUrl: $logoUrl
+    subscriptionTier: $subscriptionTier
+  })
 }
-mutation UpdateTenant($id: UUID!, $data: Tenant_Data!) {
-  tenant_update(id: $id, data: $data)
-}
-mutation DeleteTenant($id: UUID!) {
+
+mutation DeleteTenant($id: String!) @auth(level: USER, insecureReason: "Multi-tenant ERP: tenant isolation enforced at the application layer") {
   tenant_delete(id: $id)
 }
 
-# -----------------------------------
-# User Mutations
-# -----------------------------------
-mutation CreateUser($data: User_Data!) {
-  user_insert(data: $data)
+# --- User ---
+
+mutation CreateUser(
+  $tenantId: String!
+  $businessId: String!
+  $email: String!
+  $role: String!
+  $fullName: String
+  $department: String
+  $phoneNumber: String
+) @auth(level: USER, insecureReason: "Multi-tenant ERP: tenant isolation enforced at the application layer") {
+  user_insert(data: {
+    tenantId: $tenantId
+    businessId: $businessId
+    email: $email
+    role: $role
+    fullName: $fullName
+    department: $department
+    phoneNumber: $phoneNumber
+    createdAt_expr: "request.time"
+  })
 }
-mutation UpdateUser($id: UUID!, $data: User_Data!) {
-  user_update(id: $id, data: $data)
+
+mutation UpdateUser(
+  $id: String!
+  $tenantId: String
+  $businessId: String
+  $email: String
+  $role: String
+  $fullName: String
+  $department: String
+  $phoneNumber: String
+) @auth(level: USER, insecureReason: "Multi-tenant ERP: tenant isolation enforced at the application layer") {
+  user_update(id: $id, data: {
+    tenantId: $tenantId
+    businessId: $businessId
+    email: $email
+    role: $role
+    fullName: $fullName
+    department: $department
+    phoneNumber: $phoneNumber
+  })
 }
-mutation DeleteUser($id: UUID!) {
+
+mutation DeleteUser($id: String!) @auth(level: USER, insecureReason: "Multi-tenant ERP: tenant isolation enforced at the application layer") {
   user_delete(id: $id)
 }
 
-# -----------------------------------
-# Business Mutations
-# -----------------------------------
-mutation CreateBusiness($data: Business_Data!) {
-  business_insert(data: $data)
+# --- Business ---
+
+mutation CreateBusiness(
+  $tenantId: String!
+  $name: String!
+  $location: String!
+  $businessType: String
+  $region: String
+) @auth(level: USER, insecureReason: "Multi-tenant ERP: tenant isolation enforced at the application layer") {
+  business_insert(data: {
+    tenantId: $tenantId
+    name: $name
+    location: $location
+    businessType: $businessType
+    region: $region
+    createdAt_expr: "request.time"
+  })
 }
-mutation UpdateBusiness($id: UUID!, $data: Business_Data!) {
-  business_update(id: $id, data: $data)
+
+mutation UpdateBusiness(
+  $id: String!
+  $tenantId: String
+  $name: String
+  $location: String
+  $businessType: String
+  $region: String
+) @auth(level: USER, insecureReason: "Multi-tenant ERP: tenant isolation enforced at the application layer") {
+  business_update(id: $id, data: {
+    tenantId: $tenantId
+    name: $name
+    location: $location
+    businessType: $businessType
+    region: $region
+  })
 }
-mutation DeleteBusiness($id: UUID!) {
+
+mutation DeleteBusiness($id: String!) @auth(level: USER, insecureReason: "Multi-tenant ERP: tenant isolation enforced at the application layer") {
   business_delete(id: $id)
 }
 
-# -----------------------------------
-# Product Mutations
-# -----------------------------------
-mutation CreateProduct($data: Product_Data!) {
-  product_insert(data: $data)
+# --- Product ---
+
+mutation CreateProduct(
+  $tenantId: String!
+  $businessId: String!
+  $name: String!
+  $category: String
+  $quantity: Int!
+  $costPrice: Float
+  $sellingPrice: Float!
+  $expiryDate: Date
+  $lowStockLevel: Int
+  $createdBy: String!
+) @auth(level: USER, insecureReason: "Multi-tenant ERP: tenant isolation enforced at the application layer") {
+  product_insert(data: {
+    tenantId: $tenantId
+    businessId: $businessId
+    name: $name
+    category: $category
+    quantity: $quantity
+    costPrice: $costPrice
+    sellingPrice: $sellingPrice
+    expiryDate: $expiryDate
+    lowStockLevel: $lowStockLevel
+    createdBy: $createdBy
+    createdAt_expr: "request.time"
+    updatedAt_expr: "request.time"
+  })
 }
-mutation UpdateProduct($id: UUID!, $data: Product_Data!) {
-  product_update(id: $id, data: $data)
+
+mutation UpdateProduct(
+  $id: String!
+  $tenantId: String
+  $businessId: String
+  $name: String
+  $category: String
+  $quantity: Int
+  $costPrice: Float
+  $sellingPrice: Float
+  $expiryDate: Date
+  $lowStockLevel: Int
+  $createdBy: String
+) @auth(level: USER, insecureReason: "Multi-tenant ERP: tenant isolation enforced at the application layer") {
+  product_update(id: $id, data: {
+    tenantId: $tenantId
+    businessId: $businessId
+    name: $name
+    category: $category
+    quantity: $quantity
+    costPrice: $costPrice
+    sellingPrice: $sellingPrice
+    expiryDate: $expiryDate
+    lowStockLevel: $lowStockLevel
+    createdBy: $createdBy
+    updatedAt_expr: "request.time"
+  })
 }
-mutation DeleteProduct($id: UUID!) {
+
+mutation DeleteProduct($id: String!) @auth(level: USER, insecureReason: "Multi-tenant ERP: tenant isolation enforced at the application layer") {
   product_delete(id: $id)
 }
 
-# -----------------------------------
-# Transaction Mutations
-# -----------------------------------
-mutation CreateTransaction($data: Transaction_Data!) {
-  transaction_insert(data: $data)
+# --- Transaction ---
+
+mutation CreateTransaction(
+  $tenantId: String!
+  $businessId: String!
+  $type: TransactionType!
+  $amount: Float!
+  $date: Timestamp!
+  $category: String
+  $receiptUrl: String
+  $recordedBy: String!
+) @auth(level: USER, insecureReason: "Multi-tenant ERP: tenant isolation enforced at the application layer") {
+  transaction_insert(data: {
+    tenantId: $tenantId
+    businessId: $businessId
+    type: $type
+    amount: $amount
+    date: $date
+    category: $category
+    receiptUrl: $receiptUrl
+    recordedBy: $recordedBy
+    createdAt_expr: "request.time"
+  })
 }
-mutation UpdateTransaction($id: UUID!, $data: Transaction_Data!) {
-  transaction_update(id: $id, data: $data)
+
+mutation UpdateTransaction(
+  $id: String!
+  $tenantId: String
+  $businessId: String
+  $type: TransactionType
+  $amount: Float
+  $date: Timestamp
+  $category: String
+  $receiptUrl: String
+  $recordedBy: String
+) @auth(level: USER, insecureReason: "Multi-tenant ERP: tenant isolation enforced at the application layer") {
+  transaction_update(id: $id, data: {
+    tenantId: $tenantId
+    businessId: $businessId
+    type: $type
+    amount: $amount
+    date: $date
+    category: $category
+    receiptUrl: $receiptUrl
+    recordedBy: $recordedBy
+  })
 }
-mutation DeleteTransaction($id: UUID!) {
+
+mutation DeleteTransaction($id: String!) @auth(level: USER, insecureReason: "Multi-tenant ERP: tenant isolation enforced at the application layer") {
   transaction_delete(id: $id)
 }
 
-# -----------------------------------
-# Task Mutations
-# -----------------------------------
-mutation CreateTask($data: Task_Data!) {
-  task_insert(data: $data)
-}
-mutation UpdateTask($id: UUID!, $data: Task_Data!) {
-  task_update(id: $id, data: $data)
-}
-mutation DeleteTask($id: UUID!) {
-  task_delete(id: $id)
+# --- TaskComment ---
+
+mutation CreateTaskComment(
+  $tenantId: String!
+  $businessId: String!
+  $taskId: String!
+  $userId: String!
+  $content: String!
+) @auth(level: USER, insecureReason: "Multi-tenant ERP: tenant isolation enforced at the application layer") {
+  taskComment_insert(data: {
+    tenantId: $tenantId
+    businessId: $businessId
+    task: { id: $taskId }
+    user: { id: $userId }
+    content: $content
+    createdAt_expr: "request.time"
+  })
 }
 
-# -----------------------------------
-# Employee Mutations
-# -----------------------------------
-mutation CreateEmployee($data: Employee_Data!) {
-  employee_insert(data: $data)
+mutation UpdateTaskComment(
+  $id: String!
+  $tenantId: String
+  $businessId: String
+  $taskId: String
+  $userId: String
+  $content: String
+) @auth(level: USER, insecureReason: "Multi-tenant ERP: tenant isolation enforced at the application layer") {
+  taskComment_update(id: $id, data: {
+    tenantId: $tenantId
+    businessId: $businessId
+    task: { id: $taskId }
+    user: { id: $userId }
+    content: $content
+  })
 }
-mutation UpdateEmployee($id: UUID!, $data: Employee_Data!) {
-  employee_update(id: $id, data: $data)
+
+mutation DeleteTaskComment($id: String!) @auth(level: USER, insecureReason: "Multi-tenant ERP: tenant isolation enforced at the application layer") {
+  taskComment_delete(id: $id)
 }
-mutation DeleteEmployee($id: UUID!) {
+
+# --- Employee ---
+
+mutation CreateEmployee(
+  $tenantId: String!
+  $businessId: String!
+  $fullName: String!
+  $position: String!
+  $salary: Float
+  $department: String
+  $startDate: Date
+  $status: String
+) @auth(level: USER, insecureReason: "Multi-tenant ERP: tenant isolation enforced at the application layer") {
+  employee_insert(data: {
+    tenantId: $tenantId
+    businessId: $businessId
+    fullName: $fullName
+    position: $position
+    salary: $salary
+    department: $department
+    startDate: $startDate
+    status: $status
+    createdAt_expr: "request.time"
+  })
+}
+
+mutation UpdateEmployee(
+  $id: String!
+  $tenantId: String
+  $businessId: String
+  $fullName: String
+  $position: String
+  $salary: Float
+  $department: String
+  $startDate: Date
+  $status: String
+) @auth(level: USER, insecureReason: "Multi-tenant ERP: tenant isolation enforced at the application layer") {
+  employee_update(id: $id, data: {
+    tenantId: $tenantId
+    businessId: $businessId
+    fullName: $fullName
+    position: $position
+    salary: $salary
+    department: $department
+    startDate: $startDate
+    status: $status
+  })
+}
+
+mutation DeleteEmployee($id: String!) @auth(level: USER, insecureReason: "Multi-tenant ERP: tenant isolation enforced at the application layer") {
   employee_delete(id: $id)
 }
 
-# -----------------------------------
-# Customer Mutations
-# -----------------------------------
-mutation CreateCustomer($data: Customer_Data!) {
-  customer_insert(data: $data)
+# --- Customer ---
+
+mutation CreateCustomer(
+  $tenantId: String!
+  $businessId: String!
+  $customerName: String!
+  $phoneNumber: String
+  $email: String
+) @auth(level: USER, insecureReason: "Multi-tenant ERP: tenant isolation enforced at the application layer") {
+  customer_insert(data: {
+    tenantId: $tenantId
+    businessId: $businessId
+    customerName: $customerName
+    phoneNumber: $phoneNumber
+    email: $email
+    createdAt_expr: "request.time"
+  })
 }
-mutation UpdateCustomer($id: UUID!, $data: Customer_Data!) {
-  customer_update(id: $id, data: $data)
+
+mutation UpdateCustomer(
+  $id: String!
+  $tenantId: String
+  $businessId: String
+  $customerName: String
+  $phoneNumber: String
+  $email: String
+) @auth(level: USER, insecureReason: "Multi-tenant ERP: tenant isolation enforced at the application layer") {
+  customer_update(id: $id, data: {
+    tenantId: $tenantId
+    businessId: $businessId
+    customerName: $customerName
+    phoneNumber: $phoneNumber
+    email: $email
+  })
 }
-mutation DeleteCustomer($id: UUID!) {
+
+mutation DeleteCustomer($id: String!) @auth(level: USER, insecureReason: "Multi-tenant ERP: tenant isolation enforced at the application layer") {
   customer_delete(id: $id)
 }
 
-# -----------------------------------
-# Supplier Mutations
-# -----------------------------------
-mutation CreateSupplier($data: Supplier_Data!) {
-  supplier_insert(data: $data)
+# --- Supplier ---
+
+mutation CreateSupplier(
+  $tenantId: String!
+  $businessId: String!
+  $supplierName: String!
+  $phoneNumber: String
+  $email: String
+) @auth(level: USER, insecureReason: "Multi-tenant ERP: tenant isolation enforced at the application layer") {
+  supplier_insert(data: {
+    tenantId: $tenantId
+    businessId: $businessId
+    supplierName: $supplierName
+    phoneNumber: $phoneNumber
+    email: $email
+    createdAt_expr: "request.time"
+  })
 }
-mutation UpdateSupplier($id: UUID!, $data: Supplier_Data!) {
-  supplier_update(id: $id, data: $data)
+
+mutation UpdateSupplier(
+  $id: String!
+  $tenantId: String
+  $businessId: String
+  $supplierName: String
+  $phoneNumber: String
+  $email: String
+) @auth(level: USER, insecureReason: "Multi-tenant ERP: tenant isolation enforced at the application layer") {
+  supplier_update(id: $id, data: {
+    tenantId: $tenantId
+    businessId: $businessId
+    supplierName: $supplierName
+    phoneNumber: $phoneNumber
+    email: $email
+  })
 }
-mutation DeleteSupplier($id: UUID!) {
+
+mutation DeleteSupplier($id: String!) @auth(level: USER, insecureReason: "Multi-tenant ERP: tenant isolation enforced at the application layer") {
   supplier_delete(id: $id)
 }
 
-# -----------------------------------
-# Document Mutations
-# -----------------------------------
-mutation CreateDocument($data: Document_Data!) {
-  document_insert(data: $data)
+# --- Document ---
+
+mutation CreateDocument(
+  $tenantId: String!
+  $businessId: String!
+  $title: String!
+  $documentType: String!
+  $fileUrl: String!
+  $uploadedBy: String!
+) @auth(level: USER, insecureReason: "Multi-tenant ERP: tenant isolation enforced at the application layer") {
+  document_insert(data: {
+    tenantId: $tenantId
+    businessId: $businessId
+    title: $title
+    documentType: $documentType
+    fileUrl: $fileUrl
+    uploadedBy: $uploadedBy
+    uploadedAt_expr: "request.time"
+  })
 }
-mutation UpdateDocument($id: UUID!, $data: Document_Data!) {
-  document_update(id: $id, data: $data)
+
+mutation UpdateDocument(
+  $id: String!
+  $tenantId: String
+  $businessId: String
+  $title: String
+  $documentType: String
+  $fileUrl: String
+  $uploadedBy: String
+) @auth(level: USER, insecureReason: "Multi-tenant ERP: tenant isolation enforced at the application layer") {
+  document_update(id: $id, data: {
+    tenantId: $tenantId
+    businessId: $businessId
+    title: $title
+    documentType: $documentType
+    fileUrl: $fileUrl
+    uploadedBy: $uploadedBy
+  })
 }
-mutation DeleteDocument($id: UUID!) {
+
+mutation DeleteDocument($id: String!) @auth(level: USER, insecureReason: "Multi-tenant ERP: tenant isolation enforced at the application layer") {
   document_delete(id: $id)
->>>>>>> 546aacf70afe81cbee3ea5f2edbc661c271990b8
+}
+
+# --- ActivityLog ---
+
+mutation CreateActivityLog(
+  $tenantId: String!
+  $businessId: String!
+  $userId: String!
+  $userName: String!
+  $actionType: String!
+  $module: String!
+  $description: String
+  $recordId: String
+) @auth(level: USER, insecureReason: "Multi-tenant ERP: tenant isolation enforced at the application layer") {
+  activityLog_insert(data: {
+    tenantId: $tenantId
+    businessId: $businessId
+    userId: $userId
+    userName: $userName
+    actionType: $actionType
+    module: $module
+    description: $description
+    recordId: $recordId
+    timestamp_expr: "request.time"
+  })
+}
+
+mutation UpdateActivityLog(
+  $id: String!
+  $tenantId: String
+  $businessId: String
+  $userId: String
+  $userName: String
+  $actionType: String
+  $module: String
+  $description: String
+  $recordId: String
+) @auth(level: USER, insecureReason: "Multi-tenant ERP: tenant isolation enforced at the application layer") {
+  activityLog_update(id: $id, data: {
+    tenantId: $tenantId
+    businessId: $businessId
+    userId: $userId
+    userName: $userName
+    actionType: $actionType
+    module: $module
+    description: $description
+    recordId: $recordId
+  })
+}
+
+mutation DeleteActivityLog($id: String!) @auth(level: USER, insecureReason: "Multi-tenant ERP: tenant isolation enforced at the application layer") {
+  activityLog_delete(id: $id)
+}
+
+# --- AiQuery ---
+
+mutation CreateAiQuery(
+  $tenantId: String!
+  $businessId: String!
+  $userId: String!
+  $queryText: String!
+  $response: String
+) @auth(level: USER, insecureReason: "Multi-tenant ERP: tenant isolation enforced at the application layer") {
+  aiQuery_insert(data: {
+    tenantId: $tenantId
+    businessId: $businessId
+    userId: $userId
+    queryText: $queryText
+    response: $response
+    timestamp_expr: "request.time"
+  })
+}
+
+mutation UpdateAiQuery(
+  $id: String!
+  $tenantId: String
+  $businessId: String
+  $userId: String
+  $queryText: String
+  $response: String
+) @auth(level: USER, insecureReason: "Multi-tenant ERP: tenant isolation enforced at the application layer") {
+  aiQuery_update(id: $id, data: {
+    tenantId: $tenantId
+    businessId: $businessId
+    userId: $userId
+    queryText: $queryText
+    response: $response
+  })
+}
+
+mutation DeleteAiQuery($id: String!) @auth(level: USER, insecureReason: "Multi-tenant ERP: tenant isolation enforced at the application layer") {
+  aiQuery_delete(id: $id)
+}
+
+# --- Notification ---
+
+mutation CreateNotification(
+  $tenantId: String!
+  $businessId: String!
+  $userId: String!
+  $message: String!
+  $isRead: Boolean!
+) @auth(level: USER, insecureReason: "Multi-tenant ERP: tenant isolation enforced at the application layer") {
+  notification_insert(data: {
+    tenantId: $tenantId
+    businessId: $businessId
+    userId: $userId
+    message: $message
+    isRead: $isRead
+    createdAt_expr: "request.time"
+  })
+}
+
+mutation UpdateNotification(
+  $id: String!
+  $tenantId: String
+  $businessId: String
+  $userId: String
+  $message: String
+  $isRead: Boolean
+) @auth(level: USER, insecureReason: "Multi-tenant ERP: tenant isolation enforced at the application layer") {
+  notification_update(id: $id, data: {
+    tenantId: $tenantId
+    businessId: $businessId
+    userId: $userId
+    message: $message
+    isRead: $isRead
+  })
+}
+
+mutation DeleteNotification($id: String!) @auth(level: USER, insecureReason: "Multi-tenant ERP: tenant isolation enforced at the application layer") {
+  notification_delete(id: $id)
+}
+# -----------------------------------
+# Task Mutations
+# -----------------------------------
+mutation CreateTask(
+  $tenantId: String!
+  $businessId: String!
+  $title: String!
+  $description: String
+  $status: TaskStatus!
+  $priority: TaskPriority
+  $dueDate: Timestamp!
+  $assignedToId: String
+  $createdBy: String!
+) @auth(level: USER, insecureReason: "Multi-tenant ERP: tenant isolation enforced at the application layer") {
+  task_insert(data: {
+    tenantId: $tenantId
+    businessId: $businessId
+    title: $title
+    description: $description
+    status: $status
+    priority: $priority
+    dueDate: $dueDate
+    assignedToId: $assignedToId
+    createdBy: $createdBy
+    createdAt_expr: "request.time"
+  })
+}
+
+mutation UpdateTask(
+  $id: String!
+  $title: String
+  $description: String
+  $status: TaskStatus
+  $priority: TaskPriority
+  $dueDate: Timestamp
+  $assignedToId: String
+) @auth(level: USER, insecureReason: "Multi-tenant ERP: tenant isolation enforced at the application layer") {
+  task_update(id: $id, data: {
+    title: $title
+    description: $description
+    status: $status
+    priority: $priority
+    dueDate: $dueDate
+    assignedToId: $assignedToId
+    updatedAt_expr: "request.time"
+  })
+}
+
+mutation DeleteTask($id: String!) @auth(level: USER, insecureReason: "Multi-tenant ERP: tenant isolation enforced at the application layer") {
+  task_delete(id: $id)
 }

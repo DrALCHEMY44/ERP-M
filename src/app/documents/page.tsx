@@ -24,7 +24,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { useFirestore } from "@/hooks/use-firestore"
-import { BusinessDocument, DocumentType } from "@/lib/types"
+import { BusinessDocument } from "@/lib/types"
 import { useToast } from "@/hooks/use-toast"
 import { DocumentDialog } from "@/components/documents/document-dialog"
 
@@ -33,7 +33,7 @@ export default function DocumentsPage() {
   const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = React.useState(false)
   const [searchQuery, setSearchQuery] = React.useState("")
-  const [selectedType, setSelectedType] = React.useState<DocumentType | 'All'>('All')
+  const [selectedType, setSelectedType] = React.useState<BusinessDocument['type'] | 'All'>('All')
 
   const filteredDocs = documents.filter(doc => {
     const matchesSearch = doc.name.toLowerCase().includes(searchQuery.toLowerCase()) || 

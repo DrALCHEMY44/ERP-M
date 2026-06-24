@@ -1,8 +1,8 @@
-
 "use client"
 
 import * as React from "react"
-import { Plus, Search, Filter, AlertTriangle, Package, Download, Loader2, Trash2 } from "lucide-react"
+import { Plus, Search, Filter, AlertTriangle, Package, Download, Loader2, Trash2, LogIn } from "lucide-react"
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -17,25 +17,44 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ProductDialog } from "@/components/inventory/product-dialog"
 import { Product } from "@/lib/types"
-import { useFirestore } from "@/hooks/use-firestore"
+import { useDataConnect } from "@/hooks/use-dataconnect"
+import { 
+  listProductsByBusinessQuery,
+  createProductMutation,
+  updateProductMutation,
+  deleteProductMutation
+} from "@/lib/data-service"
+import { MOCK_USER } from "@/lib/mock-data"
 import { useToast } from "@/hooks/use-toast"
 import { logActivity } from "@/lib/audit-logger"
 import { createNotification } from "@/lib/notifications"
+import { useAuth } from "@/hooks/use-auth"
 
 export default function InventoryPage() {
-  const { data: products, loading, addRecord, updateRecord, deleteRecord } = useFirestore<Product>('products');
+  const { user, profile } = useAuth();
+  const { data: productsData, loading, unauthenticated, refetch } = useDataConnect({
+    query: listProductsByBusinessQuery, 
+    variables: { 
+      tenantId: profile?.tenantId || "",
+      businessId: profile?.businessId || "" 
+    },
+    skip: !profile
+  });
   const { toast } = useToast();
+  
+  const products = React.useMemo(() => (productsData?.products || []) as unknown as Product[], [productsData]);
+
   const [isDialogOpen, setIsDialogOpen] = React.useState(false)
   const [selectedProduct, setSelectedProduct] = React.useState<Product | null>(null)
   const [searchQuery, setSearchQuery] = React.useState("")
 
   const filteredProducts = products.filter(p => 
-    p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    p.category.toLowerCase().includes(searchQuery.toLowerCase())
+    (p.name && p.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
+    (p.category && p.category.toLowerCase().includes(searchQuery.toLowerCase()))
   )
 
-  const lowStockItems = products.filter(p => p.quantity <= p.lowStockLevel)
-  const totalValue = products.reduce((acc, p) => acc + (p.quantity * p.costPrice), 0)
+  const lowStockItems = products.filter(p => p.quantity <= (p.lowStockLevel || 0))
+  const totalValue = products.reduce((acc, p) => acc + (p.quantity * (p.costPrice || 0)), 0)
 
   const handleEdit = (product: Product) => {
     setSelectedProduct(product)
@@ -51,13 +70,21 @@ export default function InventoryPage() {
     const productToDelete = products.find(p => p.id === id);
     if (confirm(`Are you sure you want to delete ${productToDelete?.name}?`)) {
       try {
-        await deleteRecord(id);
+        await deleteProductMutation({ id });
+        await refetch();
         await logActivity({
           actionType: 'DELETE_PRODUCT',
           module: 'Inventory',
           description: `User deleted product: ${productToDelete?.name}`,
           recordId: id,
-          oldValue: productToDelete
+          oldValue: productToDelete,
+          userProfile: profile ? {
+            tenantId: profile.tenantId,
+            businessId: profile.businessId,
+            uid: user?.uid || "",
+            fullName: profile.fullName,
+            role: profile.role
+          } : undefined
         });
         toast({ title: "Product Deleted", description: "Item has been removed from your inventory." });
       } catch (e) {
@@ -69,43 +96,107 @@ export default function InventoryPage() {
   const handleSave = async (productData: Partial<Product>) => {
     try {
       if (selectedProduct?.id) {
-        await updateRecord(selectedProduct.id, productData);
+        await updateProductMutation({
+          id: selectedProduct.id,
+          name: productData.name,
+          category: productData.category,
+          quantity: productData.quantity,
+          costPrice: productData.costPrice,
+          sellingPrice: productData.sellingPrice,
+          lowStockLevel: productData.lowStockLevel
+        });
+        await refetch();
         await logActivity({
           actionType: 'UPDATE_PRODUCT',
           module: 'Inventory',
           description: `User updated product: ${productData.name}`,
           recordId: selectedProduct.id,
           oldValue: selectedProduct,
-          newValue: productData
+          newValue: productData,
+          userProfile: profile ? {
+            tenantId: profile.tenantId,
+            businessId: profile.businessId,
+            uid: user?.uid || "",
+            fullName: profile.fullName,
+            role: profile.role
+          } : undefined
         });
         
         // Low stock notification
-        if (productData.quantity !== undefined && productData.quantity <= (productData.lowStockLevel || selectedProduct.lowStockLevel)) {
+        if (productData.quantity !== undefined && productData.quantity <= (productData.lowStockLevel || selectedProduct.lowStockLevel || 0)) {
           await createNotification({
             title: "Low Stock Alert",
             message: `Product "${productData.name}" has reached low stock level (${productData.quantity} left).`,
             type: "warning",
             module: "Inventory",
             targetRoles: ["Business Owner", "Manager", "Staff"],
-            link: "/inventory"
+            link: "/inventory",
+            userProfile: profile ? {
+              tenantId: profile.tenantId,
+              businessId: profile.businessId
+            } : undefined
           });
         }
 
         toast({ title: "Product Updated", description: `${productData.name} has been modified.` });
       } else {
-        const newId = await addRecord(productData as Omit<Product, 'id'>);
+        const result = await createProductMutation({
+          tenantId: profile?.tenantId || "",
+          businessId: profile?.businessId || "",
+          name: productData.name || "Unnamed Product",
+          category: productData.category,
+          quantity: productData.quantity || 0,
+          costPrice: productData.costPrice,
+          sellingPrice: productData.sellingPrice || 0,
+          lowStockLevel: productData.lowStockLevel,
+          createdBy: user?.uid || "unknown"
+        });
+        await refetch();
+        const newId = result.data.product_insert.id;
         await logActivity({
           actionType: 'ADD_PRODUCT',
           module: 'Inventory',
           description: `User added new product: ${productData.name}`,
           recordId: newId,
-          newValue: productData
+          newValue: productData,
+          userProfile: profile ? {
+            tenantId: profile.tenantId,
+            businessId: profile.businessId,
+            uid: user?.uid || "",
+            fullName: profile.fullName,
+            role: profile.role
+          } : undefined
         });
         toast({ title: "Product Added", description: `${productData.name} is now in your stock.` });
       }
     } catch (e) {
       toast({ variant: "destructive", title: "Save Failed", description: "Please check your database connection." });
     }
+  }
+
+  if (unauthenticated) {
+    return (
+      <div className="flex h-[60vh] items-center justify-center">
+        <Card className="max-w-md w-full text-center shadow-lg border-t-4 border-amber-500">
+          <CardHeader>
+            <div className="mx-auto bg-amber-100 dark:bg-amber-900/30 rounded-full p-3 w-fit mb-2">
+              <LogIn className="size-6 text-amber-600" />
+            </div>
+            <CardTitle className="text-lg">Authentication Required</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Please sign in to view your inventory data. All operations require an authenticated session.
+            </p>
+            <Link href="/login">
+              <Button className="bg-primary hover:bg-primary/90 text-white font-bold uppercase text-xs tracking-widest">
+                <LogIn className="size-4 mr-2" /> Sign In
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   if (loading) {
@@ -204,15 +295,15 @@ export default function InventoryPage() {
                     </TableCell>
                     <TableCell>
                       <div className="flex flex-col">
-                        <span className={`font-bold text-sm ${product.quantity <= product.lowStockLevel ? 'text-destructive' : 'text-foreground'}`}>
-                          {product.quantity} units
+                        <span className={`font-bold text-sm ${(product.quantity || 0) <= (product.lowStockLevel || 0) ? 'text-destructive' : 'text-foreground'}`}>
+                          {product.quantity || 0} units
                         </span>
-                        <span className="text-[9px] text-muted-foreground uppercase font-bold">Alert: {product.lowStockLevel}</span>
+                        <span className="text-[9px] text-muted-foreground uppercase font-bold">Alert: {product.lowStockLevel || 0}</span>
                       </div>
                     </TableCell>
-                    <TableCell className="font-bold text-emerald-600 text-sm">{product.sellingPrice.toLocaleString()} FCFA</TableCell>
+                    <TableCell className="font-bold text-emerald-600 text-sm">{(product.sellingPrice || 0).toLocaleString()} FCFA</TableCell>
                     <TableCell>
-                      {product.quantity <= product.lowStockLevel ? (
+                      {(product.quantity || 0) <= (product.lowStockLevel || 0) ? (
                         <Badge className="bg-destructive text-destructive-foreground text-[9px] uppercase font-bold">Low Stock</Badge>
                       ) : (
                         <Badge className="bg-emerald-500 text-white text-[9px] uppercase font-bold">In Stock</Badge>

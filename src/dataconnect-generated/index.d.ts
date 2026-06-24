@@ -1,6 +1,7 @@
-import { ConnectorConfig, DataConnect, QueryRef, QueryPromise, MutationRef, MutationPromise } from 'firebase/data-connect';
+import { ConnectorConfig, DataConnect, QueryRef, QueryPromise, ExecuteQueryOptions, MutationRef, MutationPromise, DataConnectSettings } from 'firebase/data-connect';
 
 export const connectorConfig: ConnectorConfig;
+export const dataConnectSettings: DataConnectSettings;
 
 export type TimestampString = string;
 export type UUIDString = string;
@@ -8,101 +9,66 @@ export type Int64String = string;
 export type DateString = string;
 
 
+export enum TaskPriority {
+  LOW = "LOW",
+  MEDIUM = "MEDIUM",
+  HIGH = "HIGH",
+};
+
+export enum TaskStatus {
+  PENDING = "PENDING",
+  ONGOING = "ONGOING",
+  COMPLETED = "COMPLETED",
+  LATE = "LATE",
+};
+
+export enum TransactionType {
+  SALE = "SALE",
+  EXPENSE = "EXPENSE",
+};
 
 
-<<<<<<< HEAD
-export interface AddReviewData {
-  review_upsert: Review_Key;
-}
-
-export interface AddReviewVariables {
-  movieId: UUIDString;
-  rating: number;
-  reviewText: string;
-}
-
-export interface CreateMovieData {
-  movie_insert: Movie_Key;
-}
-
-export interface CreateMovieVariables {
-  title: string;
-  genre: string;
-  imageUrl: string;
-}
-
-export interface DeleteReviewData {
-  review_delete?: Review_Key | null;
-}
-
-export interface DeleteReviewVariables {
-  movieId: UUIDString;
-}
-
-export interface GetMovieByIdData {
-  movie?: {
-    id: UUIDString;
-    title: string;
-    imageUrl: string;
-    genre?: string | null;
-    metadata?: {
-      rating?: number | null;
-      releaseYear?: number | null;
-      description?: string | null;
-    };
-      reviews: ({
-        reviewText?: string | null;
-        reviewDate: DateString;
-        rating?: number | null;
-        user: {
-          id: string;
-          username: string;
-        } & User_Key;
-      })[];
-  } & Movie_Key;
-}
-
-export interface GetMovieByIdVariables {
-  id: UUIDString;
-}
-
-export interface ListMoviesData {
-  movies: ({
-    id: UUIDString;
-    title: string;
-    imageUrl: string;
-    genre?: string | null;
-  } & Movie_Key)[];
-}
-
-export interface ListUserReviewsData {
-  user?: {
-    id: string;
-    username: string;
-    reviews: ({
-      rating?: number | null;
-      reviewDate: DateString;
-      reviewText?: string | null;
-      movie: {
-        id: UUIDString;
-        title: string;
-      } & Movie_Key;
-    })[];
-  } & User_Key;
-=======
-export interface AIQuery_Key {
-  id: UUIDString;
-  __typename?: 'AIQuery_Key';
-}
 
 export interface ActivityLog_Key {
-  id: UUIDString;
+  id: string;
   __typename?: 'ActivityLog_Key';
 }
 
+export interface AiQuery_Key {
+  id: string;
+  __typename?: 'AiQuery_Key';
+}
+
 export interface Business_Key {
-  id: UUIDString;
+  id: string;
   __typename?: 'Business_Key';
+}
+
+export interface CreateActivityLogData {
+  activityLog_insert: ActivityLog_Key;
+}
+
+export interface CreateActivityLogVariables {
+  tenantId: string;
+  businessId: string;
+  userId: string;
+  userName: string;
+  actionType: string;
+  module: string;
+  description?: string | null;
+  recordId?: string | null;
+}
+
+export interface CreateAiQueryData {
+  aiQuery_insert: AiQuery_Key;
+}
+
+export interface CreateAiQueryVariables {
+  tenantId: string;
+  businessId: string;
+  userId: string;
+  queryText: string;
+  response?: string | null;
 }
 
 export interface CreateBusinessData {
@@ -110,77 +76,11 @@ export interface CreateBusinessData {
 }
 
 export interface CreateBusinessVariables {
-  data: {
-    id?: UUIDString | null;
-    id_expr?: {
-    };
-      businessType?: string | null;
-      businessType_expr?: {
-      };
-        createdAt?: TimestampString | null;
-        createdAt_expr?: {
-        };
-          createdAt_time?: {
-            now?: {
-            };
-              at?: TimestampString | null;
-              add?: {
-                milliseconds?: number;
-                seconds?: number;
-                minutes?: number;
-                hours?: number;
-                days?: number;
-                weeks?: number;
-                months?: number;
-                years?: number;
-              };
-                sub?: {
-                  milliseconds?: number;
-                  seconds?: number;
-                  minutes?: number;
-                  hours?: number;
-                  days?: number;
-                  weeks?: number;
-                  months?: number;
-                  years?: number;
-                };
-                  truncateTo?: Timestamp_Interval | null;
-          };
-            createdAt_update?: ({
-              inc?: {
-                milliseconds?: number;
-                seconds?: number;
-                minutes?: number;
-                hours?: number;
-                days?: number;
-                weeks?: number;
-                months?: number;
-                years?: number;
-              };
-                dec?: {
-                  milliseconds?: number;
-                  seconds?: number;
-                  minutes?: number;
-                  hours?: number;
-                  days?: number;
-                  weeks?: number;
-                  months?: number;
-                  years?: number;
-                };
-            })[];
-              location?: string | null;
-              location_expr?: {
-              };
-                name?: string | null;
-                name_expr?: {
-                };
-                  region?: string | null;
-                  region_expr?: {
-                  };
-                    tenantId?: UUIDString | null;
-                    tenantId_expr?: {
-                    };
-  };
+  tenantId: string;
+  name: string;
+  location: string;
+  businessType?: string | null;
+  region?: string | null;
 }
 
 export interface CreateCustomerData {
@@ -188,77 +88,11 @@ export interface CreateCustomerData {
 }
 
 export interface CreateCustomerVariables {
-  data: {
-    id?: UUIDString | null;
-    id_expr?: {
-    };
-      businessId?: UUIDString | null;
-      businessId_expr?: {
-      };
-        createdAt?: TimestampString | null;
-        createdAt_expr?: {
-        };
-          createdAt_time?: {
-            now?: {
-            };
-              at?: TimestampString | null;
-              add?: {
-                milliseconds?: number;
-                seconds?: number;
-                minutes?: number;
-                hours?: number;
-                days?: number;
-                weeks?: number;
-                months?: number;
-                years?: number;
-              };
-                sub?: {
-                  milliseconds?: number;
-                  seconds?: number;
-                  minutes?: number;
-                  hours?: number;
-                  days?: number;
-                  weeks?: number;
-                  months?: number;
-                  years?: number;
-                };
-                  truncateTo?: Timestamp_Interval | null;
-          };
-            createdAt_update?: ({
-              inc?: {
-                milliseconds?: number;
-                seconds?: number;
-                minutes?: number;
-                hours?: number;
-                days?: number;
-                weeks?: number;
-                months?: number;
-                years?: number;
-              };
-                dec?: {
-                  milliseconds?: number;
-                  seconds?: number;
-                  minutes?: number;
-                  hours?: number;
-                  days?: number;
-                  weeks?: number;
-                  months?: number;
-                  years?: number;
-                };
-            })[];
-              customerName?: string | null;
-              customerName_expr?: {
-              };
-                email?: string | null;
-                email_expr?: {
-                };
-                  phoneNumber?: string | null;
-                  phoneNumber_expr?: {
-                  };
-                    tenantId?: UUIDString | null;
-                    tenantId_expr?: {
-                    };
-  };
+  tenantId: string;
+  businessId: string;
+  customerName: string;
+  phoneNumber?: string | null;
+  email?: string | null;
 }
 
 export interface CreateDocumentData {
@@ -266,80 +100,12 @@ export interface CreateDocumentData {
 }
 
 export interface CreateDocumentVariables {
-  data: {
-    id?: UUIDString | null;
-    id_expr?: {
-    };
-      businessId?: UUIDString | null;
-      businessId_expr?: {
-      };
-        documentType?: string | null;
-        documentType_expr?: {
-        };
-          fileUrl?: string | null;
-          fileUrl_expr?: {
-          };
-            tenantId?: UUIDString | null;
-            tenantId_expr?: {
-            };
-              title?: string | null;
-              title_expr?: {
-              };
-                uploadedAt?: TimestampString | null;
-                uploadedAt_expr?: {
-                };
-                  uploadedAt_time?: {
-                    now?: {
-                    };
-                      at?: TimestampString | null;
-                      add?: {
-                        milliseconds?: number;
-                        seconds?: number;
-                        minutes?: number;
-                        hours?: number;
-                        days?: number;
-                        weeks?: number;
-                        months?: number;
-                        years?: number;
-                      };
-                        sub?: {
-                          milliseconds?: number;
-                          seconds?: number;
-                          minutes?: number;
-                          hours?: number;
-                          days?: number;
-                          weeks?: number;
-                          months?: number;
-                          years?: number;
-                        };
-                          truncateTo?: Timestamp_Interval | null;
-                  };
-                    uploadedAt_update?: ({
-                      inc?: {
-                        milliseconds?: number;
-                        seconds?: number;
-                        minutes?: number;
-                        hours?: number;
-                        days?: number;
-                        weeks?: number;
-                        months?: number;
-                        years?: number;
-                      };
-                        dec?: {
-                          milliseconds?: number;
-                          seconds?: number;
-                          minutes?: number;
-                          hours?: number;
-                          days?: number;
-                          weeks?: number;
-                          months?: number;
-                          years?: number;
-                        };
-                    })[];
-                      uploadedBy?: UUIDString | null;
-                      uploadedBy_expr?: {
-                      };
-  };
+  tenantId: string;
+  businessId: string;
+  title: string;
+  documentType: string;
+  fileUrl: string;
+  uploadedBy: string;
 }
 
 export interface CreateEmployeeData {
@@ -347,122 +113,26 @@ export interface CreateEmployeeData {
 }
 
 export interface CreateEmployeeVariables {
-  data: {
-    id?: UUIDString | null;
-    id_expr?: {
-    };
-      businessId?: UUIDString | null;
-      businessId_expr?: {
-      };
-        createdAt?: TimestampString | null;
-        createdAt_expr?: {
-        };
-          createdAt_time?: {
-            now?: {
-            };
-              at?: TimestampString | null;
-              add?: {
-                milliseconds?: number;
-                seconds?: number;
-                minutes?: number;
-                hours?: number;
-                days?: number;
-                weeks?: number;
-                months?: number;
-                years?: number;
-              };
-                sub?: {
-                  milliseconds?: number;
-                  seconds?: number;
-                  minutes?: number;
-                  hours?: number;
-                  days?: number;
-                  weeks?: number;
-                  months?: number;
-                  years?: number;
-                };
-                  truncateTo?: Timestamp_Interval | null;
-          };
-            createdAt_update?: ({
-              inc?: {
-                milliseconds?: number;
-                seconds?: number;
-                minutes?: number;
-                hours?: number;
-                days?: number;
-                weeks?: number;
-                months?: number;
-                years?: number;
-              };
-                dec?: {
-                  milliseconds?: number;
-                  seconds?: number;
-                  minutes?: number;
-                  hours?: number;
-                  days?: number;
-                  weeks?: number;
-                  months?: number;
-                  years?: number;
-                };
-            })[];
-              department?: string | null;
-              department_expr?: {
-              };
-                fullName?: string | null;
-                fullName_expr?: {
-                };
-                  position?: string | null;
-                  position_expr?: {
-                  };
-                    salary?: number | null;
-                    salary_expr?: {
-                    };
-                      salary_update?: ({
-                        inc?: number | null;
-                        dec?: number | null;
-                      })[];
-                        startDate?: DateString | null;
-                        startDate_expr?: {
-                        };
-                          startDate_date?: {
-                            today?: {
-                            };
-                              on?: DateString | null;
-                              add?: {
-                                days?: number;
-                                weeks?: number;
-                                months?: number;
-                                years?: number;
-                              };
-                                sub?: {
-                                  days?: number;
-                                  weeks?: number;
-                                  months?: number;
-                                  years?: number;
-                                };
-                                  truncateTo?: Date_Interval | null;
-                          };
-                            startDate_update?: ({
-                              inc?: {
-                                days?: number;
-                                weeks?: number;
-                                months?: number;
-                                years?: number;
-                              };
-                                dec?: {
-                                  days?: number;
-                                  weeks?: number;
-                                  months?: number;
-                                  years?: number;
-                                };
-                            })[];
-                              status?: string | null;
-                              status_expr?: {
-                              };
-                                tenantId?: UUIDString | null;
-                                tenantId_expr?: {
-                                };
-  };
+  tenantId: string;
+  businessId: string;
+  fullName: string;
+  position: string;
+  salary?: number | null;
+  department?: string | null;
+  startDate?: DateString | null;
+  status?: string | null;
+}
+
+export interface CreateNotificationData {
+  notification_insert: Notification_Key;
+}
+
+export interface CreateNotificationVariables {
+  tenantId: string;
+  businessId: string;
+  userId: string;
+  message: string;
+  isRead: boolean;
 }
 
 export interface CreateProductData {
@@ -470,191 +140,16 @@ export interface CreateProductData {
 }
 
 export interface CreateProductVariables {
-  data: {
-    id?: UUIDString | null;
-    id_expr?: {
-    };
-      businessId?: UUIDString | null;
-      businessId_expr?: {
-      };
-        category?: string | null;
-        category_expr?: {
-        };
-          costPrice?: number | null;
-          costPrice_expr?: {
-          };
-            costPrice_update?: ({
-              inc?: number | null;
-              dec?: number | null;
-            })[];
-              createdAt?: TimestampString | null;
-              createdAt_expr?: {
-              };
-                createdAt_time?: {
-                  now?: {
-                  };
-                    at?: TimestampString | null;
-                    add?: {
-                      milliseconds?: number;
-                      seconds?: number;
-                      minutes?: number;
-                      hours?: number;
-                      days?: number;
-                      weeks?: number;
-                      months?: number;
-                      years?: number;
-                    };
-                      sub?: {
-                        milliseconds?: number;
-                        seconds?: number;
-                        minutes?: number;
-                        hours?: number;
-                        days?: number;
-                        weeks?: number;
-                        months?: number;
-                        years?: number;
-                      };
-                        truncateTo?: Timestamp_Interval | null;
-                };
-                  createdAt_update?: ({
-                    inc?: {
-                      milliseconds?: number;
-                      seconds?: number;
-                      minutes?: number;
-                      hours?: number;
-                      days?: number;
-                      weeks?: number;
-                      months?: number;
-                      years?: number;
-                    };
-                      dec?: {
-                        milliseconds?: number;
-                        seconds?: number;
-                        minutes?: number;
-                        hours?: number;
-                        days?: number;
-                        weeks?: number;
-                        months?: number;
-                        years?: number;
-                      };
-                  })[];
-                    createdBy?: UUIDString | null;
-                    createdBy_expr?: {
-                    };
-                      expiryDate?: DateString | null;
-                      expiryDate_expr?: {
-                      };
-                        expiryDate_date?: {
-                          today?: {
-                          };
-                            on?: DateString | null;
-                            add?: {
-                              days?: number;
-                              weeks?: number;
-                              months?: number;
-                              years?: number;
-                            };
-                              sub?: {
-                                days?: number;
-                                weeks?: number;
-                                months?: number;
-                                years?: number;
-                              };
-                                truncateTo?: Date_Interval | null;
-                        };
-                          expiryDate_update?: ({
-                            inc?: {
-                              days?: number;
-                              weeks?: number;
-                              months?: number;
-                              years?: number;
-                            };
-                              dec?: {
-                                days?: number;
-                                weeks?: number;
-                                months?: number;
-                                years?: number;
-                              };
-                          })[];
-                            lowStockLevel?: number | null;
-                            lowStockLevel_expr?: {
-                            };
-                              lowStockLevel_update?: ({
-                                inc?: number | null;
-                                dec?: number | null;
-                              })[];
-                                name?: string | null;
-                                name_expr?: {
-                                };
-                                  quantity?: number | null;
-                                  quantity_expr?: {
-                                  };
-                                    quantity_update?: ({
-                                      inc?: number | null;
-                                      dec?: number | null;
-                                    })[];
-                                      sellingPrice?: number | null;
-                                      sellingPrice_expr?: {
-                                      };
-                                        sellingPrice_update?: ({
-                                          inc?: number | null;
-                                          dec?: number | null;
-                                        })[];
-                                          tenantId?: UUIDString | null;
-                                          tenantId_expr?: {
-                                          };
-                                            updatedAt?: TimestampString | null;
-                                            updatedAt_expr?: {
-                                            };
-                                              updatedAt_time?: {
-                                                now?: {
-                                                };
-                                                  at?: TimestampString | null;
-                                                  add?: {
-                                                    milliseconds?: number;
-                                                    seconds?: number;
-                                                    minutes?: number;
-                                                    hours?: number;
-                                                    days?: number;
-                                                    weeks?: number;
-                                                    months?: number;
-                                                    years?: number;
-                                                  };
-                                                    sub?: {
-                                                      milliseconds?: number;
-                                                      seconds?: number;
-                                                      minutes?: number;
-                                                      hours?: number;
-                                                      days?: number;
-                                                      weeks?: number;
-                                                      months?: number;
-                                                      years?: number;
-                                                    };
-                                                      truncateTo?: Timestamp_Interval | null;
-                                              };
-                                                updatedAt_update?: ({
-                                                  inc?: {
-                                                    milliseconds?: number;
-                                                    seconds?: number;
-                                                    minutes?: number;
-                                                    hours?: number;
-                                                    days?: number;
-                                                    weeks?: number;
-                                                    months?: number;
-                                                    years?: number;
-                                                  };
-                                                    dec?: {
-                                                      milliseconds?: number;
-                                                      seconds?: number;
-                                                      minutes?: number;
-                                                      hours?: number;
-                                                      days?: number;
-                                                      weeks?: number;
-                                                      months?: number;
-                                                      years?: number;
-                                                    };
-                                                })[];
-  };
+  tenantId: string;
+  businessId: string;
+  name: string;
+  category?: string | null;
+  quantity: number;
+  costPrice?: number | null;
+  sellingPrice: number;
+  expiryDate?: DateString | null;
+  lowStockLevel?: number | null;
+  createdBy: string;
 }
 
 export interface CreateSupplierData {
@@ -662,77 +157,23 @@ export interface CreateSupplierData {
 }
 
 export interface CreateSupplierVariables {
-  data: {
-    id?: UUIDString | null;
-    id_expr?: {
-    };
-      businessId?: UUIDString | null;
-      businessId_expr?: {
-      };
-        createdAt?: TimestampString | null;
-        createdAt_expr?: {
-        };
-          createdAt_time?: {
-            now?: {
-            };
-              at?: TimestampString | null;
-              add?: {
-                milliseconds?: number;
-                seconds?: number;
-                minutes?: number;
-                hours?: number;
-                days?: number;
-                weeks?: number;
-                months?: number;
-                years?: number;
-              };
-                sub?: {
-                  milliseconds?: number;
-                  seconds?: number;
-                  minutes?: number;
-                  hours?: number;
-                  days?: number;
-                  weeks?: number;
-                  months?: number;
-                  years?: number;
-                };
-                  truncateTo?: Timestamp_Interval | null;
-          };
-            createdAt_update?: ({
-              inc?: {
-                milliseconds?: number;
-                seconds?: number;
-                minutes?: number;
-                hours?: number;
-                days?: number;
-                weeks?: number;
-                months?: number;
-                years?: number;
-              };
-                dec?: {
-                  milliseconds?: number;
-                  seconds?: number;
-                  minutes?: number;
-                  hours?: number;
-                  days?: number;
-                  weeks?: number;
-                  months?: number;
-                  years?: number;
-                };
-            })[];
-              email?: string | null;
-              email_expr?: {
-              };
-                phoneNumber?: string | null;
-                phoneNumber_expr?: {
-                };
-                  supplierName?: string | null;
-                  supplierName_expr?: {
-                  };
-                    tenantId?: UUIDString | null;
-                    tenantId_expr?: {
-                    };
-  };
+  tenantId: string;
+  businessId: string;
+  supplierName: string;
+  phoneNumber?: string | null;
+  email?: string | null;
+}
+
+export interface CreateTaskCommentData {
+  taskComment_insert: TaskComment_Key;
+}
+
+export interface CreateTaskCommentVariables {
+  tenantId: string;
+  businessId: string;
+  taskId: string;
+  userId: string;
+  content: string;
 }
 
 export interface CreateTaskData {
@@ -740,189 +181,15 @@ export interface CreateTaskData {
 }
 
 export interface CreateTaskVariables {
-  data: {
-    id?: UUIDString | null;
-    id_expr?: {
-    };
-      assignedToId?: UUIDString | null;
-      assignedToId_expr?: {
-      };
-        assignedTo?: User_Key | null;
-        businessId?: UUIDString | null;
-        businessId_expr?: {
-        };
-          createdAt?: TimestampString | null;
-          createdAt_expr?: {
-          };
-            createdAt_time?: {
-              now?: {
-              };
-                at?: TimestampString | null;
-                add?: {
-                  milliseconds?: number;
-                  seconds?: number;
-                  minutes?: number;
-                  hours?: number;
-                  days?: number;
-                  weeks?: number;
-                  months?: number;
-                  years?: number;
-                };
-                  sub?: {
-                    milliseconds?: number;
-                    seconds?: number;
-                    minutes?: number;
-                    hours?: number;
-                    days?: number;
-                    weeks?: number;
-                    months?: number;
-                    years?: number;
-                  };
-                    truncateTo?: Timestamp_Interval | null;
-            };
-              createdAt_update?: ({
-                inc?: {
-                  milliseconds?: number;
-                  seconds?: number;
-                  minutes?: number;
-                  hours?: number;
-                  days?: number;
-                  weeks?: number;
-                  months?: number;
-                  years?: number;
-                };
-                  dec?: {
-                    milliseconds?: number;
-                    seconds?: number;
-                    minutes?: number;
-                    hours?: number;
-                    days?: number;
-                    weeks?: number;
-                    months?: number;
-                    years?: number;
-                  };
-              })[];
-                createdBy?: UUIDString | null;
-                createdBy_expr?: {
-                };
-                  description?: string | null;
-                  description_expr?: {
-                  };
-                    dueDate?: TimestampString | null;
-                    dueDate_expr?: {
-                    };
-                      dueDate_time?: {
-                        now?: {
-                        };
-                          at?: TimestampString | null;
-                          add?: {
-                            milliseconds?: number;
-                            seconds?: number;
-                            minutes?: number;
-                            hours?: number;
-                            days?: number;
-                            weeks?: number;
-                            months?: number;
-                            years?: number;
-                          };
-                            sub?: {
-                              milliseconds?: number;
-                              seconds?: number;
-                              minutes?: number;
-                              hours?: number;
-                              days?: number;
-                              weeks?: number;
-                              months?: number;
-                              years?: number;
-                            };
-                              truncateTo?: Timestamp_Interval | null;
-                      };
-                        dueDate_update?: ({
-                          inc?: {
-                            milliseconds?: number;
-                            seconds?: number;
-                            minutes?: number;
-                            hours?: number;
-                            days?: number;
-                            weeks?: number;
-                            months?: number;
-                            years?: number;
-                          };
-                            dec?: {
-                              milliseconds?: number;
-                              seconds?: number;
-                              minutes?: number;
-                              hours?: number;
-                              days?: number;
-                              weeks?: number;
-                              months?: number;
-                              years?: number;
-                            };
-                        })[];
-                          priority?: string | null;
-                          priority_expr?: {
-                          };
-                            status?: string | null;
-                            status_expr?: {
-                            };
-                              tenantId?: UUIDString | null;
-                              tenantId_expr?: {
-                              };
-                                title?: string | null;
-                                title_expr?: {
-                                };
-                                  updatedAt?: TimestampString | null;
-                                  updatedAt_expr?: {
-                                  };
-                                    updatedAt_time?: {
-                                      now?: {
-                                      };
-                                        at?: TimestampString | null;
-                                        add?: {
-                                          milliseconds?: number;
-                                          seconds?: number;
-                                          minutes?: number;
-                                          hours?: number;
-                                          days?: number;
-                                          weeks?: number;
-                                          months?: number;
-                                          years?: number;
-                                        };
-                                          sub?: {
-                                            milliseconds?: number;
-                                            seconds?: number;
-                                            minutes?: number;
-                                            hours?: number;
-                                            days?: number;
-                                            weeks?: number;
-                                            months?: number;
-                                            years?: number;
-                                          };
-                                            truncateTo?: Timestamp_Interval | null;
-                                    };
-                                      updatedAt_update?: ({
-                                        inc?: {
-                                          milliseconds?: number;
-                                          seconds?: number;
-                                          minutes?: number;
-                                          hours?: number;
-                                          days?: number;
-                                          weeks?: number;
-                                          months?: number;
-                                          years?: number;
-                                        };
-                                          dec?: {
-                                            milliseconds?: number;
-                                            seconds?: number;
-                                            minutes?: number;
-                                            hours?: number;
-                                            days?: number;
-                                            weeks?: number;
-                                            months?: number;
-                                            years?: number;
-                                          };
-                                      })[];
-  };
+  tenantId: string;
+  businessId: string;
+  title: string;
+  description?: string | null;
+  status: TaskStatus;
+  priority?: TaskPriority | null;
+  dueDate: TimestampString;
+  assignedToId?: string | null;
+  createdBy: string;
 }
 
 export interface CreateTenantData {
@@ -930,83 +197,13 @@ export interface CreateTenantData {
 }
 
 export interface CreateTenantVariables {
-  data: {
-    id?: UUIDString | null;
-    id_expr?: {
-    };
-      businessSector?: string | null;
-      businessSector_expr?: {
-      };
-        createdAt?: TimestampString | null;
-        createdAt_expr?: {
-        };
-          createdAt_time?: {
-            now?: {
-            };
-              at?: TimestampString | null;
-              add?: {
-                milliseconds?: number;
-                seconds?: number;
-                minutes?: number;
-                hours?: number;
-                days?: number;
-                weeks?: number;
-                months?: number;
-                years?: number;
-              };
-                sub?: {
-                  milliseconds?: number;
-                  seconds?: number;
-                  minutes?: number;
-                  hours?: number;
-                  days?: number;
-                  weeks?: number;
-                  months?: number;
-                  years?: number;
-                };
-                  truncateTo?: Timestamp_Interval | null;
-          };
-            createdAt_update?: ({
-              inc?: {
-                milliseconds?: number;
-                seconds?: number;
-                minutes?: number;
-                hours?: number;
-                days?: number;
-                weeks?: number;
-                months?: number;
-                years?: number;
-              };
-                dec?: {
-                  milliseconds?: number;
-                  seconds?: number;
-                  minutes?: number;
-                  hours?: number;
-                  days?: number;
-                  weeks?: number;
-                  months?: number;
-                  years?: number;
-                };
-            })[];
-              location?: string | null;
-              location_expr?: {
-              };
-                logoUrl?: string | null;
-                logoUrl_expr?: {
-                };
-                  name?: string | null;
-                  name_expr?: {
-                  };
-                    ownerEmail?: string | null;
-                    ownerEmail_expr?: {
-                    };
-                      subscriptionTier?: string | null;
-                      subscriptionTier_expr?: {
-                      };
-                        taxId?: string | null;
-                        taxId_expr?: {
-                        };
-  };
+  name: string;
+  businessSector: string;
+  location: string;
+  ownerEmail: string;
+  taxId?: string | null;
+  logoUrl?: string | null;
+  subscriptionTier?: string | null;
 }
 
 export interface CreateTransactionData {
@@ -1014,138 +211,14 @@ export interface CreateTransactionData {
 }
 
 export interface CreateTransactionVariables {
-  data: {
-    id?: UUIDString | null;
-    id_expr?: {
-    };
-      amount?: number | null;
-      amount_expr?: {
-      };
-        amount_update?: ({
-          inc?: number | null;
-          dec?: number | null;
-        })[];
-          businessId?: UUIDString | null;
-          businessId_expr?: {
-          };
-            category?: string | null;
-            category_expr?: {
-            };
-              createdAt?: TimestampString | null;
-              createdAt_expr?: {
-              };
-                createdAt_time?: {
-                  now?: {
-                  };
-                    at?: TimestampString | null;
-                    add?: {
-                      milliseconds?: number;
-                      seconds?: number;
-                      minutes?: number;
-                      hours?: number;
-                      days?: number;
-                      weeks?: number;
-                      months?: number;
-                      years?: number;
-                    };
-                      sub?: {
-                        milliseconds?: number;
-                        seconds?: number;
-                        minutes?: number;
-                        hours?: number;
-                        days?: number;
-                        weeks?: number;
-                        months?: number;
-                        years?: number;
-                      };
-                        truncateTo?: Timestamp_Interval | null;
-                };
-                  createdAt_update?: ({
-                    inc?: {
-                      milliseconds?: number;
-                      seconds?: number;
-                      minutes?: number;
-                      hours?: number;
-                      days?: number;
-                      weeks?: number;
-                      months?: number;
-                      years?: number;
-                    };
-                      dec?: {
-                        milliseconds?: number;
-                        seconds?: number;
-                        minutes?: number;
-                        hours?: number;
-                        days?: number;
-                        weeks?: number;
-                        months?: number;
-                        years?: number;
-                      };
-                  })[];
-                    date?: TimestampString | null;
-                    date_expr?: {
-                    };
-                      date_time?: {
-                        now?: {
-                        };
-                          at?: TimestampString | null;
-                          add?: {
-                            milliseconds?: number;
-                            seconds?: number;
-                            minutes?: number;
-                            hours?: number;
-                            days?: number;
-                            weeks?: number;
-                            months?: number;
-                            years?: number;
-                          };
-                            sub?: {
-                              milliseconds?: number;
-                              seconds?: number;
-                              minutes?: number;
-                              hours?: number;
-                              days?: number;
-                              weeks?: number;
-                              months?: number;
-                              years?: number;
-                            };
-                              truncateTo?: Timestamp_Interval | null;
-                      };
-                        date_update?: ({
-                          inc?: {
-                            milliseconds?: number;
-                            seconds?: number;
-                            minutes?: number;
-                            hours?: number;
-                            days?: number;
-                            weeks?: number;
-                            months?: number;
-                            years?: number;
-                          };
-                            dec?: {
-                              milliseconds?: number;
-                              seconds?: number;
-                              minutes?: number;
-                              hours?: number;
-                              days?: number;
-                              weeks?: number;
-                              months?: number;
-                              years?: number;
-                            };
-                        })[];
-                          receiptUrl?: string | null;
-                          receiptUrl_expr?: {
-                          };
-                            recordedBy?: UUIDString | null;
-                            recordedBy_expr?: {
-                            };
-                              tenantId?: UUIDString | null;
-                              tenantId_expr?: {
-                              };
-                                type?: string | null;
-                                type_expr?: {
-                                };
-  };
+  tenantId: string;
+  businessId: string;
+  type: TransactionType;
+  amount: number;
+  date: TimestampString;
+  category?: string | null;
+  receiptUrl?: string | null;
+  recordedBy: string;
 }
 
 export interface CreateUserData {
@@ -1153,85 +226,34 @@ export interface CreateUserData {
 }
 
 export interface CreateUserVariables {
-  data: {
-    id?: UUIDString | null;
-    id_expr?: {
-    };
-      businessId?: UUIDString | null;
-      businessId_expr?: {
-      };
-        createdAt?: TimestampString | null;
-        createdAt_expr?: {
-        };
-          createdAt_time?: {
-            now?: {
-            };
-              at?: TimestampString | null;
-              add?: {
-                milliseconds?: number;
-                seconds?: number;
-                minutes?: number;
-                hours?: number;
-                days?: number;
-                weeks?: number;
-                months?: number;
-                years?: number;
-              };
-                sub?: {
-                  milliseconds?: number;
-                  seconds?: number;
-                  minutes?: number;
-                  hours?: number;
-                  days?: number;
-                  weeks?: number;
-                  months?: number;
-                  years?: number;
-                };
-                  truncateTo?: Timestamp_Interval | null;
-          };
-            createdAt_update?: ({
-              inc?: {
-                milliseconds?: number;
-                seconds?: number;
-                minutes?: number;
-                hours?: number;
-                days?: number;
-                weeks?: number;
-                months?: number;
-                years?: number;
-              };
-                dec?: {
-                  milliseconds?: number;
-                  seconds?: number;
-                  minutes?: number;
-                  hours?: number;
-                  days?: number;
-                  weeks?: number;
-                  months?: number;
-                  years?: number;
-                };
-            })[];
-              department?: string | null;
-              department_expr?: {
-              };
-                email?: string | null;
-                email_expr?: {
-                };
-                  phoneNumber?: string | null;
-                  phoneNumber_expr?: {
-                  };
-                    role?: string | null;
-                    role_expr?: {
-                    };
-                      tenantId?: UUIDString | null;
-                      tenantId_expr?: {
-                      };
-  };
+  tenantId: string;
+  businessId: string;
+  email: string;
+  role: string;
+  fullName?: string | null;
+  department?: string | null;
+  phoneNumber?: string | null;
 }
 
 export interface Customer_Key {
-  id: UUIDString;
+  id: string;
   __typename?: 'Customer_Key';
+}
+
+export interface DeleteActivityLogData {
+  activityLog_delete?: ActivityLog_Key | null;
+}
+
+export interface DeleteActivityLogVariables {
+  id: string;
+}
+
+export interface DeleteAiQueryData {
+  aiQuery_delete?: AiQuery_Key | null;
+}
+
+export interface DeleteAiQueryVariables {
+  id: string;
 }
 
 export interface DeleteBusinessData {
@@ -1239,7 +261,7 @@ export interface DeleteBusinessData {
 }
 
 export interface DeleteBusinessVariables {
-  id: UUIDString;
+  id: string;
 }
 
 export interface DeleteCustomerData {
@@ -1247,7 +269,7 @@ export interface DeleteCustomerData {
 }
 
 export interface DeleteCustomerVariables {
-  id: UUIDString;
+  id: string;
 }
 
 export interface DeleteDocumentData {
@@ -1255,7 +277,7 @@ export interface DeleteDocumentData {
 }
 
 export interface DeleteDocumentVariables {
-  id: UUIDString;
+  id: string;
 }
 
 export interface DeleteEmployeeData {
@@ -1263,7 +285,15 @@ export interface DeleteEmployeeData {
 }
 
 export interface DeleteEmployeeVariables {
-  id: UUIDString;
+  id: string;
+}
+
+export interface DeleteNotificationData {
+  notification_delete?: Notification_Key | null;
+}
+
+export interface DeleteNotificationVariables {
+  id: string;
 }
 
 export interface DeleteProductData {
@@ -1271,7 +301,7 @@ export interface DeleteProductData {
 }
 
 export interface DeleteProductVariables {
-  id: UUIDString;
+  id: string;
 }
 
 export interface DeleteSupplierData {
@@ -1279,7 +309,15 @@ export interface DeleteSupplierData {
 }
 
 export interface DeleteSupplierVariables {
-  id: UUIDString;
+  id: string;
+}
+
+export interface DeleteTaskCommentData {
+  taskComment_delete?: TaskComment_Key | null;
+}
+
+export interface DeleteTaskCommentVariables {
+  id: string;
 }
 
 export interface DeleteTaskData {
@@ -1287,7 +325,7 @@ export interface DeleteTaskData {
 }
 
 export interface DeleteTaskVariables {
-  id: UUIDString;
+  id: string;
 }
 
 export interface DeleteTenantData {
@@ -1295,7 +333,7 @@ export interface DeleteTenantData {
 }
 
 export interface DeleteTenantVariables {
-  id: UUIDString;
+  id: string;
 }
 
 export interface DeleteTransactionData {
@@ -1303,7 +341,7 @@ export interface DeleteTransactionData {
 }
 
 export interface DeleteTransactionVariables {
-  id: UUIDString;
+  id: string;
 }
 
 export interface DeleteUserData {
@@ -1311,232 +349,322 @@ export interface DeleteUserData {
 }
 
 export interface DeleteUserVariables {
-  id: UUIDString;
+  id: string;
 }
 
 export interface Document_Key {
-  id: UUIDString;
+  id: string;
   __typename?: 'Document_Key';
 }
 
 export interface Employee_Key {
-  id: UUIDString;
+  id: string;
   __typename?: 'Employee_Key';
+}
+
+export interface GetUserByEmailData {
+  users: ({
+    id: string;
+    email: string;
+    role: string;
+    department?: string | null;
+    phoneNumber?: string | null;
+    createdAt: TimestampString;
+    tenantId: string;
+    businessId: string;
+    fullName?: string | null;
+  } & User_Key)[];
+}
+
+export interface GetUserByEmailVariables {
+  email: string;
+}
+
+export interface ListActivityLogsByBusinessData {
+  activityLogs: ({
+    id: string;
+    tenantId: string;
+    businessId: string;
+    userId: string;
+    userName: string;
+    actionType: string;
+    module: string;
+    description?: string | null;
+    recordId?: string | null;
+    timestamp: TimestampString;
+  } & ActivityLog_Key)[];
+}
+
+export interface ListActivityLogsByBusinessVariables {
+  tenantId: string;
+  businessId: string;
+}
+
+export interface ListActivityLogsByUserData {
+  activityLogs: ({
+    id: string;
+    tenantId: string;
+    businessId: string;
+    userId: string;
+    userName: string;
+    actionType: string;
+    module: string;
+    description?: string | null;
+    recordId?: string | null;
+    timestamp: TimestampString;
+  } & ActivityLog_Key)[];
+}
+
+export interface ListActivityLogsByUserVariables {
+  tenantId: string;
+  businessId: string;
+  userId: string;
 }
 
 export interface ListBusinessesData {
   businesses: ({
-    id: UUIDString;
+    id: string;
     name: string;
     location: string;
   } & Business_Key)[];
 }
 
 export interface ListBusinessesVariables {
-  tenantId: UUIDString;
+  tenantId: string;
 }
 
-export interface ListCustomersData {
+export interface ListCustomersByBusinessData {
   customers: ({
-    id: UUIDString;
+    id: string;
     customerName: string;
+    phoneNumber?: string | null;
+    email?: string | null;
+    createdAt: TimestampString;
+    tenantId: string;
+    businessId: string;
   } & Customer_Key)[];
 }
 
-export interface ListCustomersVariables {
-  businessId: UUIDString;
+export interface ListCustomersByBusinessVariables {
+  tenantId: string;
+  businessId: string;
 }
 
-export interface ListDocumentsData {
+export interface ListDocumentsByBusinessData {
   documents: ({
-    id: UUIDString;
+    id: string;
     title: string;
+    documentType: string;
+    fileUrl: string;
+    uploadedBy: string;
+    uploadedAt: TimestampString;
+    tenantId: string;
+    businessId: string;
   } & Document_Key)[];
 }
 
-export interface ListDocumentsVariables {
-  businessId: UUIDString;
+export interface ListDocumentsByBusinessVariables {
+  tenantId: string;
+  businessId: string;
 }
 
-export interface ListEmployeesData {
+export interface ListEmployeesByBusinessData {
   employees: ({
-    id: UUIDString;
+    id: string;
     fullName: string;
+    position: string;
+    salary?: number | null;
+    department?: string | null;
+    startDate?: DateString | null;
+    status?: string | null;
+    createdAt: TimestampString;
+    tenantId: string;
+    businessId: string;
   } & Employee_Key)[];
 }
 
-export interface ListEmployeesVariables {
-  businessId: UUIDString;
+export interface ListEmployeesByBusinessVariables {
+  tenantId: string;
+  businessId: string;
 }
 
-export interface ListProductsData {
+export interface ListProductsByBusinessData {
   products: ({
-    id: UUIDString;
+    id: string;
     name: string;
+    category?: string | null;
+    quantity: number;
+    costPrice?: number | null;
     sellingPrice: number;
+    expiryDate?: DateString | null;
+    lowStockLevel?: number | null;
+    createdBy: string;
+    createdAt: TimestampString;
+    updatedAt?: TimestampString | null;
+    tenantId: string;
+    businessId: string;
   } & Product_Key)[];
 }
 
-export interface ListProductsVariables {
-  businessId: UUIDString;
+export interface ListProductsByBusinessVariables {
+  tenantId: string;
+  businessId: string;
 }
 
-export interface ListSuppliersData {
+export interface ListSuppliersByBusinessData {
   suppliers: ({
-    id: UUIDString;
+    id: string;
     supplierName: string;
+    phoneNumber?: string | null;
+    email?: string | null;
+    createdAt: TimestampString;
+    tenantId: string;
+    businessId: string;
   } & Supplier_Key)[];
 }
 
-export interface ListSuppliersVariables {
-  businessId: UUIDString;
+export interface ListSuppliersByBusinessVariables {
+  tenantId: string;
+  businessId: string;
 }
 
-export interface ListTasksData {
+export interface ListTasksByBusinessData {
   tasks: ({
-    id: UUIDString;
+    id: string;
     title: string;
-    status: string;
+    description?: string | null;
+    status: TaskStatus;
+    priority?: TaskPriority | null;
+    dueDate: TimestampString;
+    assignedTo?: {
+      id: string;
+      email: string;
+      role: string;
+    } & User_Key;
+    createdBy: string;
+    createdAt: TimestampString;
+    updatedAt?: TimestampString | null;
+    tenantId: string;
+    businessId: string;
   } & Task_Key)[];
 }
 
-export interface ListTasksVariables {
-  businessId: UUIDString;
+export interface ListTasksByBusinessVariables {
+  tenantId: string;
+  businessId: string;
 }
 
 export interface ListTenantsData {
   tenants: ({
-    id: UUIDString;
+    id: string;
     name: string;
     businessSector: string;
   } & Tenant_Key)[];
 }
 
-export interface ListTransactionsData {
+export interface ListTransactionsByBusinessData {
   transactions: ({
-    id: UUIDString;
-    type: string;
+    id: string;
+    type: TransactionType;
     amount: number;
+    date: TimestampString;
+    category?: string | null;
+    receiptUrl?: string | null;
+    recordedBy: string;
+    createdAt: TimestampString;
+    tenantId: string;
+    businessId: string;
   } & Transaction_Key)[];
 }
 
-export interface ListTransactionsVariables {
-  businessId: UUIDString;
->>>>>>> 546aacf70afe81cbee3ea5f2edbc661c271990b8
+export interface ListTransactionsByBusinessVariables {
+  tenantId: string;
+  businessId: string;
 }
 
-export interface ListUsersData {
-  users: ({
-<<<<<<< HEAD
+export interface ListTransactionsByTypeData {
+  transactions: ({
     id: string;
-    username: string;
-  } & User_Key)[];
+    type: TransactionType;
+    amount: number;
+    date: TimestampString;
+    category?: string | null;
+    receiptUrl?: string | null;
+    recordedBy: string;
+    createdAt: TimestampString;
+    tenantId: string;
+    businessId: string;
+  } & Transaction_Key)[];
 }
 
-export interface MovieMetadata_Key {
-  id: UUIDString;
-  __typename?: 'MovieMetadata_Key';
-}
-
-export interface Movie_Key {
-  id: UUIDString;
-  __typename?: 'Movie_Key';
-}
-
-export interface Review_Key {
-  userId: string;
-  movieId: UUIDString;
-  __typename?: 'Review_Key';
-}
-
-export interface SearchMovieData {
-  movies: ({
-    id: UUIDString;
-    title: string;
-    genre?: string | null;
-    imageUrl: string;
-  } & Movie_Key)[];
-}
-
-export interface SearchMovieVariables {
-  titleInput?: string | null;
-  genre?: string | null;
-}
-
-export interface UpsertUserData {
-  user_upsert: User_Key;
-}
-
-export interface UpsertUserVariables {
-  username: string;
-}
-
-export interface User_Key {
-  id: string;
-  __typename?: 'User_Key';
-}
-
-interface ListMoviesRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (): QueryRef<ListMoviesData, undefined>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect): QueryRef<ListMoviesData, undefined>;
-  operationName: string;
-}
-export const listMoviesRef: ListMoviesRef;
-
-export function listMovies(): QueryPromise<ListMoviesData, undefined>;
-export function listMovies(dc: DataConnect): QueryPromise<ListMoviesData, undefined>;
-
-interface ListUsersRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (): QueryRef<ListUsersData, undefined>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect): QueryRef<ListUsersData, undefined>;
-=======
-    id: UUIDString;
-    email: string;
-    role: string;
-  } & User_Key)[];
-}
-
-export interface ListUsersVariables {
-  tenantId: UUIDString;
+export interface ListTransactionsByTypeVariables {
+  tenantId: string;
+  businessId: string;
+  type: TransactionType;
 }
 
 export interface Notification_Key {
-  id: UUIDString;
+  id: string;
   __typename?: 'Notification_Key';
 }
 
 export interface Product_Key {
-  id: UUIDString;
+  id: string;
   __typename?: 'Product_Key';
 }
 
 export interface Supplier_Key {
-  id: UUIDString;
+  id: string;
   __typename?: 'Supplier_Key';
 }
 
 export interface TaskComment_Key {
-  id: UUIDString;
+  id: string;
   __typename?: 'TaskComment_Key';
 }
 
 export interface Task_Key {
-  id: UUIDString;
+  id: string;
   __typename?: 'Task_Key';
 }
 
 export interface Tenant_Key {
-  id: UUIDString;
+  id: string;
   __typename?: 'Tenant_Key';
 }
 
 export interface Transaction_Key {
-  id: UUIDString;
+  id: string;
   __typename?: 'Transaction_Key';
+}
+
+export interface UpdateActivityLogData {
+  activityLog_update?: ActivityLog_Key | null;
+}
+
+export interface UpdateActivityLogVariables {
+  id: string;
+  tenantId?: string | null;
+  businessId?: string | null;
+  userId?: string | null;
+  userName?: string | null;
+  actionType?: string | null;
+  module?: string | null;
+  description?: string | null;
+  recordId?: string | null;
+}
+
+export interface UpdateAiQueryData {
+  aiQuery_update?: AiQuery_Key | null;
+}
+
+export interface UpdateAiQueryVariables {
+  id: string;
+  tenantId?: string | null;
+  businessId?: string | null;
+  userId?: string | null;
+  queryText?: string | null;
+  response?: string | null;
 }
 
 export interface UpdateBusinessData {
@@ -1544,78 +672,12 @@ export interface UpdateBusinessData {
 }
 
 export interface UpdateBusinessVariables {
-  id: UUIDString;
-  data: {
-    id?: UUIDString | null;
-    id_expr?: {
-    };
-      businessType?: string | null;
-      businessType_expr?: {
-      };
-        createdAt?: TimestampString | null;
-        createdAt_expr?: {
-        };
-          createdAt_time?: {
-            now?: {
-            };
-              at?: TimestampString | null;
-              add?: {
-                milliseconds?: number;
-                seconds?: number;
-                minutes?: number;
-                hours?: number;
-                days?: number;
-                weeks?: number;
-                months?: number;
-                years?: number;
-              };
-                sub?: {
-                  milliseconds?: number;
-                  seconds?: number;
-                  minutes?: number;
-                  hours?: number;
-                  days?: number;
-                  weeks?: number;
-                  months?: number;
-                  years?: number;
-                };
-                  truncateTo?: Timestamp_Interval | null;
-          };
-            createdAt_update?: ({
-              inc?: {
-                milliseconds?: number;
-                seconds?: number;
-                minutes?: number;
-                hours?: number;
-                days?: number;
-                weeks?: number;
-                months?: number;
-                years?: number;
-              };
-                dec?: {
-                  milliseconds?: number;
-                  seconds?: number;
-                  minutes?: number;
-                  hours?: number;
-                  days?: number;
-                  weeks?: number;
-                  months?: number;
-                  years?: number;
-                };
-            })[];
-              location?: string | null;
-              location_expr?: {
-              };
-                name?: string | null;
-                name_expr?: {
-                };
-                  region?: string | null;
-                  region_expr?: {
-                  };
-                    tenantId?: UUIDString | null;
-                    tenantId_expr?: {
-                    };
-  };
+  id: string;
+  tenantId?: string | null;
+  name?: string | null;
+  location?: string | null;
+  businessType?: string | null;
+  region?: string | null;
 }
 
 export interface UpdateCustomerData {
@@ -1623,78 +685,12 @@ export interface UpdateCustomerData {
 }
 
 export interface UpdateCustomerVariables {
-  id: UUIDString;
-  data: {
-    id?: UUIDString | null;
-    id_expr?: {
-    };
-      businessId?: UUIDString | null;
-      businessId_expr?: {
-      };
-        createdAt?: TimestampString | null;
-        createdAt_expr?: {
-        };
-          createdAt_time?: {
-            now?: {
-            };
-              at?: TimestampString | null;
-              add?: {
-                milliseconds?: number;
-                seconds?: number;
-                minutes?: number;
-                hours?: number;
-                days?: number;
-                weeks?: number;
-                months?: number;
-                years?: number;
-              };
-                sub?: {
-                  milliseconds?: number;
-                  seconds?: number;
-                  minutes?: number;
-                  hours?: number;
-                  days?: number;
-                  weeks?: number;
-                  months?: number;
-                  years?: number;
-                };
-                  truncateTo?: Timestamp_Interval | null;
-          };
-            createdAt_update?: ({
-              inc?: {
-                milliseconds?: number;
-                seconds?: number;
-                minutes?: number;
-                hours?: number;
-                days?: number;
-                weeks?: number;
-                months?: number;
-                years?: number;
-              };
-                dec?: {
-                  milliseconds?: number;
-                  seconds?: number;
-                  minutes?: number;
-                  hours?: number;
-                  days?: number;
-                  weeks?: number;
-                  months?: number;
-                  years?: number;
-                };
-            })[];
-              customerName?: string | null;
-              customerName_expr?: {
-              };
-                email?: string | null;
-                email_expr?: {
-                };
-                  phoneNumber?: string | null;
-                  phoneNumber_expr?: {
-                  };
-                    tenantId?: UUIDString | null;
-                    tenantId_expr?: {
-                    };
-  };
+  id: string;
+  tenantId?: string | null;
+  businessId?: string | null;
+  customerName?: string | null;
+  phoneNumber?: string | null;
+  email?: string | null;
 }
 
 export interface UpdateDocumentData {
@@ -1702,81 +698,13 @@ export interface UpdateDocumentData {
 }
 
 export interface UpdateDocumentVariables {
-  id: UUIDString;
-  data: {
-    id?: UUIDString | null;
-    id_expr?: {
-    };
-      businessId?: UUIDString | null;
-      businessId_expr?: {
-      };
-        documentType?: string | null;
-        documentType_expr?: {
-        };
-          fileUrl?: string | null;
-          fileUrl_expr?: {
-          };
-            tenantId?: UUIDString | null;
-            tenantId_expr?: {
-            };
-              title?: string | null;
-              title_expr?: {
-              };
-                uploadedAt?: TimestampString | null;
-                uploadedAt_expr?: {
-                };
-                  uploadedAt_time?: {
-                    now?: {
-                    };
-                      at?: TimestampString | null;
-                      add?: {
-                        milliseconds?: number;
-                        seconds?: number;
-                        minutes?: number;
-                        hours?: number;
-                        days?: number;
-                        weeks?: number;
-                        months?: number;
-                        years?: number;
-                      };
-                        sub?: {
-                          milliseconds?: number;
-                          seconds?: number;
-                          minutes?: number;
-                          hours?: number;
-                          days?: number;
-                          weeks?: number;
-                          months?: number;
-                          years?: number;
-                        };
-                          truncateTo?: Timestamp_Interval | null;
-                  };
-                    uploadedAt_update?: ({
-                      inc?: {
-                        milliseconds?: number;
-                        seconds?: number;
-                        minutes?: number;
-                        hours?: number;
-                        days?: number;
-                        weeks?: number;
-                        months?: number;
-                        years?: number;
-                      };
-                        dec?: {
-                          milliseconds?: number;
-                          seconds?: number;
-                          minutes?: number;
-                          hours?: number;
-                          days?: number;
-                          weeks?: number;
-                          months?: number;
-                          years?: number;
-                        };
-                    })[];
-                      uploadedBy?: UUIDString | null;
-                      uploadedBy_expr?: {
-                      };
-  };
+  id: string;
+  tenantId?: string | null;
+  businessId?: string | null;
+  title?: string | null;
+  documentType?: string | null;
+  fileUrl?: string | null;
+  uploadedBy?: string | null;
 }
 
 export interface UpdateEmployeeData {
@@ -1784,123 +712,28 @@ export interface UpdateEmployeeData {
 }
 
 export interface UpdateEmployeeVariables {
-  id: UUIDString;
-  data: {
-    id?: UUIDString | null;
-    id_expr?: {
-    };
-      businessId?: UUIDString | null;
-      businessId_expr?: {
-      };
-        createdAt?: TimestampString | null;
-        createdAt_expr?: {
-        };
-          createdAt_time?: {
-            now?: {
-            };
-              at?: TimestampString | null;
-              add?: {
-                milliseconds?: number;
-                seconds?: number;
-                minutes?: number;
-                hours?: number;
-                days?: number;
-                weeks?: number;
-                months?: number;
-                years?: number;
-              };
-                sub?: {
-                  milliseconds?: number;
-                  seconds?: number;
-                  minutes?: number;
-                  hours?: number;
-                  days?: number;
-                  weeks?: number;
-                  months?: number;
-                  years?: number;
-                };
-                  truncateTo?: Timestamp_Interval | null;
-          };
-            createdAt_update?: ({
-              inc?: {
-                milliseconds?: number;
-                seconds?: number;
-                minutes?: number;
-                hours?: number;
-                days?: number;
-                weeks?: number;
-                months?: number;
-                years?: number;
-              };
-                dec?: {
-                  milliseconds?: number;
-                  seconds?: number;
-                  minutes?: number;
-                  hours?: number;
-                  days?: number;
-                  weeks?: number;
-                  months?: number;
-                  years?: number;
-                };
-            })[];
-              department?: string | null;
-              department_expr?: {
-              };
-                fullName?: string | null;
-                fullName_expr?: {
-                };
-                  position?: string | null;
-                  position_expr?: {
-                  };
-                    salary?: number | null;
-                    salary_expr?: {
-                    };
-                      salary_update?: ({
-                        inc?: number | null;
-                        dec?: number | null;
-                      })[];
-                        startDate?: DateString | null;
-                        startDate_expr?: {
-                        };
-                          startDate_date?: {
-                            today?: {
-                            };
-                              on?: DateString | null;
-                              add?: {
-                                days?: number;
-                                weeks?: number;
-                                months?: number;
-                                years?: number;
-                              };
-                                sub?: {
-                                  days?: number;
-                                  weeks?: number;
-                                  months?: number;
-                                  years?: number;
-                                };
-                                  truncateTo?: Date_Interval | null;
-                          };
-                            startDate_update?: ({
-                              inc?: {
-                                days?: number;
-                                weeks?: number;
-                                months?: number;
-                                years?: number;
-                              };
-                                dec?: {
-                                  days?: number;
-                                  weeks?: number;
-                                  months?: number;
-                                  years?: number;
-                                };
-                            })[];
-                              status?: string | null;
-                              status_expr?: {
-                              };
-                                tenantId?: UUIDString | null;
-                                tenantId_expr?: {
-                                };
-  };
+  id: string;
+  tenantId?: string | null;
+  businessId?: string | null;
+  fullName?: string | null;
+  position?: string | null;
+  salary?: number | null;
+  department?: string | null;
+  startDate?: DateString | null;
+  status?: string | null;
+}
+
+export interface UpdateNotificationData {
+  notification_update?: Notification_Key | null;
+}
+
+export interface UpdateNotificationVariables {
+  id: string;
+  tenantId?: string | null;
+  businessId?: string | null;
+  userId?: string | null;
+  message?: string | null;
+  isRead?: boolean | null;
 }
 
 export interface UpdateProductData {
@@ -1908,192 +741,17 @@ export interface UpdateProductData {
 }
 
 export interface UpdateProductVariables {
-  id: UUIDString;
-  data: {
-    id?: UUIDString | null;
-    id_expr?: {
-    };
-      businessId?: UUIDString | null;
-      businessId_expr?: {
-      };
-        category?: string | null;
-        category_expr?: {
-        };
-          costPrice?: number | null;
-          costPrice_expr?: {
-          };
-            costPrice_update?: ({
-              inc?: number | null;
-              dec?: number | null;
-            })[];
-              createdAt?: TimestampString | null;
-              createdAt_expr?: {
-              };
-                createdAt_time?: {
-                  now?: {
-                  };
-                    at?: TimestampString | null;
-                    add?: {
-                      milliseconds?: number;
-                      seconds?: number;
-                      minutes?: number;
-                      hours?: number;
-                      days?: number;
-                      weeks?: number;
-                      months?: number;
-                      years?: number;
-                    };
-                      sub?: {
-                        milliseconds?: number;
-                        seconds?: number;
-                        minutes?: number;
-                        hours?: number;
-                        days?: number;
-                        weeks?: number;
-                        months?: number;
-                        years?: number;
-                      };
-                        truncateTo?: Timestamp_Interval | null;
-                };
-                  createdAt_update?: ({
-                    inc?: {
-                      milliseconds?: number;
-                      seconds?: number;
-                      minutes?: number;
-                      hours?: number;
-                      days?: number;
-                      weeks?: number;
-                      months?: number;
-                      years?: number;
-                    };
-                      dec?: {
-                        milliseconds?: number;
-                        seconds?: number;
-                        minutes?: number;
-                        hours?: number;
-                        days?: number;
-                        weeks?: number;
-                        months?: number;
-                        years?: number;
-                      };
-                  })[];
-                    createdBy?: UUIDString | null;
-                    createdBy_expr?: {
-                    };
-                      expiryDate?: DateString | null;
-                      expiryDate_expr?: {
-                      };
-                        expiryDate_date?: {
-                          today?: {
-                          };
-                            on?: DateString | null;
-                            add?: {
-                              days?: number;
-                              weeks?: number;
-                              months?: number;
-                              years?: number;
-                            };
-                              sub?: {
-                                days?: number;
-                                weeks?: number;
-                                months?: number;
-                                years?: number;
-                              };
-                                truncateTo?: Date_Interval | null;
-                        };
-                          expiryDate_update?: ({
-                            inc?: {
-                              days?: number;
-                              weeks?: number;
-                              months?: number;
-                              years?: number;
-                            };
-                              dec?: {
-                                days?: number;
-                                weeks?: number;
-                                months?: number;
-                                years?: number;
-                              };
-                          })[];
-                            lowStockLevel?: number | null;
-                            lowStockLevel_expr?: {
-                            };
-                              lowStockLevel_update?: ({
-                                inc?: number | null;
-                                dec?: number | null;
-                              })[];
-                                name?: string | null;
-                                name_expr?: {
-                                };
-                                  quantity?: number | null;
-                                  quantity_expr?: {
-                                  };
-                                    quantity_update?: ({
-                                      inc?: number | null;
-                                      dec?: number | null;
-                                    })[];
-                                      sellingPrice?: number | null;
-                                      sellingPrice_expr?: {
-                                      };
-                                        sellingPrice_update?: ({
-                                          inc?: number | null;
-                                          dec?: number | null;
-                                        })[];
-                                          tenantId?: UUIDString | null;
-                                          tenantId_expr?: {
-                                          };
-                                            updatedAt?: TimestampString | null;
-                                            updatedAt_expr?: {
-                                            };
-                                              updatedAt_time?: {
-                                                now?: {
-                                                };
-                                                  at?: TimestampString | null;
-                                                  add?: {
-                                                    milliseconds?: number;
-                                                    seconds?: number;
-                                                    minutes?: number;
-                                                    hours?: number;
-                                                    days?: number;
-                                                    weeks?: number;
-                                                    months?: number;
-                                                    years?: number;
-                                                  };
-                                                    sub?: {
-                                                      milliseconds?: number;
-                                                      seconds?: number;
-                                                      minutes?: number;
-                                                      hours?: number;
-                                                      days?: number;
-                                                      weeks?: number;
-                                                      months?: number;
-                                                      years?: number;
-                                                    };
-                                                      truncateTo?: Timestamp_Interval | null;
-                                              };
-                                                updatedAt_update?: ({
-                                                  inc?: {
-                                                    milliseconds?: number;
-                                                    seconds?: number;
-                                                    minutes?: number;
-                                                    hours?: number;
-                                                    days?: number;
-                                                    weeks?: number;
-                                                    months?: number;
-                                                    years?: number;
-                                                  };
-                                                    dec?: {
-                                                      milliseconds?: number;
-                                                      seconds?: number;
-                                                      minutes?: number;
-                                                      hours?: number;
-                                                      days?: number;
-                                                      weeks?: number;
-                                                      months?: number;
-                                                      years?: number;
-                                                    };
-                                                })[];
-  };
+  id: string;
+  tenantId?: string | null;
+  businessId?: string | null;
+  name?: string | null;
+  category?: string | null;
+  quantity?: number | null;
+  costPrice?: number | null;
+  sellingPrice?: number | null;
+  expiryDate?: DateString | null;
+  lowStockLevel?: number | null;
+  createdBy?: string | null;
 }
 
 export interface UpdateSupplierData {
@@ -2101,78 +759,25 @@ export interface UpdateSupplierData {
 }
 
 export interface UpdateSupplierVariables {
-  id: UUIDString;
-  data: {
-    id?: UUIDString | null;
-    id_expr?: {
-    };
-      businessId?: UUIDString | null;
-      businessId_expr?: {
-      };
-        createdAt?: TimestampString | null;
-        createdAt_expr?: {
-        };
-          createdAt_time?: {
-            now?: {
-            };
-              at?: TimestampString | null;
-              add?: {
-                milliseconds?: number;
-                seconds?: number;
-                minutes?: number;
-                hours?: number;
-                days?: number;
-                weeks?: number;
-                months?: number;
-                years?: number;
-              };
-                sub?: {
-                  milliseconds?: number;
-                  seconds?: number;
-                  minutes?: number;
-                  hours?: number;
-                  days?: number;
-                  weeks?: number;
-                  months?: number;
-                  years?: number;
-                };
-                  truncateTo?: Timestamp_Interval | null;
-          };
-            createdAt_update?: ({
-              inc?: {
-                milliseconds?: number;
-                seconds?: number;
-                minutes?: number;
-                hours?: number;
-                days?: number;
-                weeks?: number;
-                months?: number;
-                years?: number;
-              };
-                dec?: {
-                  milliseconds?: number;
-                  seconds?: number;
-                  minutes?: number;
-                  hours?: number;
-                  days?: number;
-                  weeks?: number;
-                  months?: number;
-                  years?: number;
-                };
-            })[];
-              email?: string | null;
-              email_expr?: {
-              };
-                phoneNumber?: string | null;
-                phoneNumber_expr?: {
-                };
-                  supplierName?: string | null;
-                  supplierName_expr?: {
-                  };
-                    tenantId?: UUIDString | null;
-                    tenantId_expr?: {
-                    };
-  };
+  id: string;
+  tenantId?: string | null;
+  businessId?: string | null;
+  supplierName?: string | null;
+  phoneNumber?: string | null;
+  email?: string | null;
+}
+
+export interface UpdateTaskCommentData {
+  taskComment_update?: TaskComment_Key | null;
+}
+
+export interface UpdateTaskCommentVariables {
+  id: string;
+  tenantId?: string | null;
+  businessId?: string | null;
+  taskId?: string | null;
+  userId?: string | null;
+  content?: string | null;
 }
 
 export interface UpdateTaskData {
@@ -2180,190 +785,13 @@ export interface UpdateTaskData {
 }
 
 export interface UpdateTaskVariables {
-  id: UUIDString;
-  data: {
-    id?: UUIDString | null;
-    id_expr?: {
-    };
-      assignedToId?: UUIDString | null;
-      assignedToId_expr?: {
-      };
-        assignedTo?: User_Key | null;
-        businessId?: UUIDString | null;
-        businessId_expr?: {
-        };
-          createdAt?: TimestampString | null;
-          createdAt_expr?: {
-          };
-            createdAt_time?: {
-              now?: {
-              };
-                at?: TimestampString | null;
-                add?: {
-                  milliseconds?: number;
-                  seconds?: number;
-                  minutes?: number;
-                  hours?: number;
-                  days?: number;
-                  weeks?: number;
-                  months?: number;
-                  years?: number;
-                };
-                  sub?: {
-                    milliseconds?: number;
-                    seconds?: number;
-                    minutes?: number;
-                    hours?: number;
-                    days?: number;
-                    weeks?: number;
-                    months?: number;
-                    years?: number;
-                  };
-                    truncateTo?: Timestamp_Interval | null;
-            };
-              createdAt_update?: ({
-                inc?: {
-                  milliseconds?: number;
-                  seconds?: number;
-                  minutes?: number;
-                  hours?: number;
-                  days?: number;
-                  weeks?: number;
-                  months?: number;
-                  years?: number;
-                };
-                  dec?: {
-                    milliseconds?: number;
-                    seconds?: number;
-                    minutes?: number;
-                    hours?: number;
-                    days?: number;
-                    weeks?: number;
-                    months?: number;
-                    years?: number;
-                  };
-              })[];
-                createdBy?: UUIDString | null;
-                createdBy_expr?: {
-                };
-                  description?: string | null;
-                  description_expr?: {
-                  };
-                    dueDate?: TimestampString | null;
-                    dueDate_expr?: {
-                    };
-                      dueDate_time?: {
-                        now?: {
-                        };
-                          at?: TimestampString | null;
-                          add?: {
-                            milliseconds?: number;
-                            seconds?: number;
-                            minutes?: number;
-                            hours?: number;
-                            days?: number;
-                            weeks?: number;
-                            months?: number;
-                            years?: number;
-                          };
-                            sub?: {
-                              milliseconds?: number;
-                              seconds?: number;
-                              minutes?: number;
-                              hours?: number;
-                              days?: number;
-                              weeks?: number;
-                              months?: number;
-                              years?: number;
-                            };
-                              truncateTo?: Timestamp_Interval | null;
-                      };
-                        dueDate_update?: ({
-                          inc?: {
-                            milliseconds?: number;
-                            seconds?: number;
-                            minutes?: number;
-                            hours?: number;
-                            days?: number;
-                            weeks?: number;
-                            months?: number;
-                            years?: number;
-                          };
-                            dec?: {
-                              milliseconds?: number;
-                              seconds?: number;
-                              minutes?: number;
-                              hours?: number;
-                              days?: number;
-                              weeks?: number;
-                              months?: number;
-                              years?: number;
-                            };
-                        })[];
-                          priority?: string | null;
-                          priority_expr?: {
-                          };
-                            status?: string | null;
-                            status_expr?: {
-                            };
-                              tenantId?: UUIDString | null;
-                              tenantId_expr?: {
-                              };
-                                title?: string | null;
-                                title_expr?: {
-                                };
-                                  updatedAt?: TimestampString | null;
-                                  updatedAt_expr?: {
-                                  };
-                                    updatedAt_time?: {
-                                      now?: {
-                                      };
-                                        at?: TimestampString | null;
-                                        add?: {
-                                          milliseconds?: number;
-                                          seconds?: number;
-                                          minutes?: number;
-                                          hours?: number;
-                                          days?: number;
-                                          weeks?: number;
-                                          months?: number;
-                                          years?: number;
-                                        };
-                                          sub?: {
-                                            milliseconds?: number;
-                                            seconds?: number;
-                                            minutes?: number;
-                                            hours?: number;
-                                            days?: number;
-                                            weeks?: number;
-                                            months?: number;
-                                            years?: number;
-                                          };
-                                            truncateTo?: Timestamp_Interval | null;
-                                    };
-                                      updatedAt_update?: ({
-                                        inc?: {
-                                          milliseconds?: number;
-                                          seconds?: number;
-                                          minutes?: number;
-                                          hours?: number;
-                                          days?: number;
-                                          weeks?: number;
-                                          months?: number;
-                                          years?: number;
-                                        };
-                                          dec?: {
-                                            milliseconds?: number;
-                                            seconds?: number;
-                                            minutes?: number;
-                                            hours?: number;
-                                            days?: number;
-                                            weeks?: number;
-                                            months?: number;
-                                            years?: number;
-                                          };
-                                      })[];
-  };
+  id: string;
+  title?: string | null;
+  description?: string | null;
+  status?: TaskStatus | null;
+  priority?: TaskPriority | null;
+  dueDate?: TimestampString | null;
+  assignedToId?: string | null;
 }
 
 export interface UpdateTenantData {
@@ -2371,84 +799,14 @@ export interface UpdateTenantData {
 }
 
 export interface UpdateTenantVariables {
-  id: UUIDString;
-  data: {
-    id?: UUIDString | null;
-    id_expr?: {
-    };
-      businessSector?: string | null;
-      businessSector_expr?: {
-      };
-        createdAt?: TimestampString | null;
-        createdAt_expr?: {
-        };
-          createdAt_time?: {
-            now?: {
-            };
-              at?: TimestampString | null;
-              add?: {
-                milliseconds?: number;
-                seconds?: number;
-                minutes?: number;
-                hours?: number;
-                days?: number;
-                weeks?: number;
-                months?: number;
-                years?: number;
-              };
-                sub?: {
-                  milliseconds?: number;
-                  seconds?: number;
-                  minutes?: number;
-                  hours?: number;
-                  days?: number;
-                  weeks?: number;
-                  months?: number;
-                  years?: number;
-                };
-                  truncateTo?: Timestamp_Interval | null;
-          };
-            createdAt_update?: ({
-              inc?: {
-                milliseconds?: number;
-                seconds?: number;
-                minutes?: number;
-                hours?: number;
-                days?: number;
-                weeks?: number;
-                months?: number;
-                years?: number;
-              };
-                dec?: {
-                  milliseconds?: number;
-                  seconds?: number;
-                  minutes?: number;
-                  hours?: number;
-                  days?: number;
-                  weeks?: number;
-                  months?: number;
-                  years?: number;
-                };
-            })[];
-              location?: string | null;
-              location_expr?: {
-              };
-                logoUrl?: string | null;
-                logoUrl_expr?: {
-                };
-                  name?: string | null;
-                  name_expr?: {
-                  };
-                    ownerEmail?: string | null;
-                    ownerEmail_expr?: {
-                    };
-                      subscriptionTier?: string | null;
-                      subscriptionTier_expr?: {
-                      };
-                        taxId?: string | null;
-                        taxId_expr?: {
-                        };
-  };
+  id: string;
+  name?: string | null;
+  businessSector?: string | null;
+  location?: string | null;
+  ownerEmail?: string | null;
+  taxId?: string | null;
+  logoUrl?: string | null;
+  subscriptionTier?: string | null;
 }
 
 export interface UpdateTransactionData {
@@ -2456,139 +814,15 @@ export interface UpdateTransactionData {
 }
 
 export interface UpdateTransactionVariables {
-  id: UUIDString;
-  data: {
-    id?: UUIDString | null;
-    id_expr?: {
-    };
-      amount?: number | null;
-      amount_expr?: {
-      };
-        amount_update?: ({
-          inc?: number | null;
-          dec?: number | null;
-        })[];
-          businessId?: UUIDString | null;
-          businessId_expr?: {
-          };
-            category?: string | null;
-            category_expr?: {
-            };
-              createdAt?: TimestampString | null;
-              createdAt_expr?: {
-              };
-                createdAt_time?: {
-                  now?: {
-                  };
-                    at?: TimestampString | null;
-                    add?: {
-                      milliseconds?: number;
-                      seconds?: number;
-                      minutes?: number;
-                      hours?: number;
-                      days?: number;
-                      weeks?: number;
-                      months?: number;
-                      years?: number;
-                    };
-                      sub?: {
-                        milliseconds?: number;
-                        seconds?: number;
-                        minutes?: number;
-                        hours?: number;
-                        days?: number;
-                        weeks?: number;
-                        months?: number;
-                        years?: number;
-                      };
-                        truncateTo?: Timestamp_Interval | null;
-                };
-                  createdAt_update?: ({
-                    inc?: {
-                      milliseconds?: number;
-                      seconds?: number;
-                      minutes?: number;
-                      hours?: number;
-                      days?: number;
-                      weeks?: number;
-                      months?: number;
-                      years?: number;
-                    };
-                      dec?: {
-                        milliseconds?: number;
-                        seconds?: number;
-                        minutes?: number;
-                        hours?: number;
-                        days?: number;
-                        weeks?: number;
-                        months?: number;
-                        years?: number;
-                      };
-                  })[];
-                    date?: TimestampString | null;
-                    date_expr?: {
-                    };
-                      date_time?: {
-                        now?: {
-                        };
-                          at?: TimestampString | null;
-                          add?: {
-                            milliseconds?: number;
-                            seconds?: number;
-                            minutes?: number;
-                            hours?: number;
-                            days?: number;
-                            weeks?: number;
-                            months?: number;
-                            years?: number;
-                          };
-                            sub?: {
-                              milliseconds?: number;
-                              seconds?: number;
-                              minutes?: number;
-                              hours?: number;
-                              days?: number;
-                              weeks?: number;
-                              months?: number;
-                              years?: number;
-                            };
-                              truncateTo?: Timestamp_Interval | null;
-                      };
-                        date_update?: ({
-                          inc?: {
-                            milliseconds?: number;
-                            seconds?: number;
-                            minutes?: number;
-                            hours?: number;
-                            days?: number;
-                            weeks?: number;
-                            months?: number;
-                            years?: number;
-                          };
-                            dec?: {
-                              milliseconds?: number;
-                              seconds?: number;
-                              minutes?: number;
-                              hours?: number;
-                              days?: number;
-                              weeks?: number;
-                              months?: number;
-                              years?: number;
-                            };
-                        })[];
-                          receiptUrl?: string | null;
-                          receiptUrl_expr?: {
-                          };
-                            recordedBy?: UUIDString | null;
-                            recordedBy_expr?: {
-                            };
-                              tenantId?: UUIDString | null;
-                              tenantId_expr?: {
-                              };
-                                type?: string | null;
-                                type_expr?: {
-                                };
-  };
+  id: string;
+  tenantId?: string | null;
+  businessId?: string | null;
+  type?: TransactionType | null;
+  amount?: number | null;
+  date?: TimestampString | null;
+  category?: string | null;
+  receiptUrl?: string | null;
+  recordedBy?: string | null;
 }
 
 export interface UpdateUserData {
@@ -2596,85 +830,18 @@ export interface UpdateUserData {
 }
 
 export interface UpdateUserVariables {
-  id: UUIDString;
-  data: {
-    id?: UUIDString | null;
-    id_expr?: {
-    };
-      businessId?: UUIDString | null;
-      businessId_expr?: {
-      };
-        createdAt?: TimestampString | null;
-        createdAt_expr?: {
-        };
-          createdAt_time?: {
-            now?: {
-            };
-              at?: TimestampString | null;
-              add?: {
-                milliseconds?: number;
-                seconds?: number;
-                minutes?: number;
-                hours?: number;
-                days?: number;
-                weeks?: number;
-                months?: number;
-                years?: number;
-              };
-                sub?: {
-                  milliseconds?: number;
-                  seconds?: number;
-                  minutes?: number;
-                  hours?: number;
-                  days?: number;
-                  weeks?: number;
-                  months?: number;
-                  years?: number;
-                };
-                  truncateTo?: Timestamp_Interval | null;
-          };
-            createdAt_update?: ({
-              inc?: {
-                milliseconds?: number;
-                seconds?: number;
-                minutes?: number;
-                hours?: number;
-                days?: number;
-                weeks?: number;
-                months?: number;
-                years?: number;
-              };
-                dec?: {
-                  milliseconds?: number;
-                  seconds?: number;
-                  minutes?: number;
-                  hours?: number;
-                  days?: number;
-                  weeks?: number;
-                  months?: number;
-                  years?: number;
-                };
-            })[];
-              department?: string | null;
-              department_expr?: {
-              };
-                email?: string | null;
-                email_expr?: {
-                };
-                  phoneNumber?: string | null;
-                  phoneNumber_expr?: {
-                  };
-                    role?: string | null;
-                    role_expr?: {
-                    };
-                      tenantId?: UUIDString | null;
-                      tenantId_expr?: {
-                      };
-  };
+  id: string;
+  tenantId?: string | null;
+  businessId?: string | null;
+  email?: string | null;
+  role?: string | null;
+  fullName?: string | null;
+  department?: string | null;
+  phoneNumber?: string | null;
 }
 
 export interface User_Key {
-  id: UUIDString;
+  id: string;
   __typename?: 'User_Key';
 }
 
@@ -2858,41 +1025,41 @@ export const deleteTransactionRef: DeleteTransactionRef;
 export function deleteTransaction(vars: DeleteTransactionVariables): MutationPromise<DeleteTransactionData, DeleteTransactionVariables>;
 export function deleteTransaction(dc: DataConnect, vars: DeleteTransactionVariables): MutationPromise<DeleteTransactionData, DeleteTransactionVariables>;
 
-interface CreateTaskRef {
+interface CreateTaskCommentRef {
   /* Allow users to create refs without passing in DataConnect */
-  (vars: CreateTaskVariables): MutationRef<CreateTaskData, CreateTaskVariables>;
+  (vars: CreateTaskCommentVariables): MutationRef<CreateTaskCommentData, CreateTaskCommentVariables>;
   /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: CreateTaskVariables): MutationRef<CreateTaskData, CreateTaskVariables>;
+  (dc: DataConnect, vars: CreateTaskCommentVariables): MutationRef<CreateTaskCommentData, CreateTaskCommentVariables>;
   operationName: string;
 }
-export const createTaskRef: CreateTaskRef;
+export const createTaskCommentRef: CreateTaskCommentRef;
 
-export function createTask(vars: CreateTaskVariables): MutationPromise<CreateTaskData, CreateTaskVariables>;
-export function createTask(dc: DataConnect, vars: CreateTaskVariables): MutationPromise<CreateTaskData, CreateTaskVariables>;
+export function createTaskComment(vars: CreateTaskCommentVariables): MutationPromise<CreateTaskCommentData, CreateTaskCommentVariables>;
+export function createTaskComment(dc: DataConnect, vars: CreateTaskCommentVariables): MutationPromise<CreateTaskCommentData, CreateTaskCommentVariables>;
 
-interface UpdateTaskRef {
+interface UpdateTaskCommentRef {
   /* Allow users to create refs without passing in DataConnect */
-  (vars: UpdateTaskVariables): MutationRef<UpdateTaskData, UpdateTaskVariables>;
+  (vars: UpdateTaskCommentVariables): MutationRef<UpdateTaskCommentData, UpdateTaskCommentVariables>;
   /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: UpdateTaskVariables): MutationRef<UpdateTaskData, UpdateTaskVariables>;
+  (dc: DataConnect, vars: UpdateTaskCommentVariables): MutationRef<UpdateTaskCommentData, UpdateTaskCommentVariables>;
   operationName: string;
 }
-export const updateTaskRef: UpdateTaskRef;
+export const updateTaskCommentRef: UpdateTaskCommentRef;
 
-export function updateTask(vars: UpdateTaskVariables): MutationPromise<UpdateTaskData, UpdateTaskVariables>;
-export function updateTask(dc: DataConnect, vars: UpdateTaskVariables): MutationPromise<UpdateTaskData, UpdateTaskVariables>;
+export function updateTaskComment(vars: UpdateTaskCommentVariables): MutationPromise<UpdateTaskCommentData, UpdateTaskCommentVariables>;
+export function updateTaskComment(dc: DataConnect, vars: UpdateTaskCommentVariables): MutationPromise<UpdateTaskCommentData, UpdateTaskCommentVariables>;
 
-interface DeleteTaskRef {
+interface DeleteTaskCommentRef {
   /* Allow users to create refs without passing in DataConnect */
-  (vars: DeleteTaskVariables): MutationRef<DeleteTaskData, DeleteTaskVariables>;
+  (vars: DeleteTaskCommentVariables): MutationRef<DeleteTaskCommentData, DeleteTaskCommentVariables>;
   /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: DeleteTaskVariables): MutationRef<DeleteTaskData, DeleteTaskVariables>;
+  (dc: DataConnect, vars: DeleteTaskCommentVariables): MutationRef<DeleteTaskCommentData, DeleteTaskCommentVariables>;
   operationName: string;
 }
-export const deleteTaskRef: DeleteTaskRef;
+export const deleteTaskCommentRef: DeleteTaskCommentRef;
 
-export function deleteTask(vars: DeleteTaskVariables): MutationPromise<DeleteTaskData, DeleteTaskVariables>;
-export function deleteTask(dc: DataConnect, vars: DeleteTaskVariables): MutationPromise<DeleteTaskData, DeleteTaskVariables>;
+export function deleteTaskComment(vars: DeleteTaskCommentVariables): MutationPromise<DeleteTaskCommentData, DeleteTaskCommentVariables>;
+export function deleteTaskComment(dc: DataConnect, vars: DeleteTaskCommentVariables): MutationPromise<DeleteTaskCommentData, DeleteTaskCommentVariables>;
 
 interface CreateEmployeeRef {
   /* Allow users to create refs without passing in DataConnect */
@@ -3038,6 +1205,150 @@ export const deleteDocumentRef: DeleteDocumentRef;
 export function deleteDocument(vars: DeleteDocumentVariables): MutationPromise<DeleteDocumentData, DeleteDocumentVariables>;
 export function deleteDocument(dc: DataConnect, vars: DeleteDocumentVariables): MutationPromise<DeleteDocumentData, DeleteDocumentVariables>;
 
+interface CreateActivityLogRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: CreateActivityLogVariables): MutationRef<CreateActivityLogData, CreateActivityLogVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: CreateActivityLogVariables): MutationRef<CreateActivityLogData, CreateActivityLogVariables>;
+  operationName: string;
+}
+export const createActivityLogRef: CreateActivityLogRef;
+
+export function createActivityLog(vars: CreateActivityLogVariables): MutationPromise<CreateActivityLogData, CreateActivityLogVariables>;
+export function createActivityLog(dc: DataConnect, vars: CreateActivityLogVariables): MutationPromise<CreateActivityLogData, CreateActivityLogVariables>;
+
+interface UpdateActivityLogRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: UpdateActivityLogVariables): MutationRef<UpdateActivityLogData, UpdateActivityLogVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: UpdateActivityLogVariables): MutationRef<UpdateActivityLogData, UpdateActivityLogVariables>;
+  operationName: string;
+}
+export const updateActivityLogRef: UpdateActivityLogRef;
+
+export function updateActivityLog(vars: UpdateActivityLogVariables): MutationPromise<UpdateActivityLogData, UpdateActivityLogVariables>;
+export function updateActivityLog(dc: DataConnect, vars: UpdateActivityLogVariables): MutationPromise<UpdateActivityLogData, UpdateActivityLogVariables>;
+
+interface DeleteActivityLogRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: DeleteActivityLogVariables): MutationRef<DeleteActivityLogData, DeleteActivityLogVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: DeleteActivityLogVariables): MutationRef<DeleteActivityLogData, DeleteActivityLogVariables>;
+  operationName: string;
+}
+export const deleteActivityLogRef: DeleteActivityLogRef;
+
+export function deleteActivityLog(vars: DeleteActivityLogVariables): MutationPromise<DeleteActivityLogData, DeleteActivityLogVariables>;
+export function deleteActivityLog(dc: DataConnect, vars: DeleteActivityLogVariables): MutationPromise<DeleteActivityLogData, DeleteActivityLogVariables>;
+
+interface CreateAiQueryRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: CreateAiQueryVariables): MutationRef<CreateAiQueryData, CreateAiQueryVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: CreateAiQueryVariables): MutationRef<CreateAiQueryData, CreateAiQueryVariables>;
+  operationName: string;
+}
+export const createAiQueryRef: CreateAiQueryRef;
+
+export function createAiQuery(vars: CreateAiQueryVariables): MutationPromise<CreateAiQueryData, CreateAiQueryVariables>;
+export function createAiQuery(dc: DataConnect, vars: CreateAiQueryVariables): MutationPromise<CreateAiQueryData, CreateAiQueryVariables>;
+
+interface UpdateAiQueryRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: UpdateAiQueryVariables): MutationRef<UpdateAiQueryData, UpdateAiQueryVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: UpdateAiQueryVariables): MutationRef<UpdateAiQueryData, UpdateAiQueryVariables>;
+  operationName: string;
+}
+export const updateAiQueryRef: UpdateAiQueryRef;
+
+export function updateAiQuery(vars: UpdateAiQueryVariables): MutationPromise<UpdateAiQueryData, UpdateAiQueryVariables>;
+export function updateAiQuery(dc: DataConnect, vars: UpdateAiQueryVariables): MutationPromise<UpdateAiQueryData, UpdateAiQueryVariables>;
+
+interface DeleteAiQueryRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: DeleteAiQueryVariables): MutationRef<DeleteAiQueryData, DeleteAiQueryVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: DeleteAiQueryVariables): MutationRef<DeleteAiQueryData, DeleteAiQueryVariables>;
+  operationName: string;
+}
+export const deleteAiQueryRef: DeleteAiQueryRef;
+
+export function deleteAiQuery(vars: DeleteAiQueryVariables): MutationPromise<DeleteAiQueryData, DeleteAiQueryVariables>;
+export function deleteAiQuery(dc: DataConnect, vars: DeleteAiQueryVariables): MutationPromise<DeleteAiQueryData, DeleteAiQueryVariables>;
+
+interface CreateNotificationRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: CreateNotificationVariables): MutationRef<CreateNotificationData, CreateNotificationVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: CreateNotificationVariables): MutationRef<CreateNotificationData, CreateNotificationVariables>;
+  operationName: string;
+}
+export const createNotificationRef: CreateNotificationRef;
+
+export function createNotification(vars: CreateNotificationVariables): MutationPromise<CreateNotificationData, CreateNotificationVariables>;
+export function createNotification(dc: DataConnect, vars: CreateNotificationVariables): MutationPromise<CreateNotificationData, CreateNotificationVariables>;
+
+interface UpdateNotificationRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: UpdateNotificationVariables): MutationRef<UpdateNotificationData, UpdateNotificationVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: UpdateNotificationVariables): MutationRef<UpdateNotificationData, UpdateNotificationVariables>;
+  operationName: string;
+}
+export const updateNotificationRef: UpdateNotificationRef;
+
+export function updateNotification(vars: UpdateNotificationVariables): MutationPromise<UpdateNotificationData, UpdateNotificationVariables>;
+export function updateNotification(dc: DataConnect, vars: UpdateNotificationVariables): MutationPromise<UpdateNotificationData, UpdateNotificationVariables>;
+
+interface DeleteNotificationRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: DeleteNotificationVariables): MutationRef<DeleteNotificationData, DeleteNotificationVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: DeleteNotificationVariables): MutationRef<DeleteNotificationData, DeleteNotificationVariables>;
+  operationName: string;
+}
+export const deleteNotificationRef: DeleteNotificationRef;
+
+export function deleteNotification(vars: DeleteNotificationVariables): MutationPromise<DeleteNotificationData, DeleteNotificationVariables>;
+export function deleteNotification(dc: DataConnect, vars: DeleteNotificationVariables): MutationPromise<DeleteNotificationData, DeleteNotificationVariables>;
+
+interface CreateTaskRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: CreateTaskVariables): MutationRef<CreateTaskData, CreateTaskVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: CreateTaskVariables): MutationRef<CreateTaskData, CreateTaskVariables>;
+  operationName: string;
+}
+export const createTaskRef: CreateTaskRef;
+
+export function createTask(vars: CreateTaskVariables): MutationPromise<CreateTaskData, CreateTaskVariables>;
+export function createTask(dc: DataConnect, vars: CreateTaskVariables): MutationPromise<CreateTaskData, CreateTaskVariables>;
+
+interface UpdateTaskRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: UpdateTaskVariables): MutationRef<UpdateTaskData, UpdateTaskVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: UpdateTaskVariables): MutationRef<UpdateTaskData, UpdateTaskVariables>;
+  operationName: string;
+}
+export const updateTaskRef: UpdateTaskRef;
+
+export function updateTask(vars: UpdateTaskVariables): MutationPromise<UpdateTaskData, UpdateTaskVariables>;
+export function updateTask(dc: DataConnect, vars: UpdateTaskVariables): MutationPromise<UpdateTaskData, UpdateTaskVariables>;
+
+interface DeleteTaskRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: DeleteTaskVariables): MutationRef<DeleteTaskData, DeleteTaskVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: DeleteTaskVariables): MutationRef<DeleteTaskData, DeleteTaskVariables>;
+  operationName: string;
+}
+export const deleteTaskRef: DeleteTaskRef;
+
+export function deleteTask(vars: DeleteTaskVariables): MutationPromise<DeleteTaskData, DeleteTaskVariables>;
+export function deleteTask(dc: DataConnect, vars: DeleteTaskVariables): MutationPromise<DeleteTaskData, DeleteTaskVariables>;
+
 interface ListTenantsRef {
   /* Allow users to create refs without passing in DataConnect */
   (): QueryRef<ListTenantsData, undefined>;
@@ -3047,109 +1358,8 @@ interface ListTenantsRef {
 }
 export const listTenantsRef: ListTenantsRef;
 
-export function listTenants(): QueryPromise<ListTenantsData, undefined>;
-export function listTenants(dc: DataConnect): QueryPromise<ListTenantsData, undefined>;
-
-interface ListUsersRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: ListUsersVariables): QueryRef<ListUsersData, ListUsersVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: ListUsersVariables): QueryRef<ListUsersData, ListUsersVariables>;
->>>>>>> 546aacf70afe81cbee3ea5f2edbc661c271990b8
-  operationName: string;
-}
-export const listUsersRef: ListUsersRef;
-
-<<<<<<< HEAD
-export function listUsers(): QueryPromise<ListUsersData, undefined>;
-export function listUsers(dc: DataConnect): QueryPromise<ListUsersData, undefined>;
-
-interface ListUserReviewsRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (): QueryRef<ListUserReviewsData, undefined>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect): QueryRef<ListUserReviewsData, undefined>;
-  operationName: string;
-}
-export const listUserReviewsRef: ListUserReviewsRef;
-
-export function listUserReviews(): QueryPromise<ListUserReviewsData, undefined>;
-export function listUserReviews(dc: DataConnect): QueryPromise<ListUserReviewsData, undefined>;
-
-interface GetMovieByIdRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: GetMovieByIdVariables): QueryRef<GetMovieByIdData, GetMovieByIdVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: GetMovieByIdVariables): QueryRef<GetMovieByIdData, GetMovieByIdVariables>;
-  operationName: string;
-}
-export const getMovieByIdRef: GetMovieByIdRef;
-
-export function getMovieById(vars: GetMovieByIdVariables): QueryPromise<GetMovieByIdData, GetMovieByIdVariables>;
-export function getMovieById(dc: DataConnect, vars: GetMovieByIdVariables): QueryPromise<GetMovieByIdData, GetMovieByIdVariables>;
-
-interface SearchMovieRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars?: SearchMovieVariables): QueryRef<SearchMovieData, SearchMovieVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars?: SearchMovieVariables): QueryRef<SearchMovieData, SearchMovieVariables>;
-  operationName: string;
-}
-export const searchMovieRef: SearchMovieRef;
-
-export function searchMovie(vars?: SearchMovieVariables): QueryPromise<SearchMovieData, SearchMovieVariables>;
-export function searchMovie(dc: DataConnect, vars?: SearchMovieVariables): QueryPromise<SearchMovieData, SearchMovieVariables>;
-
-interface CreateMovieRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: CreateMovieVariables): MutationRef<CreateMovieData, CreateMovieVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: CreateMovieVariables): MutationRef<CreateMovieData, CreateMovieVariables>;
-  operationName: string;
-}
-export const createMovieRef: CreateMovieRef;
-
-export function createMovie(vars: CreateMovieVariables): MutationPromise<CreateMovieData, CreateMovieVariables>;
-export function createMovie(dc: DataConnect, vars: CreateMovieVariables): MutationPromise<CreateMovieData, CreateMovieVariables>;
-
-interface UpsertUserRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: UpsertUserVariables): MutationRef<UpsertUserData, UpsertUserVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: UpsertUserVariables): MutationRef<UpsertUserData, UpsertUserVariables>;
-  operationName: string;
-}
-export const upsertUserRef: UpsertUserRef;
-
-export function upsertUser(vars: UpsertUserVariables): MutationPromise<UpsertUserData, UpsertUserVariables>;
-export function upsertUser(dc: DataConnect, vars: UpsertUserVariables): MutationPromise<UpsertUserData, UpsertUserVariables>;
-
-interface AddReviewRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: AddReviewVariables): MutationRef<AddReviewData, AddReviewVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: AddReviewVariables): MutationRef<AddReviewData, AddReviewVariables>;
-  operationName: string;
-}
-export const addReviewRef: AddReviewRef;
-
-export function addReview(vars: AddReviewVariables): MutationPromise<AddReviewData, AddReviewVariables>;
-export function addReview(dc: DataConnect, vars: AddReviewVariables): MutationPromise<AddReviewData, AddReviewVariables>;
-
-interface DeleteReviewRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: DeleteReviewVariables): MutationRef<DeleteReviewData, DeleteReviewVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: DeleteReviewVariables): MutationRef<DeleteReviewData, DeleteReviewVariables>;
-  operationName: string;
-}
-export const deleteReviewRef: DeleteReviewRef;
-
-export function deleteReview(vars: DeleteReviewVariables): MutationPromise<DeleteReviewData, DeleteReviewVariables>;
-export function deleteReview(dc: DataConnect, vars: DeleteReviewVariables): MutationPromise<DeleteReviewData, DeleteReviewVariables>;
-=======
-export function listUsers(vars: ListUsersVariables): QueryPromise<ListUsersData, ListUsersVariables>;
-export function listUsers(dc: DataConnect, vars: ListUsersVariables): QueryPromise<ListUsersData, ListUsersVariables>;
+export function listTenants(options?: ExecuteQueryOptions): QueryPromise<ListTenantsData, undefined>;
+export function listTenants(dc: DataConnect, options?: ExecuteQueryOptions): QueryPromise<ListTenantsData, undefined>;
 
 interface ListBusinessesRef {
   /* Allow users to create refs without passing in DataConnect */
@@ -3160,91 +1370,138 @@ interface ListBusinessesRef {
 }
 export const listBusinessesRef: ListBusinessesRef;
 
-export function listBusinesses(vars: ListBusinessesVariables): QueryPromise<ListBusinessesData, ListBusinessesVariables>;
-export function listBusinesses(dc: DataConnect, vars: ListBusinessesVariables): QueryPromise<ListBusinessesData, ListBusinessesVariables>;
+export function listBusinesses(vars: ListBusinessesVariables, options?: ExecuteQueryOptions): QueryPromise<ListBusinessesData, ListBusinessesVariables>;
+export function listBusinesses(dc: DataConnect, vars: ListBusinessesVariables, options?: ExecuteQueryOptions): QueryPromise<ListBusinessesData, ListBusinessesVariables>;
 
-interface ListProductsRef {
+interface GetUserByEmailRef {
   /* Allow users to create refs without passing in DataConnect */
-  (vars: ListProductsVariables): QueryRef<ListProductsData, ListProductsVariables>;
+  (vars: GetUserByEmailVariables): QueryRef<GetUserByEmailData, GetUserByEmailVariables>;
   /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: ListProductsVariables): QueryRef<ListProductsData, ListProductsVariables>;
+  (dc: DataConnect, vars: GetUserByEmailVariables): QueryRef<GetUserByEmailData, GetUserByEmailVariables>;
   operationName: string;
 }
-export const listProductsRef: ListProductsRef;
+export const getUserByEmailRef: GetUserByEmailRef;
 
-export function listProducts(vars: ListProductsVariables): QueryPromise<ListProductsData, ListProductsVariables>;
-export function listProducts(dc: DataConnect, vars: ListProductsVariables): QueryPromise<ListProductsData, ListProductsVariables>;
+export function getUserByEmail(vars: GetUserByEmailVariables, options?: ExecuteQueryOptions): QueryPromise<GetUserByEmailData, GetUserByEmailVariables>;
+export function getUserByEmail(dc: DataConnect, vars: GetUserByEmailVariables, options?: ExecuteQueryOptions): QueryPromise<GetUserByEmailData, GetUserByEmailVariables>;
 
-interface ListTransactionsRef {
+interface ListProductsByBusinessRef {
   /* Allow users to create refs without passing in DataConnect */
-  (vars: ListTransactionsVariables): QueryRef<ListTransactionsData, ListTransactionsVariables>;
+  (vars: ListProductsByBusinessVariables): QueryRef<ListProductsByBusinessData, ListProductsByBusinessVariables>;
   /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: ListTransactionsVariables): QueryRef<ListTransactionsData, ListTransactionsVariables>;
+  (dc: DataConnect, vars: ListProductsByBusinessVariables): QueryRef<ListProductsByBusinessData, ListProductsByBusinessVariables>;
   operationName: string;
 }
-export const listTransactionsRef: ListTransactionsRef;
+export const listProductsByBusinessRef: ListProductsByBusinessRef;
 
-export function listTransactions(vars: ListTransactionsVariables): QueryPromise<ListTransactionsData, ListTransactionsVariables>;
-export function listTransactions(dc: DataConnect, vars: ListTransactionsVariables): QueryPromise<ListTransactionsData, ListTransactionsVariables>;
+export function listProductsByBusiness(vars: ListProductsByBusinessVariables, options?: ExecuteQueryOptions): QueryPromise<ListProductsByBusinessData, ListProductsByBusinessVariables>;
+export function listProductsByBusiness(dc: DataConnect, vars: ListProductsByBusinessVariables, options?: ExecuteQueryOptions): QueryPromise<ListProductsByBusinessData, ListProductsByBusinessVariables>;
 
-interface ListTasksRef {
+interface ListCustomersByBusinessRef {
   /* Allow users to create refs without passing in DataConnect */
-  (vars: ListTasksVariables): QueryRef<ListTasksData, ListTasksVariables>;
+  (vars: ListCustomersByBusinessVariables): QueryRef<ListCustomersByBusinessData, ListCustomersByBusinessVariables>;
   /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: ListTasksVariables): QueryRef<ListTasksData, ListTasksVariables>;
+  (dc: DataConnect, vars: ListCustomersByBusinessVariables): QueryRef<ListCustomersByBusinessData, ListCustomersByBusinessVariables>;
   operationName: string;
 }
-export const listTasksRef: ListTasksRef;
+export const listCustomersByBusinessRef: ListCustomersByBusinessRef;
 
-export function listTasks(vars: ListTasksVariables): QueryPromise<ListTasksData, ListTasksVariables>;
-export function listTasks(dc: DataConnect, vars: ListTasksVariables): QueryPromise<ListTasksData, ListTasksVariables>;
+export function listCustomersByBusiness(vars: ListCustomersByBusinessVariables, options?: ExecuteQueryOptions): QueryPromise<ListCustomersByBusinessData, ListCustomersByBusinessVariables>;
+export function listCustomersByBusiness(dc: DataConnect, vars: ListCustomersByBusinessVariables, options?: ExecuteQueryOptions): QueryPromise<ListCustomersByBusinessData, ListCustomersByBusinessVariables>;
 
-interface ListEmployeesRef {
+interface ListSuppliersByBusinessRef {
   /* Allow users to create refs without passing in DataConnect */
-  (vars: ListEmployeesVariables): QueryRef<ListEmployeesData, ListEmployeesVariables>;
+  (vars: ListSuppliersByBusinessVariables): QueryRef<ListSuppliersByBusinessData, ListSuppliersByBusinessVariables>;
   /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: ListEmployeesVariables): QueryRef<ListEmployeesData, ListEmployeesVariables>;
+  (dc: DataConnect, vars: ListSuppliersByBusinessVariables): QueryRef<ListSuppliersByBusinessData, ListSuppliersByBusinessVariables>;
   operationName: string;
 }
-export const listEmployeesRef: ListEmployeesRef;
+export const listSuppliersByBusinessRef: ListSuppliersByBusinessRef;
 
-export function listEmployees(vars: ListEmployeesVariables): QueryPromise<ListEmployeesData, ListEmployeesVariables>;
-export function listEmployees(dc: DataConnect, vars: ListEmployeesVariables): QueryPromise<ListEmployeesData, ListEmployeesVariables>;
+export function listSuppliersByBusiness(vars: ListSuppliersByBusinessVariables, options?: ExecuteQueryOptions): QueryPromise<ListSuppliersByBusinessData, ListSuppliersByBusinessVariables>;
+export function listSuppliersByBusiness(dc: DataConnect, vars: ListSuppliersByBusinessVariables, options?: ExecuteQueryOptions): QueryPromise<ListSuppliersByBusinessData, ListSuppliersByBusinessVariables>;
 
-interface ListCustomersRef {
+interface ListTasksByBusinessRef {
   /* Allow users to create refs without passing in DataConnect */
-  (vars: ListCustomersVariables): QueryRef<ListCustomersData, ListCustomersVariables>;
+  (vars: ListTasksByBusinessVariables): QueryRef<ListTasksByBusinessData, ListTasksByBusinessVariables>;
   /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: ListCustomersVariables): QueryRef<ListCustomersData, ListCustomersVariables>;
+  (dc: DataConnect, vars: ListTasksByBusinessVariables): QueryRef<ListTasksByBusinessData, ListTasksByBusinessVariables>;
   operationName: string;
 }
-export const listCustomersRef: ListCustomersRef;
+export const listTasksByBusinessRef: ListTasksByBusinessRef;
 
-export function listCustomers(vars: ListCustomersVariables): QueryPromise<ListCustomersData, ListCustomersVariables>;
-export function listCustomers(dc: DataConnect, vars: ListCustomersVariables): QueryPromise<ListCustomersData, ListCustomersVariables>;
+export function listTasksByBusiness(vars: ListTasksByBusinessVariables, options?: ExecuteQueryOptions): QueryPromise<ListTasksByBusinessData, ListTasksByBusinessVariables>;
+export function listTasksByBusiness(dc: DataConnect, vars: ListTasksByBusinessVariables, options?: ExecuteQueryOptions): QueryPromise<ListTasksByBusinessData, ListTasksByBusinessVariables>;
 
-interface ListSuppliersRef {
+interface ListTransactionsByBusinessRef {
   /* Allow users to create refs without passing in DataConnect */
-  (vars: ListSuppliersVariables): QueryRef<ListSuppliersData, ListSuppliersVariables>;
+  (vars: ListTransactionsByBusinessVariables): QueryRef<ListTransactionsByBusinessData, ListTransactionsByBusinessVariables>;
   /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: ListSuppliersVariables): QueryRef<ListSuppliersData, ListSuppliersVariables>;
+  (dc: DataConnect, vars: ListTransactionsByBusinessVariables): QueryRef<ListTransactionsByBusinessData, ListTransactionsByBusinessVariables>;
   operationName: string;
 }
-export const listSuppliersRef: ListSuppliersRef;
+export const listTransactionsByBusinessRef: ListTransactionsByBusinessRef;
 
-export function listSuppliers(vars: ListSuppliersVariables): QueryPromise<ListSuppliersData, ListSuppliersVariables>;
-export function listSuppliers(dc: DataConnect, vars: ListSuppliersVariables): QueryPromise<ListSuppliersData, ListSuppliersVariables>;
+export function listTransactionsByBusiness(vars: ListTransactionsByBusinessVariables, options?: ExecuteQueryOptions): QueryPromise<ListTransactionsByBusinessData, ListTransactionsByBusinessVariables>;
+export function listTransactionsByBusiness(dc: DataConnect, vars: ListTransactionsByBusinessVariables, options?: ExecuteQueryOptions): QueryPromise<ListTransactionsByBusinessData, ListTransactionsByBusinessVariables>;
 
-interface ListDocumentsRef {
+interface ListTransactionsByTypeRef {
   /* Allow users to create refs without passing in DataConnect */
-  (vars: ListDocumentsVariables): QueryRef<ListDocumentsData, ListDocumentsVariables>;
+  (vars: ListTransactionsByTypeVariables): QueryRef<ListTransactionsByTypeData, ListTransactionsByTypeVariables>;
   /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: ListDocumentsVariables): QueryRef<ListDocumentsData, ListDocumentsVariables>;
+  (dc: DataConnect, vars: ListTransactionsByTypeVariables): QueryRef<ListTransactionsByTypeData, ListTransactionsByTypeVariables>;
   operationName: string;
 }
-export const listDocumentsRef: ListDocumentsRef;
+export const listTransactionsByTypeRef: ListTransactionsByTypeRef;
 
-export function listDocuments(vars: ListDocumentsVariables): QueryPromise<ListDocumentsData, ListDocumentsVariables>;
-export function listDocuments(dc: DataConnect, vars: ListDocumentsVariables): QueryPromise<ListDocumentsData, ListDocumentsVariables>;
->>>>>>> 546aacf70afe81cbee3ea5f2edbc661c271990b8
+export function listTransactionsByType(vars: ListTransactionsByTypeVariables, options?: ExecuteQueryOptions): QueryPromise<ListTransactionsByTypeData, ListTransactionsByTypeVariables>;
+export function listTransactionsByType(dc: DataConnect, vars: ListTransactionsByTypeVariables, options?: ExecuteQueryOptions): QueryPromise<ListTransactionsByTypeData, ListTransactionsByTypeVariables>;
+
+interface ListEmployeesByBusinessRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: ListEmployeesByBusinessVariables): QueryRef<ListEmployeesByBusinessData, ListEmployeesByBusinessVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: ListEmployeesByBusinessVariables): QueryRef<ListEmployeesByBusinessData, ListEmployeesByBusinessVariables>;
+  operationName: string;
+}
+export const listEmployeesByBusinessRef: ListEmployeesByBusinessRef;
+
+export function listEmployeesByBusiness(vars: ListEmployeesByBusinessVariables, options?: ExecuteQueryOptions): QueryPromise<ListEmployeesByBusinessData, ListEmployeesByBusinessVariables>;
+export function listEmployeesByBusiness(dc: DataConnect, vars: ListEmployeesByBusinessVariables, options?: ExecuteQueryOptions): QueryPromise<ListEmployeesByBusinessData, ListEmployeesByBusinessVariables>;
+
+interface ListDocumentsByBusinessRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: ListDocumentsByBusinessVariables): QueryRef<ListDocumentsByBusinessData, ListDocumentsByBusinessVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: ListDocumentsByBusinessVariables): QueryRef<ListDocumentsByBusinessData, ListDocumentsByBusinessVariables>;
+  operationName: string;
+}
+export const listDocumentsByBusinessRef: ListDocumentsByBusinessRef;
+
+export function listDocumentsByBusiness(vars: ListDocumentsByBusinessVariables, options?: ExecuteQueryOptions): QueryPromise<ListDocumentsByBusinessData, ListDocumentsByBusinessVariables>;
+export function listDocumentsByBusiness(dc: DataConnect, vars: ListDocumentsByBusinessVariables, options?: ExecuteQueryOptions): QueryPromise<ListDocumentsByBusinessData, ListDocumentsByBusinessVariables>;
+
+interface ListActivityLogsByUserRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: ListActivityLogsByUserVariables): QueryRef<ListActivityLogsByUserData, ListActivityLogsByUserVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: ListActivityLogsByUserVariables): QueryRef<ListActivityLogsByUserData, ListActivityLogsByUserVariables>;
+  operationName: string;
+}
+export const listActivityLogsByUserRef: ListActivityLogsByUserRef;
+
+export function listActivityLogsByUser(vars: ListActivityLogsByUserVariables, options?: ExecuteQueryOptions): QueryPromise<ListActivityLogsByUserData, ListActivityLogsByUserVariables>;
+export function listActivityLogsByUser(dc: DataConnect, vars: ListActivityLogsByUserVariables, options?: ExecuteQueryOptions): QueryPromise<ListActivityLogsByUserData, ListActivityLogsByUserVariables>;
+
+interface ListActivityLogsByBusinessRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: ListActivityLogsByBusinessVariables): QueryRef<ListActivityLogsByBusinessData, ListActivityLogsByBusinessVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: ListActivityLogsByBusinessVariables): QueryRef<ListActivityLogsByBusinessData, ListActivityLogsByBusinessVariables>;
+  operationName: string;
+}
+export const listActivityLogsByBusinessRef: ListActivityLogsByBusinessRef;
+
+export function listActivityLogsByBusiness(vars: ListActivityLogsByBusinessVariables, options?: ExecuteQueryOptions): QueryPromise<ListActivityLogsByBusinessData, ListActivityLogsByBusinessVariables>;
+export function listActivityLogsByBusiness(dc: DataConnect, vars: ListActivityLogsByBusinessVariables, options?: ExecuteQueryOptions): QueryPromise<ListActivityLogsByBusinessData, ListActivityLogsByBusinessVariables>;
 

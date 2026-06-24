@@ -2,7 +2,8 @@
 "use client"
 
 import * as React from "react"
-import { Plus, Search, Truck, Phone, Mail, MapPin, Loader2, Trash2, Filter, DollarSign } from "lucide-react"
+import { Plus, Search, Truck, Phone, Mail, MapPin, Loader2, Trash2, Filter, DollarSign, LogIn } from "lucide-react"
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -15,17 +16,51 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { useFirestore } from "@/hooks/use-firestore"
+import { useDataConnect } from "@/hooks/use-dataconnect"
+import { listSuppliersByBusinessQuery, createSupplierMutation, updateSupplierMutation, deleteSupplierMutation } from "@/lib/data-service"
+import { useAuth } from "@/hooks/use-auth"
 import { Supplier } from "@/lib/types"
 import { SupplierDialog } from "@/components/suppliers/supplier-dialog"
 import { useToast } from "@/hooks/use-toast"
 
 export default function SuppliersPage() {
-  const { data: suppliers, loading, addRecord, updateRecord, deleteRecord } = useFirestore<Supplier>('suppliers');
+  const { user, profile } = useAuth();
+  const { data: suppliersData, loading, unauthenticated, refetch } = useDataConnect({
+    query: listSuppliersByBusinessQuery,
+    variables: { tenantId: profile?.tenantId, businessId: profile?.businessId },
+    skip: !profile?.tenantId || !profile?.businessId
+  });
+  const [suppliers, setSuppliers] = React.useState<Supplier[]>([]);
   const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = React.useState(false)
   const [selectedSupplier, setSelectedSupplier] = React.useState<Supplier | null>(null)
   const [searchQuery, setSearchQuery] = React.useState("")
+
+  const fetchSuppliers = React.useCallback(async () => {
+    if (!profile?.tenantId || !profile?.businessId) return;
+    try {
+      const response = await listSuppliersByBusinessQuery({
+        tenantId: profile.tenantId,
+        businessId: profile.businessId
+      });
+      // Map dataconnect format back to ui format
+      const mappedSuppliers = ((response as any)?.suppliers || []).map((s: any) => ({
+        ...s,
+        name: s.supplierName,
+        phone: s.phoneNumber || '',
+        location: 'Unknown',
+        productsSupplied: [],
+        paymentStatus: 'Paid'
+      }));
+      setSuppliers(mappedSuppliers);
+    } catch (e) {
+      console.error("Failed to fetch suppliers:", e);
+    }
+  }, [profile]);
+
+  React.useEffect(() => {
+    fetchSuppliers();
+  }, [fetchSuppliers]);
 
   const filteredSuppliers = suppliers.filter(s => 
     s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -45,24 +80,68 @@ export default function SuppliersPage() {
   }
 
   const handleSave = async (data: Partial<Supplier>) => {
+    if (!profile?.tenantId || !profile?.businessId) return;
     try {
       if (selectedSupplier?.id) {
-        await updateRecord(selectedSupplier.id, data);
+        await updateSupplierMutation({
+          id: selectedSupplier.id,
+          supplierName: data.name,
+          phoneNumber: data.phone,
+          email: data.email
+        });
         toast({ title: "Supplier Updated", description: `${data.name} profile has been saved.` });
       } else {
-        await addRecord(data as Omit<Supplier, 'id'>);
+        await createSupplierMutation({
+          tenantId: profile.tenantId,
+          businessId: profile.businessId,
+          supplierName: data.name!,
+          phoneNumber: data.phone,
+          email: data.email
+        });
         toast({ title: "Supplier Added", description: `${data.name} is now a registered partner.` });
       }
+      fetchSuppliers();
     } catch (e) {
+      console.error(e);
       toast({ variant: "destructive", title: "Error", description: "Operation failed. Check connection." });
     }
   }
 
   const handleDelete = async (id: string) => {
     if (confirm("Permanently delete this supplier record?")) {
-      await deleteRecord(id);
-      toast({ title: "Deleted", description: "Supplier removed from cloud storage." });
+      try {
+        await deleteSupplierMutation({ id });
+        toast({ title: "Deleted", description: "Supplier removed from cloud storage." });
+        fetchSuppliers();
+      } catch (e) {
+        toast({ variant: "destructive", title: "Error", description: "Failed to delete record." });
+      }
     }
+  }
+
+  if (unauthenticated) {
+    return (
+      <div className="flex h-[60vh] items-center justify-center">
+        <Card className="max-w-md w-full text-center shadow-lg border-t-4 border-amber-500">
+          <CardHeader>
+            <div className="mx-auto bg-amber-100 dark:bg-amber-900/30 rounded-full p-3 w-fit mb-2">
+              <LogIn className="size-6 text-amber-600" />
+            </div>
+            <CardTitle className="text-lg">Authentication Required</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Please sign in to view supplier records. All operations require an authenticated session.
+            </p>
+            <Link href="/login">
+              <Button className="bg-primary hover:bg-primary/90 text-white font-bold uppercase text-xs tracking-widest">
+                <LogIn className="size-4 mr-2" /> Sign In
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   if (loading) {

@@ -1,25 +1,13 @@
 specVersion: "v1"
-<<<<<<< HEAD
-serviceId: "studio"
-=======
 serviceId: "studio-8058744913-5a601-service"
->>>>>>> 546aacf70afe81cbee3ea5f2edbc661c271990b8
 location: "us-east4"
-schema:
-  source: "./schema"
-  datasource:
-    postgresql:
-<<<<<<< HEAD
-      database: "fdcdb"
-      cloudSql:
-        instanceId: "studio-fdc"
-        # schemaValidation: "STRICT"     # STRICT mode makes Postgres schema match Data Connect exactly.
-        # schemaValidation: "COMPATIBLE" # COMPATIBLE mode makes Postgres schema compatible with Data Connect.
+schemas:
+  - source: "./schema"
+    datasource:
+      postgresql:
+        database: "studio-8058744913-5a601-database"
+        cloudSql:
+          instanceId: "studio-8058744913-5a601-instance"
+          # schemaValidation: "STRICT"     # STRICT mode makes Postgres schema match Data Connect exactly.
+          # schemaValidation: "COMPATIBLE" # COMPATIBLE mode makes Postgres schema compatible with Data Connect.
 connectorDirs: ["./example"]
-=======
-      database: "studio-8058744913-5a601-database"
-      cloudSql:
-        instanceId: "studio-8058744913-5a601:us-east4:studio-8058744913-5a601-instance"
-connectorDirs:
-  - "./example"
->>>>>>> 546aacf70afe81cbee3ea5f2edbc661c271990b8

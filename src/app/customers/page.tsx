@@ -19,18 +19,71 @@ import { useFirestore } from "@/hooks/use-firestore"
 import { Customer } from "@/lib/types"
 import { CustomerDialog } from "@/components/customers/customer-dialog"
 import { useToast } from "@/hooks/use-toast"
+import { useAuth } from "@/hooks/use-auth"
+import { useDataConnect } from "@/hooks/use-dataconnect"
+import { listCustomersByBusinessQuery, createCustomerMutation, updateCustomerMutation, deleteCustomerMutation } from "@/lib/data-service"
+import { doc, setDoc, deleteDoc } from "firebase/firestore"
+import { db } from "@/lib/firebase"
+import { LogIn } from "lucide-react"
+import Link from "next/link"
 
 export default function CustomersPage() {
-  const { data: customers, loading, addRecord, updateRecord, deleteRecord } = useFirestore<Customer>('customers');
+  const { user, profile } = useAuth();
+  
+  const { data: dbCustomers, loading: dbLoading, error: dbError, unauthenticated, refetch } = useDataConnect({
+    query: listCustomersByBusinessQuery,
+    variables: {
+      tenantId: profile?.tenantId || "",
+      businessId: profile?.businessId || ""
+    },
+    skip: !profile
+  });
+
+  const { data: firestoreCustomers, loading: fsLoading } = useFirestore<Customer>('customers');
+  
+  const customers = React.useMemo(() => {
+    const sqlList = dbCustomers?.customers || [];
+    return sqlList.map((sc: any) => {
+      const fc = firestoreCustomers.find(f => f.id === sc.id);
+      return {
+        id: sc.id,
+        name: sc.customerName,
+        phone: sc.phoneNumber || "",
+        email: sc.email || "",
+        location: fc?.location || "Douala",
+        totalOrders: fc?.totalOrders || 0,
+        totalSpent: fc?.totalSpent || 0,
+        createdAt: sc.createdAt
+      };
+    }) as Customer[];
+  }, [dbCustomers, firestoreCustomers]);
+
   const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = React.useState(false)
   const [selectedCustomer, setSelectedCustomer] = React.useState<Customer | null>(null)
   const [searchQuery, setSearchQuery] = React.useState("")
+  const [hasShownSuccess, setHasShownSuccess] = React.useState(false)
+
+  React.useEffect(() => {
+    if (dbError) {
+      toast({
+        variant: "destructive",
+        title: "Synchronization Error",
+        description: "Failed to fetch customer records from SQL Connect database."
+      });
+    } else if (dbCustomers && !dbLoading && !hasShownSuccess) {
+      toast({
+        title: "Live Database Sync",
+        description: `Successfully loaded ${dbCustomers?.customers?.length || 0} customer records from SQL Connect.`
+      });
+      setHasShownSuccess(true);
+    }
+  }, [dbCustomers, dbLoading, dbError, hasShownSuccess, toast]);
 
   const filteredCustomers = customers.filter(c => 
-    c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    c.phone.includes(searchQuery) ||
-    c.location.toLowerCase().includes(searchQuery.toLowerCase())
+    (c.name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (c.phone || "").includes(searchQuery) ||
+    (c.location || "").toLowerCase().includes(searchQuery.toLowerCase())
   )
 
   const totalSpent = customers.reduce((acc, c) => acc + (c.totalSpent || 0), 0)
@@ -49,10 +102,35 @@ export default function CustomersPage() {
   const handleSave = async (data: Partial<Customer>) => {
     try {
       if (selectedCustomer?.id) {
-        await updateRecord(selectedCustomer.id, data);
+        await updateCustomerMutation({
+          id: selectedCustomer.id,
+          customerName: data.name,
+          phoneNumber: data.phone,
+          email: data.email
+        });
+        await setDoc(doc(db, 'customers', selectedCustomer.id), {
+          ...selectedCustomer,
+          ...data
+        }, { merge: true });
+        await refetch();
         toast({ title: "Customer Updated", description: `${data.name}'s profile has been synchronized.` });
       } else {
-        await addRecord(data as Omit<Customer, 'id'>);
+        const result = await createCustomerMutation({
+          tenantId: profile?.tenantId || "",
+          businessId: profile?.businessId || "",
+          customerName: data.name || "",
+          phoneNumber: data.phone || "",
+          email: data.email || ""
+        });
+        const newId = result.data.customer_insert.id;
+        await setDoc(doc(db, 'customers', newId), {
+          ...data,
+          id: newId,
+          tenantId: profile?.tenantId || "",
+          businessId: profile?.businessId || "",
+          createdAt: new Date().toISOString()
+        });
+        await refetch();
         toast({ title: "Customer Added", description: `${data.name} is now in your directory.` });
       }
     } catch (e) {
@@ -62,10 +140,43 @@ export default function CustomersPage() {
 
   const handleDelete = async (id: string) => {
     if (confirm("Are you sure you want to delete this customer? This action is permanent.")) {
-      await deleteRecord(id);
-      toast({ title: "Customer Removed", description: "Data deleted from cloud database." });
+      try {
+        await deleteCustomerMutation({ id });
+        await deleteDoc(doc(db, 'customers', id));
+        await refetch();
+        toast({ title: "Customer Removed", description: "Data deleted from cloud database." });
+      } catch (e) {
+        toast({ variant: "destructive", title: "Error", description: "Failed to delete customer." });
+      }
     }
   }
+
+  if (unauthenticated) {
+    return (
+      <div className="flex h-[60vh] items-center justify-center">
+        <Card className="max-w-md w-full text-center shadow-lg border-t-4 border-amber-500">
+          <CardHeader>
+            <div className="mx-auto bg-amber-100 dark:bg-amber-900/30 rounded-full p-3 w-fit mb-2">
+              <LogIn className="size-6 text-amber-600" />
+            </div>
+            <CardTitle className="text-lg">Authentication Required</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Please sign in to view customer records. All operations require an authenticated session.
+            </p>
+            <Link href="/login">
+              <Button className="bg-primary hover:bg-primary/90 text-white font-bold uppercase text-xs tracking-widest">
+                <LogIn className="size-4 mr-2" /> Sign In
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  const loading = dbLoading || fsLoading;
 
   if (loading) {
     return (

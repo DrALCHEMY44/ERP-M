@@ -1,7 +1,8 @@
 "use client"
 
 import * as React from "react"
-import { Plus, Search, Download, ShoppingCart, CreditCard, Smartphone, Banknote, Loader2, Calendar } from "lucide-react"
+import { Plus, Search, Download, ShoppingCart, CreditCard, Smartphone, Banknote, Loader2, Calendar, LogIn } from "lucide-react"
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import {
   Table,
@@ -15,14 +16,23 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { SaleDialog } from "@/components/sales/sale-dialog"
 import { Sale, Product } from "@/lib/types"
-import { useFirestore } from "@/hooks/use-firestore"
+import { useDataConnect } from "@/hooks/use-dataconnect"
+import { 
+  listTransactionsByBusinessQuery,
+  listProductsByBusinessQuery 
+} from "@/lib/data-service"
+import { MOCK_USER } from "@/lib/mock-data"
 import { useToast } from "@/hooks/use-toast"
 
 export default function SalesPage() {
-  const { data: sales, loading, addRecord } = useFirestore<Sale>('sales');
-  const { data: products, updateRecord } = useFirestore<Product>('products');
+  const { data: transactionsData, loading: salesLoading, unauthenticated, refetch: refetchSales } = useDataConnect({ query: listTransactionsByBusinessQuery, variables: { tenantId: MOCK_USER.businessId, businessId: MOCK_USER.businessId } });
+  const { data: productsData, refetch: refetchProducts } = useDataConnect({ query: listProductsByBusinessQuery, variables: { tenantId: MOCK_USER.businessId, businessId: MOCK_USER.businessId } });
   const { toast } = useToast();
   
+  // Note: we'll have to deal with the mutations to record the sale, but for now we replace the list
+  const sales = React.useMemo(() => (transactionsData?.transactions || []).filter((t: any) => t.type === 'Sale') as unknown as Sale[], [transactionsData]);
+  const products = React.useMemo(() => (productsData?.products || []) as unknown as Product[], [productsData]);
+
   const [isDialogOpen, setIsDialogOpen] = React.useState(false)
   const [searchQuery, setSearchQuery] = React.useState("")
 
@@ -35,33 +45,47 @@ export default function SalesPage() {
   
   const filteredSales = sales.filter(s => 
     s.id?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    s.paymentMethod.toLowerCase().includes(searchQuery.toLowerCase())
+    (s.paymentMethod && s.paymentMethod.toLowerCase().includes(searchQuery.toLowerCase()))
   ).sort((a, b) => new Date(b.saleDate).getTime() - new Date(a.saleDate).getTime())
 
   const handleNewSale = async (saleData: Partial<Sale>) => {
     try {
-      // 1. Record the sale
-      await addRecord(saleData as Omit<Sale, 'id'>);
-      
-      // 2. Update Inventory (Decrement quantities)
-      if (saleData.productsSold) {
-        for (const item of saleData.productsSold) {
-          const product = products.find(p => p.id === item.productId);
-          if (product) {
-            await updateRecord(product.id!, {
-              quantity: product.quantity - item.quantity
-            });
-          }
-        }
-      }
-
-      toast({ title: "Sale Completed", description: `Recorded transaction for ${saleData.totalAmount?.toLocaleString()} FCFA.` });
+      // 1. Record the sale - NOTE: Mutation needs to be updated to Data Connect
+      // For now we simulate success and refetch
+      toast({ title: "Mock Sale Completed", description: `Simulated transaction for ${saleData.totalAmount?.toLocaleString()} FCFA.` });
+      refetchSales();
+      refetchProducts();
     } catch (e) {
       toast({ variant: "destructive", title: "Error", description: "Could not record sale. Please try again." });
     }
   }
 
-  if (loading) {
+  if (unauthenticated) {
+    return (
+      <div className="flex h-[60vh] items-center justify-center">
+        <Card className="max-w-md w-full text-center shadow-lg border-t-4 border-amber-500">
+          <CardHeader>
+            <div className="mx-auto bg-amber-100 dark:bg-amber-900/30 rounded-full p-3 w-fit mb-2">
+              <LogIn className="size-6 text-amber-600" />
+            </div>
+            <CardTitle className="text-lg">Authentication Required</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Please sign in to view your sales data. All operations require an authenticated session.
+            </p>
+            <Link href="/login">
+              <Button className="bg-primary hover:bg-primary/90 text-white font-bold uppercase text-xs tracking-widest">
+                <LogIn className="size-4 mr-2" /> Sign In
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (salesLoading) {
     return (
       <div className="flex h-[60vh] items-center justify-center">
         <Loader2 className="size-8 animate-spin text-primary" />
@@ -166,11 +190,11 @@ export default function SalesPage() {
                         {sale.paymentMethod === 'Mobile Money' && <Smartphone className="size-3.5 text-blue-600" />}
                         {sale.paymentMethod === 'Bank Transfer' && <CreditCard className="size-3.5 text-purple-600" />}
                         {sale.paymentMethod === 'Credit' && <ShoppingCart className="size-3.5 text-amber-600" />}
-                        <span className="text-xs font-medium">{sale.paymentMethod}</span>
+                        <span className="text-xs font-medium">{sale.paymentMethod || 'Unknown'}</span>
                       </div>
                     </TableCell>
                     <TableCell className="text-xs">
-                      <Badge variant="secondary" className="text-[10px] font-bold uppercase tracking-widest">{sale.productsSold.length} Products</Badge>
+                      <Badge variant="secondary" className="text-[10px] font-bold uppercase tracking-widest">{sale.productsSold?.length || 0} Products</Badge>
                     </TableCell>
                     <TableCell className="text-right font-bold text-emerald-700">
                       {sale.totalAmount.toLocaleString()} FCFA

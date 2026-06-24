@@ -43,3 +43,18 @@ next-env.d.ts
 # firebase
 firebase-debug.log
 firestore-debug.log
+
+# Dependencies
+node_modules/
+.next/
+out/
+
+# Firebase Data Connect Local Database Caches (CRITICAL)
+dataconnect/.dataconnect/
+*-debug.log
+.firebase/
+
+# OS/IDEs
+.DS_Store
+.env
+.env*.local

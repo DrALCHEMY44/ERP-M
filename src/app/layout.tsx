@@ -15,12 +15,12 @@ import { RotateCw, Loader2, ArrowLeft, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
-import { useAuth } from "@/hooks/use-auth";
+import { useAuth, AuthProvider } from "@/hooks/use-auth";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const spaceGrotesk = Space_Grotesk({ subsets: ["latin"], variable: "--font-space-grotesk" });
 
-export default function RootLayout({
+function AppContent({
   children,
 }: Readonly<{
   children: React.ReactNode;
@@ -53,17 +53,108 @@ export default function RootLayout({
 
   if (authLoading) {
     return (
-      <html lang="en">
-        <body className={`${inter.variable} ${spaceGrotesk.variable} flex h-screen items-center justify-center bg-background`}>
-          <div className="flex flex-col items-center gap-2">
-            <Loader2 className="size-8 animate-spin text-primary" />
-            <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Initializing SmartERP AI...</p>
-          </div>
-        </body>
-      </html>
+      <div className="flex h-screen items-center justify-center bg-background">
+        <div className="flex flex-col items-center gap-2">
+          <Loader2 className="size-8 animate-spin text-primary" />
+          <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Initializing SmartERP AI...</p>
+        </div>
+      </div>
     );
   }
 
+  return (
+    <LanguageProvider>
+      {isAuthPage ? (
+        <>
+          {children}
+          <Toaster />
+        </>
+      ) : (
+        <SidebarProvider defaultOpen={true}>
+          <AppSidebar />
+          <SidebarInset>
+            <header className="flex h-16 shrink-0 items-center justify-between gap-2 px-4 border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10">
+              <div className="flex items-center gap-2">
+                <SidebarTrigger className="-ml-1" />
+                <Separator orientation="vertical" className="mr-2 h-4" />
+                
+                <div className="flex items-center gap-0.5 mr-2">
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="h-8 w-8 text-muted-foreground hover:text-primary transition-colors"
+                    onClick={() => window.history.back()}
+                    title="Go Back"
+                  >
+                    <ArrowLeft className="size-4" />
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="h-8 w-8 text-muted-foreground hover:text-primary transition-colors"
+                    onClick={() => window.history.forward()}
+                    title="Go Forward"
+                  >
+                    <ArrowRight className="size-4" />
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className={cn(
+                      "h-8 w-8 text-muted-foreground hover:text-primary transition-colors",
+                      isRefreshing && "text-primary"
+                    )}
+                    onClick={handleRefresh}
+                    disabled={isRefreshing}
+                    title="Sync/Refresh Workspace"
+                  >
+                    {isRefreshing ? (
+                      <Loader2 className="size-4 animate-spin" />
+                    ) : (
+                      <RotateCw className="size-4" />
+                    )}
+                  </Button>
+                </div>
+                
+                <Separator orientation="vertical" className="mr-2 h-4 hidden sm:block" />
+                
+                <div className="flex flex-col overflow-hidden">
+                  <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-muted-foreground truncate">
+                    Tenant: {profile?.tenantId || 'Syncing...'}
+                  </span>
+                  <span className="text-xs font-headline font-bold text-primary truncate max-w-[120px] md:max-w-none">
+                    {profile?.fullName ? `SME Hub • ${profile.fullName.split(' ')[0]}` : 'SmartERP Workspace'}
+                  </span>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-2 md:gap-3">
+                <Separator orientation="vertical" className="h-6" />
+                <NotificationCenter />
+                <Separator orientation="vertical" className="h-6 hidden md:block" />
+                <div className="h-8 w-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold text-xs shrink-0">
+                  {profile?.fullName?.substring(0, 2).toUpperCase() || '??'}
+                </div>
+              </div>
+            </header>
+            <main className="flex-1 p-4 md:p-6 lg:p-8 overflow-x-hidden">
+              <div className="mx-auto max-w-7xl w-full">
+                {children}
+              </div>
+            </main>
+          </SidebarInset>
+          <Toaster />
+        </SidebarProvider>
+      )}
+    </LanguageProvider>
+  );
+}
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
   return (
     <html lang="en">
       <head>
@@ -73,91 +164,10 @@ export default function RootLayout({
         <meta name="theme-color" content="#2563eb" />
         <link rel="apple-touch-icon" href="https://placehold.co/192x192/2563eb/white?text=ERP" />
       </head>
-      <body className={`${inter.variable} ${spaceGrotesk.variable} font-sans antialiased ${isAuthPage ? 'bg-background' : ''}`}>
-        <LanguageProvider>
-          {isAuthPage ? (
-            <>
-              {children}
-              <Toaster />
-            </>
-          ) : (
-            <SidebarProvider defaultOpen={true}>
-              <AppSidebar />
-              <SidebarInset>
-                <header className="flex h-16 shrink-0 items-center justify-between gap-2 px-4 border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10">
-                  <div className="flex items-center gap-2">
-                    <SidebarTrigger className="-ml-1" />
-                    <Separator orientation="vertical" className="mr-2 h-4" />
-                    
-                    <div className="flex items-center gap-0.5 mr-2">
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="h-8 w-8 text-muted-foreground hover:text-primary transition-colors"
-                        onClick={() => window.history.back()}
-                        title="Go Back"
-                      >
-                        <ArrowLeft className="size-4" />
-                      </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="h-8 w-8 text-muted-foreground hover:text-primary transition-colors"
-                        onClick={() => window.history.forward()}
-                        title="Go Forward"
-                      >
-                        <ArrowRight className="size-4" />
-                      </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className={cn(
-                          "h-8 w-8 text-muted-foreground hover:text-primary transition-colors",
-                          isRefreshing && "text-primary"
-                        )}
-                        onClick={handleRefresh}
-                        disabled={isRefreshing}
-                        title="Sync/Refresh Workspace"
-                      >
-                        {isRefreshing ? (
-                          <Loader2 className="size-4 animate-spin" />
-                        ) : (
-                          <RotateCw className="size-4" />
-                        )}
-                      </Button>
-                    </div>
-                    
-                    <Separator orientation="vertical" className="mr-2 h-4 hidden sm:block" />
-                    
-                    <div className="flex flex-col overflow-hidden">
-                      <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-muted-foreground truncate">
-                        Tenant: {profile?.tenantId || 'Syncing...'}
-                      </span>
-                      <span className="text-xs font-headline font-bold text-primary truncate max-w-[120px] md:max-w-none">
-                        {profile?.fullName ? `SME Hub • ${profile.fullName.split(' ')[0]}` : 'SmartERP Workspace'}
-                      </span>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center gap-2 md:gap-3">
-                    <Separator orientation="vertical" className="h-6" />
-                    <NotificationCenter />
-                    <Separator orientation="vertical" className="h-6 hidden md:block" />
-                    <div className="h-8 w-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold text-xs shrink-0">
-                      {profile?.fullName?.substring(0, 2).toUpperCase() || '??'}
-                    </div>
-                  </div>
-                </header>
-                <main className="flex-1 p-4 md:p-6 lg:p-8 overflow-x-hidden">
-                  <div className="mx-auto max-w-7xl w-full">
-                    {children}
-                  </div>
-                </main>
-              </SidebarInset>
-              <Toaster />
-            </SidebarProvider>
-          )}
-        </LanguageProvider>
+      <body className={`${inter.variable} ${spaceGrotesk.variable} font-sans antialiased`}>
+        <AuthProvider>
+          <AppContent>{children}</AppContent>
+        </AuthProvider>
       </body>
     </html>
   );

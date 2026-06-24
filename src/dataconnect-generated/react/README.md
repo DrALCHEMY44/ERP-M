@@ -17,28 +17,19 @@ You can also follow the instructions from the [Data Connect documentation](https
 - [**Accessing the connector**](#accessing-the-connector)
   - [*Connecting to the local Emulator*](#connecting-to-the-local-emulator)
 - [**Queries**](#queries)
-<<<<<<< HEAD
-  - [*ListMovies*](#listmovies)
-  - [*ListUsers*](#listusers)
-  - [*ListUserReviews*](#listuserreviews)
-  - [*GetMovieById*](#getmoviebyid)
-  - [*SearchMovie*](#searchmovie)
-- [**Mutations**](#mutations)
-  - [*CreateMovie*](#createmovie)
-  - [*UpsertUser*](#upsertuser)
-  - [*AddReview*](#addreview)
-  - [*DeleteReview*](#deletereview)
-=======
   - [*ListTenants*](#listtenants)
-  - [*ListUsers*](#listusers)
   - [*ListBusinesses*](#listbusinesses)
-  - [*ListProducts*](#listproducts)
-  - [*ListTransactions*](#listtransactions)
-  - [*ListTasks*](#listtasks)
-  - [*ListEmployees*](#listemployees)
-  - [*ListCustomers*](#listcustomers)
-  - [*ListSuppliers*](#listsuppliers)
-  - [*ListDocuments*](#listdocuments)
+  - [*getUserByEmail*](#getuserbyemail)
+  - [*listProductsByBusiness*](#listproductsbybusiness)
+  - [*listCustomersByBusiness*](#listcustomersbybusiness)
+  - [*listSuppliersByBusiness*](#listsuppliersbybusiness)
+  - [*listTasksByBusiness*](#listtasksbybusiness)
+  - [*listTransactionsByBusiness*](#listtransactionsbybusiness)
+  - [*listTransactionsByType*](#listtransactionsbytype)
+  - [*listEmployeesByBusiness*](#listemployeesbybusiness)
+  - [*listDocumentsByBusiness*](#listdocumentsbybusiness)
+  - [*listActivityLogsByUser*](#listactivitylogsbyuser)
+  - [*listActivityLogsByBusiness*](#listactivitylogsbybusiness)
 - [**Mutations**](#mutations)
   - [*CreateTenant*](#createtenant)
   - [*UpdateTenant*](#updatetenant)
@@ -55,9 +46,9 @@ You can also follow the instructions from the [Data Connect documentation](https
   - [*CreateTransaction*](#createtransaction)
   - [*UpdateTransaction*](#updatetransaction)
   - [*DeleteTransaction*](#deletetransaction)
-  - [*CreateTask*](#createtask)
-  - [*UpdateTask*](#updatetask)
-  - [*DeleteTask*](#deletetask)
+  - [*CreateTaskComment*](#createtaskcomment)
+  - [*UpdateTaskComment*](#updatetaskcomment)
+  - [*DeleteTaskComment*](#deletetaskcomment)
   - [*CreateEmployee*](#createemployee)
   - [*UpdateEmployee*](#updateemployee)
   - [*DeleteEmployee*](#deleteemployee)
@@ -70,7 +61,18 @@ You can also follow the instructions from the [Data Connect documentation](https
   - [*CreateDocument*](#createdocument)
   - [*UpdateDocument*](#updatedocument)
   - [*DeleteDocument*](#deletedocument)
->>>>>>> 546aacf70afe81cbee3ea5f2edbc661c271990b8
+  - [*CreateActivityLog*](#createactivitylog)
+  - [*UpdateActivityLog*](#updateactivitylog)
+  - [*DeleteActivityLog*](#deleteactivitylog)
+  - [*CreateAiQuery*](#createaiquery)
+  - [*UpdateAiQuery*](#updateaiquery)
+  - [*DeleteAiQuery*](#deleteaiquery)
+  - [*CreateNotification*](#createnotification)
+  - [*UpdateNotification*](#updatenotification)
+  - [*DeleteNotification*](#deletenotification)
+  - [*CreateTask*](#createtask)
+  - [*UpdateTask*](#updatetask)
+  - [*DeleteTask*](#deletetask)
 
 # TanStack Query Firebase & TanStack React Query
 This SDK provides [React](https://react.dev/) hooks generated specific to your application, for the operations found in the connector `example`. These hooks are generated using [TanStack Query Firebase](https://react-query-firebase.invertase.dev/) by our partners at Invertase, a library built on top of [TanStack React Query v5](https://tanstack.com/query/v5/docs/framework/react/overview).
@@ -162,35 +164,6 @@ Here's a general overview of how to use the generated Query hooks in your code:
 
 Below are examples of how to use the `example` connector's generated Query hook functions to execute each Query. You can also follow the examples from the [Data Connect documentation](https://firebase.google.com/docs/data-connect/web-sdk#operations-react-angular).
 
-<<<<<<< HEAD
-## ListMovies
-You can execute the `ListMovies` Query using the following Query hook function, which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts):
-
-```javascript
-useListMovies(dc: DataConnect, options?: useDataConnectQueryOptions<ListMoviesData>): UseDataConnectQueryResult<ListMoviesData, undefined>;
-```
-You can also pass in a `DataConnect` instance to the Query hook function.
-```javascript
-useListMovies(options?: useDataConnectQueryOptions<ListMoviesData>): UseDataConnectQueryResult<ListMoviesData, undefined>;
-```
-
-### Variables
-The `ListMovies` Query has no variables.
-### Return Type
-Recall that calling the `ListMovies` Query hook function returns a `UseQueryResult` object. This object holds the state of your Query, including whether the Query is loading, has completed, or has succeeded/failed, and any data returned by the Query, among other things.
-
-To check the status of a Query, use the `UseQueryResult.status` field. You can also check for pending / success / error status using the `UseQueryResult.isPending`, `UseQueryResult.isSuccess`, and `UseQueryResult.isError` fields.
-
-To access the data returned by a Query, use the `UseQueryResult.data` field. The data for the `ListMovies` Query is of type `ListMoviesData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
-```javascript
-export interface ListMoviesData {
-  movies: ({
-    id: UUIDString;
-    title: string;
-    imageUrl: string;
-    genre?: string | null;
-  } & Movie_Key)[];
-=======
 ## ListTenants
 You can execute the `ListTenants` Query using the following Query hook function, which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts):
 
@@ -213,41 +186,20 @@ To access the data returned by a Query, use the `UseQueryResult.data` field. The
 ```javascript
 export interface ListTenantsData {
   tenants: ({
-    id: UUIDString;
+    id: string;
     name: string;
     businessSector: string;
   } & Tenant_Key)[];
->>>>>>> 546aacf70afe81cbee3ea5f2edbc661c271990b8
 }
 ```
 
 To learn more about the `UseQueryResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useQuery).
 
-<<<<<<< HEAD
-### Using `ListMovies`'s Query hook function
-=======
 ### Using `ListTenants`'s Query hook function
->>>>>>> 546aacf70afe81cbee3ea5f2edbc661c271990b8
 
 ```javascript
 import { getDataConnect } from 'firebase/data-connect';
 import { connectorConfig } from '@dataconnect/generated';
-<<<<<<< HEAD
-import { useListMovies } from '@dataconnect/generated/react'
-
-export default function ListMoviesComponent() {
-  // You don't have to do anything to "execute" the Query.
-  // Call the Query hook function to get a `UseQueryResult` object which holds the state of your Query.
-  const query = useListMovies();
-
-  // You can also pass in a `DataConnect` instance to the Query hook function.
-  const dataConnect = getDataConnect(connectorConfig);
-  const query = useListMovies(dataConnect);
-
-  // You can also pass in a `useDataConnectQueryOptions` object to the Query hook function.
-  const options = { staleTime: 5 * 1000 };
-  const query = useListMovies(options);
-=======
 import { useListTenants } from '@dataconnect/generated/react'
 
 export default function ListTenantsComponent() {
@@ -262,16 +214,11 @@ export default function ListTenantsComponent() {
   // You can also pass in a `useDataConnectQueryOptions` object to the Query hook function.
   const options = { staleTime: 5 * 1000 };
   const query = useListTenants(options);
->>>>>>> 546aacf70afe81cbee3ea5f2edbc661c271990b8
 
   // You can also pass both a `DataConnect` instance and a `useDataConnectQueryOptions` object.
   const dataConnect = getDataConnect(connectorConfig);
   const options = { staleTime: 5 * 1000 };
-<<<<<<< HEAD
-  const query = useListMovies(dataConnect, options);
-=======
   const query = useListTenants(dataConnect, options);
->>>>>>> 546aacf70afe81cbee3ea5f2edbc661c271990b8
 
   // Then, you can render your component dynamically based on the status of the Query.
   if (query.isPending) {
@@ -284,177 +231,12 @@ export default function ListTenantsComponent() {
 
   // If the Query is successful, you can access the data returned using the `UseQueryResult.data` field.
   if (query.isSuccess) {
-<<<<<<< HEAD
-    console.log(query.data.movies);
-=======
     console.log(query.data.tenants);
->>>>>>> 546aacf70afe81cbee3ea5f2edbc661c271990b8
   }
   return <div>Query execution {query.isSuccess ? 'successful' : 'failed'}!</div>;
 }
 ```
 
-## ListUsers
-You can execute the `ListUsers` Query using the following Query hook function, which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts):
-
-```javascript
-<<<<<<< HEAD
-useListUsers(dc: DataConnect, options?: useDataConnectQueryOptions<ListUsersData>): UseDataConnectQueryResult<ListUsersData, undefined>;
-```
-You can also pass in a `DataConnect` instance to the Query hook function.
-```javascript
-useListUsers(options?: useDataConnectQueryOptions<ListUsersData>): UseDataConnectQueryResult<ListUsersData, undefined>;
-```
-
-### Variables
-The `ListUsers` Query has no variables.
-=======
-useListUsers(dc: DataConnect, vars: ListUsersVariables, options?: useDataConnectQueryOptions<ListUsersData>): UseDataConnectQueryResult<ListUsersData, ListUsersVariables>;
-```
-You can also pass in a `DataConnect` instance to the Query hook function.
-```javascript
-useListUsers(vars: ListUsersVariables, options?: useDataConnectQueryOptions<ListUsersData>): UseDataConnectQueryResult<ListUsersData, ListUsersVariables>;
-```
-
-### Variables
-The `ListUsers` Query requires an argument of type `ListUsersVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
-
-```javascript
-export interface ListUsersVariables {
-  tenantId: UUIDString;
-}
-```
->>>>>>> 546aacf70afe81cbee3ea5f2edbc661c271990b8
-### Return Type
-Recall that calling the `ListUsers` Query hook function returns a `UseQueryResult` object. This object holds the state of your Query, including whether the Query is loading, has completed, or has succeeded/failed, and any data returned by the Query, among other things.
-
-To check the status of a Query, use the `UseQueryResult.status` field. You can also check for pending / success / error status using the `UseQueryResult.isPending`, `UseQueryResult.isSuccess`, and `UseQueryResult.isError` fields.
-
-To access the data returned by a Query, use the `UseQueryResult.data` field. The data for the `ListUsers` Query is of type `ListUsersData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
-```javascript
-export interface ListUsersData {
-  users: ({
-<<<<<<< HEAD
-    id: string;
-    username: string;
-=======
-    id: UUIDString;
-    email: string;
-    role: string;
->>>>>>> 546aacf70afe81cbee3ea5f2edbc661c271990b8
-  } & User_Key)[];
-}
-```
-
-To learn more about the `UseQueryResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useQuery).
-
-### Using `ListUsers`'s Query hook function
-
-```javascript
-import { getDataConnect } from 'firebase/data-connect';
-<<<<<<< HEAD
-import { connectorConfig } from '@dataconnect/generated';
-import { useListUsers } from '@dataconnect/generated/react'
-
-export default function ListUsersComponent() {
-  // You don't have to do anything to "execute" the Query.
-  // Call the Query hook function to get a `UseQueryResult` object which holds the state of your Query.
-  const query = useListUsers();
-
-  // You can also pass in a `DataConnect` instance to the Query hook function.
-  const dataConnect = getDataConnect(connectorConfig);
-  const query = useListUsers(dataConnect);
-
-  // You can also pass in a `useDataConnectQueryOptions` object to the Query hook function.
-  const options = { staleTime: 5 * 1000 };
-  const query = useListUsers(options);
-=======
-import { connectorConfig, ListUsersVariables } from '@dataconnect/generated';
-import { useListUsers } from '@dataconnect/generated/react'
-
-export default function ListUsersComponent() {
-  // The `useListUsers` Query hook requires an argument of type `ListUsersVariables`:
-  const listUsersVars: ListUsersVariables = {
-    tenantId: ..., 
-  };
-
-  // You don't have to do anything to "execute" the Query.
-  // Call the Query hook function to get a `UseQueryResult` object which holds the state of your Query.
-  const query = useListUsers(listUsersVars);
-  // Variables can be defined inline as well.
-  const query = useListUsers({ tenantId: ..., });
-
-  // You can also pass in a `DataConnect` instance to the Query hook function.
-  const dataConnect = getDataConnect(connectorConfig);
-  const query = useListUsers(dataConnect, listUsersVars);
-
-  // You can also pass in a `useDataConnectQueryOptions` object to the Query hook function.
-  const options = { staleTime: 5 * 1000 };
-  const query = useListUsers(listUsersVars, options);
->>>>>>> 546aacf70afe81cbee3ea5f2edbc661c271990b8
-
-  // You can also pass both a `DataConnect` instance and a `useDataConnectQueryOptions` object.
-  const dataConnect = getDataConnect(connectorConfig);
-  const options = { staleTime: 5 * 1000 };
-<<<<<<< HEAD
-  const query = useListUsers(dataConnect, options);
-=======
-  const query = useListUsers(dataConnect, listUsersVars, options);
->>>>>>> 546aacf70afe81cbee3ea5f2edbc661c271990b8
-
-  // Then, you can render your component dynamically based on the status of the Query.
-  if (query.isPending) {
-    return <div>Loading...</div>;
-  }
-
-  if (query.isError) {
-    return <div>Error: {query.error.message}</div>;
-  }
-
-  // If the Query is successful, you can access the data returned using the `UseQueryResult.data` field.
-  if (query.isSuccess) {
-    console.log(query.data.users);
-  }
-  return <div>Query execution {query.isSuccess ? 'successful' : 'failed'}!</div>;
-}
-```
-
-<<<<<<< HEAD
-## ListUserReviews
-You can execute the `ListUserReviews` Query using the following Query hook function, which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts):
-
-```javascript
-useListUserReviews(dc: DataConnect, options?: useDataConnectQueryOptions<ListUserReviewsData>): UseDataConnectQueryResult<ListUserReviewsData, undefined>;
-```
-You can also pass in a `DataConnect` instance to the Query hook function.
-```javascript
-useListUserReviews(options?: useDataConnectQueryOptions<ListUserReviewsData>): UseDataConnectQueryResult<ListUserReviewsData, undefined>;
-```
-
-### Variables
-The `ListUserReviews` Query has no variables.
-### Return Type
-Recall that calling the `ListUserReviews` Query hook function returns a `UseQueryResult` object. This object holds the state of your Query, including whether the Query is loading, has completed, or has succeeded/failed, and any data returned by the Query, among other things.
-
-To check the status of a Query, use the `UseQueryResult.status` field. You can also check for pending / success / error status using the `UseQueryResult.isPending`, `UseQueryResult.isSuccess`, and `UseQueryResult.isError` fields.
-
-To access the data returned by a Query, use the `UseQueryResult.data` field. The data for the `ListUserReviews` Query is of type `ListUserReviewsData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
-```javascript
-export interface ListUserReviewsData {
-  user?: {
-    id: string;
-    username: string;
-    reviews: ({
-      rating?: number | null;
-      reviewDate: DateString;
-      reviewText?: string | null;
-      movie: {
-        id: UUIDString;
-        title: string;
-      } & Movie_Key;
-    })[];
-  } & User_Key;
-=======
 ## ListBusinesses
 You can execute the `ListBusinesses` Query using the following Query hook function, which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts):
 
@@ -471,7 +253,7 @@ The `ListBusinesses` Query requires an argument of type `ListBusinessesVariables
 
 ```javascript
 export interface ListBusinessesVariables {
-  tenantId: UUIDString;
+  tenantId: string;
 }
 ```
 ### Return Type
@@ -483,37 +265,15 @@ To access the data returned by a Query, use the `UseQueryResult.data` field. The
 ```javascript
 export interface ListBusinessesData {
   businesses: ({
-    id: UUIDString;
+    id: string;
     name: string;
     location: string;
   } & Business_Key)[];
->>>>>>> 546aacf70afe81cbee3ea5f2edbc661c271990b8
 }
 ```
 
 To learn more about the `UseQueryResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useQuery).
 
-<<<<<<< HEAD
-### Using `ListUserReviews`'s Query hook function
-
-```javascript
-import { getDataConnect } from 'firebase/data-connect';
-import { connectorConfig } from '@dataconnect/generated';
-import { useListUserReviews } from '@dataconnect/generated/react'
-
-export default function ListUserReviewsComponent() {
-  // You don't have to do anything to "execute" the Query.
-  // Call the Query hook function to get a `UseQueryResult` object which holds the state of your Query.
-  const query = useListUserReviews();
-
-  // You can also pass in a `DataConnect` instance to the Query hook function.
-  const dataConnect = getDataConnect(connectorConfig);
-  const query = useListUserReviews(dataConnect);
-
-  // You can also pass in a `useDataConnectQueryOptions` object to the Query hook function.
-  const options = { staleTime: 5 * 1000 };
-  const query = useListUserReviews(options);
-=======
 ### Using `ListBusinesses`'s Query hook function
 
 ```javascript
@@ -540,16 +300,11 @@ export default function ListBusinessesComponent() {
   // You can also pass in a `useDataConnectQueryOptions` object to the Query hook function.
   const options = { staleTime: 5 * 1000 };
   const query = useListBusinesses(listBusinessesVars, options);
->>>>>>> 546aacf70afe81cbee3ea5f2edbc661c271990b8
 
   // You can also pass both a `DataConnect` instance and a `useDataConnectQueryOptions` object.
   const dataConnect = getDataConnect(connectorConfig);
   const options = { staleTime: 5 * 1000 };
-<<<<<<< HEAD
-  const query = useListUserReviews(dataConnect, options);
-=======
   const query = useListBusinesses(dataConnect, listBusinessesVars, options);
->>>>>>> 546aacf70afe81cbee3ea5f2edbc661c271990b8
 
   // Then, you can render your component dynamically based on the status of the Query.
   if (query.isPending) {
@@ -562,166 +317,184 @@ export default function ListBusinessesComponent() {
 
   // If the Query is successful, you can access the data returned using the `UseQueryResult.data` field.
   if (query.isSuccess) {
-<<<<<<< HEAD
-    console.log(query.data.user);
-=======
     console.log(query.data.businesses);
->>>>>>> 546aacf70afe81cbee3ea5f2edbc661c271990b8
   }
   return <div>Query execution {query.isSuccess ? 'successful' : 'failed'}!</div>;
 }
 ```
 
-<<<<<<< HEAD
-## GetMovieById
-You can execute the `GetMovieById` Query using the following Query hook function, which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts):
+## getUserByEmail
+You can execute the `getUserByEmail` Query using the following Query hook function, which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts):
 
 ```javascript
-useGetMovieById(dc: DataConnect, vars: GetMovieByIdVariables, options?: useDataConnectQueryOptions<GetMovieByIdData>): UseDataConnectQueryResult<GetMovieByIdData, GetMovieByIdVariables>;
+useGetUserByEmail(dc: DataConnect, vars: GetUserByEmailVariables, options?: useDataConnectQueryOptions<GetUserByEmailData>): UseDataConnectQueryResult<GetUserByEmailData, GetUserByEmailVariables>;
 ```
 You can also pass in a `DataConnect` instance to the Query hook function.
 ```javascript
-useGetMovieById(vars: GetMovieByIdVariables, options?: useDataConnectQueryOptions<GetMovieByIdData>): UseDataConnectQueryResult<GetMovieByIdData, GetMovieByIdVariables>;
+useGetUserByEmail(vars: GetUserByEmailVariables, options?: useDataConnectQueryOptions<GetUserByEmailData>): UseDataConnectQueryResult<GetUserByEmailData, GetUserByEmailVariables>;
 ```
 
 ### Variables
-The `GetMovieById` Query requires an argument of type `GetMovieByIdVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+The `getUserByEmail` Query requires an argument of type `GetUserByEmailVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
 
 ```javascript
-export interface GetMovieByIdVariables {
-  id: UUIDString;
+export interface GetUserByEmailVariables {
+  email: string;
 }
 ```
 ### Return Type
-Recall that calling the `GetMovieById` Query hook function returns a `UseQueryResult` object. This object holds the state of your Query, including whether the Query is loading, has completed, or has succeeded/failed, and any data returned by the Query, among other things.
+Recall that calling the `getUserByEmail` Query hook function returns a `UseQueryResult` object. This object holds the state of your Query, including whether the Query is loading, has completed, or has succeeded/failed, and any data returned by the Query, among other things.
 
 To check the status of a Query, use the `UseQueryResult.status` field. You can also check for pending / success / error status using the `UseQueryResult.isPending`, `UseQueryResult.isSuccess`, and `UseQueryResult.isError` fields.
 
-To access the data returned by a Query, use the `UseQueryResult.data` field. The data for the `GetMovieById` Query is of type `GetMovieByIdData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+To access the data returned by a Query, use the `UseQueryResult.data` field. The data for the `getUserByEmail` Query is of type `GetUserByEmailData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
 ```javascript
-export interface GetMovieByIdData {
-  movie?: {
-    id: UUIDString;
-    title: string;
-    imageUrl: string;
-    genre?: string | null;
-    metadata?: {
-      rating?: number | null;
-      releaseYear?: number | null;
-      description?: string | null;
-    };
-      reviews: ({
-        reviewText?: string | null;
-        reviewDate: DateString;
-        rating?: number | null;
-        user: {
-          id: string;
-          username: string;
-        } & User_Key;
-      })[];
-  } & Movie_Key;
-=======
-## ListProducts
-You can execute the `ListProducts` Query using the following Query hook function, which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts):
+export interface GetUserByEmailData {
+  users: ({
+    id: string;
+    email: string;
+    role: string;
+    department?: string | null;
+    phoneNumber?: string | null;
+    createdAt: TimestampString;
+    tenantId: string;
+    businessId: string;
+    fullName?: string | null;
+  } & User_Key)[];
+}
+```
+
+To learn more about the `UseQueryResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useQuery).
+
+### Using `getUserByEmail`'s Query hook function
 
 ```javascript
-useListProducts(dc: DataConnect, vars: ListProductsVariables, options?: useDataConnectQueryOptions<ListProductsData>): UseDataConnectQueryResult<ListProductsData, ListProductsVariables>;
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, GetUserByEmailVariables } from '@dataconnect/generated';
+import { useGetUserByEmail } from '@dataconnect/generated/react'
+
+export default function GetUserByEmailComponent() {
+  // The `useGetUserByEmail` Query hook requires an argument of type `GetUserByEmailVariables`:
+  const getUserByEmailVars: GetUserByEmailVariables = {
+    email: ..., 
+  };
+
+  // You don't have to do anything to "execute" the Query.
+  // Call the Query hook function to get a `UseQueryResult` object which holds the state of your Query.
+  const query = useGetUserByEmail(getUserByEmailVars);
+  // Variables can be defined inline as well.
+  const query = useGetUserByEmail({ email: ..., });
+
+  // You can also pass in a `DataConnect` instance to the Query hook function.
+  const dataConnect = getDataConnect(connectorConfig);
+  const query = useGetUserByEmail(dataConnect, getUserByEmailVars);
+
+  // You can also pass in a `useDataConnectQueryOptions` object to the Query hook function.
+  const options = { staleTime: 5 * 1000 };
+  const query = useGetUserByEmail(getUserByEmailVars, options);
+
+  // You can also pass both a `DataConnect` instance and a `useDataConnectQueryOptions` object.
+  const dataConnect = getDataConnect(connectorConfig);
+  const options = { staleTime: 5 * 1000 };
+  const query = useGetUserByEmail(dataConnect, getUserByEmailVars, options);
+
+  // Then, you can render your component dynamically based on the status of the Query.
+  if (query.isPending) {
+    return <div>Loading...</div>;
+  }
+
+  if (query.isError) {
+    return <div>Error: {query.error.message}</div>;
+  }
+
+  // If the Query is successful, you can access the data returned using the `UseQueryResult.data` field.
+  if (query.isSuccess) {
+    console.log(query.data.users);
+  }
+  return <div>Query execution {query.isSuccess ? 'successful' : 'failed'}!</div>;
+}
+```
+
+## listProductsByBusiness
+You can execute the `listProductsByBusiness` Query using the following Query hook function, which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts):
+
+```javascript
+useListProductsByBusiness(dc: DataConnect, vars: ListProductsByBusinessVariables, options?: useDataConnectQueryOptions<ListProductsByBusinessData>): UseDataConnectQueryResult<ListProductsByBusinessData, ListProductsByBusinessVariables>;
 ```
 You can also pass in a `DataConnect` instance to the Query hook function.
 ```javascript
-useListProducts(vars: ListProductsVariables, options?: useDataConnectQueryOptions<ListProductsData>): UseDataConnectQueryResult<ListProductsData, ListProductsVariables>;
+useListProductsByBusiness(vars: ListProductsByBusinessVariables, options?: useDataConnectQueryOptions<ListProductsByBusinessData>): UseDataConnectQueryResult<ListProductsByBusinessData, ListProductsByBusinessVariables>;
 ```
 
 ### Variables
-The `ListProducts` Query requires an argument of type `ListProductsVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+The `listProductsByBusiness` Query requires an argument of type `ListProductsByBusinessVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
 
 ```javascript
-export interface ListProductsVariables {
-  businessId: UUIDString;
+export interface ListProductsByBusinessVariables {
+  tenantId: string;
+  businessId: string;
 }
 ```
 ### Return Type
-Recall that calling the `ListProducts` Query hook function returns a `UseQueryResult` object. This object holds the state of your Query, including whether the Query is loading, has completed, or has succeeded/failed, and any data returned by the Query, among other things.
+Recall that calling the `listProductsByBusiness` Query hook function returns a `UseQueryResult` object. This object holds the state of your Query, including whether the Query is loading, has completed, or has succeeded/failed, and any data returned by the Query, among other things.
 
 To check the status of a Query, use the `UseQueryResult.status` field. You can also check for pending / success / error status using the `UseQueryResult.isPending`, `UseQueryResult.isSuccess`, and `UseQueryResult.isError` fields.
 
-To access the data returned by a Query, use the `UseQueryResult.data` field. The data for the `ListProducts` Query is of type `ListProductsData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+To access the data returned by a Query, use the `UseQueryResult.data` field. The data for the `listProductsByBusiness` Query is of type `ListProductsByBusinessData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
 ```javascript
-export interface ListProductsData {
+export interface ListProductsByBusinessData {
   products: ({
-    id: UUIDString;
+    id: string;
     name: string;
+    category?: string | null;
+    quantity: number;
+    costPrice?: number | null;
     sellingPrice: number;
+    expiryDate?: DateString | null;
+    lowStockLevel?: number | null;
+    createdBy: string;
+    createdAt: TimestampString;
+    updatedAt?: TimestampString | null;
+    tenantId: string;
+    businessId: string;
   } & Product_Key)[];
->>>>>>> 546aacf70afe81cbee3ea5f2edbc661c271990b8
 }
 ```
 
 To learn more about the `UseQueryResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useQuery).
 
-<<<<<<< HEAD
-### Using `GetMovieById`'s Query hook function
+### Using `listProductsByBusiness`'s Query hook function
 
 ```javascript
 import { getDataConnect } from 'firebase/data-connect';
-import { connectorConfig, GetMovieByIdVariables } from '@dataconnect/generated';
-import { useGetMovieById } from '@dataconnect/generated/react'
+import { connectorConfig, ListProductsByBusinessVariables } from '@dataconnect/generated';
+import { useListProductsByBusiness } from '@dataconnect/generated/react'
 
-export default function GetMovieByIdComponent() {
-  // The `useGetMovieById` Query hook requires an argument of type `GetMovieByIdVariables`:
-  const getMovieByIdVars: GetMovieByIdVariables = {
-    id: ..., 
-=======
-### Using `ListProducts`'s Query hook function
-
-```javascript
-import { getDataConnect } from 'firebase/data-connect';
-import { connectorConfig, ListProductsVariables } from '@dataconnect/generated';
-import { useListProducts } from '@dataconnect/generated/react'
-
-export default function ListProductsComponent() {
-  // The `useListProducts` Query hook requires an argument of type `ListProductsVariables`:
-  const listProductsVars: ListProductsVariables = {
+export default function ListProductsByBusinessComponent() {
+  // The `useListProductsByBusiness` Query hook requires an argument of type `ListProductsByBusinessVariables`:
+  const listProductsByBusinessVars: ListProductsByBusinessVariables = {
+    tenantId: ..., 
     businessId: ..., 
->>>>>>> 546aacf70afe81cbee3ea5f2edbc661c271990b8
   };
 
   // You don't have to do anything to "execute" the Query.
   // Call the Query hook function to get a `UseQueryResult` object which holds the state of your Query.
-<<<<<<< HEAD
-  const query = useGetMovieById(getMovieByIdVars);
+  const query = useListProductsByBusiness(listProductsByBusinessVars);
   // Variables can be defined inline as well.
-  const query = useGetMovieById({ id: ..., });
+  const query = useListProductsByBusiness({ tenantId: ..., businessId: ..., });
 
   // You can also pass in a `DataConnect` instance to the Query hook function.
   const dataConnect = getDataConnect(connectorConfig);
-  const query = useGetMovieById(dataConnect, getMovieByIdVars);
+  const query = useListProductsByBusiness(dataConnect, listProductsByBusinessVars);
 
   // You can also pass in a `useDataConnectQueryOptions` object to the Query hook function.
   const options = { staleTime: 5 * 1000 };
-  const query = useGetMovieById(getMovieByIdVars, options);
-=======
-  const query = useListProducts(listProductsVars);
-  // Variables can be defined inline as well.
-  const query = useListProducts({ businessId: ..., });
-
-  // You can also pass in a `DataConnect` instance to the Query hook function.
-  const dataConnect = getDataConnect(connectorConfig);
-  const query = useListProducts(dataConnect, listProductsVars);
-
-  // You can also pass in a `useDataConnectQueryOptions` object to the Query hook function.
-  const options = { staleTime: 5 * 1000 };
-  const query = useListProducts(listProductsVars, options);
->>>>>>> 546aacf70afe81cbee3ea5f2edbc661c271990b8
+  const query = useListProductsByBusiness(listProductsByBusinessVars, options);
 
   // You can also pass both a `DataConnect` instance and a `useDataConnectQueryOptions` object.
   const dataConnect = getDataConnect(connectorConfig);
   const options = { staleTime: 5 * 1000 };
-<<<<<<< HEAD
-  const query = useGetMovieById(dataConnect, getMovieByIdVars, options);
-=======
-  const query = useListProducts(dataConnect, listProductsVars, options);
->>>>>>> 546aacf70afe81cbee3ea5f2edbc661c271990b8
+  const query = useListProductsByBusiness(dataConnect, listProductsByBusinessVars, options);
 
   // Then, you can render your component dynamically based on the status of the Query.
   if (query.isPending) {
@@ -734,419 +507,86 @@ export default function ListProductsComponent() {
 
   // If the Query is successful, you can access the data returned using the `UseQueryResult.data` field.
   if (query.isSuccess) {
-<<<<<<< HEAD
-    console.log(query.data.movie);
-=======
     console.log(query.data.products);
->>>>>>> 546aacf70afe81cbee3ea5f2edbc661c271990b8
   }
   return <div>Query execution {query.isSuccess ? 'successful' : 'failed'}!</div>;
 }
 ```
 
-<<<<<<< HEAD
-## SearchMovie
-You can execute the `SearchMovie` Query using the following Query hook function, which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts):
+## listCustomersByBusiness
+You can execute the `listCustomersByBusiness` Query using the following Query hook function, which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts):
 
 ```javascript
-useSearchMovie(dc: DataConnect, vars?: SearchMovieVariables, options?: useDataConnectQueryOptions<SearchMovieData>): UseDataConnectQueryResult<SearchMovieData, SearchMovieVariables>;
+useListCustomersByBusiness(dc: DataConnect, vars: ListCustomersByBusinessVariables, options?: useDataConnectQueryOptions<ListCustomersByBusinessData>): UseDataConnectQueryResult<ListCustomersByBusinessData, ListCustomersByBusinessVariables>;
 ```
 You can also pass in a `DataConnect` instance to the Query hook function.
 ```javascript
-useSearchMovie(vars?: SearchMovieVariables, options?: useDataConnectQueryOptions<SearchMovieData>): UseDataConnectQueryResult<SearchMovieData, SearchMovieVariables>;
+useListCustomersByBusiness(vars: ListCustomersByBusinessVariables, options?: useDataConnectQueryOptions<ListCustomersByBusinessData>): UseDataConnectQueryResult<ListCustomersByBusinessData, ListCustomersByBusinessVariables>;
 ```
 
 ### Variables
-The `SearchMovie` Query has an optional argument of type `SearchMovieVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+The `listCustomersByBusiness` Query requires an argument of type `ListCustomersByBusinessVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
 
 ```javascript
-export interface SearchMovieVariables {
-  titleInput?: string | null;
-  genre?: string | null;
+export interface ListCustomersByBusinessVariables {
+  tenantId: string;
+  businessId: string;
 }
 ```
 ### Return Type
-Recall that calling the `SearchMovie` Query hook function returns a `UseQueryResult` object. This object holds the state of your Query, including whether the Query is loading, has completed, or has succeeded/failed, and any data returned by the Query, among other things.
+Recall that calling the `listCustomersByBusiness` Query hook function returns a `UseQueryResult` object. This object holds the state of your Query, including whether the Query is loading, has completed, or has succeeded/failed, and any data returned by the Query, among other things.
 
 To check the status of a Query, use the `UseQueryResult.status` field. You can also check for pending / success / error status using the `UseQueryResult.isPending`, `UseQueryResult.isSuccess`, and `UseQueryResult.isError` fields.
 
-To access the data returned by a Query, use the `UseQueryResult.data` field. The data for the `SearchMovie` Query is of type `SearchMovieData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+To access the data returned by a Query, use the `UseQueryResult.data` field. The data for the `listCustomersByBusiness` Query is of type `ListCustomersByBusinessData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
 ```javascript
-export interface SearchMovieData {
-  movies: ({
-    id: UUIDString;
-    title: string;
-    genre?: string | null;
-    imageUrl: string;
-  } & Movie_Key)[];
-=======
-## ListTransactions
-You can execute the `ListTransactions` Query using the following Query hook function, which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts):
-
-```javascript
-useListTransactions(dc: DataConnect, vars: ListTransactionsVariables, options?: useDataConnectQueryOptions<ListTransactionsData>): UseDataConnectQueryResult<ListTransactionsData, ListTransactionsVariables>;
-```
-You can also pass in a `DataConnect` instance to the Query hook function.
-```javascript
-useListTransactions(vars: ListTransactionsVariables, options?: useDataConnectQueryOptions<ListTransactionsData>): UseDataConnectQueryResult<ListTransactionsData, ListTransactionsVariables>;
-```
-
-### Variables
-The `ListTransactions` Query requires an argument of type `ListTransactionsVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
-
-```javascript
-export interface ListTransactionsVariables {
-  businessId: UUIDString;
-}
-```
-### Return Type
-Recall that calling the `ListTransactions` Query hook function returns a `UseQueryResult` object. This object holds the state of your Query, including whether the Query is loading, has completed, or has succeeded/failed, and any data returned by the Query, among other things.
-
-To check the status of a Query, use the `UseQueryResult.status` field. You can also check for pending / success / error status using the `UseQueryResult.isPending`, `UseQueryResult.isSuccess`, and `UseQueryResult.isError` fields.
-
-To access the data returned by a Query, use the `UseQueryResult.data` field. The data for the `ListTransactions` Query is of type `ListTransactionsData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
-```javascript
-export interface ListTransactionsData {
-  transactions: ({
-    id: UUIDString;
-    type: string;
-    amount: number;
-  } & Transaction_Key)[];
->>>>>>> 546aacf70afe81cbee3ea5f2edbc661c271990b8
-}
-```
-
-To learn more about the `UseQueryResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useQuery).
-
-<<<<<<< HEAD
-### Using `SearchMovie`'s Query hook function
-
-```javascript
-import { getDataConnect } from 'firebase/data-connect';
-import { connectorConfig, SearchMovieVariables } from '@dataconnect/generated';
-import { useSearchMovie } from '@dataconnect/generated/react'
-
-export default function SearchMovieComponent() {
-  // The `useSearchMovie` Query hook has an optional argument of type `SearchMovieVariables`:
-  const searchMovieVars: SearchMovieVariables = {
-    titleInput: ..., // optional
-    genre: ..., // optional
-=======
-### Using `ListTransactions`'s Query hook function
-
-```javascript
-import { getDataConnect } from 'firebase/data-connect';
-import { connectorConfig, ListTransactionsVariables } from '@dataconnect/generated';
-import { useListTransactions } from '@dataconnect/generated/react'
-
-export default function ListTransactionsComponent() {
-  // The `useListTransactions` Query hook requires an argument of type `ListTransactionsVariables`:
-  const listTransactionsVars: ListTransactionsVariables = {
-    businessId: ..., 
->>>>>>> 546aacf70afe81cbee3ea5f2edbc661c271990b8
-  };
-
-  // You don't have to do anything to "execute" the Query.
-  // Call the Query hook function to get a `UseQueryResult` object which holds the state of your Query.
-<<<<<<< HEAD
-  const query = useSearchMovie(searchMovieVars);
-  // Variables can be defined inline as well.
-  const query = useSearchMovie({ titleInput: ..., genre: ..., });
-  // Since all variables are optional for this Query, you can omit the `SearchMovieVariables` argument.
-  // (as long as you don't want to provide any `options`!)
-  const query = useSearchMovie();
-
-  // You can also pass in a `DataConnect` instance to the Query hook function.
-  const dataConnect = getDataConnect(connectorConfig);
-  const query = useSearchMovie(dataConnect, searchMovieVars);
-
-  // You can also pass in a `useDataConnectQueryOptions` object to the Query hook function.
-  const options = { staleTime: 5 * 1000 };
-  const query = useSearchMovie(searchMovieVars, options);
-  // If you'd like to provide options without providing any variables, you must
-  // pass `undefined` where you would normally pass the variables.
-  const query = useSearchMovie(undefined, options);
-=======
-  const query = useListTransactions(listTransactionsVars);
-  // Variables can be defined inline as well.
-  const query = useListTransactions({ businessId: ..., });
-
-  // You can also pass in a `DataConnect` instance to the Query hook function.
-  const dataConnect = getDataConnect(connectorConfig);
-  const query = useListTransactions(dataConnect, listTransactionsVars);
-
-  // You can also pass in a `useDataConnectQueryOptions` object to the Query hook function.
-  const options = { staleTime: 5 * 1000 };
-  const query = useListTransactions(listTransactionsVars, options);
->>>>>>> 546aacf70afe81cbee3ea5f2edbc661c271990b8
-
-  // You can also pass both a `DataConnect` instance and a `useDataConnectQueryOptions` object.
-  const dataConnect = getDataConnect(connectorConfig);
-  const options = { staleTime: 5 * 1000 };
-<<<<<<< HEAD
-  const query = useSearchMovie(dataConnect, searchMovieVars /** or undefined */, options);
-=======
-  const query = useListTransactions(dataConnect, listTransactionsVars, options);
->>>>>>> 546aacf70afe81cbee3ea5f2edbc661c271990b8
-
-  // Then, you can render your component dynamically based on the status of the Query.
-  if (query.isPending) {
-    return <div>Loading...</div>;
-  }
-
-  if (query.isError) {
-    return <div>Error: {query.error.message}</div>;
-  }
-
-  // If the Query is successful, you can access the data returned using the `UseQueryResult.data` field.
-  if (query.isSuccess) {
-<<<<<<< HEAD
-    console.log(query.data.movies);
-=======
-    console.log(query.data.transactions);
-  }
-  return <div>Query execution {query.isSuccess ? 'successful' : 'failed'}!</div>;
-}
-```
-
-## ListTasks
-You can execute the `ListTasks` Query using the following Query hook function, which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts):
-
-```javascript
-useListTasks(dc: DataConnect, vars: ListTasksVariables, options?: useDataConnectQueryOptions<ListTasksData>): UseDataConnectQueryResult<ListTasksData, ListTasksVariables>;
-```
-You can also pass in a `DataConnect` instance to the Query hook function.
-```javascript
-useListTasks(vars: ListTasksVariables, options?: useDataConnectQueryOptions<ListTasksData>): UseDataConnectQueryResult<ListTasksData, ListTasksVariables>;
-```
-
-### Variables
-The `ListTasks` Query requires an argument of type `ListTasksVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
-
-```javascript
-export interface ListTasksVariables {
-  businessId: UUIDString;
-}
-```
-### Return Type
-Recall that calling the `ListTasks` Query hook function returns a `UseQueryResult` object. This object holds the state of your Query, including whether the Query is loading, has completed, or has succeeded/failed, and any data returned by the Query, among other things.
-
-To check the status of a Query, use the `UseQueryResult.status` field. You can also check for pending / success / error status using the `UseQueryResult.isPending`, `UseQueryResult.isSuccess`, and `UseQueryResult.isError` fields.
-
-To access the data returned by a Query, use the `UseQueryResult.data` field. The data for the `ListTasks` Query is of type `ListTasksData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
-```javascript
-export interface ListTasksData {
-  tasks: ({
-    id: UUIDString;
-    title: string;
-    status: string;
-  } & Task_Key)[];
-}
-```
-
-To learn more about the `UseQueryResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useQuery).
-
-### Using `ListTasks`'s Query hook function
-
-```javascript
-import { getDataConnect } from 'firebase/data-connect';
-import { connectorConfig, ListTasksVariables } from '@dataconnect/generated';
-import { useListTasks } from '@dataconnect/generated/react'
-
-export default function ListTasksComponent() {
-  // The `useListTasks` Query hook requires an argument of type `ListTasksVariables`:
-  const listTasksVars: ListTasksVariables = {
-    businessId: ..., 
-  };
-
-  // You don't have to do anything to "execute" the Query.
-  // Call the Query hook function to get a `UseQueryResult` object which holds the state of your Query.
-  const query = useListTasks(listTasksVars);
-  // Variables can be defined inline as well.
-  const query = useListTasks({ businessId: ..., });
-
-  // You can also pass in a `DataConnect` instance to the Query hook function.
-  const dataConnect = getDataConnect(connectorConfig);
-  const query = useListTasks(dataConnect, listTasksVars);
-
-  // You can also pass in a `useDataConnectQueryOptions` object to the Query hook function.
-  const options = { staleTime: 5 * 1000 };
-  const query = useListTasks(listTasksVars, options);
-
-  // You can also pass both a `DataConnect` instance and a `useDataConnectQueryOptions` object.
-  const dataConnect = getDataConnect(connectorConfig);
-  const options = { staleTime: 5 * 1000 };
-  const query = useListTasks(dataConnect, listTasksVars, options);
-
-  // Then, you can render your component dynamically based on the status of the Query.
-  if (query.isPending) {
-    return <div>Loading...</div>;
-  }
-
-  if (query.isError) {
-    return <div>Error: {query.error.message}</div>;
-  }
-
-  // If the Query is successful, you can access the data returned using the `UseQueryResult.data` field.
-  if (query.isSuccess) {
-    console.log(query.data.tasks);
-  }
-  return <div>Query execution {query.isSuccess ? 'successful' : 'failed'}!</div>;
-}
-```
-
-## ListEmployees
-You can execute the `ListEmployees` Query using the following Query hook function, which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts):
-
-```javascript
-useListEmployees(dc: DataConnect, vars: ListEmployeesVariables, options?: useDataConnectQueryOptions<ListEmployeesData>): UseDataConnectQueryResult<ListEmployeesData, ListEmployeesVariables>;
-```
-You can also pass in a `DataConnect` instance to the Query hook function.
-```javascript
-useListEmployees(vars: ListEmployeesVariables, options?: useDataConnectQueryOptions<ListEmployeesData>): UseDataConnectQueryResult<ListEmployeesData, ListEmployeesVariables>;
-```
-
-### Variables
-The `ListEmployees` Query requires an argument of type `ListEmployeesVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
-
-```javascript
-export interface ListEmployeesVariables {
-  businessId: UUIDString;
-}
-```
-### Return Type
-Recall that calling the `ListEmployees` Query hook function returns a `UseQueryResult` object. This object holds the state of your Query, including whether the Query is loading, has completed, or has succeeded/failed, and any data returned by the Query, among other things.
-
-To check the status of a Query, use the `UseQueryResult.status` field. You can also check for pending / success / error status using the `UseQueryResult.isPending`, `UseQueryResult.isSuccess`, and `UseQueryResult.isError` fields.
-
-To access the data returned by a Query, use the `UseQueryResult.data` field. The data for the `ListEmployees` Query is of type `ListEmployeesData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
-```javascript
-export interface ListEmployeesData {
-  employees: ({
-    id: UUIDString;
-    fullName: string;
-  } & Employee_Key)[];
-}
-```
-
-To learn more about the `UseQueryResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useQuery).
-
-### Using `ListEmployees`'s Query hook function
-
-```javascript
-import { getDataConnect } from 'firebase/data-connect';
-import { connectorConfig, ListEmployeesVariables } from '@dataconnect/generated';
-import { useListEmployees } from '@dataconnect/generated/react'
-
-export default function ListEmployeesComponent() {
-  // The `useListEmployees` Query hook requires an argument of type `ListEmployeesVariables`:
-  const listEmployeesVars: ListEmployeesVariables = {
-    businessId: ..., 
-  };
-
-  // You don't have to do anything to "execute" the Query.
-  // Call the Query hook function to get a `UseQueryResult` object which holds the state of your Query.
-  const query = useListEmployees(listEmployeesVars);
-  // Variables can be defined inline as well.
-  const query = useListEmployees({ businessId: ..., });
-
-  // You can also pass in a `DataConnect` instance to the Query hook function.
-  const dataConnect = getDataConnect(connectorConfig);
-  const query = useListEmployees(dataConnect, listEmployeesVars);
-
-  // You can also pass in a `useDataConnectQueryOptions` object to the Query hook function.
-  const options = { staleTime: 5 * 1000 };
-  const query = useListEmployees(listEmployeesVars, options);
-
-  // You can also pass both a `DataConnect` instance and a `useDataConnectQueryOptions` object.
-  const dataConnect = getDataConnect(connectorConfig);
-  const options = { staleTime: 5 * 1000 };
-  const query = useListEmployees(dataConnect, listEmployeesVars, options);
-
-  // Then, you can render your component dynamically based on the status of the Query.
-  if (query.isPending) {
-    return <div>Loading...</div>;
-  }
-
-  if (query.isError) {
-    return <div>Error: {query.error.message}</div>;
-  }
-
-  // If the Query is successful, you can access the data returned using the `UseQueryResult.data` field.
-  if (query.isSuccess) {
-    console.log(query.data.employees);
-  }
-  return <div>Query execution {query.isSuccess ? 'successful' : 'failed'}!</div>;
-}
-```
-
-## ListCustomers
-You can execute the `ListCustomers` Query using the following Query hook function, which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts):
-
-```javascript
-useListCustomers(dc: DataConnect, vars: ListCustomersVariables, options?: useDataConnectQueryOptions<ListCustomersData>): UseDataConnectQueryResult<ListCustomersData, ListCustomersVariables>;
-```
-You can also pass in a `DataConnect` instance to the Query hook function.
-```javascript
-useListCustomers(vars: ListCustomersVariables, options?: useDataConnectQueryOptions<ListCustomersData>): UseDataConnectQueryResult<ListCustomersData, ListCustomersVariables>;
-```
-
-### Variables
-The `ListCustomers` Query requires an argument of type `ListCustomersVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
-
-```javascript
-export interface ListCustomersVariables {
-  businessId: UUIDString;
-}
-```
-### Return Type
-Recall that calling the `ListCustomers` Query hook function returns a `UseQueryResult` object. This object holds the state of your Query, including whether the Query is loading, has completed, or has succeeded/failed, and any data returned by the Query, among other things.
-
-To check the status of a Query, use the `UseQueryResult.status` field. You can also check for pending / success / error status using the `UseQueryResult.isPending`, `UseQueryResult.isSuccess`, and `UseQueryResult.isError` fields.
-
-To access the data returned by a Query, use the `UseQueryResult.data` field. The data for the `ListCustomers` Query is of type `ListCustomersData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
-```javascript
-export interface ListCustomersData {
+export interface ListCustomersByBusinessData {
   customers: ({
-    id: UUIDString;
+    id: string;
     customerName: string;
+    phoneNumber?: string | null;
+    email?: string | null;
+    createdAt: TimestampString;
+    tenantId: string;
+    businessId: string;
   } & Customer_Key)[];
 }
 ```
 
 To learn more about the `UseQueryResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useQuery).
 
-### Using `ListCustomers`'s Query hook function
+### Using `listCustomersByBusiness`'s Query hook function
 
 ```javascript
 import { getDataConnect } from 'firebase/data-connect';
-import { connectorConfig, ListCustomersVariables } from '@dataconnect/generated';
-import { useListCustomers } from '@dataconnect/generated/react'
+import { connectorConfig, ListCustomersByBusinessVariables } from '@dataconnect/generated';
+import { useListCustomersByBusiness } from '@dataconnect/generated/react'
 
-export default function ListCustomersComponent() {
-  // The `useListCustomers` Query hook requires an argument of type `ListCustomersVariables`:
-  const listCustomersVars: ListCustomersVariables = {
+export default function ListCustomersByBusinessComponent() {
+  // The `useListCustomersByBusiness` Query hook requires an argument of type `ListCustomersByBusinessVariables`:
+  const listCustomersByBusinessVars: ListCustomersByBusinessVariables = {
+    tenantId: ..., 
     businessId: ..., 
   };
 
   // You don't have to do anything to "execute" the Query.
   // Call the Query hook function to get a `UseQueryResult` object which holds the state of your Query.
-  const query = useListCustomers(listCustomersVars);
+  const query = useListCustomersByBusiness(listCustomersByBusinessVars);
   // Variables can be defined inline as well.
-  const query = useListCustomers({ businessId: ..., });
+  const query = useListCustomersByBusiness({ tenantId: ..., businessId: ..., });
 
   // You can also pass in a `DataConnect` instance to the Query hook function.
   const dataConnect = getDataConnect(connectorConfig);
-  const query = useListCustomers(dataConnect, listCustomersVars);
+  const query = useListCustomersByBusiness(dataConnect, listCustomersByBusinessVars);
 
   // You can also pass in a `useDataConnectQueryOptions` object to the Query hook function.
   const options = { staleTime: 5 * 1000 };
-  const query = useListCustomers(listCustomersVars, options);
+  const query = useListCustomersByBusiness(listCustomersByBusinessVars, options);
 
   // You can also pass both a `DataConnect` instance and a `useDataConnectQueryOptions` object.
   const dataConnect = getDataConnect(connectorConfig);
   const options = { staleTime: 5 * 1000 };
-  const query = useListCustomers(dataConnect, listCustomersVars, options);
+  const query = useListCustomersByBusiness(dataConnect, listCustomersByBusinessVars, options);
 
   // Then, you can render your component dynamically based on the status of the Query.
   if (query.isPending) {
@@ -1165,73 +605,80 @@ export default function ListCustomersComponent() {
 }
 ```
 
-## ListSuppliers
-You can execute the `ListSuppliers` Query using the following Query hook function, which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts):
+## listSuppliersByBusiness
+You can execute the `listSuppliersByBusiness` Query using the following Query hook function, which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts):
 
 ```javascript
-useListSuppliers(dc: DataConnect, vars: ListSuppliersVariables, options?: useDataConnectQueryOptions<ListSuppliersData>): UseDataConnectQueryResult<ListSuppliersData, ListSuppliersVariables>;
+useListSuppliersByBusiness(dc: DataConnect, vars: ListSuppliersByBusinessVariables, options?: useDataConnectQueryOptions<ListSuppliersByBusinessData>): UseDataConnectQueryResult<ListSuppliersByBusinessData, ListSuppliersByBusinessVariables>;
 ```
 You can also pass in a `DataConnect` instance to the Query hook function.
 ```javascript
-useListSuppliers(vars: ListSuppliersVariables, options?: useDataConnectQueryOptions<ListSuppliersData>): UseDataConnectQueryResult<ListSuppliersData, ListSuppliersVariables>;
+useListSuppliersByBusiness(vars: ListSuppliersByBusinessVariables, options?: useDataConnectQueryOptions<ListSuppliersByBusinessData>): UseDataConnectQueryResult<ListSuppliersByBusinessData, ListSuppliersByBusinessVariables>;
 ```
 
 ### Variables
-The `ListSuppliers` Query requires an argument of type `ListSuppliersVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+The `listSuppliersByBusiness` Query requires an argument of type `ListSuppliersByBusinessVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
 
 ```javascript
-export interface ListSuppliersVariables {
-  businessId: UUIDString;
+export interface ListSuppliersByBusinessVariables {
+  tenantId: string;
+  businessId: string;
 }
 ```
 ### Return Type
-Recall that calling the `ListSuppliers` Query hook function returns a `UseQueryResult` object. This object holds the state of your Query, including whether the Query is loading, has completed, or has succeeded/failed, and any data returned by the Query, among other things.
+Recall that calling the `listSuppliersByBusiness` Query hook function returns a `UseQueryResult` object. This object holds the state of your Query, including whether the Query is loading, has completed, or has succeeded/failed, and any data returned by the Query, among other things.
 
 To check the status of a Query, use the `UseQueryResult.status` field. You can also check for pending / success / error status using the `UseQueryResult.isPending`, `UseQueryResult.isSuccess`, and `UseQueryResult.isError` fields.
 
-To access the data returned by a Query, use the `UseQueryResult.data` field. The data for the `ListSuppliers` Query is of type `ListSuppliersData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+To access the data returned by a Query, use the `UseQueryResult.data` field. The data for the `listSuppliersByBusiness` Query is of type `ListSuppliersByBusinessData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
 ```javascript
-export interface ListSuppliersData {
+export interface ListSuppliersByBusinessData {
   suppliers: ({
-    id: UUIDString;
+    id: string;
     supplierName: string;
+    phoneNumber?: string | null;
+    email?: string | null;
+    createdAt: TimestampString;
+    tenantId: string;
+    businessId: string;
   } & Supplier_Key)[];
 }
 ```
 
 To learn more about the `UseQueryResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useQuery).
 
-### Using `ListSuppliers`'s Query hook function
+### Using `listSuppliersByBusiness`'s Query hook function
 
 ```javascript
 import { getDataConnect } from 'firebase/data-connect';
-import { connectorConfig, ListSuppliersVariables } from '@dataconnect/generated';
-import { useListSuppliers } from '@dataconnect/generated/react'
+import { connectorConfig, ListSuppliersByBusinessVariables } from '@dataconnect/generated';
+import { useListSuppliersByBusiness } from '@dataconnect/generated/react'
 
-export default function ListSuppliersComponent() {
-  // The `useListSuppliers` Query hook requires an argument of type `ListSuppliersVariables`:
-  const listSuppliersVars: ListSuppliersVariables = {
+export default function ListSuppliersByBusinessComponent() {
+  // The `useListSuppliersByBusiness` Query hook requires an argument of type `ListSuppliersByBusinessVariables`:
+  const listSuppliersByBusinessVars: ListSuppliersByBusinessVariables = {
+    tenantId: ..., 
     businessId: ..., 
   };
 
   // You don't have to do anything to "execute" the Query.
   // Call the Query hook function to get a `UseQueryResult` object which holds the state of your Query.
-  const query = useListSuppliers(listSuppliersVars);
+  const query = useListSuppliersByBusiness(listSuppliersByBusinessVars);
   // Variables can be defined inline as well.
-  const query = useListSuppliers({ businessId: ..., });
+  const query = useListSuppliersByBusiness({ tenantId: ..., businessId: ..., });
 
   // You can also pass in a `DataConnect` instance to the Query hook function.
   const dataConnect = getDataConnect(connectorConfig);
-  const query = useListSuppliers(dataConnect, listSuppliersVars);
+  const query = useListSuppliersByBusiness(dataConnect, listSuppliersByBusinessVars);
 
   // You can also pass in a `useDataConnectQueryOptions` object to the Query hook function.
   const options = { staleTime: 5 * 1000 };
-  const query = useListSuppliers(listSuppliersVars, options);
+  const query = useListSuppliersByBusiness(listSuppliersByBusinessVars, options);
 
   // You can also pass both a `DataConnect` instance and a `useDataConnectQueryOptions` object.
   const dataConnect = getDataConnect(connectorConfig);
   const options = { staleTime: 5 * 1000 };
-  const query = useListSuppliers(dataConnect, listSuppliersVars, options);
+  const query = useListSuppliersByBusiness(dataConnect, listSuppliersByBusinessVars, options);
 
   // Then, you can render your component dynamically based on the status of the Query.
   if (query.isPending) {
@@ -1250,73 +697,469 @@ export default function ListSuppliersComponent() {
 }
 ```
 
-## ListDocuments
-You can execute the `ListDocuments` Query using the following Query hook function, which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts):
+## listTasksByBusiness
+You can execute the `listTasksByBusiness` Query using the following Query hook function, which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts):
 
 ```javascript
-useListDocuments(dc: DataConnect, vars: ListDocumentsVariables, options?: useDataConnectQueryOptions<ListDocumentsData>): UseDataConnectQueryResult<ListDocumentsData, ListDocumentsVariables>;
+useListTasksByBusiness(dc: DataConnect, vars: ListTasksByBusinessVariables, options?: useDataConnectQueryOptions<ListTasksByBusinessData>): UseDataConnectQueryResult<ListTasksByBusinessData, ListTasksByBusinessVariables>;
 ```
 You can also pass in a `DataConnect` instance to the Query hook function.
 ```javascript
-useListDocuments(vars: ListDocumentsVariables, options?: useDataConnectQueryOptions<ListDocumentsData>): UseDataConnectQueryResult<ListDocumentsData, ListDocumentsVariables>;
+useListTasksByBusiness(vars: ListTasksByBusinessVariables, options?: useDataConnectQueryOptions<ListTasksByBusinessData>): UseDataConnectQueryResult<ListTasksByBusinessData, ListTasksByBusinessVariables>;
 ```
 
 ### Variables
-The `ListDocuments` Query requires an argument of type `ListDocumentsVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+The `listTasksByBusiness` Query requires an argument of type `ListTasksByBusinessVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
 
 ```javascript
-export interface ListDocumentsVariables {
-  businessId: UUIDString;
+export interface ListTasksByBusinessVariables {
+  tenantId: string;
+  businessId: string;
 }
 ```
 ### Return Type
-Recall that calling the `ListDocuments` Query hook function returns a `UseQueryResult` object. This object holds the state of your Query, including whether the Query is loading, has completed, or has succeeded/failed, and any data returned by the Query, among other things.
+Recall that calling the `listTasksByBusiness` Query hook function returns a `UseQueryResult` object. This object holds the state of your Query, including whether the Query is loading, has completed, or has succeeded/failed, and any data returned by the Query, among other things.
 
 To check the status of a Query, use the `UseQueryResult.status` field. You can also check for pending / success / error status using the `UseQueryResult.isPending`, `UseQueryResult.isSuccess`, and `UseQueryResult.isError` fields.
 
-To access the data returned by a Query, use the `UseQueryResult.data` field. The data for the `ListDocuments` Query is of type `ListDocumentsData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+To access the data returned by a Query, use the `UseQueryResult.data` field. The data for the `listTasksByBusiness` Query is of type `ListTasksByBusinessData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
 ```javascript
-export interface ListDocumentsData {
-  documents: ({
-    id: UUIDString;
+export interface ListTasksByBusinessData {
+  tasks: ({
+    id: string;
     title: string;
+    description?: string | null;
+    status: TaskStatus;
+    priority?: TaskPriority | null;
+    dueDate: TimestampString;
+    assignedTo?: {
+      id: string;
+      email: string;
+      role: string;
+    } & User_Key;
+    createdBy: string;
+    createdAt: TimestampString;
+    updatedAt?: TimestampString | null;
+    tenantId: string;
+    businessId: string;
+  } & Task_Key)[];
+}
+```
+
+To learn more about the `UseQueryResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useQuery).
+
+### Using `listTasksByBusiness`'s Query hook function
+
+```javascript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, ListTasksByBusinessVariables } from '@dataconnect/generated';
+import { useListTasksByBusiness } from '@dataconnect/generated/react'
+
+export default function ListTasksByBusinessComponent() {
+  // The `useListTasksByBusiness` Query hook requires an argument of type `ListTasksByBusinessVariables`:
+  const listTasksByBusinessVars: ListTasksByBusinessVariables = {
+    tenantId: ..., 
+    businessId: ..., 
+  };
+
+  // You don't have to do anything to "execute" the Query.
+  // Call the Query hook function to get a `UseQueryResult` object which holds the state of your Query.
+  const query = useListTasksByBusiness(listTasksByBusinessVars);
+  // Variables can be defined inline as well.
+  const query = useListTasksByBusiness({ tenantId: ..., businessId: ..., });
+
+  // You can also pass in a `DataConnect` instance to the Query hook function.
+  const dataConnect = getDataConnect(connectorConfig);
+  const query = useListTasksByBusiness(dataConnect, listTasksByBusinessVars);
+
+  // You can also pass in a `useDataConnectQueryOptions` object to the Query hook function.
+  const options = { staleTime: 5 * 1000 };
+  const query = useListTasksByBusiness(listTasksByBusinessVars, options);
+
+  // You can also pass both a `DataConnect` instance and a `useDataConnectQueryOptions` object.
+  const dataConnect = getDataConnect(connectorConfig);
+  const options = { staleTime: 5 * 1000 };
+  const query = useListTasksByBusiness(dataConnect, listTasksByBusinessVars, options);
+
+  // Then, you can render your component dynamically based on the status of the Query.
+  if (query.isPending) {
+    return <div>Loading...</div>;
+  }
+
+  if (query.isError) {
+    return <div>Error: {query.error.message}</div>;
+  }
+
+  // If the Query is successful, you can access the data returned using the `UseQueryResult.data` field.
+  if (query.isSuccess) {
+    console.log(query.data.tasks);
+  }
+  return <div>Query execution {query.isSuccess ? 'successful' : 'failed'}!</div>;
+}
+```
+
+## listTransactionsByBusiness
+You can execute the `listTransactionsByBusiness` Query using the following Query hook function, which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts):
+
+```javascript
+useListTransactionsByBusiness(dc: DataConnect, vars: ListTransactionsByBusinessVariables, options?: useDataConnectQueryOptions<ListTransactionsByBusinessData>): UseDataConnectQueryResult<ListTransactionsByBusinessData, ListTransactionsByBusinessVariables>;
+```
+You can also pass in a `DataConnect` instance to the Query hook function.
+```javascript
+useListTransactionsByBusiness(vars: ListTransactionsByBusinessVariables, options?: useDataConnectQueryOptions<ListTransactionsByBusinessData>): UseDataConnectQueryResult<ListTransactionsByBusinessData, ListTransactionsByBusinessVariables>;
+```
+
+### Variables
+The `listTransactionsByBusiness` Query requires an argument of type `ListTransactionsByBusinessVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+
+```javascript
+export interface ListTransactionsByBusinessVariables {
+  tenantId: string;
+  businessId: string;
+}
+```
+### Return Type
+Recall that calling the `listTransactionsByBusiness` Query hook function returns a `UseQueryResult` object. This object holds the state of your Query, including whether the Query is loading, has completed, or has succeeded/failed, and any data returned by the Query, among other things.
+
+To check the status of a Query, use the `UseQueryResult.status` field. You can also check for pending / success / error status using the `UseQueryResult.isPending`, `UseQueryResult.isSuccess`, and `UseQueryResult.isError` fields.
+
+To access the data returned by a Query, use the `UseQueryResult.data` field. The data for the `listTransactionsByBusiness` Query is of type `ListTransactionsByBusinessData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+```javascript
+export interface ListTransactionsByBusinessData {
+  transactions: ({
+    id: string;
+    type: TransactionType;
+    amount: number;
+    date: TimestampString;
+    category?: string | null;
+    receiptUrl?: string | null;
+    recordedBy: string;
+    createdAt: TimestampString;
+    tenantId: string;
+    businessId: string;
+  } & Transaction_Key)[];
+}
+```
+
+To learn more about the `UseQueryResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useQuery).
+
+### Using `listTransactionsByBusiness`'s Query hook function
+
+```javascript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, ListTransactionsByBusinessVariables } from '@dataconnect/generated';
+import { useListTransactionsByBusiness } from '@dataconnect/generated/react'
+
+export default function ListTransactionsByBusinessComponent() {
+  // The `useListTransactionsByBusiness` Query hook requires an argument of type `ListTransactionsByBusinessVariables`:
+  const listTransactionsByBusinessVars: ListTransactionsByBusinessVariables = {
+    tenantId: ..., 
+    businessId: ..., 
+  };
+
+  // You don't have to do anything to "execute" the Query.
+  // Call the Query hook function to get a `UseQueryResult` object which holds the state of your Query.
+  const query = useListTransactionsByBusiness(listTransactionsByBusinessVars);
+  // Variables can be defined inline as well.
+  const query = useListTransactionsByBusiness({ tenantId: ..., businessId: ..., });
+
+  // You can also pass in a `DataConnect` instance to the Query hook function.
+  const dataConnect = getDataConnect(connectorConfig);
+  const query = useListTransactionsByBusiness(dataConnect, listTransactionsByBusinessVars);
+
+  // You can also pass in a `useDataConnectQueryOptions` object to the Query hook function.
+  const options = { staleTime: 5 * 1000 };
+  const query = useListTransactionsByBusiness(listTransactionsByBusinessVars, options);
+
+  // You can also pass both a `DataConnect` instance and a `useDataConnectQueryOptions` object.
+  const dataConnect = getDataConnect(connectorConfig);
+  const options = { staleTime: 5 * 1000 };
+  const query = useListTransactionsByBusiness(dataConnect, listTransactionsByBusinessVars, options);
+
+  // Then, you can render your component dynamically based on the status of the Query.
+  if (query.isPending) {
+    return <div>Loading...</div>;
+  }
+
+  if (query.isError) {
+    return <div>Error: {query.error.message}</div>;
+  }
+
+  // If the Query is successful, you can access the data returned using the `UseQueryResult.data` field.
+  if (query.isSuccess) {
+    console.log(query.data.transactions);
+  }
+  return <div>Query execution {query.isSuccess ? 'successful' : 'failed'}!</div>;
+}
+```
+
+## listTransactionsByType
+You can execute the `listTransactionsByType` Query using the following Query hook function, which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts):
+
+```javascript
+useListTransactionsByType(dc: DataConnect, vars: ListTransactionsByTypeVariables, options?: useDataConnectQueryOptions<ListTransactionsByTypeData>): UseDataConnectQueryResult<ListTransactionsByTypeData, ListTransactionsByTypeVariables>;
+```
+You can also pass in a `DataConnect` instance to the Query hook function.
+```javascript
+useListTransactionsByType(vars: ListTransactionsByTypeVariables, options?: useDataConnectQueryOptions<ListTransactionsByTypeData>): UseDataConnectQueryResult<ListTransactionsByTypeData, ListTransactionsByTypeVariables>;
+```
+
+### Variables
+The `listTransactionsByType` Query requires an argument of type `ListTransactionsByTypeVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+
+```javascript
+export interface ListTransactionsByTypeVariables {
+  tenantId: string;
+  businessId: string;
+  type: TransactionType;
+}
+```
+### Return Type
+Recall that calling the `listTransactionsByType` Query hook function returns a `UseQueryResult` object. This object holds the state of your Query, including whether the Query is loading, has completed, or has succeeded/failed, and any data returned by the Query, among other things.
+
+To check the status of a Query, use the `UseQueryResult.status` field. You can also check for pending / success / error status using the `UseQueryResult.isPending`, `UseQueryResult.isSuccess`, and `UseQueryResult.isError` fields.
+
+To access the data returned by a Query, use the `UseQueryResult.data` field. The data for the `listTransactionsByType` Query is of type `ListTransactionsByTypeData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+```javascript
+export interface ListTransactionsByTypeData {
+  transactions: ({
+    id: string;
+    type: TransactionType;
+    amount: number;
+    date: TimestampString;
+    category?: string | null;
+    receiptUrl?: string | null;
+    recordedBy: string;
+    createdAt: TimestampString;
+    tenantId: string;
+    businessId: string;
+  } & Transaction_Key)[];
+}
+```
+
+To learn more about the `UseQueryResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useQuery).
+
+### Using `listTransactionsByType`'s Query hook function
+
+```javascript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, ListTransactionsByTypeVariables } from '@dataconnect/generated';
+import { useListTransactionsByType } from '@dataconnect/generated/react'
+
+export default function ListTransactionsByTypeComponent() {
+  // The `useListTransactionsByType` Query hook requires an argument of type `ListTransactionsByTypeVariables`:
+  const listTransactionsByTypeVars: ListTransactionsByTypeVariables = {
+    tenantId: ..., 
+    businessId: ..., 
+    type: ..., 
+  };
+
+  // You don't have to do anything to "execute" the Query.
+  // Call the Query hook function to get a `UseQueryResult` object which holds the state of your Query.
+  const query = useListTransactionsByType(listTransactionsByTypeVars);
+  // Variables can be defined inline as well.
+  const query = useListTransactionsByType({ tenantId: ..., businessId: ..., type: ..., });
+
+  // You can also pass in a `DataConnect` instance to the Query hook function.
+  const dataConnect = getDataConnect(connectorConfig);
+  const query = useListTransactionsByType(dataConnect, listTransactionsByTypeVars);
+
+  // You can also pass in a `useDataConnectQueryOptions` object to the Query hook function.
+  const options = { staleTime: 5 * 1000 };
+  const query = useListTransactionsByType(listTransactionsByTypeVars, options);
+
+  // You can also pass both a `DataConnect` instance and a `useDataConnectQueryOptions` object.
+  const dataConnect = getDataConnect(connectorConfig);
+  const options = { staleTime: 5 * 1000 };
+  const query = useListTransactionsByType(dataConnect, listTransactionsByTypeVars, options);
+
+  // Then, you can render your component dynamically based on the status of the Query.
+  if (query.isPending) {
+    return <div>Loading...</div>;
+  }
+
+  if (query.isError) {
+    return <div>Error: {query.error.message}</div>;
+  }
+
+  // If the Query is successful, you can access the data returned using the `UseQueryResult.data` field.
+  if (query.isSuccess) {
+    console.log(query.data.transactions);
+  }
+  return <div>Query execution {query.isSuccess ? 'successful' : 'failed'}!</div>;
+}
+```
+
+## listEmployeesByBusiness
+You can execute the `listEmployeesByBusiness` Query using the following Query hook function, which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts):
+
+```javascript
+useListEmployeesByBusiness(dc: DataConnect, vars: ListEmployeesByBusinessVariables, options?: useDataConnectQueryOptions<ListEmployeesByBusinessData>): UseDataConnectQueryResult<ListEmployeesByBusinessData, ListEmployeesByBusinessVariables>;
+```
+You can also pass in a `DataConnect` instance to the Query hook function.
+```javascript
+useListEmployeesByBusiness(vars: ListEmployeesByBusinessVariables, options?: useDataConnectQueryOptions<ListEmployeesByBusinessData>): UseDataConnectQueryResult<ListEmployeesByBusinessData, ListEmployeesByBusinessVariables>;
+```
+
+### Variables
+The `listEmployeesByBusiness` Query requires an argument of type `ListEmployeesByBusinessVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+
+```javascript
+export interface ListEmployeesByBusinessVariables {
+  tenantId: string;
+  businessId: string;
+}
+```
+### Return Type
+Recall that calling the `listEmployeesByBusiness` Query hook function returns a `UseQueryResult` object. This object holds the state of your Query, including whether the Query is loading, has completed, or has succeeded/failed, and any data returned by the Query, among other things.
+
+To check the status of a Query, use the `UseQueryResult.status` field. You can also check for pending / success / error status using the `UseQueryResult.isPending`, `UseQueryResult.isSuccess`, and `UseQueryResult.isError` fields.
+
+To access the data returned by a Query, use the `UseQueryResult.data` field. The data for the `listEmployeesByBusiness` Query is of type `ListEmployeesByBusinessData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+```javascript
+export interface ListEmployeesByBusinessData {
+  employees: ({
+    id: string;
+    fullName: string;
+    position: string;
+    salary?: number | null;
+    department?: string | null;
+    startDate?: DateString | null;
+    status?: string | null;
+    createdAt: TimestampString;
+    tenantId: string;
+    businessId: string;
+  } & Employee_Key)[];
+}
+```
+
+To learn more about the `UseQueryResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useQuery).
+
+### Using `listEmployeesByBusiness`'s Query hook function
+
+```javascript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, ListEmployeesByBusinessVariables } from '@dataconnect/generated';
+import { useListEmployeesByBusiness } from '@dataconnect/generated/react'
+
+export default function ListEmployeesByBusinessComponent() {
+  // The `useListEmployeesByBusiness` Query hook requires an argument of type `ListEmployeesByBusinessVariables`:
+  const listEmployeesByBusinessVars: ListEmployeesByBusinessVariables = {
+    tenantId: ..., 
+    businessId: ..., 
+  };
+
+  // You don't have to do anything to "execute" the Query.
+  // Call the Query hook function to get a `UseQueryResult` object which holds the state of your Query.
+  const query = useListEmployeesByBusiness(listEmployeesByBusinessVars);
+  // Variables can be defined inline as well.
+  const query = useListEmployeesByBusiness({ tenantId: ..., businessId: ..., });
+
+  // You can also pass in a `DataConnect` instance to the Query hook function.
+  const dataConnect = getDataConnect(connectorConfig);
+  const query = useListEmployeesByBusiness(dataConnect, listEmployeesByBusinessVars);
+
+  // You can also pass in a `useDataConnectQueryOptions` object to the Query hook function.
+  const options = { staleTime: 5 * 1000 };
+  const query = useListEmployeesByBusiness(listEmployeesByBusinessVars, options);
+
+  // You can also pass both a `DataConnect` instance and a `useDataConnectQueryOptions` object.
+  const dataConnect = getDataConnect(connectorConfig);
+  const options = { staleTime: 5 * 1000 };
+  const query = useListEmployeesByBusiness(dataConnect, listEmployeesByBusinessVars, options);
+
+  // Then, you can render your component dynamically based on the status of the Query.
+  if (query.isPending) {
+    return <div>Loading...</div>;
+  }
+
+  if (query.isError) {
+    return <div>Error: {query.error.message}</div>;
+  }
+
+  // If the Query is successful, you can access the data returned using the `UseQueryResult.data` field.
+  if (query.isSuccess) {
+    console.log(query.data.employees);
+  }
+  return <div>Query execution {query.isSuccess ? 'successful' : 'failed'}!</div>;
+}
+```
+
+## listDocumentsByBusiness
+You can execute the `listDocumentsByBusiness` Query using the following Query hook function, which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts):
+
+```javascript
+useListDocumentsByBusiness(dc: DataConnect, vars: ListDocumentsByBusinessVariables, options?: useDataConnectQueryOptions<ListDocumentsByBusinessData>): UseDataConnectQueryResult<ListDocumentsByBusinessData, ListDocumentsByBusinessVariables>;
+```
+You can also pass in a `DataConnect` instance to the Query hook function.
+```javascript
+useListDocumentsByBusiness(vars: ListDocumentsByBusinessVariables, options?: useDataConnectQueryOptions<ListDocumentsByBusinessData>): UseDataConnectQueryResult<ListDocumentsByBusinessData, ListDocumentsByBusinessVariables>;
+```
+
+### Variables
+The `listDocumentsByBusiness` Query requires an argument of type `ListDocumentsByBusinessVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+
+```javascript
+export interface ListDocumentsByBusinessVariables {
+  tenantId: string;
+  businessId: string;
+}
+```
+### Return Type
+Recall that calling the `listDocumentsByBusiness` Query hook function returns a `UseQueryResult` object. This object holds the state of your Query, including whether the Query is loading, has completed, or has succeeded/failed, and any data returned by the Query, among other things.
+
+To check the status of a Query, use the `UseQueryResult.status` field. You can also check for pending / success / error status using the `UseQueryResult.isPending`, `UseQueryResult.isSuccess`, and `UseQueryResult.isError` fields.
+
+To access the data returned by a Query, use the `UseQueryResult.data` field. The data for the `listDocumentsByBusiness` Query is of type `ListDocumentsByBusinessData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+```javascript
+export interface ListDocumentsByBusinessData {
+  documents: ({
+    id: string;
+    title: string;
+    documentType: string;
+    fileUrl: string;
+    uploadedBy: string;
+    uploadedAt: TimestampString;
+    tenantId: string;
+    businessId: string;
   } & Document_Key)[];
 }
 ```
 
 To learn more about the `UseQueryResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useQuery).
 
-### Using `ListDocuments`'s Query hook function
+### Using `listDocumentsByBusiness`'s Query hook function
 
 ```javascript
 import { getDataConnect } from 'firebase/data-connect';
-import { connectorConfig, ListDocumentsVariables } from '@dataconnect/generated';
-import { useListDocuments } from '@dataconnect/generated/react'
+import { connectorConfig, ListDocumentsByBusinessVariables } from '@dataconnect/generated';
+import { useListDocumentsByBusiness } from '@dataconnect/generated/react'
 
-export default function ListDocumentsComponent() {
-  // The `useListDocuments` Query hook requires an argument of type `ListDocumentsVariables`:
-  const listDocumentsVars: ListDocumentsVariables = {
+export default function ListDocumentsByBusinessComponent() {
+  // The `useListDocumentsByBusiness` Query hook requires an argument of type `ListDocumentsByBusinessVariables`:
+  const listDocumentsByBusinessVars: ListDocumentsByBusinessVariables = {
+    tenantId: ..., 
     businessId: ..., 
   };
 
   // You don't have to do anything to "execute" the Query.
   // Call the Query hook function to get a `UseQueryResult` object which holds the state of your Query.
-  const query = useListDocuments(listDocumentsVars);
+  const query = useListDocumentsByBusiness(listDocumentsByBusinessVars);
   // Variables can be defined inline as well.
-  const query = useListDocuments({ businessId: ..., });
+  const query = useListDocumentsByBusiness({ tenantId: ..., businessId: ..., });
 
   // You can also pass in a `DataConnect` instance to the Query hook function.
   const dataConnect = getDataConnect(connectorConfig);
-  const query = useListDocuments(dataConnect, listDocumentsVars);
+  const query = useListDocumentsByBusiness(dataConnect, listDocumentsByBusinessVars);
 
   // You can also pass in a `useDataConnectQueryOptions` object to the Query hook function.
   const options = { staleTime: 5 * 1000 };
-  const query = useListDocuments(listDocumentsVars, options);
+  const query = useListDocumentsByBusiness(listDocumentsByBusinessVars, options);
 
   // You can also pass both a `DataConnect` instance and a `useDataConnectQueryOptions` object.
   const dataConnect = getDataConnect(connectorConfig);
   const options = { staleTime: 5 * 1000 };
-  const query = useListDocuments(dataConnect, listDocumentsVars, options);
+  const query = useListDocumentsByBusiness(dataConnect, listDocumentsByBusinessVars, options);
 
   // Then, you can render your component dynamically based on the status of the Query.
   if (query.isPending) {
@@ -1330,7 +1173,198 @@ export default function ListDocumentsComponent() {
   // If the Query is successful, you can access the data returned using the `UseQueryResult.data` field.
   if (query.isSuccess) {
     console.log(query.data.documents);
->>>>>>> 546aacf70afe81cbee3ea5f2edbc661c271990b8
+  }
+  return <div>Query execution {query.isSuccess ? 'successful' : 'failed'}!</div>;
+}
+```
+
+## listActivityLogsByUser
+You can execute the `listActivityLogsByUser` Query using the following Query hook function, which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts):
+
+```javascript
+useListActivityLogsByUser(dc: DataConnect, vars: ListActivityLogsByUserVariables, options?: useDataConnectQueryOptions<ListActivityLogsByUserData>): UseDataConnectQueryResult<ListActivityLogsByUserData, ListActivityLogsByUserVariables>;
+```
+You can also pass in a `DataConnect` instance to the Query hook function.
+```javascript
+useListActivityLogsByUser(vars: ListActivityLogsByUserVariables, options?: useDataConnectQueryOptions<ListActivityLogsByUserData>): UseDataConnectQueryResult<ListActivityLogsByUserData, ListActivityLogsByUserVariables>;
+```
+
+### Variables
+The `listActivityLogsByUser` Query requires an argument of type `ListActivityLogsByUserVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+
+```javascript
+export interface ListActivityLogsByUserVariables {
+  tenantId: string;
+  businessId: string;
+  userId: string;
+}
+```
+### Return Type
+Recall that calling the `listActivityLogsByUser` Query hook function returns a `UseQueryResult` object. This object holds the state of your Query, including whether the Query is loading, has completed, or has succeeded/failed, and any data returned by the Query, among other things.
+
+To check the status of a Query, use the `UseQueryResult.status` field. You can also check for pending / success / error status using the `UseQueryResult.isPending`, `UseQueryResult.isSuccess`, and `UseQueryResult.isError` fields.
+
+To access the data returned by a Query, use the `UseQueryResult.data` field. The data for the `listActivityLogsByUser` Query is of type `ListActivityLogsByUserData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+```javascript
+export interface ListActivityLogsByUserData {
+  activityLogs: ({
+    id: string;
+    tenantId: string;
+    businessId: string;
+    userId: string;
+    userName: string;
+    actionType: string;
+    module: string;
+    description?: string | null;
+    recordId?: string | null;
+    timestamp: TimestampString;
+  } & ActivityLog_Key)[];
+}
+```
+
+To learn more about the `UseQueryResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useQuery).
+
+### Using `listActivityLogsByUser`'s Query hook function
+
+```javascript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, ListActivityLogsByUserVariables } from '@dataconnect/generated';
+import { useListActivityLogsByUser } from '@dataconnect/generated/react'
+
+export default function ListActivityLogsByUserComponent() {
+  // The `useListActivityLogsByUser` Query hook requires an argument of type `ListActivityLogsByUserVariables`:
+  const listActivityLogsByUserVars: ListActivityLogsByUserVariables = {
+    tenantId: ..., 
+    businessId: ..., 
+    userId: ..., 
+  };
+
+  // You don't have to do anything to "execute" the Query.
+  // Call the Query hook function to get a `UseQueryResult` object which holds the state of your Query.
+  const query = useListActivityLogsByUser(listActivityLogsByUserVars);
+  // Variables can be defined inline as well.
+  const query = useListActivityLogsByUser({ tenantId: ..., businessId: ..., userId: ..., });
+
+  // You can also pass in a `DataConnect` instance to the Query hook function.
+  const dataConnect = getDataConnect(connectorConfig);
+  const query = useListActivityLogsByUser(dataConnect, listActivityLogsByUserVars);
+
+  // You can also pass in a `useDataConnectQueryOptions` object to the Query hook function.
+  const options = { staleTime: 5 * 1000 };
+  const query = useListActivityLogsByUser(listActivityLogsByUserVars, options);
+
+  // You can also pass both a `DataConnect` instance and a `useDataConnectQueryOptions` object.
+  const dataConnect = getDataConnect(connectorConfig);
+  const options = { staleTime: 5 * 1000 };
+  const query = useListActivityLogsByUser(dataConnect, listActivityLogsByUserVars, options);
+
+  // Then, you can render your component dynamically based on the status of the Query.
+  if (query.isPending) {
+    return <div>Loading...</div>;
+  }
+
+  if (query.isError) {
+    return <div>Error: {query.error.message}</div>;
+  }
+
+  // If the Query is successful, you can access the data returned using the `UseQueryResult.data` field.
+  if (query.isSuccess) {
+    console.log(query.data.activityLogs);
+  }
+  return <div>Query execution {query.isSuccess ? 'successful' : 'failed'}!</div>;
+}
+```
+
+## listActivityLogsByBusiness
+You can execute the `listActivityLogsByBusiness` Query using the following Query hook function, which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts):
+
+```javascript
+useListActivityLogsByBusiness(dc: DataConnect, vars: ListActivityLogsByBusinessVariables, options?: useDataConnectQueryOptions<ListActivityLogsByBusinessData>): UseDataConnectQueryResult<ListActivityLogsByBusinessData, ListActivityLogsByBusinessVariables>;
+```
+You can also pass in a `DataConnect` instance to the Query hook function.
+```javascript
+useListActivityLogsByBusiness(vars: ListActivityLogsByBusinessVariables, options?: useDataConnectQueryOptions<ListActivityLogsByBusinessData>): UseDataConnectQueryResult<ListActivityLogsByBusinessData, ListActivityLogsByBusinessVariables>;
+```
+
+### Variables
+The `listActivityLogsByBusiness` Query requires an argument of type `ListActivityLogsByBusinessVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+
+```javascript
+export interface ListActivityLogsByBusinessVariables {
+  tenantId: string;
+  businessId: string;
+}
+```
+### Return Type
+Recall that calling the `listActivityLogsByBusiness` Query hook function returns a `UseQueryResult` object. This object holds the state of your Query, including whether the Query is loading, has completed, or has succeeded/failed, and any data returned by the Query, among other things.
+
+To check the status of a Query, use the `UseQueryResult.status` field. You can also check for pending / success / error status using the `UseQueryResult.isPending`, `UseQueryResult.isSuccess`, and `UseQueryResult.isError` fields.
+
+To access the data returned by a Query, use the `UseQueryResult.data` field. The data for the `listActivityLogsByBusiness` Query is of type `ListActivityLogsByBusinessData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+```javascript
+export interface ListActivityLogsByBusinessData {
+  activityLogs: ({
+    id: string;
+    tenantId: string;
+    businessId: string;
+    userId: string;
+    userName: string;
+    actionType: string;
+    module: string;
+    description?: string | null;
+    recordId?: string | null;
+    timestamp: TimestampString;
+  } & ActivityLog_Key)[];
+}
+```
+
+To learn more about the `UseQueryResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useQuery).
+
+### Using `listActivityLogsByBusiness`'s Query hook function
+
+```javascript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, ListActivityLogsByBusinessVariables } from '@dataconnect/generated';
+import { useListActivityLogsByBusiness } from '@dataconnect/generated/react'
+
+export default function ListActivityLogsByBusinessComponent() {
+  // The `useListActivityLogsByBusiness` Query hook requires an argument of type `ListActivityLogsByBusinessVariables`:
+  const listActivityLogsByBusinessVars: ListActivityLogsByBusinessVariables = {
+    tenantId: ..., 
+    businessId: ..., 
+  };
+
+  // You don't have to do anything to "execute" the Query.
+  // Call the Query hook function to get a `UseQueryResult` object which holds the state of your Query.
+  const query = useListActivityLogsByBusiness(listActivityLogsByBusinessVars);
+  // Variables can be defined inline as well.
+  const query = useListActivityLogsByBusiness({ tenantId: ..., businessId: ..., });
+
+  // You can also pass in a `DataConnect` instance to the Query hook function.
+  const dataConnect = getDataConnect(connectorConfig);
+  const query = useListActivityLogsByBusiness(dataConnect, listActivityLogsByBusinessVars);
+
+  // You can also pass in a `useDataConnectQueryOptions` object to the Query hook function.
+  const options = { staleTime: 5 * 1000 };
+  const query = useListActivityLogsByBusiness(listActivityLogsByBusinessVars, options);
+
+  // You can also pass both a `DataConnect` instance and a `useDataConnectQueryOptions` object.
+  const dataConnect = getDataConnect(connectorConfig);
+  const options = { staleTime: 5 * 1000 };
+  const query = useListActivityLogsByBusiness(dataConnect, listActivityLogsByBusinessVars, options);
+
+  // Then, you can render your component dynamically based on the status of the Query.
+  if (query.isPending) {
+    return <div>Loading...</div>;
+  }
+
+  if (query.isError) {
+    return <div>Error: {query.error.message}</div>;
+  }
+
+  // If the Query is successful, you can access the data returned using the `UseQueryResult.data` field.
+  if (query.isSuccess) {
+    console.log(query.data.activityLogs);
   }
   return <div>Query execution {query.isSuccess ? 'successful' : 'failed'}!</div>;
 }
@@ -1361,30 +1395,6 @@ Here's a general overview of how to use the generated Mutation hooks in your cod
 
 Below are examples of how to use the `example` connector's generated Mutation hook functions to execute each Mutation. You can also follow the examples from the [Data Connect documentation](https://firebase.google.com/docs/data-connect/web-sdk#operations-react-angular).
 
-<<<<<<< HEAD
-## CreateMovie
-You can execute the `CreateMovie` Mutation using the `UseMutationResult` object returned by the following Mutation hook function (which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts)):
-```javascript
-useCreateMovie(options?: useDataConnectMutationOptions<CreateMovieData, FirebaseError, CreateMovieVariables>): UseDataConnectMutationResult<CreateMovieData, CreateMovieVariables>;
-```
-You can also pass in a `DataConnect` instance to the Mutation hook function.
-```javascript
-useCreateMovie(dc: DataConnect, options?: useDataConnectMutationOptions<CreateMovieData, FirebaseError, CreateMovieVariables>): UseDataConnectMutationResult<CreateMovieData, CreateMovieVariables>;
-```
-
-### Variables
-The `CreateMovie` Mutation requires an argument of type `CreateMovieVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
-
-```javascript
-export interface CreateMovieVariables {
-  title: string;
-  genre: string;
-  imageUrl: string;
-}
-```
-### Return Type
-Recall that calling the `CreateMovie` Mutation hook function returns a `UseMutationResult` object. This object holds the state of your Mutation, including whether the Mutation is loading, has completed, or has succeeded/failed, among other things.
-=======
 ## CreateTenant
 You can execute the `CreateTenant` Mutation using the `UseMutationResult` object returned by the following Mutation hook function (which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts)):
 ```javascript
@@ -1400,125 +1410,31 @@ The `CreateTenant` Mutation requires an argument of type `CreateTenantVariables`
 
 ```javascript
 export interface CreateTenantVariables {
-  data: {
-    id?: UUIDString | null;
-    id_expr?: {
-    };
-      businessSector?: string | null;
-      businessSector_expr?: {
-      };
-        createdAt?: TimestampString | null;
-        createdAt_expr?: {
-        };
-          createdAt_time?: {
-            now?: {
-            };
-              at?: TimestampString | null;
-              add?: {
-                milliseconds?: number;
-                seconds?: number;
-                minutes?: number;
-                hours?: number;
-                days?: number;
-                weeks?: number;
-                months?: number;
-                years?: number;
-              };
-                sub?: {
-                  milliseconds?: number;
-                  seconds?: number;
-                  minutes?: number;
-                  hours?: number;
-                  days?: number;
-                  weeks?: number;
-                  months?: number;
-                  years?: number;
-                };
-                  truncateTo?: Timestamp_Interval | null;
-          };
-            createdAt_update?: ({
-              inc?: {
-                milliseconds?: number;
-                seconds?: number;
-                minutes?: number;
-                hours?: number;
-                days?: number;
-                weeks?: number;
-                months?: number;
-                years?: number;
-              };
-                dec?: {
-                  milliseconds?: number;
-                  seconds?: number;
-                  minutes?: number;
-                  hours?: number;
-                  days?: number;
-                  weeks?: number;
-                  months?: number;
-                  years?: number;
-                };
-            })[];
-              location?: string | null;
-              location_expr?: {
-              };
-                logoUrl?: string | null;
-                logoUrl_expr?: {
-                };
-                  name?: string | null;
-                  name_expr?: {
-                  };
-                    ownerEmail?: string | null;
-                    ownerEmail_expr?: {
-                    };
-                      subscriptionTier?: string | null;
-                      subscriptionTier_expr?: {
-                      };
-                        taxId?: string | null;
-                        taxId_expr?: {
-                        };
-  };
+  name: string;
+  businessSector: string;
+  location: string;
+  ownerEmail: string;
+  taxId?: string | null;
+  logoUrl?: string | null;
+  subscriptionTier?: string | null;
 }
 ```
 ### Return Type
 Recall that calling the `CreateTenant` Mutation hook function returns a `UseMutationResult` object. This object holds the state of your Mutation, including whether the Mutation is loading, has completed, or has succeeded/failed, among other things.
->>>>>>> 546aacf70afe81cbee3ea5f2edbc661c271990b8
 
 To check the status of a Mutation, use the `UseMutationResult.status` field. You can also check for pending / success / error status using the `UseMutationResult.isPending`, `UseMutationResult.isSuccess`, and `UseMutationResult.isError` fields.
 
 To execute the Mutation, call `UseMutationResult.mutate()`. This function executes the Mutation, but does not return the data from the Mutation.
 
-<<<<<<< HEAD
-To access the data returned by a Mutation, use the `UseMutationResult.data` field. The data for the `CreateMovie` Mutation is of type `CreateMovieData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
-```javascript
-export interface CreateMovieData {
-  movie_insert: Movie_Key;
-=======
 To access the data returned by a Mutation, use the `UseMutationResult.data` field. The data for the `CreateTenant` Mutation is of type `CreateTenantData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
 ```javascript
 export interface CreateTenantData {
   tenant_insert: Tenant_Key;
->>>>>>> 546aacf70afe81cbee3ea5f2edbc661c271990b8
 }
 ```
 
 To learn more about the `UseMutationResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useMutation).
 
-<<<<<<< HEAD
-### Using `CreateMovie`'s Mutation hook function
-
-```javascript
-import { getDataConnect } from 'firebase/data-connect';
-import { connectorConfig, CreateMovieVariables } from '@dataconnect/generated';
-import { useCreateMovie } from '@dataconnect/generated/react'
-
-export default function CreateMovieComponent() {
-  // Call the Mutation hook function to get a `UseMutationResult` object which holds the state of your Mutation.
-  const mutation = useCreateMovie();
-
-  // You can also pass in a `DataConnect` instance to the Mutation hook function.
-  const dataConnect = getDataConnect(connectorConfig);
-  const mutation = useCreateMovie(dataConnect);
-=======
 ### Using `CreateTenant`'s Mutation hook function
 
 ```javascript
@@ -1533,58 +1449,40 @@ export default function CreateTenantComponent() {
   // You can also pass in a `DataConnect` instance to the Mutation hook function.
   const dataConnect = getDataConnect(connectorConfig);
   const mutation = useCreateTenant(dataConnect);
->>>>>>> 546aacf70afe81cbee3ea5f2edbc661c271990b8
 
   // You can also pass in a `useDataConnectMutationOptions` object to the Mutation hook function.
   const options = {
     onSuccess: () => { console.log('Mutation succeeded!'); }
   };
-<<<<<<< HEAD
-  const mutation = useCreateMovie(options);
-=======
   const mutation = useCreateTenant(options);
->>>>>>> 546aacf70afe81cbee3ea5f2edbc661c271990b8
 
   // You can also pass both a `DataConnect` instance and a `useDataConnectMutationOptions` object.
   const dataConnect = getDataConnect(connectorConfig);
   const options = {
     onSuccess: () => { console.log('Mutation succeeded!'); }
   };
-<<<<<<< HEAD
-  const mutation = useCreateMovie(dataConnect, options);
-
-  // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
-  // The `useCreateMovie` Mutation requires an argument of type `CreateMovieVariables`:
-  const createMovieVars: CreateMovieVariables = {
-    title: ..., 
-    genre: ..., 
-    imageUrl: ..., 
-  };
-  mutation.mutate(createMovieVars);
-  // Variables can be defined inline as well.
-  mutation.mutate({ title: ..., genre: ..., imageUrl: ..., });
-=======
   const mutation = useCreateTenant(dataConnect, options);
 
   // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
   // The `useCreateTenant` Mutation requires an argument of type `CreateTenantVariables`:
   const createTenantVars: CreateTenantVariables = {
-    data: ..., 
+    name: ..., 
+    businessSector: ..., 
+    location: ..., 
+    ownerEmail: ..., 
+    taxId: ..., // optional
+    logoUrl: ..., // optional
+    subscriptionTier: ..., // optional
   };
   mutation.mutate(createTenantVars);
   // Variables can be defined inline as well.
-  mutation.mutate({ data: ..., });
->>>>>>> 546aacf70afe81cbee3ea5f2edbc661c271990b8
+  mutation.mutate({ name: ..., businessSector: ..., location: ..., ownerEmail: ..., taxId: ..., logoUrl: ..., subscriptionTier: ..., });
 
   // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
   const options = {
     onSuccess: () => { console.log('Mutation succeeded!'); }
   };
-<<<<<<< HEAD
-  mutation.mutate(createMovieVars, options);
-=======
   mutation.mutate(createTenantVars, options);
->>>>>>> 546aacf70afe81cbee3ea5f2edbc661c271990b8
 
   // Then, you can render your component dynamically based on the status of the Mutation.
   if (mutation.isPending) {
@@ -1597,38 +1495,12 @@ export default function CreateTenantComponent() {
 
   // If the Mutation is successful, you can access the data returned using the `UseMutationResult.data` field.
   if (mutation.isSuccess) {
-<<<<<<< HEAD
-    console.log(mutation.data.movie_insert);
-=======
     console.log(mutation.data.tenant_insert);
->>>>>>> 546aacf70afe81cbee3ea5f2edbc661c271990b8
   }
   return <div>Mutation execution {mutation.isSuccess ? 'successful' : 'failed'}!</div>;
 }
 ```
 
-<<<<<<< HEAD
-## UpsertUser
-You can execute the `UpsertUser` Mutation using the `UseMutationResult` object returned by the following Mutation hook function (which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts)):
-```javascript
-useUpsertUser(options?: useDataConnectMutationOptions<UpsertUserData, FirebaseError, UpsertUserVariables>): UseDataConnectMutationResult<UpsertUserData, UpsertUserVariables>;
-```
-You can also pass in a `DataConnect` instance to the Mutation hook function.
-```javascript
-useUpsertUser(dc: DataConnect, options?: useDataConnectMutationOptions<UpsertUserData, FirebaseError, UpsertUserVariables>): UseDataConnectMutationResult<UpsertUserData, UpsertUserVariables>;
-```
-
-### Variables
-The `UpsertUser` Mutation requires an argument of type `UpsertUserVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
-
-```javascript
-export interface UpsertUserVariables {
-  username: string;
-}
-```
-### Return Type
-Recall that calling the `UpsertUser` Mutation hook function returns a `UseMutationResult` object. This object holds the state of your Mutation, including whether the Mutation is loading, has completed, or has succeeded/failed, among other things.
-=======
 ## UpdateTenant
 You can execute the `UpdateTenant` Mutation using the `UseMutationResult` object returned by the following Mutation hook function (which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts)):
 ```javascript
@@ -1644,126 +1516,32 @@ The `UpdateTenant` Mutation requires an argument of type `UpdateTenantVariables`
 
 ```javascript
 export interface UpdateTenantVariables {
-  id: UUIDString;
-  data: {
-    id?: UUIDString | null;
-    id_expr?: {
-    };
-      businessSector?: string | null;
-      businessSector_expr?: {
-      };
-        createdAt?: TimestampString | null;
-        createdAt_expr?: {
-        };
-          createdAt_time?: {
-            now?: {
-            };
-              at?: TimestampString | null;
-              add?: {
-                milliseconds?: number;
-                seconds?: number;
-                minutes?: number;
-                hours?: number;
-                days?: number;
-                weeks?: number;
-                months?: number;
-                years?: number;
-              };
-                sub?: {
-                  milliseconds?: number;
-                  seconds?: number;
-                  minutes?: number;
-                  hours?: number;
-                  days?: number;
-                  weeks?: number;
-                  months?: number;
-                  years?: number;
-                };
-                  truncateTo?: Timestamp_Interval | null;
-          };
-            createdAt_update?: ({
-              inc?: {
-                milliseconds?: number;
-                seconds?: number;
-                minutes?: number;
-                hours?: number;
-                days?: number;
-                weeks?: number;
-                months?: number;
-                years?: number;
-              };
-                dec?: {
-                  milliseconds?: number;
-                  seconds?: number;
-                  minutes?: number;
-                  hours?: number;
-                  days?: number;
-                  weeks?: number;
-                  months?: number;
-                  years?: number;
-                };
-            })[];
-              location?: string | null;
-              location_expr?: {
-              };
-                logoUrl?: string | null;
-                logoUrl_expr?: {
-                };
-                  name?: string | null;
-                  name_expr?: {
-                  };
-                    ownerEmail?: string | null;
-                    ownerEmail_expr?: {
-                    };
-                      subscriptionTier?: string | null;
-                      subscriptionTier_expr?: {
-                      };
-                        taxId?: string | null;
-                        taxId_expr?: {
-                        };
-  };
+  id: string;
+  name?: string | null;
+  businessSector?: string | null;
+  location?: string | null;
+  ownerEmail?: string | null;
+  taxId?: string | null;
+  logoUrl?: string | null;
+  subscriptionTier?: string | null;
 }
 ```
 ### Return Type
 Recall that calling the `UpdateTenant` Mutation hook function returns a `UseMutationResult` object. This object holds the state of your Mutation, including whether the Mutation is loading, has completed, or has succeeded/failed, among other things.
->>>>>>> 546aacf70afe81cbee3ea5f2edbc661c271990b8
 
 To check the status of a Mutation, use the `UseMutationResult.status` field. You can also check for pending / success / error status using the `UseMutationResult.isPending`, `UseMutationResult.isSuccess`, and `UseMutationResult.isError` fields.
 
 To execute the Mutation, call `UseMutationResult.mutate()`. This function executes the Mutation, but does not return the data from the Mutation.
 
-<<<<<<< HEAD
-To access the data returned by a Mutation, use the `UseMutationResult.data` field. The data for the `UpsertUser` Mutation is of type `UpsertUserData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
-```javascript
-export interface UpsertUserData {
-  user_upsert: User_Key;
-=======
 To access the data returned by a Mutation, use the `UseMutationResult.data` field. The data for the `UpdateTenant` Mutation is of type `UpdateTenantData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
 ```javascript
 export interface UpdateTenantData {
   tenant_update?: Tenant_Key | null;
->>>>>>> 546aacf70afe81cbee3ea5f2edbc661c271990b8
 }
 ```
 
 To learn more about the `UseMutationResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useMutation).
 
-<<<<<<< HEAD
-### Using `UpsertUser`'s Mutation hook function
-
-```javascript
-import { getDataConnect } from 'firebase/data-connect';
-import { connectorConfig, UpsertUserVariables } from '@dataconnect/generated';
-import { useUpsertUser } from '@dataconnect/generated/react'
-
-export default function UpsertUserComponent() {
-  // Call the Mutation hook function to get a `UseMutationResult` object which holds the state of your Mutation.
-  const mutation = useUpsertUser();
-
-  // You can also pass in a `DataConnect` instance to the Mutation hook function.
-  const dataConnect = getDataConnect(connectorConfig);
-  const mutation = useUpsertUser(dataConnect);
-=======
 ### Using `UpdateTenant`'s Mutation hook function
 
 ```javascript
@@ -1778,57 +1556,41 @@ export default function UpdateTenantComponent() {
   // You can also pass in a `DataConnect` instance to the Mutation hook function.
   const dataConnect = getDataConnect(connectorConfig);
   const mutation = useUpdateTenant(dataConnect);
->>>>>>> 546aacf70afe81cbee3ea5f2edbc661c271990b8
 
   // You can also pass in a `useDataConnectMutationOptions` object to the Mutation hook function.
   const options = {
     onSuccess: () => { console.log('Mutation succeeded!'); }
   };
-<<<<<<< HEAD
-  const mutation = useUpsertUser(options);
-=======
   const mutation = useUpdateTenant(options);
->>>>>>> 546aacf70afe81cbee3ea5f2edbc661c271990b8
 
   // You can also pass both a `DataConnect` instance and a `useDataConnectMutationOptions` object.
   const dataConnect = getDataConnect(connectorConfig);
   const options = {
     onSuccess: () => { console.log('Mutation succeeded!'); }
   };
-<<<<<<< HEAD
-  const mutation = useUpsertUser(dataConnect, options);
-
-  // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
-  // The `useUpsertUser` Mutation requires an argument of type `UpsertUserVariables`:
-  const upsertUserVars: UpsertUserVariables = {
-    username: ..., 
-  };
-  mutation.mutate(upsertUserVars);
-  // Variables can be defined inline as well.
-  mutation.mutate({ username: ..., });
-=======
   const mutation = useUpdateTenant(dataConnect, options);
 
   // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
   // The `useUpdateTenant` Mutation requires an argument of type `UpdateTenantVariables`:
   const updateTenantVars: UpdateTenantVariables = {
     id: ..., 
-    data: ..., 
+    name: ..., // optional
+    businessSector: ..., // optional
+    location: ..., // optional
+    ownerEmail: ..., // optional
+    taxId: ..., // optional
+    logoUrl: ..., // optional
+    subscriptionTier: ..., // optional
   };
   mutation.mutate(updateTenantVars);
   // Variables can be defined inline as well.
-  mutation.mutate({ id: ..., data: ..., });
->>>>>>> 546aacf70afe81cbee3ea5f2edbc661c271990b8
+  mutation.mutate({ id: ..., name: ..., businessSector: ..., location: ..., ownerEmail: ..., taxId: ..., logoUrl: ..., subscriptionTier: ..., });
 
   // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
   const options = {
     onSuccess: () => { console.log('Mutation succeeded!'); }
   };
-<<<<<<< HEAD
-  mutation.mutate(upsertUserVars, options);
-=======
   mutation.mutate(updateTenantVars, options);
->>>>>>> 546aacf70afe81cbee3ea5f2edbc661c271990b8
 
   // Then, you can render your component dynamically based on the status of the Mutation.
   if (mutation.isPending) {
@@ -1841,40 +1603,12 @@ export default function UpdateTenantComponent() {
 
   // If the Mutation is successful, you can access the data returned using the `UseMutationResult.data` field.
   if (mutation.isSuccess) {
-<<<<<<< HEAD
-    console.log(mutation.data.user_upsert);
-=======
     console.log(mutation.data.tenant_update);
->>>>>>> 546aacf70afe81cbee3ea5f2edbc661c271990b8
   }
   return <div>Mutation execution {mutation.isSuccess ? 'successful' : 'failed'}!</div>;
 }
 ```
 
-<<<<<<< HEAD
-## AddReview
-You can execute the `AddReview` Mutation using the `UseMutationResult` object returned by the following Mutation hook function (which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts)):
-```javascript
-useAddReview(options?: useDataConnectMutationOptions<AddReviewData, FirebaseError, AddReviewVariables>): UseDataConnectMutationResult<AddReviewData, AddReviewVariables>;
-```
-You can also pass in a `DataConnect` instance to the Mutation hook function.
-```javascript
-useAddReview(dc: DataConnect, options?: useDataConnectMutationOptions<AddReviewData, FirebaseError, AddReviewVariables>): UseDataConnectMutationResult<AddReviewData, AddReviewVariables>;
-```
-
-### Variables
-The `AddReview` Mutation requires an argument of type `AddReviewVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
-
-```javascript
-export interface AddReviewVariables {
-  movieId: UUIDString;
-  rating: number;
-  reviewText: string;
-}
-```
-### Return Type
-Recall that calling the `AddReview` Mutation hook function returns a `UseMutationResult` object. This object holds the state of your Mutation, including whether the Mutation is loading, has completed, or has succeeded/failed, among other things.
-=======
 ## DeleteTenant
 You can execute the `DeleteTenant` Mutation using the `UseMutationResult` object returned by the following Mutation hook function (which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts)):
 ```javascript
@@ -1890,49 +1624,25 @@ The `DeleteTenant` Mutation requires an argument of type `DeleteTenantVariables`
 
 ```javascript
 export interface DeleteTenantVariables {
-  id: UUIDString;
+  id: string;
 }
 ```
 ### Return Type
 Recall that calling the `DeleteTenant` Mutation hook function returns a `UseMutationResult` object. This object holds the state of your Mutation, including whether the Mutation is loading, has completed, or has succeeded/failed, among other things.
->>>>>>> 546aacf70afe81cbee3ea5f2edbc661c271990b8
 
 To check the status of a Mutation, use the `UseMutationResult.status` field. You can also check for pending / success / error status using the `UseMutationResult.isPending`, `UseMutationResult.isSuccess`, and `UseMutationResult.isError` fields.
 
 To execute the Mutation, call `UseMutationResult.mutate()`. This function executes the Mutation, but does not return the data from the Mutation.
 
-<<<<<<< HEAD
-To access the data returned by a Mutation, use the `UseMutationResult.data` field. The data for the `AddReview` Mutation is of type `AddReviewData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
-```javascript
-export interface AddReviewData {
-  review_upsert: Review_Key;
-=======
 To access the data returned by a Mutation, use the `UseMutationResult.data` field. The data for the `DeleteTenant` Mutation is of type `DeleteTenantData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
 ```javascript
 export interface DeleteTenantData {
   tenant_delete?: Tenant_Key | null;
->>>>>>> 546aacf70afe81cbee3ea5f2edbc661c271990b8
 }
 ```
 
 To learn more about the `UseMutationResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useMutation).
 
-<<<<<<< HEAD
-### Using `AddReview`'s Mutation hook function
-
-```javascript
-import { getDataConnect } from 'firebase/data-connect';
-import { connectorConfig, AddReviewVariables } from '@dataconnect/generated';
-import { useAddReview } from '@dataconnect/generated/react'
-
-export default function AddReviewComponent() {
-  // Call the Mutation hook function to get a `UseMutationResult` object which holds the state of your Mutation.
-  const mutation = useAddReview();
-
-  // You can also pass in a `DataConnect` instance to the Mutation hook function.
-  const dataConnect = getDataConnect(connectorConfig);
-  const mutation = useAddReview(dataConnect);
-=======
 ### Using `DeleteTenant`'s Mutation hook function
 
 ```javascript
@@ -1947,37 +1657,18 @@ export default function DeleteTenantComponent() {
   // You can also pass in a `DataConnect` instance to the Mutation hook function.
   const dataConnect = getDataConnect(connectorConfig);
   const mutation = useDeleteTenant(dataConnect);
->>>>>>> 546aacf70afe81cbee3ea5f2edbc661c271990b8
 
   // You can also pass in a `useDataConnectMutationOptions` object to the Mutation hook function.
   const options = {
     onSuccess: () => { console.log('Mutation succeeded!'); }
   };
-<<<<<<< HEAD
-  const mutation = useAddReview(options);
-=======
   const mutation = useDeleteTenant(options);
->>>>>>> 546aacf70afe81cbee3ea5f2edbc661c271990b8
 
   // You can also pass both a `DataConnect` instance and a `useDataConnectMutationOptions` object.
   const dataConnect = getDataConnect(connectorConfig);
   const options = {
     onSuccess: () => { console.log('Mutation succeeded!'); }
   };
-<<<<<<< HEAD
-  const mutation = useAddReview(dataConnect, options);
-
-  // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
-  // The `useAddReview` Mutation requires an argument of type `AddReviewVariables`:
-  const addReviewVars: AddReviewVariables = {
-    movieId: ..., 
-    rating: ..., 
-    reviewText: ..., 
-  };
-  mutation.mutate(addReviewVars);
-  // Variables can be defined inline as well.
-  mutation.mutate({ movieId: ..., rating: ..., reviewText: ..., });
-=======
   const mutation = useDeleteTenant(dataConnect, options);
 
   // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
@@ -1988,17 +1679,12 @@ export default function DeleteTenantComponent() {
   mutation.mutate(deleteTenantVars);
   // Variables can be defined inline as well.
   mutation.mutate({ id: ..., });
->>>>>>> 546aacf70afe81cbee3ea5f2edbc661c271990b8
 
   // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
   const options = {
     onSuccess: () => { console.log('Mutation succeeded!'); }
   };
-<<<<<<< HEAD
-  mutation.mutate(addReviewVars, options);
-=======
   mutation.mutate(deleteTenantVars, options);
->>>>>>> 546aacf70afe81cbee3ea5f2edbc661c271990b8
 
   // Then, you can render your component dynamically based on the status of the Mutation.
   if (mutation.isPending) {
@@ -2011,38 +1697,12 @@ export default function DeleteTenantComponent() {
 
   // If the Mutation is successful, you can access the data returned using the `UseMutationResult.data` field.
   if (mutation.isSuccess) {
-<<<<<<< HEAD
-    console.log(mutation.data.review_upsert);
-=======
     console.log(mutation.data.tenant_delete);
->>>>>>> 546aacf70afe81cbee3ea5f2edbc661c271990b8
   }
   return <div>Mutation execution {mutation.isSuccess ? 'successful' : 'failed'}!</div>;
 }
 ```
 
-<<<<<<< HEAD
-## DeleteReview
-You can execute the `DeleteReview` Mutation using the `UseMutationResult` object returned by the following Mutation hook function (which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts)):
-```javascript
-useDeleteReview(options?: useDataConnectMutationOptions<DeleteReviewData, FirebaseError, DeleteReviewVariables>): UseDataConnectMutationResult<DeleteReviewData, DeleteReviewVariables>;
-```
-You can also pass in a `DataConnect` instance to the Mutation hook function.
-```javascript
-useDeleteReview(dc: DataConnect, options?: useDataConnectMutationOptions<DeleteReviewData, FirebaseError, DeleteReviewVariables>): UseDataConnectMutationResult<DeleteReviewData, DeleteReviewVariables>;
-```
-
-### Variables
-The `DeleteReview` Mutation requires an argument of type `DeleteReviewVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
-
-```javascript
-export interface DeleteReviewVariables {
-  movieId: UUIDString;
-}
-```
-### Return Type
-Recall that calling the `DeleteReview` Mutation hook function returns a `UseMutationResult` object. This object holds the state of your Mutation, including whether the Mutation is loading, has completed, or has succeeded/failed, among other things.
-=======
 ## CreateUser
 You can execute the `CreateUser` Mutation using the `UseMutationResult` object returned by the following Mutation hook function (which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts)):
 ```javascript
@@ -2058,122 +1718,31 @@ The `CreateUser` Mutation requires an argument of type `CreateUserVariables`, wh
 
 ```javascript
 export interface CreateUserVariables {
-  data: {
-    id?: UUIDString | null;
-    id_expr?: {
-    };
-      businessId?: UUIDString | null;
-      businessId_expr?: {
-      };
-        createdAt?: TimestampString | null;
-        createdAt_expr?: {
-        };
-          createdAt_time?: {
-            now?: {
-            };
-              at?: TimestampString | null;
-              add?: {
-                milliseconds?: number;
-                seconds?: number;
-                minutes?: number;
-                hours?: number;
-                days?: number;
-                weeks?: number;
-                months?: number;
-                years?: number;
-              };
-                sub?: {
-                  milliseconds?: number;
-                  seconds?: number;
-                  minutes?: number;
-                  hours?: number;
-                  days?: number;
-                  weeks?: number;
-                  months?: number;
-                  years?: number;
-                };
-                  truncateTo?: Timestamp_Interval | null;
-          };
-            createdAt_update?: ({
-              inc?: {
-                milliseconds?: number;
-                seconds?: number;
-                minutes?: number;
-                hours?: number;
-                days?: number;
-                weeks?: number;
-                months?: number;
-                years?: number;
-              };
-                dec?: {
-                  milliseconds?: number;
-                  seconds?: number;
-                  minutes?: number;
-                  hours?: number;
-                  days?: number;
-                  weeks?: number;
-                  months?: number;
-                  years?: number;
-                };
-            })[];
-              department?: string | null;
-              department_expr?: {
-              };
-                email?: string | null;
-                email_expr?: {
-                };
-                  phoneNumber?: string | null;
-                  phoneNumber_expr?: {
-                  };
-                    role?: string | null;
-                    role_expr?: {
-                    };
-                      tenantId?: UUIDString | null;
-                      tenantId_expr?: {
-                      };
-  };
+  tenantId: string;
+  businessId: string;
+  email: string;
+  role: string;
+  fullName?: string | null;
+  department?: string | null;
+  phoneNumber?: string | null;
 }
 ```
 ### Return Type
 Recall that calling the `CreateUser` Mutation hook function returns a `UseMutationResult` object. This object holds the state of your Mutation, including whether the Mutation is loading, has completed, or has succeeded/failed, among other things.
->>>>>>> 546aacf70afe81cbee3ea5f2edbc661c271990b8
 
 To check the status of a Mutation, use the `UseMutationResult.status` field. You can also check for pending / success / error status using the `UseMutationResult.isPending`, `UseMutationResult.isSuccess`, and `UseMutationResult.isError` fields.
 
 To execute the Mutation, call `UseMutationResult.mutate()`. This function executes the Mutation, but does not return the data from the Mutation.
 
-<<<<<<< HEAD
-To access the data returned by a Mutation, use the `UseMutationResult.data` field. The data for the `DeleteReview` Mutation is of type `DeleteReviewData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
-```javascript
-export interface DeleteReviewData {
-  review_delete?: Review_Key | null;
-=======
 To access the data returned by a Mutation, use the `UseMutationResult.data` field. The data for the `CreateUser` Mutation is of type `CreateUserData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
 ```javascript
 export interface CreateUserData {
   user_insert: User_Key;
->>>>>>> 546aacf70afe81cbee3ea5f2edbc661c271990b8
 }
 ```
 
 To learn more about the `UseMutationResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useMutation).
 
-<<<<<<< HEAD
-### Using `DeleteReview`'s Mutation hook function
-
-```javascript
-import { getDataConnect } from 'firebase/data-connect';
-import { connectorConfig, DeleteReviewVariables } from '@dataconnect/generated';
-import { useDeleteReview } from '@dataconnect/generated/react'
-
-export default function DeleteReviewComponent() {
-  // Call the Mutation hook function to get a `UseMutationResult` object which holds the state of your Mutation.
-  const mutation = useDeleteReview();
-
-  // You can also pass in a `DataConnect` instance to the Mutation hook function.
-  const dataConnect = getDataConnect(connectorConfig);
-  const mutation = useDeleteReview(dataConnect);
-=======
 ### Using `CreateUser`'s Mutation hook function
 
 ```javascript
@@ -2188,56 +1757,40 @@ export default function CreateUserComponent() {
   // You can also pass in a `DataConnect` instance to the Mutation hook function.
   const dataConnect = getDataConnect(connectorConfig);
   const mutation = useCreateUser(dataConnect);
->>>>>>> 546aacf70afe81cbee3ea5f2edbc661c271990b8
 
   // You can also pass in a `useDataConnectMutationOptions` object to the Mutation hook function.
   const options = {
     onSuccess: () => { console.log('Mutation succeeded!'); }
   };
-<<<<<<< HEAD
-  const mutation = useDeleteReview(options);
-=======
   const mutation = useCreateUser(options);
->>>>>>> 546aacf70afe81cbee3ea5f2edbc661c271990b8
 
   // You can also pass both a `DataConnect` instance and a `useDataConnectMutationOptions` object.
   const dataConnect = getDataConnect(connectorConfig);
   const options = {
     onSuccess: () => { console.log('Mutation succeeded!'); }
   };
-<<<<<<< HEAD
-  const mutation = useDeleteReview(dataConnect, options);
-
-  // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
-  // The `useDeleteReview` Mutation requires an argument of type `DeleteReviewVariables`:
-  const deleteReviewVars: DeleteReviewVariables = {
-    movieId: ..., 
-  };
-  mutation.mutate(deleteReviewVars);
-  // Variables can be defined inline as well.
-  mutation.mutate({ movieId: ..., });
-=======
   const mutation = useCreateUser(dataConnect, options);
 
   // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
   // The `useCreateUser` Mutation requires an argument of type `CreateUserVariables`:
   const createUserVars: CreateUserVariables = {
-    data: ..., 
+    tenantId: ..., 
+    businessId: ..., 
+    email: ..., 
+    role: ..., 
+    fullName: ..., // optional
+    department: ..., // optional
+    phoneNumber: ..., // optional
   };
   mutation.mutate(createUserVars);
   // Variables can be defined inline as well.
-  mutation.mutate({ data: ..., });
->>>>>>> 546aacf70afe81cbee3ea5f2edbc661c271990b8
+  mutation.mutate({ tenantId: ..., businessId: ..., email: ..., role: ..., fullName: ..., department: ..., phoneNumber: ..., });
 
   // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
   const options = {
     onSuccess: () => { console.log('Mutation succeeded!'); }
   };
-<<<<<<< HEAD
-  mutation.mutate(deleteReviewVars, options);
-=======
   mutation.mutate(createUserVars, options);
->>>>>>> 546aacf70afe81cbee3ea5f2edbc661c271990b8
 
   // Then, you can render your component dynamically based on the status of the Mutation.
   if (mutation.isPending) {
@@ -2250,9 +1803,6 @@ export default function CreateUserComponent() {
 
   // If the Mutation is successful, you can access the data returned using the `UseMutationResult.data` field.
   if (mutation.isSuccess) {
-<<<<<<< HEAD
-    console.log(mutation.data.review_delete);
-=======
     console.log(mutation.data.user_insert);
   }
   return <div>Mutation execution {mutation.isSuccess ? 'successful' : 'failed'}!</div>;
@@ -2274,81 +1824,14 @@ The `UpdateUser` Mutation requires an argument of type `UpdateUserVariables`, wh
 
 ```javascript
 export interface UpdateUserVariables {
-  id: UUIDString;
-  data: {
-    id?: UUIDString | null;
-    id_expr?: {
-    };
-      businessId?: UUIDString | null;
-      businessId_expr?: {
-      };
-        createdAt?: TimestampString | null;
-        createdAt_expr?: {
-        };
-          createdAt_time?: {
-            now?: {
-            };
-              at?: TimestampString | null;
-              add?: {
-                milliseconds?: number;
-                seconds?: number;
-                minutes?: number;
-                hours?: number;
-                days?: number;
-                weeks?: number;
-                months?: number;
-                years?: number;
-              };
-                sub?: {
-                  milliseconds?: number;
-                  seconds?: number;
-                  minutes?: number;
-                  hours?: number;
-                  days?: number;
-                  weeks?: number;
-                  months?: number;
-                  years?: number;
-                };
-                  truncateTo?: Timestamp_Interval | null;
-          };
-            createdAt_update?: ({
-              inc?: {
-                milliseconds?: number;
-                seconds?: number;
-                minutes?: number;
-                hours?: number;
-                days?: number;
-                weeks?: number;
-                months?: number;
-                years?: number;
-              };
-                dec?: {
-                  milliseconds?: number;
-                  seconds?: number;
-                  minutes?: number;
-                  hours?: number;
-                  days?: number;
-                  weeks?: number;
-                  months?: number;
-                  years?: number;
-                };
-            })[];
-              department?: string | null;
-              department_expr?: {
-              };
-                email?: string | null;
-                email_expr?: {
-                };
-                  phoneNumber?: string | null;
-                  phoneNumber_expr?: {
-                  };
-                    role?: string | null;
-                    role_expr?: {
-                    };
-                      tenantId?: UUIDString | null;
-                      tenantId_expr?: {
-                      };
-  };
+  id: string;
+  tenantId?: string | null;
+  businessId?: string | null;
+  email?: string | null;
+  role?: string | null;
+  fullName?: string | null;
+  department?: string | null;
+  phoneNumber?: string | null;
 }
 ```
 ### Return Type
@@ -2399,11 +1882,17 @@ export default function UpdateUserComponent() {
   // The `useUpdateUser` Mutation requires an argument of type `UpdateUserVariables`:
   const updateUserVars: UpdateUserVariables = {
     id: ..., 
-    data: ..., 
+    tenantId: ..., // optional
+    businessId: ..., // optional
+    email: ..., // optional
+    role: ..., // optional
+    fullName: ..., // optional
+    department: ..., // optional
+    phoneNumber: ..., // optional
   };
   mutation.mutate(updateUserVars);
   // Variables can be defined inline as well.
-  mutation.mutate({ id: ..., data: ..., });
+  mutation.mutate({ id: ..., tenantId: ..., businessId: ..., email: ..., role: ..., fullName: ..., department: ..., phoneNumber: ..., });
 
   // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
   const options = {
@@ -2443,7 +1932,7 @@ The `DeleteUser` Mutation requires an argument of type `DeleteUserVariables`, wh
 
 ```javascript
 export interface DeleteUserVariables {
-  id: UUIDString;
+  id: string;
 }
 ```
 ### Return Type
@@ -2537,77 +2026,11 @@ The `CreateBusiness` Mutation requires an argument of type `CreateBusinessVariab
 
 ```javascript
 export interface CreateBusinessVariables {
-  data: {
-    id?: UUIDString | null;
-    id_expr?: {
-    };
-      businessType?: string | null;
-      businessType_expr?: {
-      };
-        createdAt?: TimestampString | null;
-        createdAt_expr?: {
-        };
-          createdAt_time?: {
-            now?: {
-            };
-              at?: TimestampString | null;
-              add?: {
-                milliseconds?: number;
-                seconds?: number;
-                minutes?: number;
-                hours?: number;
-                days?: number;
-                weeks?: number;
-                months?: number;
-                years?: number;
-              };
-                sub?: {
-                  milliseconds?: number;
-                  seconds?: number;
-                  minutes?: number;
-                  hours?: number;
-                  days?: number;
-                  weeks?: number;
-                  months?: number;
-                  years?: number;
-                };
-                  truncateTo?: Timestamp_Interval | null;
-          };
-            createdAt_update?: ({
-              inc?: {
-                milliseconds?: number;
-                seconds?: number;
-                minutes?: number;
-                hours?: number;
-                days?: number;
-                weeks?: number;
-                months?: number;
-                years?: number;
-              };
-                dec?: {
-                  milliseconds?: number;
-                  seconds?: number;
-                  minutes?: number;
-                  hours?: number;
-                  days?: number;
-                  weeks?: number;
-                  months?: number;
-                  years?: number;
-                };
-            })[];
-              location?: string | null;
-              location_expr?: {
-              };
-                name?: string | null;
-                name_expr?: {
-                };
-                  region?: string | null;
-                  region_expr?: {
-                  };
-                    tenantId?: UUIDString | null;
-                    tenantId_expr?: {
-                    };
-  };
+  tenantId: string;
+  name: string;
+  location: string;
+  businessType?: string | null;
+  region?: string | null;
 }
 ```
 ### Return Type
@@ -2657,11 +2080,15 @@ export default function CreateBusinessComponent() {
   // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
   // The `useCreateBusiness` Mutation requires an argument of type `CreateBusinessVariables`:
   const createBusinessVars: CreateBusinessVariables = {
-    data: ..., 
+    tenantId: ..., 
+    name: ..., 
+    location: ..., 
+    businessType: ..., // optional
+    region: ..., // optional
   };
   mutation.mutate(createBusinessVars);
   // Variables can be defined inline as well.
-  mutation.mutate({ data: ..., });
+  mutation.mutate({ tenantId: ..., name: ..., location: ..., businessType: ..., region: ..., });
 
   // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
   const options = {
@@ -2701,78 +2128,12 @@ The `UpdateBusiness` Mutation requires an argument of type `UpdateBusinessVariab
 
 ```javascript
 export interface UpdateBusinessVariables {
-  id: UUIDString;
-  data: {
-    id?: UUIDString | null;
-    id_expr?: {
-    };
-      businessType?: string | null;
-      businessType_expr?: {
-      };
-        createdAt?: TimestampString | null;
-        createdAt_expr?: {
-        };
-          createdAt_time?: {
-            now?: {
-            };
-              at?: TimestampString | null;
-              add?: {
-                milliseconds?: number;
-                seconds?: number;
-                minutes?: number;
-                hours?: number;
-                days?: number;
-                weeks?: number;
-                months?: number;
-                years?: number;
-              };
-                sub?: {
-                  milliseconds?: number;
-                  seconds?: number;
-                  minutes?: number;
-                  hours?: number;
-                  days?: number;
-                  weeks?: number;
-                  months?: number;
-                  years?: number;
-                };
-                  truncateTo?: Timestamp_Interval | null;
-          };
-            createdAt_update?: ({
-              inc?: {
-                milliseconds?: number;
-                seconds?: number;
-                minutes?: number;
-                hours?: number;
-                days?: number;
-                weeks?: number;
-                months?: number;
-                years?: number;
-              };
-                dec?: {
-                  milliseconds?: number;
-                  seconds?: number;
-                  minutes?: number;
-                  hours?: number;
-                  days?: number;
-                  weeks?: number;
-                  months?: number;
-                  years?: number;
-                };
-            })[];
-              location?: string | null;
-              location_expr?: {
-              };
-                name?: string | null;
-                name_expr?: {
-                };
-                  region?: string | null;
-                  region_expr?: {
-                  };
-                    tenantId?: UUIDString | null;
-                    tenantId_expr?: {
-                    };
-  };
+  id: string;
+  tenantId?: string | null;
+  name?: string | null;
+  location?: string | null;
+  businessType?: string | null;
+  region?: string | null;
 }
 ```
 ### Return Type
@@ -2823,11 +2184,15 @@ export default function UpdateBusinessComponent() {
   // The `useUpdateBusiness` Mutation requires an argument of type `UpdateBusinessVariables`:
   const updateBusinessVars: UpdateBusinessVariables = {
     id: ..., 
-    data: ..., 
+    tenantId: ..., // optional
+    name: ..., // optional
+    location: ..., // optional
+    businessType: ..., // optional
+    region: ..., // optional
   };
   mutation.mutate(updateBusinessVars);
   // Variables can be defined inline as well.
-  mutation.mutate({ id: ..., data: ..., });
+  mutation.mutate({ id: ..., tenantId: ..., name: ..., location: ..., businessType: ..., region: ..., });
 
   // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
   const options = {
@@ -2867,7 +2232,7 @@ The `DeleteBusiness` Mutation requires an argument of type `DeleteBusinessVariab
 
 ```javascript
 export interface DeleteBusinessVariables {
-  id: UUIDString;
+  id: string;
 }
 ```
 ### Return Type
@@ -2961,191 +2326,16 @@ The `CreateProduct` Mutation requires an argument of type `CreateProductVariable
 
 ```javascript
 export interface CreateProductVariables {
-  data: {
-    id?: UUIDString | null;
-    id_expr?: {
-    };
-      businessId?: UUIDString | null;
-      businessId_expr?: {
-      };
-        category?: string | null;
-        category_expr?: {
-        };
-          costPrice?: number | null;
-          costPrice_expr?: {
-          };
-            costPrice_update?: ({
-              inc?: number | null;
-              dec?: number | null;
-            })[];
-              createdAt?: TimestampString | null;
-              createdAt_expr?: {
-              };
-                createdAt_time?: {
-                  now?: {
-                  };
-                    at?: TimestampString | null;
-                    add?: {
-                      milliseconds?: number;
-                      seconds?: number;
-                      minutes?: number;
-                      hours?: number;
-                      days?: number;
-                      weeks?: number;
-                      months?: number;
-                      years?: number;
-                    };
-                      sub?: {
-                        milliseconds?: number;
-                        seconds?: number;
-                        minutes?: number;
-                        hours?: number;
-                        days?: number;
-                        weeks?: number;
-                        months?: number;
-                        years?: number;
-                      };
-                        truncateTo?: Timestamp_Interval | null;
-                };
-                  createdAt_update?: ({
-                    inc?: {
-                      milliseconds?: number;
-                      seconds?: number;
-                      minutes?: number;
-                      hours?: number;
-                      days?: number;
-                      weeks?: number;
-                      months?: number;
-                      years?: number;
-                    };
-                      dec?: {
-                        milliseconds?: number;
-                        seconds?: number;
-                        minutes?: number;
-                        hours?: number;
-                        days?: number;
-                        weeks?: number;
-                        months?: number;
-                        years?: number;
-                      };
-                  })[];
-                    createdBy?: UUIDString | null;
-                    createdBy_expr?: {
-                    };
-                      expiryDate?: DateString | null;
-                      expiryDate_expr?: {
-                      };
-                        expiryDate_date?: {
-                          today?: {
-                          };
-                            on?: DateString | null;
-                            add?: {
-                              days?: number;
-                              weeks?: number;
-                              months?: number;
-                              years?: number;
-                            };
-                              sub?: {
-                                days?: number;
-                                weeks?: number;
-                                months?: number;
-                                years?: number;
-                              };
-                                truncateTo?: Date_Interval | null;
-                        };
-                          expiryDate_update?: ({
-                            inc?: {
-                              days?: number;
-                              weeks?: number;
-                              months?: number;
-                              years?: number;
-                            };
-                              dec?: {
-                                days?: number;
-                                weeks?: number;
-                                months?: number;
-                                years?: number;
-                              };
-                          })[];
-                            lowStockLevel?: number | null;
-                            lowStockLevel_expr?: {
-                            };
-                              lowStockLevel_update?: ({
-                                inc?: number | null;
-                                dec?: number | null;
-                              })[];
-                                name?: string | null;
-                                name_expr?: {
-                                };
-                                  quantity?: number | null;
-                                  quantity_expr?: {
-                                  };
-                                    quantity_update?: ({
-                                      inc?: number | null;
-                                      dec?: number | null;
-                                    })[];
-                                      sellingPrice?: number | null;
-                                      sellingPrice_expr?: {
-                                      };
-                                        sellingPrice_update?: ({
-                                          inc?: number | null;
-                                          dec?: number | null;
-                                        })[];
-                                          tenantId?: UUIDString | null;
-                                          tenantId_expr?: {
-                                          };
-                                            updatedAt?: TimestampString | null;
-                                            updatedAt_expr?: {
-                                            };
-                                              updatedAt_time?: {
-                                                now?: {
-                                                };
-                                                  at?: TimestampString | null;
-                                                  add?: {
-                                                    milliseconds?: number;
-                                                    seconds?: number;
-                                                    minutes?: number;
-                                                    hours?: number;
-                                                    days?: number;
-                                                    weeks?: number;
-                                                    months?: number;
-                                                    years?: number;
-                                                  };
-                                                    sub?: {
-                                                      milliseconds?: number;
-                                                      seconds?: number;
-                                                      minutes?: number;
-                                                      hours?: number;
-                                                      days?: number;
-                                                      weeks?: number;
-                                                      months?: number;
-                                                      years?: number;
-                                                    };
-                                                      truncateTo?: Timestamp_Interval | null;
-                                              };
-                                                updatedAt_update?: ({
-                                                  inc?: {
-                                                    milliseconds?: number;
-                                                    seconds?: number;
-                                                    minutes?: number;
-                                                    hours?: number;
-                                                    days?: number;
-                                                    weeks?: number;
-                                                    months?: number;
-                                                    years?: number;
-                                                  };
-                                                    dec?: {
-                                                      milliseconds?: number;
-                                                      seconds?: number;
-                                                      minutes?: number;
-                                                      hours?: number;
-                                                      days?: number;
-                                                      weeks?: number;
-                                                      months?: number;
-                                                      years?: number;
-                                                    };
-                                                })[];
-  };
+  tenantId: string;
+  businessId: string;
+  name: string;
+  category?: string | null;
+  quantity: number;
+  costPrice?: number | null;
+  sellingPrice: number;
+  expiryDate?: DateString | null;
+  lowStockLevel?: number | null;
+  createdBy: string;
 }
 ```
 ### Return Type
@@ -3195,11 +2385,20 @@ export default function CreateProductComponent() {
   // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
   // The `useCreateProduct` Mutation requires an argument of type `CreateProductVariables`:
   const createProductVars: CreateProductVariables = {
-    data: ..., 
+    tenantId: ..., 
+    businessId: ..., 
+    name: ..., 
+    category: ..., // optional
+    quantity: ..., 
+    costPrice: ..., // optional
+    sellingPrice: ..., 
+    expiryDate: ..., // optional
+    lowStockLevel: ..., // optional
+    createdBy: ..., 
   };
   mutation.mutate(createProductVars);
   // Variables can be defined inline as well.
-  mutation.mutate({ data: ..., });
+  mutation.mutate({ tenantId: ..., businessId: ..., name: ..., category: ..., quantity: ..., costPrice: ..., sellingPrice: ..., expiryDate: ..., lowStockLevel: ..., createdBy: ..., });
 
   // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
   const options = {
@@ -3239,192 +2438,17 @@ The `UpdateProduct` Mutation requires an argument of type `UpdateProductVariable
 
 ```javascript
 export interface UpdateProductVariables {
-  id: UUIDString;
-  data: {
-    id?: UUIDString | null;
-    id_expr?: {
-    };
-      businessId?: UUIDString | null;
-      businessId_expr?: {
-      };
-        category?: string | null;
-        category_expr?: {
-        };
-          costPrice?: number | null;
-          costPrice_expr?: {
-          };
-            costPrice_update?: ({
-              inc?: number | null;
-              dec?: number | null;
-            })[];
-              createdAt?: TimestampString | null;
-              createdAt_expr?: {
-              };
-                createdAt_time?: {
-                  now?: {
-                  };
-                    at?: TimestampString | null;
-                    add?: {
-                      milliseconds?: number;
-                      seconds?: number;
-                      minutes?: number;
-                      hours?: number;
-                      days?: number;
-                      weeks?: number;
-                      months?: number;
-                      years?: number;
-                    };
-                      sub?: {
-                        milliseconds?: number;
-                        seconds?: number;
-                        minutes?: number;
-                        hours?: number;
-                        days?: number;
-                        weeks?: number;
-                        months?: number;
-                        years?: number;
-                      };
-                        truncateTo?: Timestamp_Interval | null;
-                };
-                  createdAt_update?: ({
-                    inc?: {
-                      milliseconds?: number;
-                      seconds?: number;
-                      minutes?: number;
-                      hours?: number;
-                      days?: number;
-                      weeks?: number;
-                      months?: number;
-                      years?: number;
-                    };
-                      dec?: {
-                        milliseconds?: number;
-                        seconds?: number;
-                        minutes?: number;
-                        hours?: number;
-                        days?: number;
-                        weeks?: number;
-                        months?: number;
-                        years?: number;
-                      };
-                  })[];
-                    createdBy?: UUIDString | null;
-                    createdBy_expr?: {
-                    };
-                      expiryDate?: DateString | null;
-                      expiryDate_expr?: {
-                      };
-                        expiryDate_date?: {
-                          today?: {
-                          };
-                            on?: DateString | null;
-                            add?: {
-                              days?: number;
-                              weeks?: number;
-                              months?: number;
-                              years?: number;
-                            };
-                              sub?: {
-                                days?: number;
-                                weeks?: number;
-                                months?: number;
-                                years?: number;
-                              };
-                                truncateTo?: Date_Interval | null;
-                        };
-                          expiryDate_update?: ({
-                            inc?: {
-                              days?: number;
-                              weeks?: number;
-                              months?: number;
-                              years?: number;
-                            };
-                              dec?: {
-                                days?: number;
-                                weeks?: number;
-                                months?: number;
-                                years?: number;
-                              };
-                          })[];
-                            lowStockLevel?: number | null;
-                            lowStockLevel_expr?: {
-                            };
-                              lowStockLevel_update?: ({
-                                inc?: number | null;
-                                dec?: number | null;
-                              })[];
-                                name?: string | null;
-                                name_expr?: {
-                                };
-                                  quantity?: number | null;
-                                  quantity_expr?: {
-                                  };
-                                    quantity_update?: ({
-                                      inc?: number | null;
-                                      dec?: number | null;
-                                    })[];
-                                      sellingPrice?: number | null;
-                                      sellingPrice_expr?: {
-                                      };
-                                        sellingPrice_update?: ({
-                                          inc?: number | null;
-                                          dec?: number | null;
-                                        })[];
-                                          tenantId?: UUIDString | null;
-                                          tenantId_expr?: {
-                                          };
-                                            updatedAt?: TimestampString | null;
-                                            updatedAt_expr?: {
-                                            };
-                                              updatedAt_time?: {
-                                                now?: {
-                                                };
-                                                  at?: TimestampString | null;
-                                                  add?: {
-                                                    milliseconds?: number;
-                                                    seconds?: number;
-                                                    minutes?: number;
-                                                    hours?: number;
-                                                    days?: number;
-                                                    weeks?: number;
-                                                    months?: number;
-                                                    years?: number;
-                                                  };
-                                                    sub?: {
-                                                      milliseconds?: number;
-                                                      seconds?: number;
-                                                      minutes?: number;
-                                                      hours?: number;
-                                                      days?: number;
-                                                      weeks?: number;
-                                                      months?: number;
-                                                      years?: number;
-                                                    };
-                                                      truncateTo?: Timestamp_Interval | null;
-                                              };
-                                                updatedAt_update?: ({
-                                                  inc?: {
-                                                    milliseconds?: number;
-                                                    seconds?: number;
-                                                    minutes?: number;
-                                                    hours?: number;
-                                                    days?: number;
-                                                    weeks?: number;
-                                                    months?: number;
-                                                    years?: number;
-                                                  };
-                                                    dec?: {
-                                                      milliseconds?: number;
-                                                      seconds?: number;
-                                                      minutes?: number;
-                                                      hours?: number;
-                                                      days?: number;
-                                                      weeks?: number;
-                                                      months?: number;
-                                                      years?: number;
-                                                    };
-                                                })[];
-  };
+  id: string;
+  tenantId?: string | null;
+  businessId?: string | null;
+  name?: string | null;
+  category?: string | null;
+  quantity?: number | null;
+  costPrice?: number | null;
+  sellingPrice?: number | null;
+  expiryDate?: DateString | null;
+  lowStockLevel?: number | null;
+  createdBy?: string | null;
 }
 ```
 ### Return Type
@@ -3475,11 +2499,20 @@ export default function UpdateProductComponent() {
   // The `useUpdateProduct` Mutation requires an argument of type `UpdateProductVariables`:
   const updateProductVars: UpdateProductVariables = {
     id: ..., 
-    data: ..., 
+    tenantId: ..., // optional
+    businessId: ..., // optional
+    name: ..., // optional
+    category: ..., // optional
+    quantity: ..., // optional
+    costPrice: ..., // optional
+    sellingPrice: ..., // optional
+    expiryDate: ..., // optional
+    lowStockLevel: ..., // optional
+    createdBy: ..., // optional
   };
   mutation.mutate(updateProductVars);
   // Variables can be defined inline as well.
-  mutation.mutate({ id: ..., data: ..., });
+  mutation.mutate({ id: ..., tenantId: ..., businessId: ..., name: ..., category: ..., quantity: ..., costPrice: ..., sellingPrice: ..., expiryDate: ..., lowStockLevel: ..., createdBy: ..., });
 
   // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
   const options = {
@@ -3519,7 +2552,7 @@ The `DeleteProduct` Mutation requires an argument of type `DeleteProductVariable
 
 ```javascript
 export interface DeleteProductVariables {
-  id: UUIDString;
+  id: string;
 }
 ```
 ### Return Type
@@ -3613,138 +2646,14 @@ The `CreateTransaction` Mutation requires an argument of type `CreateTransaction
 
 ```javascript
 export interface CreateTransactionVariables {
-  data: {
-    id?: UUIDString | null;
-    id_expr?: {
-    };
-      amount?: number | null;
-      amount_expr?: {
-      };
-        amount_update?: ({
-          inc?: number | null;
-          dec?: number | null;
-        })[];
-          businessId?: UUIDString | null;
-          businessId_expr?: {
-          };
-            category?: string | null;
-            category_expr?: {
-            };
-              createdAt?: TimestampString | null;
-              createdAt_expr?: {
-              };
-                createdAt_time?: {
-                  now?: {
-                  };
-                    at?: TimestampString | null;
-                    add?: {
-                      milliseconds?: number;
-                      seconds?: number;
-                      minutes?: number;
-                      hours?: number;
-                      days?: number;
-                      weeks?: number;
-                      months?: number;
-                      years?: number;
-                    };
-                      sub?: {
-                        milliseconds?: number;
-                        seconds?: number;
-                        minutes?: number;
-                        hours?: number;
-                        days?: number;
-                        weeks?: number;
-                        months?: number;
-                        years?: number;
-                      };
-                        truncateTo?: Timestamp_Interval | null;
-                };
-                  createdAt_update?: ({
-                    inc?: {
-                      milliseconds?: number;
-                      seconds?: number;
-                      minutes?: number;
-                      hours?: number;
-                      days?: number;
-                      weeks?: number;
-                      months?: number;
-                      years?: number;
-                    };
-                      dec?: {
-                        milliseconds?: number;
-                        seconds?: number;
-                        minutes?: number;
-                        hours?: number;
-                        days?: number;
-                        weeks?: number;
-                        months?: number;
-                        years?: number;
-                      };
-                  })[];
-                    date?: TimestampString | null;
-                    date_expr?: {
-                    };
-                      date_time?: {
-                        now?: {
-                        };
-                          at?: TimestampString | null;
-                          add?: {
-                            milliseconds?: number;
-                            seconds?: number;
-                            minutes?: number;
-                            hours?: number;
-                            days?: number;
-                            weeks?: number;
-                            months?: number;
-                            years?: number;
-                          };
-                            sub?: {
-                              milliseconds?: number;
-                              seconds?: number;
-                              minutes?: number;
-                              hours?: number;
-                              days?: number;
-                              weeks?: number;
-                              months?: number;
-                              years?: number;
-                            };
-                              truncateTo?: Timestamp_Interval | null;
-                      };
-                        date_update?: ({
-                          inc?: {
-                            milliseconds?: number;
-                            seconds?: number;
-                            minutes?: number;
-                            hours?: number;
-                            days?: number;
-                            weeks?: number;
-                            months?: number;
-                            years?: number;
-                          };
-                            dec?: {
-                              milliseconds?: number;
-                              seconds?: number;
-                              minutes?: number;
-                              hours?: number;
-                              days?: number;
-                              weeks?: number;
-                              months?: number;
-                              years?: number;
-                            };
-                        })[];
-                          receiptUrl?: string | null;
-                          receiptUrl_expr?: {
-                          };
-                            recordedBy?: UUIDString | null;
-                            recordedBy_expr?: {
-                            };
-                              tenantId?: UUIDString | null;
-                              tenantId_expr?: {
-                              };
-                                type?: string | null;
-                                type_expr?: {
-                                };
-  };
+  tenantId: string;
+  businessId: string;
+  type: TransactionType;
+  amount: number;
+  date: TimestampString;
+  category?: string | null;
+  receiptUrl?: string | null;
+  recordedBy: string;
 }
 ```
 ### Return Type
@@ -3794,11 +2703,18 @@ export default function CreateTransactionComponent() {
   // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
   // The `useCreateTransaction` Mutation requires an argument of type `CreateTransactionVariables`:
   const createTransactionVars: CreateTransactionVariables = {
-    data: ..., 
+    tenantId: ..., 
+    businessId: ..., 
+    type: ..., 
+    amount: ..., 
+    date: ..., 
+    category: ..., // optional
+    receiptUrl: ..., // optional
+    recordedBy: ..., 
   };
   mutation.mutate(createTransactionVars);
   // Variables can be defined inline as well.
-  mutation.mutate({ data: ..., });
+  mutation.mutate({ tenantId: ..., businessId: ..., type: ..., amount: ..., date: ..., category: ..., receiptUrl: ..., recordedBy: ..., });
 
   // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
   const options = {
@@ -3838,139 +2754,15 @@ The `UpdateTransaction` Mutation requires an argument of type `UpdateTransaction
 
 ```javascript
 export interface UpdateTransactionVariables {
-  id: UUIDString;
-  data: {
-    id?: UUIDString | null;
-    id_expr?: {
-    };
-      amount?: number | null;
-      amount_expr?: {
-      };
-        amount_update?: ({
-          inc?: number | null;
-          dec?: number | null;
-        })[];
-          businessId?: UUIDString | null;
-          businessId_expr?: {
-          };
-            category?: string | null;
-            category_expr?: {
-            };
-              createdAt?: TimestampString | null;
-              createdAt_expr?: {
-              };
-                createdAt_time?: {
-                  now?: {
-                  };
-                    at?: TimestampString | null;
-                    add?: {
-                      milliseconds?: number;
-                      seconds?: number;
-                      minutes?: number;
-                      hours?: number;
-                      days?: number;
-                      weeks?: number;
-                      months?: number;
-                      years?: number;
-                    };
-                      sub?: {
-                        milliseconds?: number;
-                        seconds?: number;
-                        minutes?: number;
-                        hours?: number;
-                        days?: number;
-                        weeks?: number;
-                        months?: number;
-                        years?: number;
-                      };
-                        truncateTo?: Timestamp_Interval | null;
-                };
-                  createdAt_update?: ({
-                    inc?: {
-                      milliseconds?: number;
-                      seconds?: number;
-                      minutes?: number;
-                      hours?: number;
-                      days?: number;
-                      weeks?: number;
-                      months?: number;
-                      years?: number;
-                    };
-                      dec?: {
-                        milliseconds?: number;
-                        seconds?: number;
-                        minutes?: number;
-                        hours?: number;
-                        days?: number;
-                        weeks?: number;
-                        months?: number;
-                        years?: number;
-                      };
-                  })[];
-                    date?: TimestampString | null;
-                    date_expr?: {
-                    };
-                      date_time?: {
-                        now?: {
-                        };
-                          at?: TimestampString | null;
-                          add?: {
-                            milliseconds?: number;
-                            seconds?: number;
-                            minutes?: number;
-                            hours?: number;
-                            days?: number;
-                            weeks?: number;
-                            months?: number;
-                            years?: number;
-                          };
-                            sub?: {
-                              milliseconds?: number;
-                              seconds?: number;
-                              minutes?: number;
-                              hours?: number;
-                              days?: number;
-                              weeks?: number;
-                              months?: number;
-                              years?: number;
-                            };
-                              truncateTo?: Timestamp_Interval | null;
-                      };
-                        date_update?: ({
-                          inc?: {
-                            milliseconds?: number;
-                            seconds?: number;
-                            minutes?: number;
-                            hours?: number;
-                            days?: number;
-                            weeks?: number;
-                            months?: number;
-                            years?: number;
-                          };
-                            dec?: {
-                              milliseconds?: number;
-                              seconds?: number;
-                              minutes?: number;
-                              hours?: number;
-                              days?: number;
-                              weeks?: number;
-                              months?: number;
-                              years?: number;
-                            };
-                        })[];
-                          receiptUrl?: string | null;
-                          receiptUrl_expr?: {
-                          };
-                            recordedBy?: UUIDString | null;
-                            recordedBy_expr?: {
-                            };
-                              tenantId?: UUIDString | null;
-                              tenantId_expr?: {
-                              };
-                                type?: string | null;
-                                type_expr?: {
-                                };
-  };
+  id: string;
+  tenantId?: string | null;
+  businessId?: string | null;
+  type?: TransactionType | null;
+  amount?: number | null;
+  date?: TimestampString | null;
+  category?: string | null;
+  receiptUrl?: string | null;
+  recordedBy?: string | null;
 }
 ```
 ### Return Type
@@ -4021,11 +2813,18 @@ export default function UpdateTransactionComponent() {
   // The `useUpdateTransaction` Mutation requires an argument of type `UpdateTransactionVariables`:
   const updateTransactionVars: UpdateTransactionVariables = {
     id: ..., 
-    data: ..., 
+    tenantId: ..., // optional
+    businessId: ..., // optional
+    type: ..., // optional
+    amount: ..., // optional
+    date: ..., // optional
+    category: ..., // optional
+    receiptUrl: ..., // optional
+    recordedBy: ..., // optional
   };
   mutation.mutate(updateTransactionVars);
   // Variables can be defined inline as well.
-  mutation.mutate({ id: ..., data: ..., });
+  mutation.mutate({ id: ..., tenantId: ..., businessId: ..., type: ..., amount: ..., date: ..., category: ..., receiptUrl: ..., recordedBy: ..., });
 
   // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
   const options = {
@@ -4065,7 +2864,7 @@ The `DeleteTransaction` Mutation requires an argument of type `DeleteTransaction
 
 ```javascript
 export interface DeleteTransactionVariables {
-  id: UUIDString;
+  id: string;
 }
 ```
 ### Return Type
@@ -4144,264 +2943,90 @@ export default function DeleteTransactionComponent() {
 }
 ```
 
-## CreateTask
-You can execute the `CreateTask` Mutation using the `UseMutationResult` object returned by the following Mutation hook function (which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts)):
+## CreateTaskComment
+You can execute the `CreateTaskComment` Mutation using the `UseMutationResult` object returned by the following Mutation hook function (which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts)):
 ```javascript
-useCreateTask(options?: useDataConnectMutationOptions<CreateTaskData, FirebaseError, CreateTaskVariables>): UseDataConnectMutationResult<CreateTaskData, CreateTaskVariables>;
+useCreateTaskComment(options?: useDataConnectMutationOptions<CreateTaskCommentData, FirebaseError, CreateTaskCommentVariables>): UseDataConnectMutationResult<CreateTaskCommentData, CreateTaskCommentVariables>;
 ```
 You can also pass in a `DataConnect` instance to the Mutation hook function.
 ```javascript
-useCreateTask(dc: DataConnect, options?: useDataConnectMutationOptions<CreateTaskData, FirebaseError, CreateTaskVariables>): UseDataConnectMutationResult<CreateTaskData, CreateTaskVariables>;
+useCreateTaskComment(dc: DataConnect, options?: useDataConnectMutationOptions<CreateTaskCommentData, FirebaseError, CreateTaskCommentVariables>): UseDataConnectMutationResult<CreateTaskCommentData, CreateTaskCommentVariables>;
 ```
 
 ### Variables
-The `CreateTask` Mutation requires an argument of type `CreateTaskVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+The `CreateTaskComment` Mutation requires an argument of type `CreateTaskCommentVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
 
 ```javascript
-export interface CreateTaskVariables {
-  data: {
-    id?: UUIDString | null;
-    id_expr?: {
-    };
-      assignedToId?: UUIDString | null;
-      assignedToId_expr?: {
-      };
-        assignedTo?: User_Key | null;
-        businessId?: UUIDString | null;
-        businessId_expr?: {
-        };
-          createdAt?: TimestampString | null;
-          createdAt_expr?: {
-          };
-            createdAt_time?: {
-              now?: {
-              };
-                at?: TimestampString | null;
-                add?: {
-                  milliseconds?: number;
-                  seconds?: number;
-                  minutes?: number;
-                  hours?: number;
-                  days?: number;
-                  weeks?: number;
-                  months?: number;
-                  years?: number;
-                };
-                  sub?: {
-                    milliseconds?: number;
-                    seconds?: number;
-                    minutes?: number;
-                    hours?: number;
-                    days?: number;
-                    weeks?: number;
-                    months?: number;
-                    years?: number;
-                  };
-                    truncateTo?: Timestamp_Interval | null;
-            };
-              createdAt_update?: ({
-                inc?: {
-                  milliseconds?: number;
-                  seconds?: number;
-                  minutes?: number;
-                  hours?: number;
-                  days?: number;
-                  weeks?: number;
-                  months?: number;
-                  years?: number;
-                };
-                  dec?: {
-                    milliseconds?: number;
-                    seconds?: number;
-                    minutes?: number;
-                    hours?: number;
-                    days?: number;
-                    weeks?: number;
-                    months?: number;
-                    years?: number;
-                  };
-              })[];
-                createdBy?: UUIDString | null;
-                createdBy_expr?: {
-                };
-                  description?: string | null;
-                  description_expr?: {
-                  };
-                    dueDate?: TimestampString | null;
-                    dueDate_expr?: {
-                    };
-                      dueDate_time?: {
-                        now?: {
-                        };
-                          at?: TimestampString | null;
-                          add?: {
-                            milliseconds?: number;
-                            seconds?: number;
-                            minutes?: number;
-                            hours?: number;
-                            days?: number;
-                            weeks?: number;
-                            months?: number;
-                            years?: number;
-                          };
-                            sub?: {
-                              milliseconds?: number;
-                              seconds?: number;
-                              minutes?: number;
-                              hours?: number;
-                              days?: number;
-                              weeks?: number;
-                              months?: number;
-                              years?: number;
-                            };
-                              truncateTo?: Timestamp_Interval | null;
-                      };
-                        dueDate_update?: ({
-                          inc?: {
-                            milliseconds?: number;
-                            seconds?: number;
-                            minutes?: number;
-                            hours?: number;
-                            days?: number;
-                            weeks?: number;
-                            months?: number;
-                            years?: number;
-                          };
-                            dec?: {
-                              milliseconds?: number;
-                              seconds?: number;
-                              minutes?: number;
-                              hours?: number;
-                              days?: number;
-                              weeks?: number;
-                              months?: number;
-                              years?: number;
-                            };
-                        })[];
-                          priority?: string | null;
-                          priority_expr?: {
-                          };
-                            status?: string | null;
-                            status_expr?: {
-                            };
-                              tenantId?: UUIDString | null;
-                              tenantId_expr?: {
-                              };
-                                title?: string | null;
-                                title_expr?: {
-                                };
-                                  updatedAt?: TimestampString | null;
-                                  updatedAt_expr?: {
-                                  };
-                                    updatedAt_time?: {
-                                      now?: {
-                                      };
-                                        at?: TimestampString | null;
-                                        add?: {
-                                          milliseconds?: number;
-                                          seconds?: number;
-                                          minutes?: number;
-                                          hours?: number;
-                                          days?: number;
-                                          weeks?: number;
-                                          months?: number;
-                                          years?: number;
-                                        };
-                                          sub?: {
-                                            milliseconds?: number;
-                                            seconds?: number;
-                                            minutes?: number;
-                                            hours?: number;
-                                            days?: number;
-                                            weeks?: number;
-                                            months?: number;
-                                            years?: number;
-                                          };
-                                            truncateTo?: Timestamp_Interval | null;
-                                    };
-                                      updatedAt_update?: ({
-                                        inc?: {
-                                          milliseconds?: number;
-                                          seconds?: number;
-                                          minutes?: number;
-                                          hours?: number;
-                                          days?: number;
-                                          weeks?: number;
-                                          months?: number;
-                                          years?: number;
-                                        };
-                                          dec?: {
-                                            milliseconds?: number;
-                                            seconds?: number;
-                                            minutes?: number;
-                                            hours?: number;
-                                            days?: number;
-                                            weeks?: number;
-                                            months?: number;
-                                            years?: number;
-                                          };
-                                      })[];
-  };
+export interface CreateTaskCommentVariables {
+  tenantId: string;
+  businessId: string;
+  taskId: string;
+  userId: string;
+  content: string;
 }
 ```
 ### Return Type
-Recall that calling the `CreateTask` Mutation hook function returns a `UseMutationResult` object. This object holds the state of your Mutation, including whether the Mutation is loading, has completed, or has succeeded/failed, among other things.
+Recall that calling the `CreateTaskComment` Mutation hook function returns a `UseMutationResult` object. This object holds the state of your Mutation, including whether the Mutation is loading, has completed, or has succeeded/failed, among other things.
 
 To check the status of a Mutation, use the `UseMutationResult.status` field. You can also check for pending / success / error status using the `UseMutationResult.isPending`, `UseMutationResult.isSuccess`, and `UseMutationResult.isError` fields.
 
 To execute the Mutation, call `UseMutationResult.mutate()`. This function executes the Mutation, but does not return the data from the Mutation.
 
-To access the data returned by a Mutation, use the `UseMutationResult.data` field. The data for the `CreateTask` Mutation is of type `CreateTaskData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+To access the data returned by a Mutation, use the `UseMutationResult.data` field. The data for the `CreateTaskComment` Mutation is of type `CreateTaskCommentData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
 ```javascript
-export interface CreateTaskData {
-  task_insert: Task_Key;
+export interface CreateTaskCommentData {
+  taskComment_insert: TaskComment_Key;
 }
 ```
 
 To learn more about the `UseMutationResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useMutation).
 
-### Using `CreateTask`'s Mutation hook function
+### Using `CreateTaskComment`'s Mutation hook function
 
 ```javascript
 import { getDataConnect } from 'firebase/data-connect';
-import { connectorConfig, CreateTaskVariables } from '@dataconnect/generated';
-import { useCreateTask } from '@dataconnect/generated/react'
+import { connectorConfig, CreateTaskCommentVariables } from '@dataconnect/generated';
+import { useCreateTaskComment } from '@dataconnect/generated/react'
 
-export default function CreateTaskComponent() {
+export default function CreateTaskCommentComponent() {
   // Call the Mutation hook function to get a `UseMutationResult` object which holds the state of your Mutation.
-  const mutation = useCreateTask();
+  const mutation = useCreateTaskComment();
 
   // You can also pass in a `DataConnect` instance to the Mutation hook function.
   const dataConnect = getDataConnect(connectorConfig);
-  const mutation = useCreateTask(dataConnect);
+  const mutation = useCreateTaskComment(dataConnect);
 
   // You can also pass in a `useDataConnectMutationOptions` object to the Mutation hook function.
   const options = {
     onSuccess: () => { console.log('Mutation succeeded!'); }
   };
-  const mutation = useCreateTask(options);
+  const mutation = useCreateTaskComment(options);
 
   // You can also pass both a `DataConnect` instance and a `useDataConnectMutationOptions` object.
   const dataConnect = getDataConnect(connectorConfig);
   const options = {
     onSuccess: () => { console.log('Mutation succeeded!'); }
   };
-  const mutation = useCreateTask(dataConnect, options);
+  const mutation = useCreateTaskComment(dataConnect, options);
 
   // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
-  // The `useCreateTask` Mutation requires an argument of type `CreateTaskVariables`:
-  const createTaskVars: CreateTaskVariables = {
-    data: ..., 
+  // The `useCreateTaskComment` Mutation requires an argument of type `CreateTaskCommentVariables`:
+  const createTaskCommentVars: CreateTaskCommentVariables = {
+    tenantId: ..., 
+    businessId: ..., 
+    taskId: ..., 
+    userId: ..., 
+    content: ..., 
   };
-  mutation.mutate(createTaskVars);
+  mutation.mutate(createTaskCommentVars);
   // Variables can be defined inline as well.
-  mutation.mutate({ data: ..., });
+  mutation.mutate({ tenantId: ..., businessId: ..., taskId: ..., userId: ..., content: ..., });
 
   // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
   const options = {
     onSuccess: () => { console.log('Mutation succeeded!'); }
   };
-  mutation.mutate(createTaskVars, options);
+  mutation.mutate(createTaskCommentVars, options);
 
   // Then, you can render your component dynamically based on the status of the Mutation.
   if (mutation.isPending) {
@@ -4414,272 +3039,98 @@ export default function CreateTaskComponent() {
 
   // If the Mutation is successful, you can access the data returned using the `UseMutationResult.data` field.
   if (mutation.isSuccess) {
-    console.log(mutation.data.task_insert);
+    console.log(mutation.data.taskComment_insert);
   }
   return <div>Mutation execution {mutation.isSuccess ? 'successful' : 'failed'}!</div>;
 }
 ```
 
-## UpdateTask
-You can execute the `UpdateTask` Mutation using the `UseMutationResult` object returned by the following Mutation hook function (which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts)):
+## UpdateTaskComment
+You can execute the `UpdateTaskComment` Mutation using the `UseMutationResult` object returned by the following Mutation hook function (which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts)):
 ```javascript
-useUpdateTask(options?: useDataConnectMutationOptions<UpdateTaskData, FirebaseError, UpdateTaskVariables>): UseDataConnectMutationResult<UpdateTaskData, UpdateTaskVariables>;
+useUpdateTaskComment(options?: useDataConnectMutationOptions<UpdateTaskCommentData, FirebaseError, UpdateTaskCommentVariables>): UseDataConnectMutationResult<UpdateTaskCommentData, UpdateTaskCommentVariables>;
 ```
 You can also pass in a `DataConnect` instance to the Mutation hook function.
 ```javascript
-useUpdateTask(dc: DataConnect, options?: useDataConnectMutationOptions<UpdateTaskData, FirebaseError, UpdateTaskVariables>): UseDataConnectMutationResult<UpdateTaskData, UpdateTaskVariables>;
+useUpdateTaskComment(dc: DataConnect, options?: useDataConnectMutationOptions<UpdateTaskCommentData, FirebaseError, UpdateTaskCommentVariables>): UseDataConnectMutationResult<UpdateTaskCommentData, UpdateTaskCommentVariables>;
 ```
 
 ### Variables
-The `UpdateTask` Mutation requires an argument of type `UpdateTaskVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+The `UpdateTaskComment` Mutation requires an argument of type `UpdateTaskCommentVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
 
 ```javascript
-export interface UpdateTaskVariables {
-  id: UUIDString;
-  data: {
-    id?: UUIDString | null;
-    id_expr?: {
-    };
-      assignedToId?: UUIDString | null;
-      assignedToId_expr?: {
-      };
-        assignedTo?: User_Key | null;
-        businessId?: UUIDString | null;
-        businessId_expr?: {
-        };
-          createdAt?: TimestampString | null;
-          createdAt_expr?: {
-          };
-            createdAt_time?: {
-              now?: {
-              };
-                at?: TimestampString | null;
-                add?: {
-                  milliseconds?: number;
-                  seconds?: number;
-                  minutes?: number;
-                  hours?: number;
-                  days?: number;
-                  weeks?: number;
-                  months?: number;
-                  years?: number;
-                };
-                  sub?: {
-                    milliseconds?: number;
-                    seconds?: number;
-                    minutes?: number;
-                    hours?: number;
-                    days?: number;
-                    weeks?: number;
-                    months?: number;
-                    years?: number;
-                  };
-                    truncateTo?: Timestamp_Interval | null;
-            };
-              createdAt_update?: ({
-                inc?: {
-                  milliseconds?: number;
-                  seconds?: number;
-                  minutes?: number;
-                  hours?: number;
-                  days?: number;
-                  weeks?: number;
-                  months?: number;
-                  years?: number;
-                };
-                  dec?: {
-                    milliseconds?: number;
-                    seconds?: number;
-                    minutes?: number;
-                    hours?: number;
-                    days?: number;
-                    weeks?: number;
-                    months?: number;
-                    years?: number;
-                  };
-              })[];
-                createdBy?: UUIDString | null;
-                createdBy_expr?: {
-                };
-                  description?: string | null;
-                  description_expr?: {
-                  };
-                    dueDate?: TimestampString | null;
-                    dueDate_expr?: {
-                    };
-                      dueDate_time?: {
-                        now?: {
-                        };
-                          at?: TimestampString | null;
-                          add?: {
-                            milliseconds?: number;
-                            seconds?: number;
-                            minutes?: number;
-                            hours?: number;
-                            days?: number;
-                            weeks?: number;
-                            months?: number;
-                            years?: number;
-                          };
-                            sub?: {
-                              milliseconds?: number;
-                              seconds?: number;
-                              minutes?: number;
-                              hours?: number;
-                              days?: number;
-                              weeks?: number;
-                              months?: number;
-                              years?: number;
-                            };
-                              truncateTo?: Timestamp_Interval | null;
-                      };
-                        dueDate_update?: ({
-                          inc?: {
-                            milliseconds?: number;
-                            seconds?: number;
-                            minutes?: number;
-                            hours?: number;
-                            days?: number;
-                            weeks?: number;
-                            months?: number;
-                            years?: number;
-                          };
-                            dec?: {
-                              milliseconds?: number;
-                              seconds?: number;
-                              minutes?: number;
-                              hours?: number;
-                              days?: number;
-                              weeks?: number;
-                              months?: number;
-                              years?: number;
-                            };
-                        })[];
-                          priority?: string | null;
-                          priority_expr?: {
-                          };
-                            status?: string | null;
-                            status_expr?: {
-                            };
-                              tenantId?: UUIDString | null;
-                              tenantId_expr?: {
-                              };
-                                title?: string | null;
-                                title_expr?: {
-                                };
-                                  updatedAt?: TimestampString | null;
-                                  updatedAt_expr?: {
-                                  };
-                                    updatedAt_time?: {
-                                      now?: {
-                                      };
-                                        at?: TimestampString | null;
-                                        add?: {
-                                          milliseconds?: number;
-                                          seconds?: number;
-                                          minutes?: number;
-                                          hours?: number;
-                                          days?: number;
-                                          weeks?: number;
-                                          months?: number;
-                                          years?: number;
-                                        };
-                                          sub?: {
-                                            milliseconds?: number;
-                                            seconds?: number;
-                                            minutes?: number;
-                                            hours?: number;
-                                            days?: number;
-                                            weeks?: number;
-                                            months?: number;
-                                            years?: number;
-                                          };
-                                            truncateTo?: Timestamp_Interval | null;
-                                    };
-                                      updatedAt_update?: ({
-                                        inc?: {
-                                          milliseconds?: number;
-                                          seconds?: number;
-                                          minutes?: number;
-                                          hours?: number;
-                                          days?: number;
-                                          weeks?: number;
-                                          months?: number;
-                                          years?: number;
-                                        };
-                                          dec?: {
-                                            milliseconds?: number;
-                                            seconds?: number;
-                                            minutes?: number;
-                                            hours?: number;
-                                            days?: number;
-                                            weeks?: number;
-                                            months?: number;
-                                            years?: number;
-                                          };
-                                      })[];
-  };
+export interface UpdateTaskCommentVariables {
+  id: string;
+  tenantId?: string | null;
+  businessId?: string | null;
+  taskId?: string | null;
+  userId?: string | null;
+  content?: string | null;
 }
 ```
 ### Return Type
-Recall that calling the `UpdateTask` Mutation hook function returns a `UseMutationResult` object. This object holds the state of your Mutation, including whether the Mutation is loading, has completed, or has succeeded/failed, among other things.
+Recall that calling the `UpdateTaskComment` Mutation hook function returns a `UseMutationResult` object. This object holds the state of your Mutation, including whether the Mutation is loading, has completed, or has succeeded/failed, among other things.
 
 To check the status of a Mutation, use the `UseMutationResult.status` field. You can also check for pending / success / error status using the `UseMutationResult.isPending`, `UseMutationResult.isSuccess`, and `UseMutationResult.isError` fields.
 
 To execute the Mutation, call `UseMutationResult.mutate()`. This function executes the Mutation, but does not return the data from the Mutation.
 
-To access the data returned by a Mutation, use the `UseMutationResult.data` field. The data for the `UpdateTask` Mutation is of type `UpdateTaskData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+To access the data returned by a Mutation, use the `UseMutationResult.data` field. The data for the `UpdateTaskComment` Mutation is of type `UpdateTaskCommentData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
 ```javascript
-export interface UpdateTaskData {
-  task_update?: Task_Key | null;
+export interface UpdateTaskCommentData {
+  taskComment_update?: TaskComment_Key | null;
 }
 ```
 
 To learn more about the `UseMutationResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useMutation).
 
-### Using `UpdateTask`'s Mutation hook function
+### Using `UpdateTaskComment`'s Mutation hook function
 
 ```javascript
 import { getDataConnect } from 'firebase/data-connect';
-import { connectorConfig, UpdateTaskVariables } from '@dataconnect/generated';
-import { useUpdateTask } from '@dataconnect/generated/react'
+import { connectorConfig, UpdateTaskCommentVariables } from '@dataconnect/generated';
+import { useUpdateTaskComment } from '@dataconnect/generated/react'
 
-export default function UpdateTaskComponent() {
+export default function UpdateTaskCommentComponent() {
   // Call the Mutation hook function to get a `UseMutationResult` object which holds the state of your Mutation.
-  const mutation = useUpdateTask();
+  const mutation = useUpdateTaskComment();
 
   // You can also pass in a `DataConnect` instance to the Mutation hook function.
   const dataConnect = getDataConnect(connectorConfig);
-  const mutation = useUpdateTask(dataConnect);
+  const mutation = useUpdateTaskComment(dataConnect);
 
   // You can also pass in a `useDataConnectMutationOptions` object to the Mutation hook function.
   const options = {
     onSuccess: () => { console.log('Mutation succeeded!'); }
   };
-  const mutation = useUpdateTask(options);
+  const mutation = useUpdateTaskComment(options);
 
   // You can also pass both a `DataConnect` instance and a `useDataConnectMutationOptions` object.
   const dataConnect = getDataConnect(connectorConfig);
   const options = {
     onSuccess: () => { console.log('Mutation succeeded!'); }
   };
-  const mutation = useUpdateTask(dataConnect, options);
+  const mutation = useUpdateTaskComment(dataConnect, options);
 
   // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
-  // The `useUpdateTask` Mutation requires an argument of type `UpdateTaskVariables`:
-  const updateTaskVars: UpdateTaskVariables = {
+  // The `useUpdateTaskComment` Mutation requires an argument of type `UpdateTaskCommentVariables`:
+  const updateTaskCommentVars: UpdateTaskCommentVariables = {
     id: ..., 
-    data: ..., 
+    tenantId: ..., // optional
+    businessId: ..., // optional
+    taskId: ..., // optional
+    userId: ..., // optional
+    content: ..., // optional
   };
-  mutation.mutate(updateTaskVars);
+  mutation.mutate(updateTaskCommentVars);
   // Variables can be defined inline as well.
-  mutation.mutate({ id: ..., data: ..., });
+  mutation.mutate({ id: ..., tenantId: ..., businessId: ..., taskId: ..., userId: ..., content: ..., });
 
   // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
   const options = {
     onSuccess: () => { console.log('Mutation succeeded!'); }
   };
-  mutation.mutate(updateTaskVars, options);
+  mutation.mutate(updateTaskCommentVars, options);
 
   // Then, you can render your component dynamically based on the status of the Mutation.
   if (mutation.isPending) {
@@ -4692,80 +3143,80 @@ export default function UpdateTaskComponent() {
 
   // If the Mutation is successful, you can access the data returned using the `UseMutationResult.data` field.
   if (mutation.isSuccess) {
-    console.log(mutation.data.task_update);
+    console.log(mutation.data.taskComment_update);
   }
   return <div>Mutation execution {mutation.isSuccess ? 'successful' : 'failed'}!</div>;
 }
 ```
 
-## DeleteTask
-You can execute the `DeleteTask` Mutation using the `UseMutationResult` object returned by the following Mutation hook function (which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts)):
+## DeleteTaskComment
+You can execute the `DeleteTaskComment` Mutation using the `UseMutationResult` object returned by the following Mutation hook function (which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts)):
 ```javascript
-useDeleteTask(options?: useDataConnectMutationOptions<DeleteTaskData, FirebaseError, DeleteTaskVariables>): UseDataConnectMutationResult<DeleteTaskData, DeleteTaskVariables>;
+useDeleteTaskComment(options?: useDataConnectMutationOptions<DeleteTaskCommentData, FirebaseError, DeleteTaskCommentVariables>): UseDataConnectMutationResult<DeleteTaskCommentData, DeleteTaskCommentVariables>;
 ```
 You can also pass in a `DataConnect` instance to the Mutation hook function.
 ```javascript
-useDeleteTask(dc: DataConnect, options?: useDataConnectMutationOptions<DeleteTaskData, FirebaseError, DeleteTaskVariables>): UseDataConnectMutationResult<DeleteTaskData, DeleteTaskVariables>;
+useDeleteTaskComment(dc: DataConnect, options?: useDataConnectMutationOptions<DeleteTaskCommentData, FirebaseError, DeleteTaskCommentVariables>): UseDataConnectMutationResult<DeleteTaskCommentData, DeleteTaskCommentVariables>;
 ```
 
 ### Variables
-The `DeleteTask` Mutation requires an argument of type `DeleteTaskVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+The `DeleteTaskComment` Mutation requires an argument of type `DeleteTaskCommentVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
 
 ```javascript
-export interface DeleteTaskVariables {
-  id: UUIDString;
+export interface DeleteTaskCommentVariables {
+  id: string;
 }
 ```
 ### Return Type
-Recall that calling the `DeleteTask` Mutation hook function returns a `UseMutationResult` object. This object holds the state of your Mutation, including whether the Mutation is loading, has completed, or has succeeded/failed, among other things.
+Recall that calling the `DeleteTaskComment` Mutation hook function returns a `UseMutationResult` object. This object holds the state of your Mutation, including whether the Mutation is loading, has completed, or has succeeded/failed, among other things.
 
 To check the status of a Mutation, use the `UseMutationResult.status` field. You can also check for pending / success / error status using the `UseMutationResult.isPending`, `UseMutationResult.isSuccess`, and `UseMutationResult.isError` fields.
 
 To execute the Mutation, call `UseMutationResult.mutate()`. This function executes the Mutation, but does not return the data from the Mutation.
 
-To access the data returned by a Mutation, use the `UseMutationResult.data` field. The data for the `DeleteTask` Mutation is of type `DeleteTaskData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+To access the data returned by a Mutation, use the `UseMutationResult.data` field. The data for the `DeleteTaskComment` Mutation is of type `DeleteTaskCommentData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
 ```javascript
-export interface DeleteTaskData {
-  task_delete?: Task_Key | null;
+export interface DeleteTaskCommentData {
+  taskComment_delete?: TaskComment_Key | null;
 }
 ```
 
 To learn more about the `UseMutationResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useMutation).
 
-### Using `DeleteTask`'s Mutation hook function
+### Using `DeleteTaskComment`'s Mutation hook function
 
 ```javascript
 import { getDataConnect } from 'firebase/data-connect';
-import { connectorConfig, DeleteTaskVariables } from '@dataconnect/generated';
-import { useDeleteTask } from '@dataconnect/generated/react'
+import { connectorConfig, DeleteTaskCommentVariables } from '@dataconnect/generated';
+import { useDeleteTaskComment } from '@dataconnect/generated/react'
 
-export default function DeleteTaskComponent() {
+export default function DeleteTaskCommentComponent() {
   // Call the Mutation hook function to get a `UseMutationResult` object which holds the state of your Mutation.
-  const mutation = useDeleteTask();
+  const mutation = useDeleteTaskComment();
 
   // You can also pass in a `DataConnect` instance to the Mutation hook function.
   const dataConnect = getDataConnect(connectorConfig);
-  const mutation = useDeleteTask(dataConnect);
+  const mutation = useDeleteTaskComment(dataConnect);
 
   // You can also pass in a `useDataConnectMutationOptions` object to the Mutation hook function.
   const options = {
     onSuccess: () => { console.log('Mutation succeeded!'); }
   };
-  const mutation = useDeleteTask(options);
+  const mutation = useDeleteTaskComment(options);
 
   // You can also pass both a `DataConnect` instance and a `useDataConnectMutationOptions` object.
   const dataConnect = getDataConnect(connectorConfig);
   const options = {
     onSuccess: () => { console.log('Mutation succeeded!'); }
   };
-  const mutation = useDeleteTask(dataConnect, options);
+  const mutation = useDeleteTaskComment(dataConnect, options);
 
   // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
-  // The `useDeleteTask` Mutation requires an argument of type `DeleteTaskVariables`:
-  const deleteTaskVars: DeleteTaskVariables = {
+  // The `useDeleteTaskComment` Mutation requires an argument of type `DeleteTaskCommentVariables`:
+  const deleteTaskCommentVars: DeleteTaskCommentVariables = {
     id: ..., 
   };
-  mutation.mutate(deleteTaskVars);
+  mutation.mutate(deleteTaskCommentVars);
   // Variables can be defined inline as well.
   mutation.mutate({ id: ..., });
 
@@ -4773,7 +3224,7 @@ export default function DeleteTaskComponent() {
   const options = {
     onSuccess: () => { console.log('Mutation succeeded!'); }
   };
-  mutation.mutate(deleteTaskVars, options);
+  mutation.mutate(deleteTaskCommentVars, options);
 
   // Then, you can render your component dynamically based on the status of the Mutation.
   if (mutation.isPending) {
@@ -4786,7 +3237,7 @@ export default function DeleteTaskComponent() {
 
   // If the Mutation is successful, you can access the data returned using the `UseMutationResult.data` field.
   if (mutation.isSuccess) {
-    console.log(mutation.data.task_delete);
+    console.log(mutation.data.taskComment_delete);
   }
   return <div>Mutation execution {mutation.isSuccess ? 'successful' : 'failed'}!</div>;
 }
@@ -4807,122 +3258,14 @@ The `CreateEmployee` Mutation requires an argument of type `CreateEmployeeVariab
 
 ```javascript
 export interface CreateEmployeeVariables {
-  data: {
-    id?: UUIDString | null;
-    id_expr?: {
-    };
-      businessId?: UUIDString | null;
-      businessId_expr?: {
-      };
-        createdAt?: TimestampString | null;
-        createdAt_expr?: {
-        };
-          createdAt_time?: {
-            now?: {
-            };
-              at?: TimestampString | null;
-              add?: {
-                milliseconds?: number;
-                seconds?: number;
-                minutes?: number;
-                hours?: number;
-                days?: number;
-                weeks?: number;
-                months?: number;
-                years?: number;
-              };
-                sub?: {
-                  milliseconds?: number;
-                  seconds?: number;
-                  minutes?: number;
-                  hours?: number;
-                  days?: number;
-                  weeks?: number;
-                  months?: number;
-                  years?: number;
-                };
-                  truncateTo?: Timestamp_Interval | null;
-          };
-            createdAt_update?: ({
-              inc?: {
-                milliseconds?: number;
-                seconds?: number;
-                minutes?: number;
-                hours?: number;
-                days?: number;
-                weeks?: number;
-                months?: number;
-                years?: number;
-              };
-                dec?: {
-                  milliseconds?: number;
-                  seconds?: number;
-                  minutes?: number;
-                  hours?: number;
-                  days?: number;
-                  weeks?: number;
-                  months?: number;
-                  years?: number;
-                };
-            })[];
-              department?: string | null;
-              department_expr?: {
-              };
-                fullName?: string | null;
-                fullName_expr?: {
-                };
-                  position?: string | null;
-                  position_expr?: {
-                  };
-                    salary?: number | null;
-                    salary_expr?: {
-                    };
-                      salary_update?: ({
-                        inc?: number | null;
-                        dec?: number | null;
-                      })[];
-                        startDate?: DateString | null;
-                        startDate_expr?: {
-                        };
-                          startDate_date?: {
-                            today?: {
-                            };
-                              on?: DateString | null;
-                              add?: {
-                                days?: number;
-                                weeks?: number;
-                                months?: number;
-                                years?: number;
-                              };
-                                sub?: {
-                                  days?: number;
-                                  weeks?: number;
-                                  months?: number;
-                                  years?: number;
-                                };
-                                  truncateTo?: Date_Interval | null;
-                          };
-                            startDate_update?: ({
-                              inc?: {
-                                days?: number;
-                                weeks?: number;
-                                months?: number;
-                                years?: number;
-                              };
-                                dec?: {
-                                  days?: number;
-                                  weeks?: number;
-                                  months?: number;
-                                  years?: number;
-                                };
-                            })[];
-                              status?: string | null;
-                              status_expr?: {
-                              };
-                                tenantId?: UUIDString | null;
-                                tenantId_expr?: {
-                                };
-  };
+  tenantId: string;
+  businessId: string;
+  fullName: string;
+  position: string;
+  salary?: number | null;
+  department?: string | null;
+  startDate?: DateString | null;
+  status?: string | null;
 }
 ```
 ### Return Type
@@ -4972,11 +3315,18 @@ export default function CreateEmployeeComponent() {
   // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
   // The `useCreateEmployee` Mutation requires an argument of type `CreateEmployeeVariables`:
   const createEmployeeVars: CreateEmployeeVariables = {
-    data: ..., 
+    tenantId: ..., 
+    businessId: ..., 
+    fullName: ..., 
+    position: ..., 
+    salary: ..., // optional
+    department: ..., // optional
+    startDate: ..., // optional
+    status: ..., // optional
   };
   mutation.mutate(createEmployeeVars);
   // Variables can be defined inline as well.
-  mutation.mutate({ data: ..., });
+  mutation.mutate({ tenantId: ..., businessId: ..., fullName: ..., position: ..., salary: ..., department: ..., startDate: ..., status: ..., });
 
   // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
   const options = {
@@ -5016,123 +3366,15 @@ The `UpdateEmployee` Mutation requires an argument of type `UpdateEmployeeVariab
 
 ```javascript
 export interface UpdateEmployeeVariables {
-  id: UUIDString;
-  data: {
-    id?: UUIDString | null;
-    id_expr?: {
-    };
-      businessId?: UUIDString | null;
-      businessId_expr?: {
-      };
-        createdAt?: TimestampString | null;
-        createdAt_expr?: {
-        };
-          createdAt_time?: {
-            now?: {
-            };
-              at?: TimestampString | null;
-              add?: {
-                milliseconds?: number;
-                seconds?: number;
-                minutes?: number;
-                hours?: number;
-                days?: number;
-                weeks?: number;
-                months?: number;
-                years?: number;
-              };
-                sub?: {
-                  milliseconds?: number;
-                  seconds?: number;
-                  minutes?: number;
-                  hours?: number;
-                  days?: number;
-                  weeks?: number;
-                  months?: number;
-                  years?: number;
-                };
-                  truncateTo?: Timestamp_Interval | null;
-          };
-            createdAt_update?: ({
-              inc?: {
-                milliseconds?: number;
-                seconds?: number;
-                minutes?: number;
-                hours?: number;
-                days?: number;
-                weeks?: number;
-                months?: number;
-                years?: number;
-              };
-                dec?: {
-                  milliseconds?: number;
-                  seconds?: number;
-                  minutes?: number;
-                  hours?: number;
-                  days?: number;
-                  weeks?: number;
-                  months?: number;
-                  years?: number;
-                };
-            })[];
-              department?: string | null;
-              department_expr?: {
-              };
-                fullName?: string | null;
-                fullName_expr?: {
-                };
-                  position?: string | null;
-                  position_expr?: {
-                  };
-                    salary?: number | null;
-                    salary_expr?: {
-                    };
-                      salary_update?: ({
-                        inc?: number | null;
-                        dec?: number | null;
-                      })[];
-                        startDate?: DateString | null;
-                        startDate_expr?: {
-                        };
-                          startDate_date?: {
-                            today?: {
-                            };
-                              on?: DateString | null;
-                              add?: {
-                                days?: number;
-                                weeks?: number;
-                                months?: number;
-                                years?: number;
-                              };
-                                sub?: {
-                                  days?: number;
-                                  weeks?: number;
-                                  months?: number;
-                                  years?: number;
-                                };
-                                  truncateTo?: Date_Interval | null;
-                          };
-                            startDate_update?: ({
-                              inc?: {
-                                days?: number;
-                                weeks?: number;
-                                months?: number;
-                                years?: number;
-                              };
-                                dec?: {
-                                  days?: number;
-                                  weeks?: number;
-                                  months?: number;
-                                  years?: number;
-                                };
-                            })[];
-                              status?: string | null;
-                              status_expr?: {
-                              };
-                                tenantId?: UUIDString | null;
-                                tenantId_expr?: {
-                                };
-  };
+  id: string;
+  tenantId?: string | null;
+  businessId?: string | null;
+  fullName?: string | null;
+  position?: string | null;
+  salary?: number | null;
+  department?: string | null;
+  startDate?: DateString | null;
+  status?: string | null;
 }
 ```
 ### Return Type
@@ -5183,11 +3425,18 @@ export default function UpdateEmployeeComponent() {
   // The `useUpdateEmployee` Mutation requires an argument of type `UpdateEmployeeVariables`:
   const updateEmployeeVars: UpdateEmployeeVariables = {
     id: ..., 
-    data: ..., 
+    tenantId: ..., // optional
+    businessId: ..., // optional
+    fullName: ..., // optional
+    position: ..., // optional
+    salary: ..., // optional
+    department: ..., // optional
+    startDate: ..., // optional
+    status: ..., // optional
   };
   mutation.mutate(updateEmployeeVars);
   // Variables can be defined inline as well.
-  mutation.mutate({ id: ..., data: ..., });
+  mutation.mutate({ id: ..., tenantId: ..., businessId: ..., fullName: ..., position: ..., salary: ..., department: ..., startDate: ..., status: ..., });
 
   // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
   const options = {
@@ -5227,7 +3476,7 @@ The `DeleteEmployee` Mutation requires an argument of type `DeleteEmployeeVariab
 
 ```javascript
 export interface DeleteEmployeeVariables {
-  id: UUIDString;
+  id: string;
 }
 ```
 ### Return Type
@@ -5321,77 +3570,11 @@ The `CreateCustomer` Mutation requires an argument of type `CreateCustomerVariab
 
 ```javascript
 export interface CreateCustomerVariables {
-  data: {
-    id?: UUIDString | null;
-    id_expr?: {
-    };
-      businessId?: UUIDString | null;
-      businessId_expr?: {
-      };
-        createdAt?: TimestampString | null;
-        createdAt_expr?: {
-        };
-          createdAt_time?: {
-            now?: {
-            };
-              at?: TimestampString | null;
-              add?: {
-                milliseconds?: number;
-                seconds?: number;
-                minutes?: number;
-                hours?: number;
-                days?: number;
-                weeks?: number;
-                months?: number;
-                years?: number;
-              };
-                sub?: {
-                  milliseconds?: number;
-                  seconds?: number;
-                  minutes?: number;
-                  hours?: number;
-                  days?: number;
-                  weeks?: number;
-                  months?: number;
-                  years?: number;
-                };
-                  truncateTo?: Timestamp_Interval | null;
-          };
-            createdAt_update?: ({
-              inc?: {
-                milliseconds?: number;
-                seconds?: number;
-                minutes?: number;
-                hours?: number;
-                days?: number;
-                weeks?: number;
-                months?: number;
-                years?: number;
-              };
-                dec?: {
-                  milliseconds?: number;
-                  seconds?: number;
-                  minutes?: number;
-                  hours?: number;
-                  days?: number;
-                  weeks?: number;
-                  months?: number;
-                  years?: number;
-                };
-            })[];
-              customerName?: string | null;
-              customerName_expr?: {
-              };
-                email?: string | null;
-                email_expr?: {
-                };
-                  phoneNumber?: string | null;
-                  phoneNumber_expr?: {
-                  };
-                    tenantId?: UUIDString | null;
-                    tenantId_expr?: {
-                    };
-  };
+  tenantId: string;
+  businessId: string;
+  customerName: string;
+  phoneNumber?: string | null;
+  email?: string | null;
 }
 ```
 ### Return Type
@@ -5441,11 +3624,15 @@ export default function CreateCustomerComponent() {
   // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
   // The `useCreateCustomer` Mutation requires an argument of type `CreateCustomerVariables`:
   const createCustomerVars: CreateCustomerVariables = {
-    data: ..., 
+    tenantId: ..., 
+    businessId: ..., 
+    customerName: ..., 
+    phoneNumber: ..., // optional
+    email: ..., // optional
   };
   mutation.mutate(createCustomerVars);
   // Variables can be defined inline as well.
-  mutation.mutate({ data: ..., });
+  mutation.mutate({ tenantId: ..., businessId: ..., customerName: ..., phoneNumber: ..., email: ..., });
 
   // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
   const options = {
@@ -5485,78 +3672,12 @@ The `UpdateCustomer` Mutation requires an argument of type `UpdateCustomerVariab
 
 ```javascript
 export interface UpdateCustomerVariables {
-  id: UUIDString;
-  data: {
-    id?: UUIDString | null;
-    id_expr?: {
-    };
-      businessId?: UUIDString | null;
-      businessId_expr?: {
-      };
-        createdAt?: TimestampString | null;
-        createdAt_expr?: {
-        };
-          createdAt_time?: {
-            now?: {
-            };
-              at?: TimestampString | null;
-              add?: {
-                milliseconds?: number;
-                seconds?: number;
-                minutes?: number;
-                hours?: number;
-                days?: number;
-                weeks?: number;
-                months?: number;
-                years?: number;
-              };
-                sub?: {
-                  milliseconds?: number;
-                  seconds?: number;
-                  minutes?: number;
-                  hours?: number;
-                  days?: number;
-                  weeks?: number;
-                  months?: number;
-                  years?: number;
-                };
-                  truncateTo?: Timestamp_Interval | null;
-          };
-            createdAt_update?: ({
-              inc?: {
-                milliseconds?: number;
-                seconds?: number;
-                minutes?: number;
-                hours?: number;
-                days?: number;
-                weeks?: number;
-                months?: number;
-                years?: number;
-              };
-                dec?: {
-                  milliseconds?: number;
-                  seconds?: number;
-                  minutes?: number;
-                  hours?: number;
-                  days?: number;
-                  weeks?: number;
-                  months?: number;
-                  years?: number;
-                };
-            })[];
-              customerName?: string | null;
-              customerName_expr?: {
-              };
-                email?: string | null;
-                email_expr?: {
-                };
-                  phoneNumber?: string | null;
-                  phoneNumber_expr?: {
-                  };
-                    tenantId?: UUIDString | null;
-                    tenantId_expr?: {
-                    };
-  };
+  id: string;
+  tenantId?: string | null;
+  businessId?: string | null;
+  customerName?: string | null;
+  phoneNumber?: string | null;
+  email?: string | null;
 }
 ```
 ### Return Type
@@ -5607,11 +3728,15 @@ export default function UpdateCustomerComponent() {
   // The `useUpdateCustomer` Mutation requires an argument of type `UpdateCustomerVariables`:
   const updateCustomerVars: UpdateCustomerVariables = {
     id: ..., 
-    data: ..., 
+    tenantId: ..., // optional
+    businessId: ..., // optional
+    customerName: ..., // optional
+    phoneNumber: ..., // optional
+    email: ..., // optional
   };
   mutation.mutate(updateCustomerVars);
   // Variables can be defined inline as well.
-  mutation.mutate({ id: ..., data: ..., });
+  mutation.mutate({ id: ..., tenantId: ..., businessId: ..., customerName: ..., phoneNumber: ..., email: ..., });
 
   // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
   const options = {
@@ -5651,7 +3776,7 @@ The `DeleteCustomer` Mutation requires an argument of type `DeleteCustomerVariab
 
 ```javascript
 export interface DeleteCustomerVariables {
-  id: UUIDString;
+  id: string;
 }
 ```
 ### Return Type
@@ -5745,77 +3870,11 @@ The `CreateSupplier` Mutation requires an argument of type `CreateSupplierVariab
 
 ```javascript
 export interface CreateSupplierVariables {
-  data: {
-    id?: UUIDString | null;
-    id_expr?: {
-    };
-      businessId?: UUIDString | null;
-      businessId_expr?: {
-      };
-        createdAt?: TimestampString | null;
-        createdAt_expr?: {
-        };
-          createdAt_time?: {
-            now?: {
-            };
-              at?: TimestampString | null;
-              add?: {
-                milliseconds?: number;
-                seconds?: number;
-                minutes?: number;
-                hours?: number;
-                days?: number;
-                weeks?: number;
-                months?: number;
-                years?: number;
-              };
-                sub?: {
-                  milliseconds?: number;
-                  seconds?: number;
-                  minutes?: number;
-                  hours?: number;
-                  days?: number;
-                  weeks?: number;
-                  months?: number;
-                  years?: number;
-                };
-                  truncateTo?: Timestamp_Interval | null;
-          };
-            createdAt_update?: ({
-              inc?: {
-                milliseconds?: number;
-                seconds?: number;
-                minutes?: number;
-                hours?: number;
-                days?: number;
-                weeks?: number;
-                months?: number;
-                years?: number;
-              };
-                dec?: {
-                  milliseconds?: number;
-                  seconds?: number;
-                  minutes?: number;
-                  hours?: number;
-                  days?: number;
-                  weeks?: number;
-                  months?: number;
-                  years?: number;
-                };
-            })[];
-              email?: string | null;
-              email_expr?: {
-              };
-                phoneNumber?: string | null;
-                phoneNumber_expr?: {
-                };
-                  supplierName?: string | null;
-                  supplierName_expr?: {
-                  };
-                    tenantId?: UUIDString | null;
-                    tenantId_expr?: {
-                    };
-  };
+  tenantId: string;
+  businessId: string;
+  supplierName: string;
+  phoneNumber?: string | null;
+  email?: string | null;
 }
 ```
 ### Return Type
@@ -5865,11 +3924,15 @@ export default function CreateSupplierComponent() {
   // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
   // The `useCreateSupplier` Mutation requires an argument of type `CreateSupplierVariables`:
   const createSupplierVars: CreateSupplierVariables = {
-    data: ..., 
+    tenantId: ..., 
+    businessId: ..., 
+    supplierName: ..., 
+    phoneNumber: ..., // optional
+    email: ..., // optional
   };
   mutation.mutate(createSupplierVars);
   // Variables can be defined inline as well.
-  mutation.mutate({ data: ..., });
+  mutation.mutate({ tenantId: ..., businessId: ..., supplierName: ..., phoneNumber: ..., email: ..., });
 
   // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
   const options = {
@@ -5909,78 +3972,12 @@ The `UpdateSupplier` Mutation requires an argument of type `UpdateSupplierVariab
 
 ```javascript
 export interface UpdateSupplierVariables {
-  id: UUIDString;
-  data: {
-    id?: UUIDString | null;
-    id_expr?: {
-    };
-      businessId?: UUIDString | null;
-      businessId_expr?: {
-      };
-        createdAt?: TimestampString | null;
-        createdAt_expr?: {
-        };
-          createdAt_time?: {
-            now?: {
-            };
-              at?: TimestampString | null;
-              add?: {
-                milliseconds?: number;
-                seconds?: number;
-                minutes?: number;
-                hours?: number;
-                days?: number;
-                weeks?: number;
-                months?: number;
-                years?: number;
-              };
-                sub?: {
-                  milliseconds?: number;
-                  seconds?: number;
-                  minutes?: number;
-                  hours?: number;
-                  days?: number;
-                  weeks?: number;
-                  months?: number;
-                  years?: number;
-                };
-                  truncateTo?: Timestamp_Interval | null;
-          };
-            createdAt_update?: ({
-              inc?: {
-                milliseconds?: number;
-                seconds?: number;
-                minutes?: number;
-                hours?: number;
-                days?: number;
-                weeks?: number;
-                months?: number;
-                years?: number;
-              };
-                dec?: {
-                  milliseconds?: number;
-                  seconds?: number;
-                  minutes?: number;
-                  hours?: number;
-                  days?: number;
-                  weeks?: number;
-                  months?: number;
-                  years?: number;
-                };
-            })[];
-              email?: string | null;
-              email_expr?: {
-              };
-                phoneNumber?: string | null;
-                phoneNumber_expr?: {
-                };
-                  supplierName?: string | null;
-                  supplierName_expr?: {
-                  };
-                    tenantId?: UUIDString | null;
-                    tenantId_expr?: {
-                    };
-  };
+  id: string;
+  tenantId?: string | null;
+  businessId?: string | null;
+  supplierName?: string | null;
+  phoneNumber?: string | null;
+  email?: string | null;
 }
 ```
 ### Return Type
@@ -6031,11 +4028,15 @@ export default function UpdateSupplierComponent() {
   // The `useUpdateSupplier` Mutation requires an argument of type `UpdateSupplierVariables`:
   const updateSupplierVars: UpdateSupplierVariables = {
     id: ..., 
-    data: ..., 
+    tenantId: ..., // optional
+    businessId: ..., // optional
+    supplierName: ..., // optional
+    phoneNumber: ..., // optional
+    email: ..., // optional
   };
   mutation.mutate(updateSupplierVars);
   // Variables can be defined inline as well.
-  mutation.mutate({ id: ..., data: ..., });
+  mutation.mutate({ id: ..., tenantId: ..., businessId: ..., supplierName: ..., phoneNumber: ..., email: ..., });
 
   // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
   const options = {
@@ -6075,7 +4076,7 @@ The `DeleteSupplier` Mutation requires an argument of type `DeleteSupplierVariab
 
 ```javascript
 export interface DeleteSupplierVariables {
-  id: UUIDString;
+  id: string;
 }
 ```
 ### Return Type
@@ -6169,80 +4170,12 @@ The `CreateDocument` Mutation requires an argument of type `CreateDocumentVariab
 
 ```javascript
 export interface CreateDocumentVariables {
-  data: {
-    id?: UUIDString | null;
-    id_expr?: {
-    };
-      businessId?: UUIDString | null;
-      businessId_expr?: {
-      };
-        documentType?: string | null;
-        documentType_expr?: {
-        };
-          fileUrl?: string | null;
-          fileUrl_expr?: {
-          };
-            tenantId?: UUIDString | null;
-            tenantId_expr?: {
-            };
-              title?: string | null;
-              title_expr?: {
-              };
-                uploadedAt?: TimestampString | null;
-                uploadedAt_expr?: {
-                };
-                  uploadedAt_time?: {
-                    now?: {
-                    };
-                      at?: TimestampString | null;
-                      add?: {
-                        milliseconds?: number;
-                        seconds?: number;
-                        minutes?: number;
-                        hours?: number;
-                        days?: number;
-                        weeks?: number;
-                        months?: number;
-                        years?: number;
-                      };
-                        sub?: {
-                          milliseconds?: number;
-                          seconds?: number;
-                          minutes?: number;
-                          hours?: number;
-                          days?: number;
-                          weeks?: number;
-                          months?: number;
-                          years?: number;
-                        };
-                          truncateTo?: Timestamp_Interval | null;
-                  };
-                    uploadedAt_update?: ({
-                      inc?: {
-                        milliseconds?: number;
-                        seconds?: number;
-                        minutes?: number;
-                        hours?: number;
-                        days?: number;
-                        weeks?: number;
-                        months?: number;
-                        years?: number;
-                      };
-                        dec?: {
-                          milliseconds?: number;
-                          seconds?: number;
-                          minutes?: number;
-                          hours?: number;
-                          days?: number;
-                          weeks?: number;
-                          months?: number;
-                          years?: number;
-                        };
-                    })[];
-                      uploadedBy?: UUIDString | null;
-                      uploadedBy_expr?: {
-                      };
-  };
+  tenantId: string;
+  businessId: string;
+  title: string;
+  documentType: string;
+  fileUrl: string;
+  uploadedBy: string;
 }
 ```
 ### Return Type
@@ -6292,11 +4225,16 @@ export default function CreateDocumentComponent() {
   // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
   // The `useCreateDocument` Mutation requires an argument of type `CreateDocumentVariables`:
   const createDocumentVars: CreateDocumentVariables = {
-    data: ..., 
+    tenantId: ..., 
+    businessId: ..., 
+    title: ..., 
+    documentType: ..., 
+    fileUrl: ..., 
+    uploadedBy: ..., 
   };
   mutation.mutate(createDocumentVars);
   // Variables can be defined inline as well.
-  mutation.mutate({ data: ..., });
+  mutation.mutate({ tenantId: ..., businessId: ..., title: ..., documentType: ..., fileUrl: ..., uploadedBy: ..., });
 
   // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
   const options = {
@@ -6336,81 +4274,13 @@ The `UpdateDocument` Mutation requires an argument of type `UpdateDocumentVariab
 
 ```javascript
 export interface UpdateDocumentVariables {
-  id: UUIDString;
-  data: {
-    id?: UUIDString | null;
-    id_expr?: {
-    };
-      businessId?: UUIDString | null;
-      businessId_expr?: {
-      };
-        documentType?: string | null;
-        documentType_expr?: {
-        };
-          fileUrl?: string | null;
-          fileUrl_expr?: {
-          };
-            tenantId?: UUIDString | null;
-            tenantId_expr?: {
-            };
-              title?: string | null;
-              title_expr?: {
-              };
-                uploadedAt?: TimestampString | null;
-                uploadedAt_expr?: {
-                };
-                  uploadedAt_time?: {
-                    now?: {
-                    };
-                      at?: TimestampString | null;
-                      add?: {
-                        milliseconds?: number;
-                        seconds?: number;
-                        minutes?: number;
-                        hours?: number;
-                        days?: number;
-                        weeks?: number;
-                        months?: number;
-                        years?: number;
-                      };
-                        sub?: {
-                          milliseconds?: number;
-                          seconds?: number;
-                          minutes?: number;
-                          hours?: number;
-                          days?: number;
-                          weeks?: number;
-                          months?: number;
-                          years?: number;
-                        };
-                          truncateTo?: Timestamp_Interval | null;
-                  };
-                    uploadedAt_update?: ({
-                      inc?: {
-                        milliseconds?: number;
-                        seconds?: number;
-                        minutes?: number;
-                        hours?: number;
-                        days?: number;
-                        weeks?: number;
-                        months?: number;
-                        years?: number;
-                      };
-                        dec?: {
-                          milliseconds?: number;
-                          seconds?: number;
-                          minutes?: number;
-                          hours?: number;
-                          days?: number;
-                          weeks?: number;
-                          months?: number;
-                          years?: number;
-                        };
-                    })[];
-                      uploadedBy?: UUIDString | null;
-                      uploadedBy_expr?: {
-                      };
-  };
+  id: string;
+  tenantId?: string | null;
+  businessId?: string | null;
+  title?: string | null;
+  documentType?: string | null;
+  fileUrl?: string | null;
+  uploadedBy?: string | null;
 }
 ```
 ### Return Type
@@ -6461,11 +4331,16 @@ export default function UpdateDocumentComponent() {
   // The `useUpdateDocument` Mutation requires an argument of type `UpdateDocumentVariables`:
   const updateDocumentVars: UpdateDocumentVariables = {
     id: ..., 
-    data: ..., 
+    tenantId: ..., // optional
+    businessId: ..., // optional
+    title: ..., // optional
+    documentType: ..., // optional
+    fileUrl: ..., // optional
+    uploadedBy: ..., // optional
   };
   mutation.mutate(updateDocumentVars);
   // Variables can be defined inline as well.
-  mutation.mutate({ id: ..., data: ..., });
+  mutation.mutate({ id: ..., tenantId: ..., businessId: ..., title: ..., documentType: ..., fileUrl: ..., uploadedBy: ..., });
 
   // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
   const options = {
@@ -6505,7 +4380,7 @@ The `DeleteDocument` Mutation requires an argument of type `DeleteDocumentVariab
 
 ```javascript
 export interface DeleteDocumentVariables {
-  id: UUIDString;
+  id: string;
 }
 ```
 ### Return Type
@@ -6579,7 +4454,1228 @@ export default function DeleteDocumentComponent() {
   // If the Mutation is successful, you can access the data returned using the `UseMutationResult.data` field.
   if (mutation.isSuccess) {
     console.log(mutation.data.document_delete);
->>>>>>> 546aacf70afe81cbee3ea5f2edbc661c271990b8
+  }
+  return <div>Mutation execution {mutation.isSuccess ? 'successful' : 'failed'}!</div>;
+}
+```
+
+## CreateActivityLog
+You can execute the `CreateActivityLog` Mutation using the `UseMutationResult` object returned by the following Mutation hook function (which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts)):
+```javascript
+useCreateActivityLog(options?: useDataConnectMutationOptions<CreateActivityLogData, FirebaseError, CreateActivityLogVariables>): UseDataConnectMutationResult<CreateActivityLogData, CreateActivityLogVariables>;
+```
+You can also pass in a `DataConnect` instance to the Mutation hook function.
+```javascript
+useCreateActivityLog(dc: DataConnect, options?: useDataConnectMutationOptions<CreateActivityLogData, FirebaseError, CreateActivityLogVariables>): UseDataConnectMutationResult<CreateActivityLogData, CreateActivityLogVariables>;
+```
+
+### Variables
+The `CreateActivityLog` Mutation requires an argument of type `CreateActivityLogVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+
+```javascript
+export interface CreateActivityLogVariables {
+  tenantId: string;
+  businessId: string;
+  userId: string;
+  userName: string;
+  actionType: string;
+  module: string;
+  description?: string | null;
+  recordId?: string | null;
+}
+```
+### Return Type
+Recall that calling the `CreateActivityLog` Mutation hook function returns a `UseMutationResult` object. This object holds the state of your Mutation, including whether the Mutation is loading, has completed, or has succeeded/failed, among other things.
+
+To check the status of a Mutation, use the `UseMutationResult.status` field. You can also check for pending / success / error status using the `UseMutationResult.isPending`, `UseMutationResult.isSuccess`, and `UseMutationResult.isError` fields.
+
+To execute the Mutation, call `UseMutationResult.mutate()`. This function executes the Mutation, but does not return the data from the Mutation.
+
+To access the data returned by a Mutation, use the `UseMutationResult.data` field. The data for the `CreateActivityLog` Mutation is of type `CreateActivityLogData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+```javascript
+export interface CreateActivityLogData {
+  activityLog_insert: ActivityLog_Key;
+}
+```
+
+To learn more about the `UseMutationResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useMutation).
+
+### Using `CreateActivityLog`'s Mutation hook function
+
+```javascript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, CreateActivityLogVariables } from '@dataconnect/generated';
+import { useCreateActivityLog } from '@dataconnect/generated/react'
+
+export default function CreateActivityLogComponent() {
+  // Call the Mutation hook function to get a `UseMutationResult` object which holds the state of your Mutation.
+  const mutation = useCreateActivityLog();
+
+  // You can also pass in a `DataConnect` instance to the Mutation hook function.
+  const dataConnect = getDataConnect(connectorConfig);
+  const mutation = useCreateActivityLog(dataConnect);
+
+  // You can also pass in a `useDataConnectMutationOptions` object to the Mutation hook function.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useCreateActivityLog(options);
+
+  // You can also pass both a `DataConnect` instance and a `useDataConnectMutationOptions` object.
+  const dataConnect = getDataConnect(connectorConfig);
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useCreateActivityLog(dataConnect, options);
+
+  // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
+  // The `useCreateActivityLog` Mutation requires an argument of type `CreateActivityLogVariables`:
+  const createActivityLogVars: CreateActivityLogVariables = {
+    tenantId: ..., 
+    businessId: ..., 
+    userId: ..., 
+    userName: ..., 
+    actionType: ..., 
+    module: ..., 
+    description: ..., // optional
+    recordId: ..., // optional
+  };
+  mutation.mutate(createActivityLogVars);
+  // Variables can be defined inline as well.
+  mutation.mutate({ tenantId: ..., businessId: ..., userId: ..., userName: ..., actionType: ..., module: ..., description: ..., recordId: ..., });
+
+  // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  mutation.mutate(createActivityLogVars, options);
+
+  // Then, you can render your component dynamically based on the status of the Mutation.
+  if (mutation.isPending) {
+    return <div>Loading...</div>;
+  }
+
+  if (mutation.isError) {
+    return <div>Error: {mutation.error.message}</div>;
+  }
+
+  // If the Mutation is successful, you can access the data returned using the `UseMutationResult.data` field.
+  if (mutation.isSuccess) {
+    console.log(mutation.data.activityLog_insert);
+  }
+  return <div>Mutation execution {mutation.isSuccess ? 'successful' : 'failed'}!</div>;
+}
+```
+
+## UpdateActivityLog
+You can execute the `UpdateActivityLog` Mutation using the `UseMutationResult` object returned by the following Mutation hook function (which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts)):
+```javascript
+useUpdateActivityLog(options?: useDataConnectMutationOptions<UpdateActivityLogData, FirebaseError, UpdateActivityLogVariables>): UseDataConnectMutationResult<UpdateActivityLogData, UpdateActivityLogVariables>;
+```
+You can also pass in a `DataConnect` instance to the Mutation hook function.
+```javascript
+useUpdateActivityLog(dc: DataConnect, options?: useDataConnectMutationOptions<UpdateActivityLogData, FirebaseError, UpdateActivityLogVariables>): UseDataConnectMutationResult<UpdateActivityLogData, UpdateActivityLogVariables>;
+```
+
+### Variables
+The `UpdateActivityLog` Mutation requires an argument of type `UpdateActivityLogVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+
+```javascript
+export interface UpdateActivityLogVariables {
+  id: string;
+  tenantId?: string | null;
+  businessId?: string | null;
+  userId?: string | null;
+  userName?: string | null;
+  actionType?: string | null;
+  module?: string | null;
+  description?: string | null;
+  recordId?: string | null;
+}
+```
+### Return Type
+Recall that calling the `UpdateActivityLog` Mutation hook function returns a `UseMutationResult` object. This object holds the state of your Mutation, including whether the Mutation is loading, has completed, or has succeeded/failed, among other things.
+
+To check the status of a Mutation, use the `UseMutationResult.status` field. You can also check for pending / success / error status using the `UseMutationResult.isPending`, `UseMutationResult.isSuccess`, and `UseMutationResult.isError` fields.
+
+To execute the Mutation, call `UseMutationResult.mutate()`. This function executes the Mutation, but does not return the data from the Mutation.
+
+To access the data returned by a Mutation, use the `UseMutationResult.data` field. The data for the `UpdateActivityLog` Mutation is of type `UpdateActivityLogData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+```javascript
+export interface UpdateActivityLogData {
+  activityLog_update?: ActivityLog_Key | null;
+}
+```
+
+To learn more about the `UseMutationResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useMutation).
+
+### Using `UpdateActivityLog`'s Mutation hook function
+
+```javascript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, UpdateActivityLogVariables } from '@dataconnect/generated';
+import { useUpdateActivityLog } from '@dataconnect/generated/react'
+
+export default function UpdateActivityLogComponent() {
+  // Call the Mutation hook function to get a `UseMutationResult` object which holds the state of your Mutation.
+  const mutation = useUpdateActivityLog();
+
+  // You can also pass in a `DataConnect` instance to the Mutation hook function.
+  const dataConnect = getDataConnect(connectorConfig);
+  const mutation = useUpdateActivityLog(dataConnect);
+
+  // You can also pass in a `useDataConnectMutationOptions` object to the Mutation hook function.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useUpdateActivityLog(options);
+
+  // You can also pass both a `DataConnect` instance and a `useDataConnectMutationOptions` object.
+  const dataConnect = getDataConnect(connectorConfig);
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useUpdateActivityLog(dataConnect, options);
+
+  // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
+  // The `useUpdateActivityLog` Mutation requires an argument of type `UpdateActivityLogVariables`:
+  const updateActivityLogVars: UpdateActivityLogVariables = {
+    id: ..., 
+    tenantId: ..., // optional
+    businessId: ..., // optional
+    userId: ..., // optional
+    userName: ..., // optional
+    actionType: ..., // optional
+    module: ..., // optional
+    description: ..., // optional
+    recordId: ..., // optional
+  };
+  mutation.mutate(updateActivityLogVars);
+  // Variables can be defined inline as well.
+  mutation.mutate({ id: ..., tenantId: ..., businessId: ..., userId: ..., userName: ..., actionType: ..., module: ..., description: ..., recordId: ..., });
+
+  // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  mutation.mutate(updateActivityLogVars, options);
+
+  // Then, you can render your component dynamically based on the status of the Mutation.
+  if (mutation.isPending) {
+    return <div>Loading...</div>;
+  }
+
+  if (mutation.isError) {
+    return <div>Error: {mutation.error.message}</div>;
+  }
+
+  // If the Mutation is successful, you can access the data returned using the `UseMutationResult.data` field.
+  if (mutation.isSuccess) {
+    console.log(mutation.data.activityLog_update);
+  }
+  return <div>Mutation execution {mutation.isSuccess ? 'successful' : 'failed'}!</div>;
+}
+```
+
+## DeleteActivityLog
+You can execute the `DeleteActivityLog` Mutation using the `UseMutationResult` object returned by the following Mutation hook function (which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts)):
+```javascript
+useDeleteActivityLog(options?: useDataConnectMutationOptions<DeleteActivityLogData, FirebaseError, DeleteActivityLogVariables>): UseDataConnectMutationResult<DeleteActivityLogData, DeleteActivityLogVariables>;
+```
+You can also pass in a `DataConnect` instance to the Mutation hook function.
+```javascript
+useDeleteActivityLog(dc: DataConnect, options?: useDataConnectMutationOptions<DeleteActivityLogData, FirebaseError, DeleteActivityLogVariables>): UseDataConnectMutationResult<DeleteActivityLogData, DeleteActivityLogVariables>;
+```
+
+### Variables
+The `DeleteActivityLog` Mutation requires an argument of type `DeleteActivityLogVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+
+```javascript
+export interface DeleteActivityLogVariables {
+  id: string;
+}
+```
+### Return Type
+Recall that calling the `DeleteActivityLog` Mutation hook function returns a `UseMutationResult` object. This object holds the state of your Mutation, including whether the Mutation is loading, has completed, or has succeeded/failed, among other things.
+
+To check the status of a Mutation, use the `UseMutationResult.status` field. You can also check for pending / success / error status using the `UseMutationResult.isPending`, `UseMutationResult.isSuccess`, and `UseMutationResult.isError` fields.
+
+To execute the Mutation, call `UseMutationResult.mutate()`. This function executes the Mutation, but does not return the data from the Mutation.
+
+To access the data returned by a Mutation, use the `UseMutationResult.data` field. The data for the `DeleteActivityLog` Mutation is of type `DeleteActivityLogData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+```javascript
+export interface DeleteActivityLogData {
+  activityLog_delete?: ActivityLog_Key | null;
+}
+```
+
+To learn more about the `UseMutationResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useMutation).
+
+### Using `DeleteActivityLog`'s Mutation hook function
+
+```javascript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, DeleteActivityLogVariables } from '@dataconnect/generated';
+import { useDeleteActivityLog } from '@dataconnect/generated/react'
+
+export default function DeleteActivityLogComponent() {
+  // Call the Mutation hook function to get a `UseMutationResult` object which holds the state of your Mutation.
+  const mutation = useDeleteActivityLog();
+
+  // You can also pass in a `DataConnect` instance to the Mutation hook function.
+  const dataConnect = getDataConnect(connectorConfig);
+  const mutation = useDeleteActivityLog(dataConnect);
+
+  // You can also pass in a `useDataConnectMutationOptions` object to the Mutation hook function.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useDeleteActivityLog(options);
+
+  // You can also pass both a `DataConnect` instance and a `useDataConnectMutationOptions` object.
+  const dataConnect = getDataConnect(connectorConfig);
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useDeleteActivityLog(dataConnect, options);
+
+  // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
+  // The `useDeleteActivityLog` Mutation requires an argument of type `DeleteActivityLogVariables`:
+  const deleteActivityLogVars: DeleteActivityLogVariables = {
+    id: ..., 
+  };
+  mutation.mutate(deleteActivityLogVars);
+  // Variables can be defined inline as well.
+  mutation.mutate({ id: ..., });
+
+  // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  mutation.mutate(deleteActivityLogVars, options);
+
+  // Then, you can render your component dynamically based on the status of the Mutation.
+  if (mutation.isPending) {
+    return <div>Loading...</div>;
+  }
+
+  if (mutation.isError) {
+    return <div>Error: {mutation.error.message}</div>;
+  }
+
+  // If the Mutation is successful, you can access the data returned using the `UseMutationResult.data` field.
+  if (mutation.isSuccess) {
+    console.log(mutation.data.activityLog_delete);
+  }
+  return <div>Mutation execution {mutation.isSuccess ? 'successful' : 'failed'}!</div>;
+}
+```
+
+## CreateAiQuery
+You can execute the `CreateAiQuery` Mutation using the `UseMutationResult` object returned by the following Mutation hook function (which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts)):
+```javascript
+useCreateAiQuery(options?: useDataConnectMutationOptions<CreateAiQueryData, FirebaseError, CreateAiQueryVariables>): UseDataConnectMutationResult<CreateAiQueryData, CreateAiQueryVariables>;
+```
+You can also pass in a `DataConnect` instance to the Mutation hook function.
+```javascript
+useCreateAiQuery(dc: DataConnect, options?: useDataConnectMutationOptions<CreateAiQueryData, FirebaseError, CreateAiQueryVariables>): UseDataConnectMutationResult<CreateAiQueryData, CreateAiQueryVariables>;
+```
+
+### Variables
+The `CreateAiQuery` Mutation requires an argument of type `CreateAiQueryVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+
+```javascript
+export interface CreateAiQueryVariables {
+  tenantId: string;
+  businessId: string;
+  userId: string;
+  queryText: string;
+  response?: string | null;
+}
+```
+### Return Type
+Recall that calling the `CreateAiQuery` Mutation hook function returns a `UseMutationResult` object. This object holds the state of your Mutation, including whether the Mutation is loading, has completed, or has succeeded/failed, among other things.
+
+To check the status of a Mutation, use the `UseMutationResult.status` field. You can also check for pending / success / error status using the `UseMutationResult.isPending`, `UseMutationResult.isSuccess`, and `UseMutationResult.isError` fields.
+
+To execute the Mutation, call `UseMutationResult.mutate()`. This function executes the Mutation, but does not return the data from the Mutation.
+
+To access the data returned by a Mutation, use the `UseMutationResult.data` field. The data for the `CreateAiQuery` Mutation is of type `CreateAiQueryData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+```javascript
+export interface CreateAiQueryData {
+  aiQuery_insert: AiQuery_Key;
+}
+```
+
+To learn more about the `UseMutationResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useMutation).
+
+### Using `CreateAiQuery`'s Mutation hook function
+
+```javascript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, CreateAiQueryVariables } from '@dataconnect/generated';
+import { useCreateAiQuery } from '@dataconnect/generated/react'
+
+export default function CreateAiQueryComponent() {
+  // Call the Mutation hook function to get a `UseMutationResult` object which holds the state of your Mutation.
+  const mutation = useCreateAiQuery();
+
+  // You can also pass in a `DataConnect` instance to the Mutation hook function.
+  const dataConnect = getDataConnect(connectorConfig);
+  const mutation = useCreateAiQuery(dataConnect);
+
+  // You can also pass in a `useDataConnectMutationOptions` object to the Mutation hook function.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useCreateAiQuery(options);
+
+  // You can also pass both a `DataConnect` instance and a `useDataConnectMutationOptions` object.
+  const dataConnect = getDataConnect(connectorConfig);
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useCreateAiQuery(dataConnect, options);
+
+  // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
+  // The `useCreateAiQuery` Mutation requires an argument of type `CreateAiQueryVariables`:
+  const createAiQueryVars: CreateAiQueryVariables = {
+    tenantId: ..., 
+    businessId: ..., 
+    userId: ..., 
+    queryText: ..., 
+    response: ..., // optional
+  };
+  mutation.mutate(createAiQueryVars);
+  // Variables can be defined inline as well.
+  mutation.mutate({ tenantId: ..., businessId: ..., userId: ..., queryText: ..., response: ..., });
+
+  // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  mutation.mutate(createAiQueryVars, options);
+
+  // Then, you can render your component dynamically based on the status of the Mutation.
+  if (mutation.isPending) {
+    return <div>Loading...</div>;
+  }
+
+  if (mutation.isError) {
+    return <div>Error: {mutation.error.message}</div>;
+  }
+
+  // If the Mutation is successful, you can access the data returned using the `UseMutationResult.data` field.
+  if (mutation.isSuccess) {
+    console.log(mutation.data.aiQuery_insert);
+  }
+  return <div>Mutation execution {mutation.isSuccess ? 'successful' : 'failed'}!</div>;
+}
+```
+
+## UpdateAiQuery
+You can execute the `UpdateAiQuery` Mutation using the `UseMutationResult` object returned by the following Mutation hook function (which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts)):
+```javascript
+useUpdateAiQuery(options?: useDataConnectMutationOptions<UpdateAiQueryData, FirebaseError, UpdateAiQueryVariables>): UseDataConnectMutationResult<UpdateAiQueryData, UpdateAiQueryVariables>;
+```
+You can also pass in a `DataConnect` instance to the Mutation hook function.
+```javascript
+useUpdateAiQuery(dc: DataConnect, options?: useDataConnectMutationOptions<UpdateAiQueryData, FirebaseError, UpdateAiQueryVariables>): UseDataConnectMutationResult<UpdateAiQueryData, UpdateAiQueryVariables>;
+```
+
+### Variables
+The `UpdateAiQuery` Mutation requires an argument of type `UpdateAiQueryVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+
+```javascript
+export interface UpdateAiQueryVariables {
+  id: string;
+  tenantId?: string | null;
+  businessId?: string | null;
+  userId?: string | null;
+  queryText?: string | null;
+  response?: string | null;
+}
+```
+### Return Type
+Recall that calling the `UpdateAiQuery` Mutation hook function returns a `UseMutationResult` object. This object holds the state of your Mutation, including whether the Mutation is loading, has completed, or has succeeded/failed, among other things.
+
+To check the status of a Mutation, use the `UseMutationResult.status` field. You can also check for pending / success / error status using the `UseMutationResult.isPending`, `UseMutationResult.isSuccess`, and `UseMutationResult.isError` fields.
+
+To execute the Mutation, call `UseMutationResult.mutate()`. This function executes the Mutation, but does not return the data from the Mutation.
+
+To access the data returned by a Mutation, use the `UseMutationResult.data` field. The data for the `UpdateAiQuery` Mutation is of type `UpdateAiQueryData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+```javascript
+export interface UpdateAiQueryData {
+  aiQuery_update?: AiQuery_Key | null;
+}
+```
+
+To learn more about the `UseMutationResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useMutation).
+
+### Using `UpdateAiQuery`'s Mutation hook function
+
+```javascript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, UpdateAiQueryVariables } from '@dataconnect/generated';
+import { useUpdateAiQuery } from '@dataconnect/generated/react'
+
+export default function UpdateAiQueryComponent() {
+  // Call the Mutation hook function to get a `UseMutationResult` object which holds the state of your Mutation.
+  const mutation = useUpdateAiQuery();
+
+  // You can also pass in a `DataConnect` instance to the Mutation hook function.
+  const dataConnect = getDataConnect(connectorConfig);
+  const mutation = useUpdateAiQuery(dataConnect);
+
+  // You can also pass in a `useDataConnectMutationOptions` object to the Mutation hook function.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useUpdateAiQuery(options);
+
+  // You can also pass both a `DataConnect` instance and a `useDataConnectMutationOptions` object.
+  const dataConnect = getDataConnect(connectorConfig);
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useUpdateAiQuery(dataConnect, options);
+
+  // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
+  // The `useUpdateAiQuery` Mutation requires an argument of type `UpdateAiQueryVariables`:
+  const updateAiQueryVars: UpdateAiQueryVariables = {
+    id: ..., 
+    tenantId: ..., // optional
+    businessId: ..., // optional
+    userId: ..., // optional
+    queryText: ..., // optional
+    response: ..., // optional
+  };
+  mutation.mutate(updateAiQueryVars);
+  // Variables can be defined inline as well.
+  mutation.mutate({ id: ..., tenantId: ..., businessId: ..., userId: ..., queryText: ..., response: ..., });
+
+  // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  mutation.mutate(updateAiQueryVars, options);
+
+  // Then, you can render your component dynamically based on the status of the Mutation.
+  if (mutation.isPending) {
+    return <div>Loading...</div>;
+  }
+
+  if (mutation.isError) {
+    return <div>Error: {mutation.error.message}</div>;
+  }
+
+  // If the Mutation is successful, you can access the data returned using the `UseMutationResult.data` field.
+  if (mutation.isSuccess) {
+    console.log(mutation.data.aiQuery_update);
+  }
+  return <div>Mutation execution {mutation.isSuccess ? 'successful' : 'failed'}!</div>;
+}
+```
+
+## DeleteAiQuery
+You can execute the `DeleteAiQuery` Mutation using the `UseMutationResult` object returned by the following Mutation hook function (which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts)):
+```javascript
+useDeleteAiQuery(options?: useDataConnectMutationOptions<DeleteAiQueryData, FirebaseError, DeleteAiQueryVariables>): UseDataConnectMutationResult<DeleteAiQueryData, DeleteAiQueryVariables>;
+```
+You can also pass in a `DataConnect` instance to the Mutation hook function.
+```javascript
+useDeleteAiQuery(dc: DataConnect, options?: useDataConnectMutationOptions<DeleteAiQueryData, FirebaseError, DeleteAiQueryVariables>): UseDataConnectMutationResult<DeleteAiQueryData, DeleteAiQueryVariables>;
+```
+
+### Variables
+The `DeleteAiQuery` Mutation requires an argument of type `DeleteAiQueryVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+
+```javascript
+export interface DeleteAiQueryVariables {
+  id: string;
+}
+```
+### Return Type
+Recall that calling the `DeleteAiQuery` Mutation hook function returns a `UseMutationResult` object. This object holds the state of your Mutation, including whether the Mutation is loading, has completed, or has succeeded/failed, among other things.
+
+To check the status of a Mutation, use the `UseMutationResult.status` field. You can also check for pending / success / error status using the `UseMutationResult.isPending`, `UseMutationResult.isSuccess`, and `UseMutationResult.isError` fields.
+
+To execute the Mutation, call `UseMutationResult.mutate()`. This function executes the Mutation, but does not return the data from the Mutation.
+
+To access the data returned by a Mutation, use the `UseMutationResult.data` field. The data for the `DeleteAiQuery` Mutation is of type `DeleteAiQueryData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+```javascript
+export interface DeleteAiQueryData {
+  aiQuery_delete?: AiQuery_Key | null;
+}
+```
+
+To learn more about the `UseMutationResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useMutation).
+
+### Using `DeleteAiQuery`'s Mutation hook function
+
+```javascript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, DeleteAiQueryVariables } from '@dataconnect/generated';
+import { useDeleteAiQuery } from '@dataconnect/generated/react'
+
+export default function DeleteAiQueryComponent() {
+  // Call the Mutation hook function to get a `UseMutationResult` object which holds the state of your Mutation.
+  const mutation = useDeleteAiQuery();
+
+  // You can also pass in a `DataConnect` instance to the Mutation hook function.
+  const dataConnect = getDataConnect(connectorConfig);
+  const mutation = useDeleteAiQuery(dataConnect);
+
+  // You can also pass in a `useDataConnectMutationOptions` object to the Mutation hook function.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useDeleteAiQuery(options);
+
+  // You can also pass both a `DataConnect` instance and a `useDataConnectMutationOptions` object.
+  const dataConnect = getDataConnect(connectorConfig);
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useDeleteAiQuery(dataConnect, options);
+
+  // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
+  // The `useDeleteAiQuery` Mutation requires an argument of type `DeleteAiQueryVariables`:
+  const deleteAiQueryVars: DeleteAiQueryVariables = {
+    id: ..., 
+  };
+  mutation.mutate(deleteAiQueryVars);
+  // Variables can be defined inline as well.
+  mutation.mutate({ id: ..., });
+
+  // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  mutation.mutate(deleteAiQueryVars, options);
+
+  // Then, you can render your component dynamically based on the status of the Mutation.
+  if (mutation.isPending) {
+    return <div>Loading...</div>;
+  }
+
+  if (mutation.isError) {
+    return <div>Error: {mutation.error.message}</div>;
+  }
+
+  // If the Mutation is successful, you can access the data returned using the `UseMutationResult.data` field.
+  if (mutation.isSuccess) {
+    console.log(mutation.data.aiQuery_delete);
+  }
+  return <div>Mutation execution {mutation.isSuccess ? 'successful' : 'failed'}!</div>;
+}
+```
+
+## CreateNotification
+You can execute the `CreateNotification` Mutation using the `UseMutationResult` object returned by the following Mutation hook function (which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts)):
+```javascript
+useCreateNotification(options?: useDataConnectMutationOptions<CreateNotificationData, FirebaseError, CreateNotificationVariables>): UseDataConnectMutationResult<CreateNotificationData, CreateNotificationVariables>;
+```
+You can also pass in a `DataConnect` instance to the Mutation hook function.
+```javascript
+useCreateNotification(dc: DataConnect, options?: useDataConnectMutationOptions<CreateNotificationData, FirebaseError, CreateNotificationVariables>): UseDataConnectMutationResult<CreateNotificationData, CreateNotificationVariables>;
+```
+
+### Variables
+The `CreateNotification` Mutation requires an argument of type `CreateNotificationVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+
+```javascript
+export interface CreateNotificationVariables {
+  tenantId: string;
+  businessId: string;
+  userId: string;
+  message: string;
+  isRead: boolean;
+}
+```
+### Return Type
+Recall that calling the `CreateNotification` Mutation hook function returns a `UseMutationResult` object. This object holds the state of your Mutation, including whether the Mutation is loading, has completed, or has succeeded/failed, among other things.
+
+To check the status of a Mutation, use the `UseMutationResult.status` field. You can also check for pending / success / error status using the `UseMutationResult.isPending`, `UseMutationResult.isSuccess`, and `UseMutationResult.isError` fields.
+
+To execute the Mutation, call `UseMutationResult.mutate()`. This function executes the Mutation, but does not return the data from the Mutation.
+
+To access the data returned by a Mutation, use the `UseMutationResult.data` field. The data for the `CreateNotification` Mutation is of type `CreateNotificationData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+```javascript
+export interface CreateNotificationData {
+  notification_insert: Notification_Key;
+}
+```
+
+To learn more about the `UseMutationResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useMutation).
+
+### Using `CreateNotification`'s Mutation hook function
+
+```javascript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, CreateNotificationVariables } from '@dataconnect/generated';
+import { useCreateNotification } from '@dataconnect/generated/react'
+
+export default function CreateNotificationComponent() {
+  // Call the Mutation hook function to get a `UseMutationResult` object which holds the state of your Mutation.
+  const mutation = useCreateNotification();
+
+  // You can also pass in a `DataConnect` instance to the Mutation hook function.
+  const dataConnect = getDataConnect(connectorConfig);
+  const mutation = useCreateNotification(dataConnect);
+
+  // You can also pass in a `useDataConnectMutationOptions` object to the Mutation hook function.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useCreateNotification(options);
+
+  // You can also pass both a `DataConnect` instance and a `useDataConnectMutationOptions` object.
+  const dataConnect = getDataConnect(connectorConfig);
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useCreateNotification(dataConnect, options);
+
+  // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
+  // The `useCreateNotification` Mutation requires an argument of type `CreateNotificationVariables`:
+  const createNotificationVars: CreateNotificationVariables = {
+    tenantId: ..., 
+    businessId: ..., 
+    userId: ..., 
+    message: ..., 
+    isRead: ..., 
+  };
+  mutation.mutate(createNotificationVars);
+  // Variables can be defined inline as well.
+  mutation.mutate({ tenantId: ..., businessId: ..., userId: ..., message: ..., isRead: ..., });
+
+  // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  mutation.mutate(createNotificationVars, options);
+
+  // Then, you can render your component dynamically based on the status of the Mutation.
+  if (mutation.isPending) {
+    return <div>Loading...</div>;
+  }
+
+  if (mutation.isError) {
+    return <div>Error: {mutation.error.message}</div>;
+  }
+
+  // If the Mutation is successful, you can access the data returned using the `UseMutationResult.data` field.
+  if (mutation.isSuccess) {
+    console.log(mutation.data.notification_insert);
+  }
+  return <div>Mutation execution {mutation.isSuccess ? 'successful' : 'failed'}!</div>;
+}
+```
+
+## UpdateNotification
+You can execute the `UpdateNotification` Mutation using the `UseMutationResult` object returned by the following Mutation hook function (which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts)):
+```javascript
+useUpdateNotification(options?: useDataConnectMutationOptions<UpdateNotificationData, FirebaseError, UpdateNotificationVariables>): UseDataConnectMutationResult<UpdateNotificationData, UpdateNotificationVariables>;
+```
+You can also pass in a `DataConnect` instance to the Mutation hook function.
+```javascript
+useUpdateNotification(dc: DataConnect, options?: useDataConnectMutationOptions<UpdateNotificationData, FirebaseError, UpdateNotificationVariables>): UseDataConnectMutationResult<UpdateNotificationData, UpdateNotificationVariables>;
+```
+
+### Variables
+The `UpdateNotification` Mutation requires an argument of type `UpdateNotificationVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+
+```javascript
+export interface UpdateNotificationVariables {
+  id: string;
+  tenantId?: string | null;
+  businessId?: string | null;
+  userId?: string | null;
+  message?: string | null;
+  isRead?: boolean | null;
+}
+```
+### Return Type
+Recall that calling the `UpdateNotification` Mutation hook function returns a `UseMutationResult` object. This object holds the state of your Mutation, including whether the Mutation is loading, has completed, or has succeeded/failed, among other things.
+
+To check the status of a Mutation, use the `UseMutationResult.status` field. You can also check for pending / success / error status using the `UseMutationResult.isPending`, `UseMutationResult.isSuccess`, and `UseMutationResult.isError` fields.
+
+To execute the Mutation, call `UseMutationResult.mutate()`. This function executes the Mutation, but does not return the data from the Mutation.
+
+To access the data returned by a Mutation, use the `UseMutationResult.data` field. The data for the `UpdateNotification` Mutation is of type `UpdateNotificationData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+```javascript
+export interface UpdateNotificationData {
+  notification_update?: Notification_Key | null;
+}
+```
+
+To learn more about the `UseMutationResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useMutation).
+
+### Using `UpdateNotification`'s Mutation hook function
+
+```javascript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, UpdateNotificationVariables } from '@dataconnect/generated';
+import { useUpdateNotification } from '@dataconnect/generated/react'
+
+export default function UpdateNotificationComponent() {
+  // Call the Mutation hook function to get a `UseMutationResult` object which holds the state of your Mutation.
+  const mutation = useUpdateNotification();
+
+  // You can also pass in a `DataConnect` instance to the Mutation hook function.
+  const dataConnect = getDataConnect(connectorConfig);
+  const mutation = useUpdateNotification(dataConnect);
+
+  // You can also pass in a `useDataConnectMutationOptions` object to the Mutation hook function.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useUpdateNotification(options);
+
+  // You can also pass both a `DataConnect` instance and a `useDataConnectMutationOptions` object.
+  const dataConnect = getDataConnect(connectorConfig);
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useUpdateNotification(dataConnect, options);
+
+  // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
+  // The `useUpdateNotification` Mutation requires an argument of type `UpdateNotificationVariables`:
+  const updateNotificationVars: UpdateNotificationVariables = {
+    id: ..., 
+    tenantId: ..., // optional
+    businessId: ..., // optional
+    userId: ..., // optional
+    message: ..., // optional
+    isRead: ..., // optional
+  };
+  mutation.mutate(updateNotificationVars);
+  // Variables can be defined inline as well.
+  mutation.mutate({ id: ..., tenantId: ..., businessId: ..., userId: ..., message: ..., isRead: ..., });
+
+  // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  mutation.mutate(updateNotificationVars, options);
+
+  // Then, you can render your component dynamically based on the status of the Mutation.
+  if (mutation.isPending) {
+    return <div>Loading...</div>;
+  }
+
+  if (mutation.isError) {
+    return <div>Error: {mutation.error.message}</div>;
+  }
+
+  // If the Mutation is successful, you can access the data returned using the `UseMutationResult.data` field.
+  if (mutation.isSuccess) {
+    console.log(mutation.data.notification_update);
+  }
+  return <div>Mutation execution {mutation.isSuccess ? 'successful' : 'failed'}!</div>;
+}
+```
+
+## DeleteNotification
+You can execute the `DeleteNotification` Mutation using the `UseMutationResult` object returned by the following Mutation hook function (which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts)):
+```javascript
+useDeleteNotification(options?: useDataConnectMutationOptions<DeleteNotificationData, FirebaseError, DeleteNotificationVariables>): UseDataConnectMutationResult<DeleteNotificationData, DeleteNotificationVariables>;
+```
+You can also pass in a `DataConnect` instance to the Mutation hook function.
+```javascript
+useDeleteNotification(dc: DataConnect, options?: useDataConnectMutationOptions<DeleteNotificationData, FirebaseError, DeleteNotificationVariables>): UseDataConnectMutationResult<DeleteNotificationData, DeleteNotificationVariables>;
+```
+
+### Variables
+The `DeleteNotification` Mutation requires an argument of type `DeleteNotificationVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+
+```javascript
+export interface DeleteNotificationVariables {
+  id: string;
+}
+```
+### Return Type
+Recall that calling the `DeleteNotification` Mutation hook function returns a `UseMutationResult` object. This object holds the state of your Mutation, including whether the Mutation is loading, has completed, or has succeeded/failed, among other things.
+
+To check the status of a Mutation, use the `UseMutationResult.status` field. You can also check for pending / success / error status using the `UseMutationResult.isPending`, `UseMutationResult.isSuccess`, and `UseMutationResult.isError` fields.
+
+To execute the Mutation, call `UseMutationResult.mutate()`. This function executes the Mutation, but does not return the data from the Mutation.
+
+To access the data returned by a Mutation, use the `UseMutationResult.data` field. The data for the `DeleteNotification` Mutation is of type `DeleteNotificationData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+```javascript
+export interface DeleteNotificationData {
+  notification_delete?: Notification_Key | null;
+}
+```
+
+To learn more about the `UseMutationResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useMutation).
+
+### Using `DeleteNotification`'s Mutation hook function
+
+```javascript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, DeleteNotificationVariables } from '@dataconnect/generated';
+import { useDeleteNotification } from '@dataconnect/generated/react'
+
+export default function DeleteNotificationComponent() {
+  // Call the Mutation hook function to get a `UseMutationResult` object which holds the state of your Mutation.
+  const mutation = useDeleteNotification();
+
+  // You can also pass in a `DataConnect` instance to the Mutation hook function.
+  const dataConnect = getDataConnect(connectorConfig);
+  const mutation = useDeleteNotification(dataConnect);
+
+  // You can also pass in a `useDataConnectMutationOptions` object to the Mutation hook function.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useDeleteNotification(options);
+
+  // You can also pass both a `DataConnect` instance and a `useDataConnectMutationOptions` object.
+  const dataConnect = getDataConnect(connectorConfig);
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useDeleteNotification(dataConnect, options);
+
+  // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
+  // The `useDeleteNotification` Mutation requires an argument of type `DeleteNotificationVariables`:
+  const deleteNotificationVars: DeleteNotificationVariables = {
+    id: ..., 
+  };
+  mutation.mutate(deleteNotificationVars);
+  // Variables can be defined inline as well.
+  mutation.mutate({ id: ..., });
+
+  // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  mutation.mutate(deleteNotificationVars, options);
+
+  // Then, you can render your component dynamically based on the status of the Mutation.
+  if (mutation.isPending) {
+    return <div>Loading...</div>;
+  }
+
+  if (mutation.isError) {
+    return <div>Error: {mutation.error.message}</div>;
+  }
+
+  // If the Mutation is successful, you can access the data returned using the `UseMutationResult.data` field.
+  if (mutation.isSuccess) {
+    console.log(mutation.data.notification_delete);
+  }
+  return <div>Mutation execution {mutation.isSuccess ? 'successful' : 'failed'}!</div>;
+}
+```
+
+## CreateTask
+You can execute the `CreateTask` Mutation using the `UseMutationResult` object returned by the following Mutation hook function (which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts)):
+```javascript
+useCreateTask(options?: useDataConnectMutationOptions<CreateTaskData, FirebaseError, CreateTaskVariables>): UseDataConnectMutationResult<CreateTaskData, CreateTaskVariables>;
+```
+You can also pass in a `DataConnect` instance to the Mutation hook function.
+```javascript
+useCreateTask(dc: DataConnect, options?: useDataConnectMutationOptions<CreateTaskData, FirebaseError, CreateTaskVariables>): UseDataConnectMutationResult<CreateTaskData, CreateTaskVariables>;
+```
+
+### Variables
+The `CreateTask` Mutation requires an argument of type `CreateTaskVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+
+```javascript
+export interface CreateTaskVariables {
+  tenantId: string;
+  businessId: string;
+  title: string;
+  description?: string | null;
+  status: TaskStatus;
+  priority?: TaskPriority | null;
+  dueDate: TimestampString;
+  assignedToId?: string | null;
+  createdBy: string;
+}
+```
+### Return Type
+Recall that calling the `CreateTask` Mutation hook function returns a `UseMutationResult` object. This object holds the state of your Mutation, including whether the Mutation is loading, has completed, or has succeeded/failed, among other things.
+
+To check the status of a Mutation, use the `UseMutationResult.status` field. You can also check for pending / success / error status using the `UseMutationResult.isPending`, `UseMutationResult.isSuccess`, and `UseMutationResult.isError` fields.
+
+To execute the Mutation, call `UseMutationResult.mutate()`. This function executes the Mutation, but does not return the data from the Mutation.
+
+To access the data returned by a Mutation, use the `UseMutationResult.data` field. The data for the `CreateTask` Mutation is of type `CreateTaskData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+```javascript
+export interface CreateTaskData {
+  task_insert: Task_Key;
+}
+```
+
+To learn more about the `UseMutationResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useMutation).
+
+### Using `CreateTask`'s Mutation hook function
+
+```javascript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, CreateTaskVariables } from '@dataconnect/generated';
+import { useCreateTask } from '@dataconnect/generated/react'
+
+export default function CreateTaskComponent() {
+  // Call the Mutation hook function to get a `UseMutationResult` object which holds the state of your Mutation.
+  const mutation = useCreateTask();
+
+  // You can also pass in a `DataConnect` instance to the Mutation hook function.
+  const dataConnect = getDataConnect(connectorConfig);
+  const mutation = useCreateTask(dataConnect);
+
+  // You can also pass in a `useDataConnectMutationOptions` object to the Mutation hook function.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useCreateTask(options);
+
+  // You can also pass both a `DataConnect` instance and a `useDataConnectMutationOptions` object.
+  const dataConnect = getDataConnect(connectorConfig);
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useCreateTask(dataConnect, options);
+
+  // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
+  // The `useCreateTask` Mutation requires an argument of type `CreateTaskVariables`:
+  const createTaskVars: CreateTaskVariables = {
+    tenantId: ..., 
+    businessId: ..., 
+    title: ..., 
+    description: ..., // optional
+    status: ..., 
+    priority: ..., // optional
+    dueDate: ..., 
+    assignedToId: ..., // optional
+    createdBy: ..., 
+  };
+  mutation.mutate(createTaskVars);
+  // Variables can be defined inline as well.
+  mutation.mutate({ tenantId: ..., businessId: ..., title: ..., description: ..., status: ..., priority: ..., dueDate: ..., assignedToId: ..., createdBy: ..., });
+
+  // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  mutation.mutate(createTaskVars, options);
+
+  // Then, you can render your component dynamically based on the status of the Mutation.
+  if (mutation.isPending) {
+    return <div>Loading...</div>;
+  }
+
+  if (mutation.isError) {
+    return <div>Error: {mutation.error.message}</div>;
+  }
+
+  // If the Mutation is successful, you can access the data returned using the `UseMutationResult.data` field.
+  if (mutation.isSuccess) {
+    console.log(mutation.data.task_insert);
+  }
+  return <div>Mutation execution {mutation.isSuccess ? 'successful' : 'failed'}!</div>;
+}
+```
+
+## UpdateTask
+You can execute the `UpdateTask` Mutation using the `UseMutationResult` object returned by the following Mutation hook function (which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts)):
+```javascript
+useUpdateTask(options?: useDataConnectMutationOptions<UpdateTaskData, FirebaseError, UpdateTaskVariables>): UseDataConnectMutationResult<UpdateTaskData, UpdateTaskVariables>;
+```
+You can also pass in a `DataConnect` instance to the Mutation hook function.
+```javascript
+useUpdateTask(dc: DataConnect, options?: useDataConnectMutationOptions<UpdateTaskData, FirebaseError, UpdateTaskVariables>): UseDataConnectMutationResult<UpdateTaskData, UpdateTaskVariables>;
+```
+
+### Variables
+The `UpdateTask` Mutation requires an argument of type `UpdateTaskVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+
+```javascript
+export interface UpdateTaskVariables {
+  id: string;
+  title?: string | null;
+  description?: string | null;
+  status?: TaskStatus | null;
+  priority?: TaskPriority | null;
+  dueDate?: TimestampString | null;
+  assignedToId?: string | null;
+}
+```
+### Return Type
+Recall that calling the `UpdateTask` Mutation hook function returns a `UseMutationResult` object. This object holds the state of your Mutation, including whether the Mutation is loading, has completed, or has succeeded/failed, among other things.
+
+To check the status of a Mutation, use the `UseMutationResult.status` field. You can also check for pending / success / error status using the `UseMutationResult.isPending`, `UseMutationResult.isSuccess`, and `UseMutationResult.isError` fields.
+
+To execute the Mutation, call `UseMutationResult.mutate()`. This function executes the Mutation, but does not return the data from the Mutation.
+
+To access the data returned by a Mutation, use the `UseMutationResult.data` field. The data for the `UpdateTask` Mutation is of type `UpdateTaskData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+```javascript
+export interface UpdateTaskData {
+  task_update?: Task_Key | null;
+}
+```
+
+To learn more about the `UseMutationResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useMutation).
+
+### Using `UpdateTask`'s Mutation hook function
+
+```javascript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, UpdateTaskVariables } from '@dataconnect/generated';
+import { useUpdateTask } from '@dataconnect/generated/react'
+
+export default function UpdateTaskComponent() {
+  // Call the Mutation hook function to get a `UseMutationResult` object which holds the state of your Mutation.
+  const mutation = useUpdateTask();
+
+  // You can also pass in a `DataConnect` instance to the Mutation hook function.
+  const dataConnect = getDataConnect(connectorConfig);
+  const mutation = useUpdateTask(dataConnect);
+
+  // You can also pass in a `useDataConnectMutationOptions` object to the Mutation hook function.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useUpdateTask(options);
+
+  // You can also pass both a `DataConnect` instance and a `useDataConnectMutationOptions` object.
+  const dataConnect = getDataConnect(connectorConfig);
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useUpdateTask(dataConnect, options);
+
+  // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
+  // The `useUpdateTask` Mutation requires an argument of type `UpdateTaskVariables`:
+  const updateTaskVars: UpdateTaskVariables = {
+    id: ..., 
+    title: ..., // optional
+    description: ..., // optional
+    status: ..., // optional
+    priority: ..., // optional
+    dueDate: ..., // optional
+    assignedToId: ..., // optional
+  };
+  mutation.mutate(updateTaskVars);
+  // Variables can be defined inline as well.
+  mutation.mutate({ id: ..., title: ..., description: ..., status: ..., priority: ..., dueDate: ..., assignedToId: ..., });
+
+  // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  mutation.mutate(updateTaskVars, options);
+
+  // Then, you can render your component dynamically based on the status of the Mutation.
+  if (mutation.isPending) {
+    return <div>Loading...</div>;
+  }
+
+  if (mutation.isError) {
+    return <div>Error: {mutation.error.message}</div>;
+  }
+
+  // If the Mutation is successful, you can access the data returned using the `UseMutationResult.data` field.
+  if (mutation.isSuccess) {
+    console.log(mutation.data.task_update);
+  }
+  return <div>Mutation execution {mutation.isSuccess ? 'successful' : 'failed'}!</div>;
+}
+```
+
+## DeleteTask
+You can execute the `DeleteTask` Mutation using the `UseMutationResult` object returned by the following Mutation hook function (which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts)):
+```javascript
+useDeleteTask(options?: useDataConnectMutationOptions<DeleteTaskData, FirebaseError, DeleteTaskVariables>): UseDataConnectMutationResult<DeleteTaskData, DeleteTaskVariables>;
+```
+You can also pass in a `DataConnect` instance to the Mutation hook function.
+```javascript
+useDeleteTask(dc: DataConnect, options?: useDataConnectMutationOptions<DeleteTaskData, FirebaseError, DeleteTaskVariables>): UseDataConnectMutationResult<DeleteTaskData, DeleteTaskVariables>;
+```
+
+### Variables
+The `DeleteTask` Mutation requires an argument of type `DeleteTaskVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+
+```javascript
+export interface DeleteTaskVariables {
+  id: string;
+}
+```
+### Return Type
+Recall that calling the `DeleteTask` Mutation hook function returns a `UseMutationResult` object. This object holds the state of your Mutation, including whether the Mutation is loading, has completed, or has succeeded/failed, among other things.
+
+To check the status of a Mutation, use the `UseMutationResult.status` field. You can also check for pending / success / error status using the `UseMutationResult.isPending`, `UseMutationResult.isSuccess`, and `UseMutationResult.isError` fields.
+
+To execute the Mutation, call `UseMutationResult.mutate()`. This function executes the Mutation, but does not return the data from the Mutation.
+
+To access the data returned by a Mutation, use the `UseMutationResult.data` field. The data for the `DeleteTask` Mutation is of type `DeleteTaskData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+```javascript
+export interface DeleteTaskData {
+  task_delete?: Task_Key | null;
+}
+```
+
+To learn more about the `UseMutationResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useMutation).
+
+### Using `DeleteTask`'s Mutation hook function
+
+```javascript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, DeleteTaskVariables } from '@dataconnect/generated';
+import { useDeleteTask } from '@dataconnect/generated/react'
+
+export default function DeleteTaskComponent() {
+  // Call the Mutation hook function to get a `UseMutationResult` object which holds the state of your Mutation.
+  const mutation = useDeleteTask();
+
+  // You can also pass in a `DataConnect` instance to the Mutation hook function.
+  const dataConnect = getDataConnect(connectorConfig);
+  const mutation = useDeleteTask(dataConnect);
+
+  // You can also pass in a `useDataConnectMutationOptions` object to the Mutation hook function.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useDeleteTask(options);
+
+  // You can also pass both a `DataConnect` instance and a `useDataConnectMutationOptions` object.
+  const dataConnect = getDataConnect(connectorConfig);
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useDeleteTask(dataConnect, options);
+
+  // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
+  // The `useDeleteTask` Mutation requires an argument of type `DeleteTaskVariables`:
+  const deleteTaskVars: DeleteTaskVariables = {
+    id: ..., 
+  };
+  mutation.mutate(deleteTaskVars);
+  // Variables can be defined inline as well.
+  mutation.mutate({ id: ..., });
+
+  // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  mutation.mutate(deleteTaskVars, options);
+
+  // Then, you can render your component dynamically based on the status of the Mutation.
+  if (mutation.isPending) {
+    return <div>Loading...</div>;
+  }
+
+  if (mutation.isError) {
+    return <div>Error: {mutation.error.message}</div>;
+  }
+
+  // If the Mutation is successful, you can access the data returned using the `UseMutationResult.data` field.
+  if (mutation.isSuccess) {
+    console.log(mutation.data.task_delete);
   }
   return <div>Mutation execution {mutation.isSuccess ? 'successful' : 'failed'}!</div>;
 }

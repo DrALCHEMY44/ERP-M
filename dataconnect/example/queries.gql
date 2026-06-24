@@ -1,7 +1,7 @@
 # -----------------------------------
-# Tenant Queries
+# Tenant & User Queries
 # -----------------------------------
-query ListTenants {
+query ListTenants @auth(level: USER, insecureReason: "Multi-tenant ERP") {
   tenants {
     id
     name
@@ -9,18 +9,8 @@ query ListTenants {
   }
 }
 
-# -----------------------------------
-# User & Business Queries
-# -----------------------------------
-query ListUsers($tenantId: UUID!) {
-  users(where: { tenantId: { eq: $tenantId } }) {
-    id
-    email
-    role
-  }
-}
-
-query ListBusinesses($tenantId: UUID!) {
+query ListBusinesses($tenantId: String!)
+@auth(level: USER, insecureReason: "Multi-tenant ERP") {
   businesses(where: { tenantId: { eq: $tenantId } }) {
     id
     name
@@ -28,135 +18,215 @@ query ListBusinesses($tenantId: UUID!) {
   }
 }
 
-# -----------------------------------
-# Data Queries
-# -----------------------------------
-query ListProducts($businessId: UUID!) {
-  products(where: { businessId: { eq: $businessId } }) {
+query getUserByEmail($email: String!)
+@auth(level: PUBLIC, insecureReason: "Auth lookup before login") {
+  users(where: { email: { eq: $email } }) {
     id
-    name
-    sellingPrice
-  }
-}
-
-query ListTransactions($businessId: UUID!) {
-  transactions(where: { businessId: { eq: $businessId } }) {
-    id
-    type
-    amount
-  }
-}
-
-query ListTasks($businessId: UUID!) {
-  tasks(where: { businessId: { eq: $businessId } }) {
-    id
-    title
-    status
-  }
-}
-
-query ListEmployees($businessId: UUID!) {
-  employees(where: { businessId: { eq: $businessId } }) {
-    id
+    email
+    role
+    department
+    phoneNumber
+    createdAt
+    tenantId
+    businessId
     fullName
   }
 }
 
-query ListCustomers($businessId: UUID!) {
-  customers(where: { businessId: { eq: $businessId } }) {
+# -----------------------------------
+# Business Data Queries
+# -----------------------------------
+query listProductsByBusiness($tenantId: String!, $businessId: String!)
+@auth(level: USER, insecureReason: "Multi-tenant ERP") {
+  products(
+    where: { tenantId: { eq: $tenantId }, businessId: { eq: $businessId } }
+  ) {
+    id
+    name
+    category
+    quantity
+    costPrice
+    sellingPrice
+    expiryDate
+    lowStockLevel
+    createdBy
+    createdAt
+    updatedAt
+    tenantId
+    businessId
+  }
+}
+
+query listCustomersByBusiness($tenantId: String!, $businessId: String!)
+@auth(level: USER, insecureReason: "Multi-tenant ERP") {
+  customers(
+    where: { tenantId: { eq: $tenantId }, businessId: { eq: $businessId } }
+  ) {
     id
     customerName
+    phoneNumber
+    email
+    createdAt
+    tenantId
+    businessId
   }
 }
 
-query ListSuppliers($businessId: UUID!) {
-  suppliers(where: { businessId: { eq: $businessId } }) {
+query listSuppliersByBusiness($tenantId: String!, $businessId: String!)
+@auth(level: USER, insecureReason: "Multi-tenant ERP") {
+  suppliers(
+    where: { tenantId: { eq: $tenantId }, businessId: { eq: $businessId } }
+  ) {
     id
     supplierName
+    phoneNumber
+    email
+    createdAt
+    tenantId
+    businessId
   }
 }
 
-query ListDocuments($businessId: UUID!) {
-  documents(where: { businessId: { eq: $businessId } }) {
-    id
-    title
-  }
-}
-# Example queries for a simple movie app.
-
-# @auth() directives control who can call each operation.
-# Anyone should be able to list all movies, so the auth level is set to PUBLIC
-query ListMovies @auth(level: PUBLIC, insecureReason: "Anyone can list all movies.") {
-  movies {
-    id
-    title
-    imageUrl
-    genre
-  }
-}
-
-# List all users, only admins should be able to list all users, so we use NO_ACCESS
-query ListUsers @auth(level: NO_ACCESS) {
-  users {
-    id
-    username
-  }
-}
-
-# Logged in users can list all their reviews and movie titles associated with the review
-# Since the query uses the uid of the current authenticated user, we set auth level to USER
-query ListUserReviews @auth(level: USER) {
-  user(key: { id_expr: "auth.uid" }) {
-    id
-    username
-    # <field>_on_<foreign_key_field> makes it easy to grab info from another table
-    # Here, we use it to grab all the reviews written by the user.
-    reviews: reviews_on_user {
-      rating
-      reviewDate
-      reviewText
-      movie {
-        id
-        title
-      }
-    }
-  }
-}
-
-# Get movie by id
-query GetMovieById($id: UUID!) @auth(level: PUBLIC, insecureReason: "Anyone can get a movie by id.") {
-  movie(id: $id) {
-    id
-    title
-    imageUrl
-    genre
-    metadata: movieMetadata_on_movie {
-      rating
-      releaseYear
-      description
-    }
-    reviews: reviews_on_movie {
-      reviewText
-      reviewDate
-      rating
-      user {
-        id
-        username
-      }
-    }
-  }
-}
-
-# Search for movies, actors, and reviews
-query SearchMovie($titleInput: String, $genre: String) @auth(level: PUBLIC, insecureReason: "Anyone can search for movies.") {
-  movies(
-    where: {
-      _and: [{ genre: { eq: $genre } }, { title: { contains: $titleInput } }]
-    }
+query listTasksByBusiness($tenantId: String!, $businessId: String!)
+@auth(level: USER, insecureReason: "Multi-tenant ERP") {
+  tasks(
+    where: { tenantId: { eq: $tenantId }, businessId: { eq: $businessId } }
   ) {
     id
     title
-    genre
-    imageUrl
+    description
+    status
+    priority
+    dueDate
+    assignedTo {
+      id
+      email
+      role
+    }
+    createdBy
+    createdAt
+    updatedAt
+    tenantId
+    businessId
+  }
+}
+
+query listTransactionsByBusiness($tenantId: String!, $businessId: String!)
+@auth(level: USER, insecureReason: "Multi-tenant ERP") {
+  transactions(
+    where: { tenantId: { eq: $tenantId }, businessId: { eq: $businessId } }
+  ) {
+    id
+    type
+    amount
+    date
+    category
+    receiptUrl
+    recordedBy
+    createdAt
+    tenantId
+    businessId
+  }
+}
+
+query listTransactionsByType(
+  $tenantId: String!
+  $businessId: String!
+  $type: TransactionType!
+) @auth(level: USER, insecureReason: "Multi-tenant ERP") {
+  transactions(
+    where: {
+      tenantId: { eq: $tenantId }
+      businessId: { eq: $businessId }
+      type: { eq: $type }
+    }
+  ) {
+    id
+    type
+    amount
+    date
+    category
+    receiptUrl
+    recordedBy
+    createdAt
+    tenantId
+    businessId
+  }
+}
+
+query listEmployeesByBusiness($tenantId: String!, $businessId: String!)
+@auth(level: USER, insecureReason: "Multi-tenant ERP") {
+  employees(
+    where: { tenantId: { eq: $tenantId }, businessId: { eq: $businessId } }
+  ) {
+    id
+    fullName
+    position
+    salary
+    department
+    startDate
+    status
+    createdAt
+    tenantId
+    businessId
+  }
+}
+
+query listDocumentsByBusiness($tenantId: String!, $businessId: String!)
+@auth(level: USER, insecureReason: "Multi-tenant ERP") {
+  documents(
+    where: { tenantId: { eq: $tenantId }, businessId: { eq: $businessId } }
+  ) {
+    id
+    title
+    documentType
+    fileUrl
+    uploadedBy
+    uploadedAt
+    tenantId
+    businessId
+  }
+}
+
+query listActivityLogsByUser(
+  $tenantId: String!
+  $businessId: String!
+  $userId: String!
+) @auth(level: USER, insecureReason: "Multi-tenant ERP") {
+  activityLogs(
+    where: {
+      tenantId: { eq: $tenantId }
+      businessId: { eq: $businessId }
+      userId: { eq: $userId }
+    }
+  ) {
+    id
+    tenantId
+    businessId
+    userId
+    userName
+    actionType
+    module
+    description
+    recordId
+    timestamp
+  }
+}
+
+query listActivityLogsByBusiness($tenantId: String!, $businessId: String!)
+@auth(level: USER, insecureReason: "Multi-tenant ERP") {
+  activityLogs(
+    where: { tenantId: { eq: $tenantId }, businessId: { eq: $businessId } }
+  ) {
+    id
+    tenantId
+    businessId
+    userId
+    userName
+    actionType
+    module
+    description
+    recordId
+    timestamp
   }
 }

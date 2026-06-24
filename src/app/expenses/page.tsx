@@ -1,7 +1,8 @@
 "use client"
 
 import * as React from "react"
-import { Plus, Search, Download, Receipt, Calendar, Loader2, Trash2 } from "lucide-react"
+import { Plus, Search, Download, Receipt, Calendar, Loader2, Trash2, LogIn } from "lucide-react"
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import {
   Table,
@@ -15,11 +16,19 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ExpenseDialog } from "@/components/expenses/expense-dialog"
 import { Expense } from "@/lib/types"
-import { useFirestore } from "@/hooks/use-firestore"
+import { useDataConnect } from "@/hooks/use-dataconnect"
+import { listTransactionsByTypeQuery, createTransactionMutation, deleteTransactionMutation } from "@/lib/data-service"
+import { TransactionType } from "@/dataconnect-generated"
 import { useToast } from "@/hooks/use-toast"
+import { MOCK_USER } from "@/lib/mock-data"
 
 export default function ExpensesPage() {
-  const { data: expenses, loading, addRecord, deleteRecord } = useFirestore<Expense>('expenses');
+  const { data: transactionsData, loading, unauthenticated, refetch } = useDataConnect({ 
+    query: listTransactionsByTypeQuery, 
+    variables: { tenantId: MOCK_USER.tenantId, businessId: MOCK_USER.businessId, type: TransactionType.EXPENSE } 
+  });
+  
+  const expenses = React.useMemo(() => (transactionsData?.transactions || []) as unknown as Expense[], [transactionsData]);
   const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = React.useState(false)
   const [searchQuery, setSearchQuery] = React.useState("")
@@ -36,7 +45,17 @@ export default function ExpensesPage() {
 
   const handleSave = async (expenseData: Partial<Expense>) => {
     try {
-      await addRecord(expenseData as Omit<Expense, 'id'>);
+      await createTransactionMutation({
+        tenantId: MOCK_USER.tenantId,
+        businessId: MOCK_USER.businessId,
+        type: TransactionType.EXPENSE,
+        amount: expenseData.amount || 0,
+        date: expenseData.date || new Date().toISOString(),
+        category: expenseData.category || 'Other',
+        receiptUrl: expenseData.receiptUrl,
+        recordedBy: MOCK_USER.uid
+      });
+      await refetch();
       toast({ title: "Expense Recorded", description: "Your financial logs have been updated." });
     } catch (e) {
       toast({ variant: "destructive", title: "Error", description: "Could not save expense." });
@@ -45,9 +64,39 @@ export default function ExpensesPage() {
 
   const handleDelete = async (id: string) => {
     if (confirm("Remove this expense record?")) {
-      await deleteRecord(id);
-      toast({ title: "Deleted", description: "Expense removed." });
+      try {
+        await deleteTransactionMutation({ id });
+        await refetch();
+        toast({ title: "Deleted", description: "Expense removed." });
+      } catch (e) {
+        toast({ variant: "destructive", title: "Error", description: "Could not delete expense." });
+      }
     }
+  }
+
+  if (unauthenticated) {
+    return (
+      <div className="flex h-[60vh] items-center justify-center">
+        <Card className="max-w-md w-full text-center shadow-lg border-t-4 border-amber-500">
+          <CardHeader>
+            <div className="mx-auto bg-amber-100 dark:bg-amber-900/30 rounded-full p-3 w-fit mb-2">
+              <LogIn className="size-6 text-amber-600" />
+            </div>
+            <CardTitle className="text-lg">Authentication Required</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Please sign in to view your expense records. All operations require an authenticated session.
+            </p>
+            <Link href="/login">
+              <Button className="bg-primary hover:bg-primary/90 text-white font-bold uppercase text-xs tracking-widest">
+                <LogIn className="size-4 mr-2" /> Sign In
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   if (loading) {

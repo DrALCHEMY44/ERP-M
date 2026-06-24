@@ -1,20 +1,52 @@
 "use client"
 
 import * as React from "react"
-import { Plus, Search, Building, Loader2, Trash2, Calendar, Mail, Phone } from "lucide-react"
+import { Plus, Search, Building, Loader2, Trash2, Calendar, Mail, Phone, LogIn } from "lucide-react"
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { useFirestore } from "@/hooks/use-firestore"
+import { useDataConnect } from "@/hooks/use-dataconnect"
+import { listEmployeesByBusinessQuery, createEmployeeMutation, updateEmployeeMutation, deleteEmployeeMutation } from "@/lib/data-service"
+import { useAuth } from "@/hooks/use-auth"
 import { Employee } from "@/lib/types"
 import { useToast } from "@/hooks/use-toast"
 import { EmployeeDialog } from "@/components/employees/employee-dialog"
 
 export default function EmployeesPage() {
-  const { data: employees, loading, addRecord, updateRecord, deleteRecord } = useFirestore<Employee>('employees');
+  const { user, profile } = useAuth();
+  const { data: employeesData, loading, unauthenticated, refetch } = useDataConnect({ 
+    query: listEmployeesByBusinessQuery, 
+    variables: { tenantId: profile?.tenantId, businessId: profile?.businessId },
+    skip: !profile?.tenantId || !profile?.businessId
+  });
+  const [employees, setEmployees] = React.useState<Employee[]>([]);
   const { toast } = useToast();
+  
+  const fetchEmployees = React.useCallback(async () => {
+    if (!profile?.tenantId || !profile?.businessId) return;
+    try {
+      const response = await listEmployeesByBusinessQuery({
+        tenantId: profile.tenantId,
+        businessId: profile.businessId
+      });
+      // Map dataconnect format back to ui format
+      const mappedEmployees = ((response as any)?.employees || []).map((emp: any) => ({
+        ...emp,
+        employmentStatus: emp.status || 'Active',
+        salaryPaymentStatus: 'Paid', // Default placeholder since it's missing from schema
+      }));
+      setEmployees(mappedEmployees);
+    } catch (e) {
+      console.error("Failed to fetch employees:", e);
+    }
+  }, [profile]);
+
+  React.useEffect(() => {
+    fetchEmployees();
+  }, [fetchEmployees]);
   const [isDialogOpen, setIsDialogOpen] = React.useState(false)
   const [selectedEmployee, setSelectedEmployee] = React.useState<Employee | null>(null)
   const [searchQuery, setSearchQuery] = React.useState("")
@@ -39,15 +71,31 @@ export default function EmployeesPage() {
   }
 
   const handleSave = async (employeeData: Partial<Employee>) => {
+    if (!profile?.tenantId || !profile?.businessId) return;
     try {
       if (selectedEmployee?.id) {
-        await updateRecord(selectedEmployee.id, employeeData);
+        await updateEmployeeMutation({
+          id: selectedEmployee.id,
+          fullName: employeeData.fullName,
+          position: employeeData.position,
+          department: employeeData.department,
+          salary: employeeData.salary,
+        });
         toast({ title: "Employee Updated", description: `${employeeData.fullName}'s records have been modified.` });
       } else {
-        await addRecord(employeeData as Omit<Employee, 'id'>);
+        await createEmployeeMutation({
+          tenantId: profile.tenantId,
+          businessId: profile.businessId,
+          fullName: employeeData.fullName || "",
+          position: employeeData.position || "",
+          department: employeeData.department,
+          salary: employeeData.salary,
+        });
         toast({ title: "Employee Added", description: `${employeeData.fullName} is now part of your SME.` });
       }
+      fetchEmployees();
     } catch (e) {
+      console.error(e);
       toast({ variant: "destructive", title: "Error", description: "Could not save employee data." });
     }
   }
@@ -55,12 +103,38 @@ export default function EmployeesPage() {
   const handleDelete = async (id: string) => {
     if (confirm("Permanently delete this employee's records? This action is immutable.")) {
       try {
-        await deleteRecord(id);
+        await deleteEmployeeMutation({ id });
         toast({ title: "Employee Removed", description: "Record deleted from secure cloud storage." });
+        fetchEmployees();
       } catch (e) {
         toast({ variant: "destructive", title: "Error", description: "Failed to delete record." });
       }
     }
+  }
+
+  if (unauthenticated) {
+    return (
+      <div className="flex h-[60vh] items-center justify-center">
+        <Card className="max-w-md w-full text-center shadow-lg border-t-4 border-amber-500">
+          <CardHeader>
+            <div className="mx-auto bg-amber-100 dark:bg-amber-900/30 rounded-full p-3 w-fit mb-2">
+              <LogIn className="size-6 text-amber-600" />
+            </div>
+            <CardTitle className="text-lg">Authentication Required</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Please sign in to view employee records. All operations require an authenticated session.
+            </p>
+            <Link href="/login">
+              <Button className="bg-primary hover:bg-primary/90 text-white font-bold uppercase text-xs tracking-widest">
+                <LogIn className="size-4 mr-2" /> Sign In
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   if (loading) {

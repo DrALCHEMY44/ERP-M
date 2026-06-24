@@ -15,11 +15,15 @@ export async function createNotification(params: {
   targetUserId?: string;
   targetRoles?: Role[];
   link?: string;
+  userProfile?: {
+    tenantId: string;
+    businessId: string;
+  };
 }) {
   try {
     const notificationData: Omit<AppNotification, 'id'> = {
-      tenantId: MOCK_USER.tenantId,
-      businessId: MOCK_USER.businessId,
+      tenantId: params.userProfile?.tenantId || MOCK_USER.tenantId,
+      businessId: params.userProfile?.businessId || MOCK_USER.businessId,
       targetUserId: params.targetUserId,
       targetRoles: params.targetRoles,
       title: params.title,

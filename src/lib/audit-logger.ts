@@ -15,14 +15,21 @@ export async function logActivity(params: {
   oldValue?: any;
   newValue?: any;
   recordId?: string;
+  userProfile?: {
+    tenantId: string;
+    businessId: string;
+    uid: string;
+    fullName?: string | null;
+    role?: string;
+  };
 }) {
   try {
     const logData: Omit<ActivityLog, 'id'> = {
-      tenantId: MOCK_USER.tenantId,
-      businessId: MOCK_USER.businessId,
-      userId: MOCK_USER.uid,
-      userName: MOCK_USER.fullName,
-      userRole: MOCK_USER.role,
+      tenantId: params.userProfile?.tenantId || MOCK_USER.tenantId,
+      businessId: params.userProfile?.businessId || MOCK_USER.businessId,
+      userId: params.userProfile?.uid || MOCK_USER.uid,
+      userName: params.userProfile?.fullName || MOCK_USER.fullName,
+      userRole: params.userProfile?.role || MOCK_USER.role,
       actionType: params.actionType,
       module: params.module,
       description: params.description,

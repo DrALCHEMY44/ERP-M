@@ -1,4 +1,3 @@
-
 "use client"
 
 import * as React from "react"
@@ -15,7 +14,8 @@ import {
   Loader2,
   Sparkles,
   History,
-  ArrowRight
+  ArrowRight,
+  LogIn
 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -27,26 +27,49 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart"
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts"
-import { useFirestore } from "@/hooks/use-firestore"
-import { Sale, Product, Expense, Task, Customer, ActivityLog } from "@/lib/types"
+import { useDataConnect } from "@/hooks/use-dataconnect"
+import { 
+  listTransactionsByBusinessQuery,
+  listProductsByBusinessQuery,
+  listTasksByBusinessQuery,
+  listCustomersByBusinessQuery,
+  listActivityLogsByUserQuery,
+  listEmployeesByBusinessQuery,
+  listSuppliersByBusinessQuery
+} from "@/lib/data-service"
 import { businessPerformanceSummary } from "@/ai/flows/business-performance-summary-flow"
 import { MOCK_USER } from "@/lib/mock-data"
 import Link from "next/link"
 import { useTranslation } from "@/components/language-provider"
+import { Sale, Product, Expense, Task, Customer, ActivityLog } from "@/lib/types"
 
 export default function DashboardPage() {
   const { t } = useTranslation();
-  const { data: sales, loading: salesLoading } = useFirestore<Sale>('sales');
-  const { data: products, loading: productsLoading } = useFirestore<Product>('products');
-  const { data: expenses, loading: expensesLoading } = useFirestore<Expense>('expenses');
-  const { data: tasks, loading: tasksLoading } = useFirestore<Task>('tasks');
-  const { data: customers, loading: customersLoading } = useFirestore<Customer>('customers');
-  const { data: logs, loading: logsLoading } = useFirestore<ActivityLog>('activity_logs');
+  
+  const { data: salesDataResult, loading: salesLoading, unauthenticated } = useDataConnect({ query: listTransactionsByBusinessQuery, variables: { tenantId: MOCK_USER.businessId, businessId: MOCK_USER.businessId } });
+  const { data: productsData, loading: productsLoading } = useDataConnect({ query: listProductsByBusinessQuery, variables: { tenantId: MOCK_USER.businessId, businessId: MOCK_USER.businessId } });
+  // Note: Assuming transactions represent both sales and expenses. Filtering will be done client-side for now based on 'type'.
+  const { data: expensesDataResult, loading: expensesLoading } = useDataConnect({ query: listTransactionsByBusinessQuery, variables: { tenantId: MOCK_USER.businessId, businessId: MOCK_USER.businessId } }); 
+  const { data: tasksData, loading: tasksLoading } = useDataConnect({ query: listTasksByBusinessQuery, variables: { tenantId: MOCK_USER.businessId, businessId: MOCK_USER.businessId } });
+  const { data: customersData, loading: customersLoading } = useDataConnect({ query: listCustomersByBusinessQuery, variables: { tenantId: MOCK_USER.businessId, businessId: MOCK_USER.businessId } });
+  const { data: logsData, loading: logsLoading } = useDataConnect({ query: listActivityLogsByUserQuery, variables: { tenantId: MOCK_USER.businessId, businessId: MOCK_USER.businessId, userId: MOCK_USER.uid } });
+  const { data: employeesData, loading: employeesLoading } = useDataConnect({ query: listEmployeesByBusinessQuery, variables: { tenantId: MOCK_USER.businessId, businessId: MOCK_USER.businessId } });
+  const { data: suppliersData, loading: suppliersLoading } = useDataConnect({ query: listSuppliersByBusinessQuery, variables: { tenantId: MOCK_USER.businessId, businessId: MOCK_USER.businessId } });
+
+  // Map generated types back to existing frontend types
+  const sales = React.useMemo(() => (salesDataResult?.transactions || []).filter((t: any) => t.type === 'Sale') as unknown as Sale[], [salesDataResult]);
+  const expenses = React.useMemo(() => (expensesDataResult?.transactions || []).filter((t: any) => t.type === 'Expense') as unknown as Expense[], [expensesDataResult]);
+  const products = React.useMemo(() => (productsData?.products || []) as unknown as Product[], [productsData]);
+  const tasks = React.useMemo(() => (tasksData?.tasks || []) as unknown as Task[], [tasksData]);
+  const customers = React.useMemo(() => (customersData?.customers || []) as unknown as Customer[], [customersData]);
+  const logs = React.useMemo(() => (logsData?.activityLogs || []) as unknown as ActivityLog[], [logsData]);
+  const employeesCount = employeesData?.employees?.length || 0;
+  const suppliersCount = suppliersData?.suppliers?.length || 0;
 
   const [aiSummary, setAiSummary] = React.useState<string | null>(null);
   const [isAiLoading, setIsAiLoading] = React.useState(false);
 
-  const isSyncing = salesLoading || productsLoading || expensesLoading || tasksLoading || customersLoading || logsLoading;
+  const isSyncing = salesLoading || productsLoading || expensesLoading || tasksLoading || customersLoading || logsLoading || employeesLoading || suppliersLoading;
 
   const stats = React.useMemo(() => {
     const totalSalesAmount = sales.reduce((acc, sale) => acc + sale.totalAmount, 0);
@@ -92,15 +115,60 @@ export default function DashboardPage() {
     }
   }, [isSyncing, aiSummary, fetchAiSummary]);
 
-  const salesData = [
-    { name: "Mon", total: 120000 },
-    { name: "Tue", total: 150000 },
-    { name: "Wed", total: 110000 },
-    { name: "Thu", total: 180000 },
-    { name: "Fri", total: 220000 },
-    { name: "Sat", total: 250000 },
-    { name: "Sun", total: 140000 },
-  ]
+  const salesChartData = React.useMemo(() => {
+     // A very simple aggregation for the chart
+     const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+     const data = days.map(day => ({ name: day, total: 0 }));
+     
+     sales.forEach(sale => {
+         const date = new Date(sale.saleDate);
+         const dayIndex = date.getDay();
+         // Adjust Sunday from 0 to 6 to match array
+         const adjustedIndex = dayIndex === 0 ? 6 : dayIndex - 1;
+         if (data[adjustedIndex]) {
+             data[adjustedIndex].total += sale.totalAmount;
+         }
+     });
+     
+     // Fallback to dummy data if no sales yet for visual demo
+     if (sales.length === 0) {
+        return [
+            { name: "Mon", total: 120000 },
+            { name: "Tue", total: 150000 },
+            { name: "Wed", total: 110000 },
+            { name: "Thu", total: 180000 },
+            { name: "Fri", total: 220000 },
+            { name: "Sat", total: 250000 },
+            { name: "Sun", total: 140000 },
+          ];
+     }
+     return data;
+  }, [sales]);
+
+  if (unauthenticated) {
+    return (
+      <div className="flex h-[60vh] items-center justify-center">
+        <Card className="max-w-md w-full text-center shadow-lg border-t-4 border-amber-500">
+          <CardHeader>
+            <div className="mx-auto bg-amber-100 dark:bg-amber-900/30 rounded-full p-3 w-fit mb-2">
+              <LogIn className="size-6 text-amber-600" />
+            </div>
+            <CardTitle className="text-lg">Authentication Required</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Please sign in to view your dashboard. All operations require an authenticated session.
+            </p>
+            <Link href="/login">
+              <Button className="bg-primary hover:bg-primary/90 text-white font-bold uppercase text-xs tracking-widest">
+                <LogIn className="size-4 mr-2" /> Sign In
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -153,9 +221,9 @@ export default function DashboardPage() {
 
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
         {[
-          { icon: Users, label: t('common.employees'), value: 12 },
+          { icon: Users, label: t('common.employees'), value: employeesCount, loading: employeesLoading },
           { icon: UserCircle, label: t('common.customers'), value: customers.length, loading: customersLoading },
-          { icon: Truck, label: t('common.suppliers'), value: 8 },
+          { icon: Truck, label: t('common.suppliers'), value: suppliersCount, loading: suppliersLoading },
           { icon: Briefcase, label: t('common.tasks'), value: tasks.length, loading: tasksLoading },
         ].map((item, idx) => (
           <div key={idx} className="bg-card border p-3 rounded-xl shadow-sm">
@@ -217,7 +285,7 @@ export default function DashboardPage() {
                   }}
                   className="w-full h-full"
                 >
-                  <BarChart data={salesData}>
+                  <BarChart data={salesChartData}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
                     <XAxis dataKey="name" fontSize={12} tickLine={false} axisLine={false} />
                     <YAxis tickFormatter={(value) => `${value/1000}k`} fontSize={12} tickLine={false} axisLine={false} />
@@ -247,11 +315,11 @@ export default function DashboardPage() {
                   sales.slice(0, 5).map((sale) => (
                     <div key={sale.id} className="flex items-center gap-3 text-sm border-b pb-3 last:border-0 last:pb-0">
                       <div className="h-8 w-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 font-bold shrink-0">
-                        {sale.paymentMethod[0]}
+                        {sale.paymentMethod?.[0] || 'O'}
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="font-bold truncate">{sale.totalAmount.toLocaleString()} FCFA</p>
-                        <p className="text-muted-foreground text-[9px] uppercase font-medium">{sale.paymentMethod} • {new Date(sale.saleDate).toLocaleDateString()}</p>
+                        <p className="text-muted-foreground text-[9px] uppercase font-medium">{sale.paymentMethod || 'Other'} • {new Date(sale.saleDate).toLocaleDateString()}</p>
                       </div>
                     </div>
                   ))

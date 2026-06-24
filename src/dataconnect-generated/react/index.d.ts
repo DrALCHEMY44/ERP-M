@@ -1,42 +1,10 @@
-<<<<<<< HEAD
-import { ListMoviesData, ListUsersData, ListUserReviewsData, GetMovieByIdData, GetMovieByIdVariables, SearchMovieData, SearchMovieVariables, CreateMovieData, CreateMovieVariables, UpsertUserData, UpsertUserVariables, AddReviewData, AddReviewVariables, DeleteReviewData, DeleteReviewVariables } from '../';
-=======
-import { CreateTenantData, CreateTenantVariables, UpdateTenantData, UpdateTenantVariables, DeleteTenantData, DeleteTenantVariables, CreateUserData, CreateUserVariables, UpdateUserData, UpdateUserVariables, DeleteUserData, DeleteUserVariables, CreateBusinessData, CreateBusinessVariables, UpdateBusinessData, UpdateBusinessVariables, DeleteBusinessData, DeleteBusinessVariables, CreateProductData, CreateProductVariables, UpdateProductData, UpdateProductVariables, DeleteProductData, DeleteProductVariables, CreateTransactionData, CreateTransactionVariables, UpdateTransactionData, UpdateTransactionVariables, DeleteTransactionData, DeleteTransactionVariables, CreateTaskData, CreateTaskVariables, UpdateTaskData, UpdateTaskVariables, DeleteTaskData, DeleteTaskVariables, CreateEmployeeData, CreateEmployeeVariables, UpdateEmployeeData, UpdateEmployeeVariables, DeleteEmployeeData, DeleteEmployeeVariables, CreateCustomerData, CreateCustomerVariables, UpdateCustomerData, UpdateCustomerVariables, DeleteCustomerData, DeleteCustomerVariables, CreateSupplierData, CreateSupplierVariables, UpdateSupplierData, UpdateSupplierVariables, DeleteSupplierData, DeleteSupplierVariables, CreateDocumentData, CreateDocumentVariables, UpdateDocumentData, UpdateDocumentVariables, DeleteDocumentData, DeleteDocumentVariables, ListTenantsData, ListUsersData, ListUsersVariables, ListBusinessesData, ListBusinessesVariables, ListProductsData, ListProductsVariables, ListTransactionsData, ListTransactionsVariables, ListTasksData, ListTasksVariables, ListEmployeesData, ListEmployeesVariables, ListCustomersData, ListCustomersVariables, ListSuppliersData, ListSuppliersVariables, ListDocumentsData, ListDocumentsVariables } from '../';
->>>>>>> 546aacf70afe81cbee3ea5f2edbc661c271990b8
+import { CreateTenantData, CreateTenantVariables, UpdateTenantData, UpdateTenantVariables, DeleteTenantData, DeleteTenantVariables, CreateUserData, CreateUserVariables, UpdateUserData, UpdateUserVariables, DeleteUserData, DeleteUserVariables, CreateBusinessData, CreateBusinessVariables, UpdateBusinessData, UpdateBusinessVariables, DeleteBusinessData, DeleteBusinessVariables, CreateProductData, CreateProductVariables, UpdateProductData, UpdateProductVariables, DeleteProductData, DeleteProductVariables, CreateTransactionData, CreateTransactionVariables, UpdateTransactionData, UpdateTransactionVariables, DeleteTransactionData, DeleteTransactionVariables, CreateTaskCommentData, CreateTaskCommentVariables, UpdateTaskCommentData, UpdateTaskCommentVariables, DeleteTaskCommentData, DeleteTaskCommentVariables, CreateEmployeeData, CreateEmployeeVariables, UpdateEmployeeData, UpdateEmployeeVariables, DeleteEmployeeData, DeleteEmployeeVariables, CreateCustomerData, CreateCustomerVariables, UpdateCustomerData, UpdateCustomerVariables, DeleteCustomerData, DeleteCustomerVariables, CreateSupplierData, CreateSupplierVariables, UpdateSupplierData, UpdateSupplierVariables, DeleteSupplierData, DeleteSupplierVariables, CreateDocumentData, CreateDocumentVariables, UpdateDocumentData, UpdateDocumentVariables, DeleteDocumentData, DeleteDocumentVariables, CreateActivityLogData, CreateActivityLogVariables, UpdateActivityLogData, UpdateActivityLogVariables, DeleteActivityLogData, DeleteActivityLogVariables, CreateAiQueryData, CreateAiQueryVariables, UpdateAiQueryData, UpdateAiQueryVariables, DeleteAiQueryData, DeleteAiQueryVariables, CreateNotificationData, CreateNotificationVariables, UpdateNotificationData, UpdateNotificationVariables, DeleteNotificationData, DeleteNotificationVariables, CreateTaskData, CreateTaskVariables, UpdateTaskData, UpdateTaskVariables, DeleteTaskData, DeleteTaskVariables, ListTenantsData, ListBusinessesData, ListBusinessesVariables, GetUserByEmailData, GetUserByEmailVariables, ListProductsByBusinessData, ListProductsByBusinessVariables, ListCustomersByBusinessData, ListCustomersByBusinessVariables, ListSuppliersByBusinessData, ListSuppliersByBusinessVariables, ListTasksByBusinessData, ListTasksByBusinessVariables, ListTransactionsByBusinessData, ListTransactionsByBusinessVariables, ListTransactionsByTypeData, ListTransactionsByTypeVariables, ListEmployeesByBusinessData, ListEmployeesByBusinessVariables, ListDocumentsByBusinessData, ListDocumentsByBusinessVariables, ListActivityLogsByUserData, ListActivityLogsByUserVariables, ListActivityLogsByBusinessData, ListActivityLogsByBusinessVariables } from '../';
 import { UseDataConnectQueryResult, useDataConnectQueryOptions, UseDataConnectMutationResult, useDataConnectMutationOptions} from '@tanstack-query-firebase/react/data-connect';
 import { UseQueryResult, UseMutationResult} from '@tanstack/react-query';
 import { DataConnect } from 'firebase/data-connect';
 import { FirebaseError } from 'firebase/app';
 
 
-<<<<<<< HEAD
-export function useListMovies(options?: useDataConnectQueryOptions<ListMoviesData>): UseDataConnectQueryResult<ListMoviesData, undefined>;
-export function useListMovies(dc: DataConnect, options?: useDataConnectQueryOptions<ListMoviesData>): UseDataConnectQueryResult<ListMoviesData, undefined>;
-
-export function useListUsers(options?: useDataConnectQueryOptions<ListUsersData>): UseDataConnectQueryResult<ListUsersData, undefined>;
-export function useListUsers(dc: DataConnect, options?: useDataConnectQueryOptions<ListUsersData>): UseDataConnectQueryResult<ListUsersData, undefined>;
-
-export function useListUserReviews(options?: useDataConnectQueryOptions<ListUserReviewsData>): UseDataConnectQueryResult<ListUserReviewsData, undefined>;
-export function useListUserReviews(dc: DataConnect, options?: useDataConnectQueryOptions<ListUserReviewsData>): UseDataConnectQueryResult<ListUserReviewsData, undefined>;
-
-export function useGetMovieById(vars: GetMovieByIdVariables, options?: useDataConnectQueryOptions<GetMovieByIdData>): UseDataConnectQueryResult<GetMovieByIdData, GetMovieByIdVariables>;
-export function useGetMovieById(dc: DataConnect, vars: GetMovieByIdVariables, options?: useDataConnectQueryOptions<GetMovieByIdData>): UseDataConnectQueryResult<GetMovieByIdData, GetMovieByIdVariables>;
-
-export function useSearchMovie(vars?: SearchMovieVariables, options?: useDataConnectQueryOptions<SearchMovieData>): UseDataConnectQueryResult<SearchMovieData, SearchMovieVariables>;
-export function useSearchMovie(dc: DataConnect, vars?: SearchMovieVariables, options?: useDataConnectQueryOptions<SearchMovieData>): UseDataConnectQueryResult<SearchMovieData, SearchMovieVariables>;
-
-export function useCreateMovie(options?: useDataConnectMutationOptions<CreateMovieData, FirebaseError, CreateMovieVariables>): UseDataConnectMutationResult<CreateMovieData, CreateMovieVariables>;
-export function useCreateMovie(dc: DataConnect, options?: useDataConnectMutationOptions<CreateMovieData, FirebaseError, CreateMovieVariables>): UseDataConnectMutationResult<CreateMovieData, CreateMovieVariables>;
-
-export function useUpsertUser(options?: useDataConnectMutationOptions<UpsertUserData, FirebaseError, UpsertUserVariables>): UseDataConnectMutationResult<UpsertUserData, UpsertUserVariables>;
-export function useUpsertUser(dc: DataConnect, options?: useDataConnectMutationOptions<UpsertUserData, FirebaseError, UpsertUserVariables>): UseDataConnectMutationResult<UpsertUserData, UpsertUserVariables>;
-
-export function useAddReview(options?: useDataConnectMutationOptions<AddReviewData, FirebaseError, AddReviewVariables>): UseDataConnectMutationResult<AddReviewData, AddReviewVariables>;
-export function useAddReview(dc: DataConnect, options?: useDataConnectMutationOptions<AddReviewData, FirebaseError, AddReviewVariables>): UseDataConnectMutationResult<AddReviewData, AddReviewVariables>;
-
-export function useDeleteReview(options?: useDataConnectMutationOptions<DeleteReviewData, FirebaseError, DeleteReviewVariables>): UseDataConnectMutationResult<DeleteReviewData, DeleteReviewVariables>;
-export function useDeleteReview(dc: DataConnect, options?: useDataConnectMutationOptions<DeleteReviewData, FirebaseError, DeleteReviewVariables>): UseDataConnectMutationResult<DeleteReviewData, DeleteReviewVariables>;
-=======
 export function useCreateTenant(options?: useDataConnectMutationOptions<CreateTenantData, FirebaseError, CreateTenantVariables>): UseDataConnectMutationResult<CreateTenantData, CreateTenantVariables>;
 export function useCreateTenant(dc: DataConnect, options?: useDataConnectMutationOptions<CreateTenantData, FirebaseError, CreateTenantVariables>): UseDataConnectMutationResult<CreateTenantData, CreateTenantVariables>;
 
@@ -82,14 +50,14 @@ export function useUpdateTransaction(dc: DataConnect, options?: useDataConnectMu
 export function useDeleteTransaction(options?: useDataConnectMutationOptions<DeleteTransactionData, FirebaseError, DeleteTransactionVariables>): UseDataConnectMutationResult<DeleteTransactionData, DeleteTransactionVariables>;
 export function useDeleteTransaction(dc: DataConnect, options?: useDataConnectMutationOptions<DeleteTransactionData, FirebaseError, DeleteTransactionVariables>): UseDataConnectMutationResult<DeleteTransactionData, DeleteTransactionVariables>;
 
-export function useCreateTask(options?: useDataConnectMutationOptions<CreateTaskData, FirebaseError, CreateTaskVariables>): UseDataConnectMutationResult<CreateTaskData, CreateTaskVariables>;
-export function useCreateTask(dc: DataConnect, options?: useDataConnectMutationOptions<CreateTaskData, FirebaseError, CreateTaskVariables>): UseDataConnectMutationResult<CreateTaskData, CreateTaskVariables>;
+export function useCreateTaskComment(options?: useDataConnectMutationOptions<CreateTaskCommentData, FirebaseError, CreateTaskCommentVariables>): UseDataConnectMutationResult<CreateTaskCommentData, CreateTaskCommentVariables>;
+export function useCreateTaskComment(dc: DataConnect, options?: useDataConnectMutationOptions<CreateTaskCommentData, FirebaseError, CreateTaskCommentVariables>): UseDataConnectMutationResult<CreateTaskCommentData, CreateTaskCommentVariables>;
 
-export function useUpdateTask(options?: useDataConnectMutationOptions<UpdateTaskData, FirebaseError, UpdateTaskVariables>): UseDataConnectMutationResult<UpdateTaskData, UpdateTaskVariables>;
-export function useUpdateTask(dc: DataConnect, options?: useDataConnectMutationOptions<UpdateTaskData, FirebaseError, UpdateTaskVariables>): UseDataConnectMutationResult<UpdateTaskData, UpdateTaskVariables>;
+export function useUpdateTaskComment(options?: useDataConnectMutationOptions<UpdateTaskCommentData, FirebaseError, UpdateTaskCommentVariables>): UseDataConnectMutationResult<UpdateTaskCommentData, UpdateTaskCommentVariables>;
+export function useUpdateTaskComment(dc: DataConnect, options?: useDataConnectMutationOptions<UpdateTaskCommentData, FirebaseError, UpdateTaskCommentVariables>): UseDataConnectMutationResult<UpdateTaskCommentData, UpdateTaskCommentVariables>;
 
-export function useDeleteTask(options?: useDataConnectMutationOptions<DeleteTaskData, FirebaseError, DeleteTaskVariables>): UseDataConnectMutationResult<DeleteTaskData, DeleteTaskVariables>;
-export function useDeleteTask(dc: DataConnect, options?: useDataConnectMutationOptions<DeleteTaskData, FirebaseError, DeleteTaskVariables>): UseDataConnectMutationResult<DeleteTaskData, DeleteTaskVariables>;
+export function useDeleteTaskComment(options?: useDataConnectMutationOptions<DeleteTaskCommentData, FirebaseError, DeleteTaskCommentVariables>): UseDataConnectMutationResult<DeleteTaskCommentData, DeleteTaskCommentVariables>;
+export function useDeleteTaskComment(dc: DataConnect, options?: useDataConnectMutationOptions<DeleteTaskCommentData, FirebaseError, DeleteTaskCommentVariables>): UseDataConnectMutationResult<DeleteTaskCommentData, DeleteTaskCommentVariables>;
 
 export function useCreateEmployee(options?: useDataConnectMutationOptions<CreateEmployeeData, FirebaseError, CreateEmployeeVariables>): UseDataConnectMutationResult<CreateEmployeeData, CreateEmployeeVariables>;
 export function useCreateEmployee(dc: DataConnect, options?: useDataConnectMutationOptions<CreateEmployeeData, FirebaseError, CreateEmployeeVariables>): UseDataConnectMutationResult<CreateEmployeeData, CreateEmployeeVariables>;
@@ -127,33 +95,77 @@ export function useUpdateDocument(dc: DataConnect, options?: useDataConnectMutat
 export function useDeleteDocument(options?: useDataConnectMutationOptions<DeleteDocumentData, FirebaseError, DeleteDocumentVariables>): UseDataConnectMutationResult<DeleteDocumentData, DeleteDocumentVariables>;
 export function useDeleteDocument(dc: DataConnect, options?: useDataConnectMutationOptions<DeleteDocumentData, FirebaseError, DeleteDocumentVariables>): UseDataConnectMutationResult<DeleteDocumentData, DeleteDocumentVariables>;
 
+export function useCreateActivityLog(options?: useDataConnectMutationOptions<CreateActivityLogData, FirebaseError, CreateActivityLogVariables>): UseDataConnectMutationResult<CreateActivityLogData, CreateActivityLogVariables>;
+export function useCreateActivityLog(dc: DataConnect, options?: useDataConnectMutationOptions<CreateActivityLogData, FirebaseError, CreateActivityLogVariables>): UseDataConnectMutationResult<CreateActivityLogData, CreateActivityLogVariables>;
+
+export function useUpdateActivityLog(options?: useDataConnectMutationOptions<UpdateActivityLogData, FirebaseError, UpdateActivityLogVariables>): UseDataConnectMutationResult<UpdateActivityLogData, UpdateActivityLogVariables>;
+export function useUpdateActivityLog(dc: DataConnect, options?: useDataConnectMutationOptions<UpdateActivityLogData, FirebaseError, UpdateActivityLogVariables>): UseDataConnectMutationResult<UpdateActivityLogData, UpdateActivityLogVariables>;
+
+export function useDeleteActivityLog(options?: useDataConnectMutationOptions<DeleteActivityLogData, FirebaseError, DeleteActivityLogVariables>): UseDataConnectMutationResult<DeleteActivityLogData, DeleteActivityLogVariables>;
+export function useDeleteActivityLog(dc: DataConnect, options?: useDataConnectMutationOptions<DeleteActivityLogData, FirebaseError, DeleteActivityLogVariables>): UseDataConnectMutationResult<DeleteActivityLogData, DeleteActivityLogVariables>;
+
+export function useCreateAiQuery(options?: useDataConnectMutationOptions<CreateAiQueryData, FirebaseError, CreateAiQueryVariables>): UseDataConnectMutationResult<CreateAiQueryData, CreateAiQueryVariables>;
+export function useCreateAiQuery(dc: DataConnect, options?: useDataConnectMutationOptions<CreateAiQueryData, FirebaseError, CreateAiQueryVariables>): UseDataConnectMutationResult<CreateAiQueryData, CreateAiQueryVariables>;
+
+export function useUpdateAiQuery(options?: useDataConnectMutationOptions<UpdateAiQueryData, FirebaseError, UpdateAiQueryVariables>): UseDataConnectMutationResult<UpdateAiQueryData, UpdateAiQueryVariables>;
+export function useUpdateAiQuery(dc: DataConnect, options?: useDataConnectMutationOptions<UpdateAiQueryData, FirebaseError, UpdateAiQueryVariables>): UseDataConnectMutationResult<UpdateAiQueryData, UpdateAiQueryVariables>;
+
+export function useDeleteAiQuery(options?: useDataConnectMutationOptions<DeleteAiQueryData, FirebaseError, DeleteAiQueryVariables>): UseDataConnectMutationResult<DeleteAiQueryData, DeleteAiQueryVariables>;
+export function useDeleteAiQuery(dc: DataConnect, options?: useDataConnectMutationOptions<DeleteAiQueryData, FirebaseError, DeleteAiQueryVariables>): UseDataConnectMutationResult<DeleteAiQueryData, DeleteAiQueryVariables>;
+
+export function useCreateNotification(options?: useDataConnectMutationOptions<CreateNotificationData, FirebaseError, CreateNotificationVariables>): UseDataConnectMutationResult<CreateNotificationData, CreateNotificationVariables>;
+export function useCreateNotification(dc: DataConnect, options?: useDataConnectMutationOptions<CreateNotificationData, FirebaseError, CreateNotificationVariables>): UseDataConnectMutationResult<CreateNotificationData, CreateNotificationVariables>;
+
+export function useUpdateNotification(options?: useDataConnectMutationOptions<UpdateNotificationData, FirebaseError, UpdateNotificationVariables>): UseDataConnectMutationResult<UpdateNotificationData, UpdateNotificationVariables>;
+export function useUpdateNotification(dc: DataConnect, options?: useDataConnectMutationOptions<UpdateNotificationData, FirebaseError, UpdateNotificationVariables>): UseDataConnectMutationResult<UpdateNotificationData, UpdateNotificationVariables>;
+
+export function useDeleteNotification(options?: useDataConnectMutationOptions<DeleteNotificationData, FirebaseError, DeleteNotificationVariables>): UseDataConnectMutationResult<DeleteNotificationData, DeleteNotificationVariables>;
+export function useDeleteNotification(dc: DataConnect, options?: useDataConnectMutationOptions<DeleteNotificationData, FirebaseError, DeleteNotificationVariables>): UseDataConnectMutationResult<DeleteNotificationData, DeleteNotificationVariables>;
+
+export function useCreateTask(options?: useDataConnectMutationOptions<CreateTaskData, FirebaseError, CreateTaskVariables>): UseDataConnectMutationResult<CreateTaskData, CreateTaskVariables>;
+export function useCreateTask(dc: DataConnect, options?: useDataConnectMutationOptions<CreateTaskData, FirebaseError, CreateTaskVariables>): UseDataConnectMutationResult<CreateTaskData, CreateTaskVariables>;
+
+export function useUpdateTask(options?: useDataConnectMutationOptions<UpdateTaskData, FirebaseError, UpdateTaskVariables>): UseDataConnectMutationResult<UpdateTaskData, UpdateTaskVariables>;
+export function useUpdateTask(dc: DataConnect, options?: useDataConnectMutationOptions<UpdateTaskData, FirebaseError, UpdateTaskVariables>): UseDataConnectMutationResult<UpdateTaskData, UpdateTaskVariables>;
+
+export function useDeleteTask(options?: useDataConnectMutationOptions<DeleteTaskData, FirebaseError, DeleteTaskVariables>): UseDataConnectMutationResult<DeleteTaskData, DeleteTaskVariables>;
+export function useDeleteTask(dc: DataConnect, options?: useDataConnectMutationOptions<DeleteTaskData, FirebaseError, DeleteTaskVariables>): UseDataConnectMutationResult<DeleteTaskData, DeleteTaskVariables>;
+
 export function useListTenants(options?: useDataConnectQueryOptions<ListTenantsData>): UseDataConnectQueryResult<ListTenantsData, undefined>;
 export function useListTenants(dc: DataConnect, options?: useDataConnectQueryOptions<ListTenantsData>): UseDataConnectQueryResult<ListTenantsData, undefined>;
-
-export function useListUsers(vars: ListUsersVariables, options?: useDataConnectQueryOptions<ListUsersData>): UseDataConnectQueryResult<ListUsersData, ListUsersVariables>;
-export function useListUsers(dc: DataConnect, vars: ListUsersVariables, options?: useDataConnectQueryOptions<ListUsersData>): UseDataConnectQueryResult<ListUsersData, ListUsersVariables>;
 
 export function useListBusinesses(vars: ListBusinessesVariables, options?: useDataConnectQueryOptions<ListBusinessesData>): UseDataConnectQueryResult<ListBusinessesData, ListBusinessesVariables>;
 export function useListBusinesses(dc: DataConnect, vars: ListBusinessesVariables, options?: useDataConnectQueryOptions<ListBusinessesData>): UseDataConnectQueryResult<ListBusinessesData, ListBusinessesVariables>;
 
-export function useListProducts(vars: ListProductsVariables, options?: useDataConnectQueryOptions<ListProductsData>): UseDataConnectQueryResult<ListProductsData, ListProductsVariables>;
-export function useListProducts(dc: DataConnect, vars: ListProductsVariables, options?: useDataConnectQueryOptions<ListProductsData>): UseDataConnectQueryResult<ListProductsData, ListProductsVariables>;
+export function useGetUserByEmail(vars: GetUserByEmailVariables, options?: useDataConnectQueryOptions<GetUserByEmailData>): UseDataConnectQueryResult<GetUserByEmailData, GetUserByEmailVariables>;
+export function useGetUserByEmail(dc: DataConnect, vars: GetUserByEmailVariables, options?: useDataConnectQueryOptions<GetUserByEmailData>): UseDataConnectQueryResult<GetUserByEmailData, GetUserByEmailVariables>;
 
-export function useListTransactions(vars: ListTransactionsVariables, options?: useDataConnectQueryOptions<ListTransactionsData>): UseDataConnectQueryResult<ListTransactionsData, ListTransactionsVariables>;
-export function useListTransactions(dc: DataConnect, vars: ListTransactionsVariables, options?: useDataConnectQueryOptions<ListTransactionsData>): UseDataConnectQueryResult<ListTransactionsData, ListTransactionsVariables>;
+export function useListProductsByBusiness(vars: ListProductsByBusinessVariables, options?: useDataConnectQueryOptions<ListProductsByBusinessData>): UseDataConnectQueryResult<ListProductsByBusinessData, ListProductsByBusinessVariables>;
+export function useListProductsByBusiness(dc: DataConnect, vars: ListProductsByBusinessVariables, options?: useDataConnectQueryOptions<ListProductsByBusinessData>): UseDataConnectQueryResult<ListProductsByBusinessData, ListProductsByBusinessVariables>;
 
-export function useListTasks(vars: ListTasksVariables, options?: useDataConnectQueryOptions<ListTasksData>): UseDataConnectQueryResult<ListTasksData, ListTasksVariables>;
-export function useListTasks(dc: DataConnect, vars: ListTasksVariables, options?: useDataConnectQueryOptions<ListTasksData>): UseDataConnectQueryResult<ListTasksData, ListTasksVariables>;
+export function useListCustomersByBusiness(vars: ListCustomersByBusinessVariables, options?: useDataConnectQueryOptions<ListCustomersByBusinessData>): UseDataConnectQueryResult<ListCustomersByBusinessData, ListCustomersByBusinessVariables>;
+export function useListCustomersByBusiness(dc: DataConnect, vars: ListCustomersByBusinessVariables, options?: useDataConnectQueryOptions<ListCustomersByBusinessData>): UseDataConnectQueryResult<ListCustomersByBusinessData, ListCustomersByBusinessVariables>;
 
-export function useListEmployees(vars: ListEmployeesVariables, options?: useDataConnectQueryOptions<ListEmployeesData>): UseDataConnectQueryResult<ListEmployeesData, ListEmployeesVariables>;
-export function useListEmployees(dc: DataConnect, vars: ListEmployeesVariables, options?: useDataConnectQueryOptions<ListEmployeesData>): UseDataConnectQueryResult<ListEmployeesData, ListEmployeesVariables>;
+export function useListSuppliersByBusiness(vars: ListSuppliersByBusinessVariables, options?: useDataConnectQueryOptions<ListSuppliersByBusinessData>): UseDataConnectQueryResult<ListSuppliersByBusinessData, ListSuppliersByBusinessVariables>;
+export function useListSuppliersByBusiness(dc: DataConnect, vars: ListSuppliersByBusinessVariables, options?: useDataConnectQueryOptions<ListSuppliersByBusinessData>): UseDataConnectQueryResult<ListSuppliersByBusinessData, ListSuppliersByBusinessVariables>;
 
-export function useListCustomers(vars: ListCustomersVariables, options?: useDataConnectQueryOptions<ListCustomersData>): UseDataConnectQueryResult<ListCustomersData, ListCustomersVariables>;
-export function useListCustomers(dc: DataConnect, vars: ListCustomersVariables, options?: useDataConnectQueryOptions<ListCustomersData>): UseDataConnectQueryResult<ListCustomersData, ListCustomersVariables>;
+export function useListTasksByBusiness(vars: ListTasksByBusinessVariables, options?: useDataConnectQueryOptions<ListTasksByBusinessData>): UseDataConnectQueryResult<ListTasksByBusinessData, ListTasksByBusinessVariables>;
+export function useListTasksByBusiness(dc: DataConnect, vars: ListTasksByBusinessVariables, options?: useDataConnectQueryOptions<ListTasksByBusinessData>): UseDataConnectQueryResult<ListTasksByBusinessData, ListTasksByBusinessVariables>;
 
-export function useListSuppliers(vars: ListSuppliersVariables, options?: useDataConnectQueryOptions<ListSuppliersData>): UseDataConnectQueryResult<ListSuppliersData, ListSuppliersVariables>;
-export function useListSuppliers(dc: DataConnect, vars: ListSuppliersVariables, options?: useDataConnectQueryOptions<ListSuppliersData>): UseDataConnectQueryResult<ListSuppliersData, ListSuppliersVariables>;
+export function useListTransactionsByBusiness(vars: ListTransactionsByBusinessVariables, options?: useDataConnectQueryOptions<ListTransactionsByBusinessData>): UseDataConnectQueryResult<ListTransactionsByBusinessData, ListTransactionsByBusinessVariables>;
+export function useListTransactionsByBusiness(dc: DataConnect, vars: ListTransactionsByBusinessVariables, options?: useDataConnectQueryOptions<ListTransactionsByBusinessData>): UseDataConnectQueryResult<ListTransactionsByBusinessData, ListTransactionsByBusinessVariables>;
 
-export function useListDocuments(vars: ListDocumentsVariables, options?: useDataConnectQueryOptions<ListDocumentsData>): UseDataConnectQueryResult<ListDocumentsData, ListDocumentsVariables>;
-export function useListDocuments(dc: DataConnect, vars: ListDocumentsVariables, options?: useDataConnectQueryOptions<ListDocumentsData>): UseDataConnectQueryResult<ListDocumentsData, ListDocumentsVariables>;
->>>>>>> 546aacf70afe81cbee3ea5f2edbc661c271990b8
+export function useListTransactionsByType(vars: ListTransactionsByTypeVariables, options?: useDataConnectQueryOptions<ListTransactionsByTypeData>): UseDataConnectQueryResult<ListTransactionsByTypeData, ListTransactionsByTypeVariables>;
+export function useListTransactionsByType(dc: DataConnect, vars: ListTransactionsByTypeVariables, options?: useDataConnectQueryOptions<ListTransactionsByTypeData>): UseDataConnectQueryResult<ListTransactionsByTypeData, ListTransactionsByTypeVariables>;
+
+export function useListEmployeesByBusiness(vars: ListEmployeesByBusinessVariables, options?: useDataConnectQueryOptions<ListEmployeesByBusinessData>): UseDataConnectQueryResult<ListEmployeesByBusinessData, ListEmployeesByBusinessVariables>;
+export function useListEmployeesByBusiness(dc: DataConnect, vars: ListEmployeesByBusinessVariables, options?: useDataConnectQueryOptions<ListEmployeesByBusinessData>): UseDataConnectQueryResult<ListEmployeesByBusinessData, ListEmployeesByBusinessVariables>;
+
+export function useListDocumentsByBusiness(vars: ListDocumentsByBusinessVariables, options?: useDataConnectQueryOptions<ListDocumentsByBusinessData>): UseDataConnectQueryResult<ListDocumentsByBusinessData, ListDocumentsByBusinessVariables>;
+export function useListDocumentsByBusiness(dc: DataConnect, vars: ListDocumentsByBusinessVariables, options?: useDataConnectQueryOptions<ListDocumentsByBusinessData>): UseDataConnectQueryResult<ListDocumentsByBusinessData, ListDocumentsByBusinessVariables>;
+
+export function useListActivityLogsByUser(vars: ListActivityLogsByUserVariables, options?: useDataConnectQueryOptions<ListActivityLogsByUserData>): UseDataConnectQueryResult<ListActivityLogsByUserData, ListActivityLogsByUserVariables>;
+export function useListActivityLogsByUser(dc: DataConnect, vars: ListActivityLogsByUserVariables, options?: useDataConnectQueryOptions<ListActivityLogsByUserData>): UseDataConnectQueryResult<ListActivityLogsByUserData, ListActivityLogsByUserVariables>;
+
+export function useListActivityLogsByBusiness(vars: ListActivityLogsByBusinessVariables, options?: useDataConnectQueryOptions<ListActivityLogsByBusinessData>): UseDataConnectQueryResult<ListActivityLogsByBusinessData, ListActivityLogsByBusinessVariables>;
+export function useListActivityLogsByBusiness(dc: DataConnect, vars: ListActivityLogsByBusinessVariables, options?: useDataConnectQueryOptions<ListActivityLogsByBusinessData>): UseDataConnectQueryResult<ListActivityLogsByBusinessData, ListActivityLogsByBusinessVariables>;

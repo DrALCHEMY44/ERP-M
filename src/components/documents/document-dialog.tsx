@@ -31,7 +31,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { BusinessDocument, DocumentType } from "@/lib/types"
+import { BusinessDocument } from "@/lib/types"
 import { MOCK_USER } from "@/lib/mock-data"
 import { Loader2, UploadCloud } from "lucide-react"
 

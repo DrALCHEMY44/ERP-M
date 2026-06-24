@@ -3,11 +3,7 @@
 
 import * as React from "react"
 import { Bell, Info, AlertTriangle, CheckCircle2, AlertCircle, Loader2 } from "lucide-react"
-import { 
-  Popover, 
-  PopoverContent, 
-  PopoverTrigger 
-} from "@/components/ui/badge"
+
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"

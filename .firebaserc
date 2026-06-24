@@ -1,11 +1,5 @@
 {
-<<<<<<< HEAD
-  "projects": {},
-  "targets": {},
-  "etags": {}
-=======
   "projects": {
     "default": "studio-8058744913-5a601"
   }
->>>>>>> 546aacf70afe81cbee3ea5f2edbc661c271990b8
 }

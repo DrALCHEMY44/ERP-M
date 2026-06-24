@@ -13,6 +13,7 @@ import { createUserWithEmailAndPassword } from "firebase/auth"
 import { doc, setDoc } from "firebase/firestore"
 import { auth, db } from "@/lib/firebase"
 import { useToast } from "@/hooks/use-toast"
+import { createTenantMutation, createBusinessMutation, createUserMutation } from "@/lib/data-service"
 
 export default function RegisterPage() {
   const [fullName, setFullName] = React.useState("")
@@ -34,12 +35,36 @@ export default function RegisterPage() {
 
       // 2. Determine Role and Context
       const isAdminEmail = email.toLowerCase() === 'admin@smarterp.ai';
-      
-      const tenantId = isAdminEmail ? 'system_root' : `tenant_${Math.random().toString(36).substr(2, 6)}`
-      const businessId = isAdminEmail ? 'platform_master' : `biz_${Math.random().toString(36).substr(2, 6)}`
       const userRole = isAdminEmail ? "Platform Super Admin" : "Business Owner"
       
-      // 3. Create Firestore Profile
+      // 3. Create Tenant in SQL Connect
+      const tenantResult = await createTenantMutation({
+        name: isAdminEmail ? "Platform Infrastructure" : `${fullName}'s SME`,
+        businessSector: "General Services",
+        location: "Douala, Cameroon",
+        ownerEmail: email,
+        subscriptionTier: isAdminEmail ? "Enterprise" : "Basic",
+      });
+      const tenantId = tenantResult.data.tenant_insert.id;
+
+      // 4. Create Business in SQL Connect
+      const businessResult = await createBusinessMutation({
+        tenantId: tenantId,
+        name: isAdminEmail ? "Platform Infrastructure" : `${fullName}'s SME`,
+        location: "Douala, Cameroon",
+      });
+      const businessId = businessResult.data.business_insert.id;
+
+      // 5. Create User in SQL Connect
+      await createUserMutation({
+        tenantId: tenantId,
+        businessId: businessId,
+        email: email,
+        role: userRole,
+        fullName: fullName,
+      });
+
+      // 6. Create Firestore Profile (for backward compatibility)
       await setDoc(doc(db, "users", user.uid), {
         uid: user.uid,
         email: user.email,
@@ -51,7 +76,7 @@ export default function RegisterPage() {
         createdAt: new Date().toISOString(),
       })
 
-      // 4. Create Tenant Document for platform visibility
+      // 7. Create Tenant Document for platform visibility in Firestore
       await setDoc(doc(db, "tenants", tenantId), {
         id: tenantId,
         name: isAdminEmail ? "Platform Infrastructure" : `${fullName}'s SME`,

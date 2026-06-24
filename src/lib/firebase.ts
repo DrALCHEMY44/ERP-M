@@ -3,7 +3,7 @@ import { getFirestore } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import { getStorage } from "firebase/storage";
 // Import the core runtime
-import { getDataConnect } from "firebase/data-connect";
+import { getDataConnect, connectDataConnectEmulator } from "firebase/data-connect";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -27,4 +27,10 @@ export const dataConnect = getDataConnect({
   location: "us-east4",
   connector: "example" 
 });
+
+if (process.env.NODE_ENV === "development" && process.env.NEXT_PUBLIC_USE_EMULATORS === "true") {
+  connectDataConnectEmulator(dataConnect, "127.0.0.1", 9399);
+  console.log("🔌 Successfully mapped to local SQL Connect Emulator on port 9399!");
+}
+
 export { app, db, auth, storage };
