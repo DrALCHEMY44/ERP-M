@@ -17,7 +17,9 @@ import { listTasksByBusinessQuery, createTaskMutation, updateTaskMutation, delet
 import { MOCK_USER } from "@/lib/mock-data"
 import { startOfDay, parseISO, isBefore } from "date-fns"
 import { createNotification } from "@/lib/notifications"
+import { useTranslation } from "@/components/language-provider"
 import { TaskStatus as DbTaskStatus, TaskPriority as DbTaskPriority } from "@dataconnect/generated"
+import { useAuth } from "@/hooks/use-auth"
 
 const mapStatusToDb = (status: TaskStatus | undefined): DbTaskStatus => {
   switch (status) {
@@ -67,9 +69,15 @@ const mapPriorityFromDb = (dbPriority: string | undefined | null): string => {
 };
 
 export default function TasksPage() {
+  const { t } = useTranslation();
+  const { profile, user } = useAuth();
   const { data: tasksData, loading, unauthenticated, refetch } = useDataConnect({ 
     query: listTasksByBusinessQuery, 
-    variables: { tenantId: MOCK_USER.tenantId, businessId: MOCK_USER.businessId } 
+    variables: { 
+      tenantId: profile?.tenantId || "", 
+      businessId: profile?.businessId || "" 
+    },
+    skip: !profile || !profile.tenantId || !profile.businessId
   });
   
   const tasks = React.useMemo(() => {
@@ -157,6 +165,14 @@ export default function TasksPage() {
   }
  
   const handleSave = async (taskData: Partial<Task>) => {
+    if (!profile?.tenantId || !profile?.businessId) {
+      toast({
+        variant: "destructive",
+        title: "Configuration Error",
+        description: "Your user profile is missing business/tenant identifiers. Please complete registration or select a business."
+      });
+      return;
+    }
     try {
       if (selectedTask?.id) {
         await updateTaskMutation({
@@ -171,16 +187,17 @@ export default function TasksPage() {
         await refetch();
         toast({ title: "Task Updated", description: "Operational tracking updated successfully." });
       } else {
+        if (!user) return;
         const result = await createTaskMutation({
-          tenantId: MOCK_USER.tenantId,
-          businessId: MOCK_USER.businessId,
+          tenantId: profile.tenantId,
+          businessId: profile.businessId,
           title: taskData.title || '',
           description: taskData.description,
           status: mapStatusToDb(taskData.status || 'Pending'),
           priority: mapPriorityToDb(taskData.priority),
           dueDate: taskData.dueDate || new Date().toISOString(),
           assignedToId: taskData.assignedTo,
-          createdBy: MOCK_USER.uid
+          createdBy: user.uid
         });
         await refetch();
         
@@ -191,7 +208,11 @@ export default function TasksPage() {
           type: "info",
           module: "Tasks",
           targetUserId: taskData.assignedTo,
-          link: "/tasks"
+          link: "/tasks",
+          userProfile: {
+            tenantId: profile.tenantId,
+            businessId: profile.businessId
+          }
         });
  
         toast({ title: "Task Created", description: "Assignment has been sent to the cloud." });
@@ -250,18 +271,18 @@ export default function TasksPage() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="space-y-1">
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Workload & Tasks</h1>
-          <p className="text-sm text-muted-foreground">Monitor employee performance and operational deadlines.</p>
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">{t('tasks.title')}</h1>
+          <p className="text-sm text-muted-foreground">{t('tasks.subtitle')}</p>
         </div>
         <Button onClick={handleAddNew} className="bg-primary hover:bg-primary/90 text-white font-bold uppercase text-xs tracking-widest shadow-lg">
-          <Plus className="size-4 mr-2" /> Assign Task
+          <Plus className="size-4 mr-2" /> {t('tasks.assignTask')}
         </Button>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="border-t-4 border-blue-500 shadow-md bg-blue-50/10">
           <CardHeader className="pb-2 p-4">
-            <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Active Load</CardTitle>
+            <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{t('tasks.activeLoad')}</CardTitle>
           </CardHeader>
           <CardContent className="p-4 pt-0">
             <div className="text-2xl font-bold">{stats.total} Tasks</div>
@@ -273,7 +294,7 @@ export default function TasksPage() {
         </Card>
         <Card className="border-t-4 border-amber-500 shadow-md bg-amber-50/10">
           <CardHeader className="pb-2 p-4">
-            <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Pending Action</CardTitle>
+            <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{t('tasks.pendingAction')}</CardTitle>
           </CardHeader>
           <CardContent className="p-4 pt-0 text-amber-700">
             <div className="text-2xl font-bold">{stats.pending}</div>
@@ -282,7 +303,7 @@ export default function TasksPage() {
         </Card>
         <Card className="border-t-4 border-red-500 shadow-md bg-red-50/10">
           <CardHeader className="pb-2 p-4">
-            <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Overdue/Late</CardTitle>
+            <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{t('tasks.overdueLate')}</CardTitle>
           </CardHeader>
           <CardContent className="p-4 pt-0 flex items-center justify-between">
             <div>
@@ -294,7 +315,7 @@ export default function TasksPage() {
         </Card>
         <Card className="border-t-4 border-emerald-500 shadow-md bg-emerald-50/10">
           <CardHeader className="pb-2 p-4">
-            <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Performance</CardTitle>
+            <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{t('tasks.performance')}</CardTitle>
           </CardHeader>
           <CardContent className="p-4 pt-0">
             <div className="text-2xl font-bold text-emerald-600">{stats.total > 0 ? Math.round((stats.completed / stats.total) * 100) : 0}%</div>
@@ -308,7 +329,7 @@ export default function TasksPage() {
           <div className="relative w-full md:w-96">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
             <Input 
-              placeholder="Search tasks or employees..." 
+              placeholder={t('tasks.searchPlaceholder')}
               className="pl-9 bg-muted/20"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}

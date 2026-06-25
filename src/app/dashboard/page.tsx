@@ -42,23 +42,87 @@ import { MOCK_USER } from "@/lib/mock-data"
 import Link from "next/link"
 import { useTranslation } from "@/components/language-provider"
 import { Sale, Product, Expense, Task, Customer, ActivityLog } from "@/lib/types"
+import { useAuth } from "@/hooks/use-auth"
 
 export default function DashboardPage() {
   const { t } = useTranslation();
+  const { profile, user } = useAuth();
   
-  const { data: salesDataResult, loading: salesLoading, unauthenticated } = useDataConnect({ query: listTransactionsByBusinessQuery, variables: { tenantId: MOCK_USER.businessId, businessId: MOCK_USER.businessId } });
-  const { data: productsData, loading: productsLoading } = useDataConnect({ query: listProductsByBusinessQuery, variables: { tenantId: MOCK_USER.businessId, businessId: MOCK_USER.businessId } });
+  const { data: salesDataResult, loading: salesLoading, unauthenticated } = useDataConnect({ 
+    query: listTransactionsByBusinessQuery, 
+    variables: { tenantId: profile?.tenantId || "", businessId: profile?.businessId || "" },
+    skip: !profile || !profile.tenantId || !profile.businessId
+  });
+  const { data: productsData, loading: productsLoading } = useDataConnect({ 
+    query: listProductsByBusinessQuery, 
+    variables: { tenantId: profile?.tenantId || "", businessId: profile?.businessId || "" },
+    skip: !profile || !profile.tenantId || !profile.businessId
+  });
   // Note: Assuming transactions represent both sales and expenses. Filtering will be done client-side for now based on 'type'.
-  const { data: expensesDataResult, loading: expensesLoading } = useDataConnect({ query: listTransactionsByBusinessQuery, variables: { tenantId: MOCK_USER.businessId, businessId: MOCK_USER.businessId } }); 
-  const { data: tasksData, loading: tasksLoading } = useDataConnect({ query: listTasksByBusinessQuery, variables: { tenantId: MOCK_USER.businessId, businessId: MOCK_USER.businessId } });
-  const { data: customersData, loading: customersLoading } = useDataConnect({ query: listCustomersByBusinessQuery, variables: { tenantId: MOCK_USER.businessId, businessId: MOCK_USER.businessId } });
-  const { data: logsData, loading: logsLoading } = useDataConnect({ query: listActivityLogsByUserQuery, variables: { tenantId: MOCK_USER.businessId, businessId: MOCK_USER.businessId, userId: MOCK_USER.uid } });
-  const { data: employeesData, loading: employeesLoading } = useDataConnect({ query: listEmployeesByBusinessQuery, variables: { tenantId: MOCK_USER.businessId, businessId: MOCK_USER.businessId } });
-  const { data: suppliersData, loading: suppliersLoading } = useDataConnect({ query: listSuppliersByBusinessQuery, variables: { tenantId: MOCK_USER.businessId, businessId: MOCK_USER.businessId } });
+  const { data: expensesDataResult, loading: expensesLoading } = useDataConnect({ 
+    query: listTransactionsByBusinessQuery, 
+    variables: { tenantId: profile?.tenantId || "", businessId: profile?.businessId || "" },
+    skip: !profile || !profile.tenantId || !profile.businessId
+  }); 
+  const { data: tasksData, loading: tasksLoading } = useDataConnect({ 
+    query: listTasksByBusinessQuery, 
+    variables: { tenantId: profile?.tenantId || "", businessId: profile?.businessId || "" },
+    skip: !profile || !profile.tenantId || !profile.businessId
+  });
+  const { data: customersData, loading: customersLoading } = useDataConnect({ 
+    query: listCustomersByBusinessQuery, 
+    variables: { tenantId: profile?.tenantId || "", businessId: profile?.businessId || "" },
+    skip: !profile || !profile.tenantId || !profile.businessId
+  });
+  const { data: logsData, loading: logsLoading } = useDataConnect({ 
+    query: listActivityLogsByUserQuery, 
+    variables: { tenantId: profile?.tenantId || "", businessId: profile?.businessId || "", userId: user?.uid || "" },
+    skip: !profile || !profile.tenantId || !profile.businessId || !user
+  });
+  const { data: employeesData, loading: employeesLoading } = useDataConnect({ 
+    query: listEmployeesByBusinessQuery, 
+    variables: { tenantId: profile?.tenantId || "", businessId: profile?.businessId || "" },
+    skip: !profile || !profile.tenantId || !profile.businessId
+  });
+  const { data: suppliersData, loading: suppliersLoading } = useDataConnect({ 
+    query: listSuppliersByBusinessQuery, 
+    variables: { tenantId: profile?.tenantId || "", businessId: profile?.businessId || "" },
+    skip: !profile || !profile.tenantId || !profile.businessId
+  });
 
   // Map generated types back to existing frontend types
-  const sales = React.useMemo(() => (salesDataResult?.transactions || []).filter((t: any) => t.type === 'Sale') as unknown as Sale[], [salesDataResult]);
-  const expenses = React.useMemo(() => (expensesDataResult?.transactions || []).filter((t: any) => t.type === 'Expense') as unknown as Expense[], [expensesDataResult]);
+  const sales = React.useMemo(() => {
+    return (salesDataResult?.transactions || [])
+      .filter((t: any) => t.type?.toUpperCase() === 'SALE')
+      .map((t: any) => ({
+        id: t.id,
+        tenantId: t.tenantId,
+        businessId: t.businessId,
+        totalAmount: t.amount,
+        saleDate: t.date,
+        recordedBy: t.recordedBy,
+        createdAt: t.createdAt,
+        paymentMethod: 'Cash',
+        productsSold: []
+      })) as unknown as Sale[];
+  }, [salesDataResult]);
+
+  const expenses = React.useMemo(() => {
+    return (expensesDataResult?.transactions || [])
+      .filter((t: any) => t.type?.toUpperCase() === 'EXPENSE')
+      .map((t: any) => ({
+        id: t.id,
+        tenantId: t.tenantId,
+        businessId: t.businessId,
+        amount: t.amount,
+        date: t.date,
+        category: t.category || 'Other',
+        description: t.category || 'Expense',
+        receiptUrl: t.receiptUrl || undefined,
+        recordedBy: t.recordedBy,
+        createdAt: t.createdAt
+      })) as unknown as Expense[];
+  }, [expensesDataResult]);
   const products = React.useMemo(() => (productsData?.products || []) as unknown as Product[], [productsData]);
   const tasks = React.useMemo(() => (tasksData?.tasks || []) as unknown as Task[], [tasksData]);
   const customers = React.useMemo(() => (customersData?.customers || []) as unknown as Customer[], [customersData]);
@@ -91,15 +155,15 @@ export default function DashboardPage() {
   }, [sales, expenses, products, tasks]);
 
   const fetchAiSummary = React.useCallback(async () => {
-    if (isAiLoading) return;
+    if (isAiLoading || !profile || !user) return;
     setIsAiLoading(true);
     try {
       const result = await businessPerformanceSummary({
         period: 'this month',
-        tenantId: MOCK_USER.tenantId,
-        businessId: MOCK_USER.businessId,
-        userId: MOCK_USER.uid,
-        userRole: MOCK_USER.role,
+        tenantId: profile.tenantId,
+        businessId: profile.businessId,
+        userId: user.uid,
+        userRole: profile.role,
       });
       setAiSummary(result.summary);
     } catch (error) {
@@ -107,13 +171,13 @@ export default function DashboardPage() {
     } finally {
       setIsAiLoading(false);
     }
-  }, [isAiLoading]);
+  }, [isAiLoading, profile, user]);
 
   React.useEffect(() => {
-    if (!isSyncing && !aiSummary) {
+    if (!isSyncing && !aiSummary && profile && user) {
       fetchAiSummary();
     }
-  }, [isSyncing, aiSummary, fetchAiSummary]);
+  }, [isSyncing, aiSummary, fetchAiSummary, profile, user]);
 
   const salesChartData = React.useMemo(() => {
      // A very simple aggregation for the chart

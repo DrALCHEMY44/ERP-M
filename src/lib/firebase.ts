@@ -28,9 +28,9 @@ export const dataConnect = getDataConnect({
   connector: "example" 
 });
 
-if (process.env.NODE_ENV === "development" && process.env.NEXT_PUBLIC_USE_EMULATORS === "true") {
+/*if (process.env.NODE_ENV === "development" && process.env.NEXT_PUBLIC_USE_EMULATORS === "true") {
   connectDataConnectEmulator(dataConnect, "127.0.0.1", 9399);
   console.log("🔌 Successfully mapped to local SQL Connect Emulator on port 9399!");
-}
+}*/
 
 export { app, db, auth, storage };

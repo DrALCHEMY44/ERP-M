@@ -30,12 +30,58 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart"
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Legend } from "recharts"
-import { useFirestore } from "@/hooks/use-firestore"
+import { useAuth } from "@/hooks/use-auth"
+import { useDataConnect } from "@/hooks/use-dataconnect"
+import { listTransactionsByBusinessQuery } from "@/lib/data-service"
 import { Sale, Expense } from "@/lib/types"
 
 export default function FinancePage() {
-  const { data: sales, loading: salesLoading } = useFirestore<Sale>('sales');
-  const { data: expenses, loading: expensesLoading } = useFirestore<Expense>('expenses');
+  const { profile } = useAuth();
+  const { data: dbTransactions, loading: transactionsLoading } = useDataConnect({
+    query: listTransactionsByBusinessQuery,
+    variables: {
+      tenantId: profile?.tenantId || "",
+      businessId: profile?.businessId || ""
+    },
+    skip: !profile || !profile.tenantId || !profile.businessId
+  });
+
+  const transactions = dbTransactions?.transactions || [];
+
+  const sales = React.useMemo(() => {
+    return transactions
+      .filter((t: any) => t.type?.toUpperCase() === 'SALE')
+      .map((t: any) => ({
+        id: t.id,
+        tenantId: t.tenantId,
+        businessId: t.businessId,
+        totalAmount: t.amount,
+        saleDate: t.date,
+        recordedBy: t.recordedBy,
+        createdAt: t.createdAt,
+        paymentMethod: 'Cash',
+        productsSold: []
+      })) as unknown as Sale[];
+  }, [transactions]);
+
+  const expenses = React.useMemo(() => {
+    return transactions
+      .filter((t: any) => t.type?.toUpperCase() === 'EXPENSE')
+      .map((t: any) => ({
+        id: t.id,
+        tenantId: t.tenantId,
+        businessId: t.businessId,
+        amount: t.amount,
+        date: t.date,
+        recordedBy: t.recordedBy,
+        createdAt: t.createdAt,
+        category: t.category || 'Other',
+        description: t.category || 'Expense'
+      })) as unknown as Expense[];
+  }, [transactions]);
+
+  const salesLoading = transactionsLoading;
+  const expensesLoading = transactionsLoading;
 
   const stats = React.useMemo(() => {
     const totalIncome = sales.reduce((acc, sale) => acc + sale.totalAmount, 0);

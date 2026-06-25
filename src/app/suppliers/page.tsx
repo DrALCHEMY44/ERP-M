@@ -80,7 +80,14 @@ export default function SuppliersPage() {
   }
 
   const handleSave = async (data: Partial<Supplier>) => {
-    if (!profile?.tenantId || !profile?.businessId) return;
+    if (!profile?.tenantId || !profile?.businessId) {
+      toast({
+        variant: "destructive",
+        title: "Configuration Error",
+        description: "Your user profile is missing business/tenant identifiers. Please complete registration or select a business."
+      });
+      return;
+    }
     try {
       if (selectedSupplier?.id) {
         await updateSupplierMutation({

@@ -29,16 +29,18 @@ import { useToast } from "@/hooks/use-toast"
 import { logActivity } from "@/lib/audit-logger"
 import { createNotification } from "@/lib/notifications"
 import { useAuth } from "@/hooks/use-auth"
+import { useTranslation } from "@/components/language-provider"
 
 export default function InventoryPage() {
   const { user, profile } = useAuth();
+  const { t } = useTranslation();
   const { data: productsData, loading, unauthenticated, refetch } = useDataConnect({
     query: listProductsByBusinessQuery, 
     variables: { 
       tenantId: profile?.tenantId || "",
       businessId: profile?.businessId || "" 
     },
-    skip: !profile
+    skip: !profile || !profile.tenantId || !profile.businessId
   });
   const { toast } = useToast();
   
@@ -94,6 +96,14 @@ export default function InventoryPage() {
   }
 
   const handleSave = async (productData: Partial<Product>) => {
+    if (!profile?.tenantId || !profile?.businessId) {
+      toast({
+        variant: "destructive",
+        title: "Configuration Error",
+        description: "Your user profile is missing business/tenant identifiers. Please complete registration or select a business."
+      });
+      return;
+    }
     try {
       if (selectedProduct?.id) {
         await updateProductMutation({
@@ -211,15 +221,15 @@ export default function InventoryPage() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="space-y-1">
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Inventory Tracking</h1>
-          <p className="text-sm text-muted-foreground">Manage your stock levels, pricing, and suppliers (Live Database).</p>
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">{t('inventory.title')}</h1>
+          <p className="text-sm text-muted-foreground">{t('inventory.subtitle')}</p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" className="hidden sm:flex uppercase font-bold text-[10px]">
-            <Download className="size-4 mr-2" /> Export CSV
+            <Download className="size-4 mr-2" /> {t('inventory.exportCsv')}
           </Button>
           <Button onClick={handleAddNew} className="bg-primary hover:bg-primary/90 text-white w-full sm:w-auto font-bold uppercase text-xs tracking-widest shadow-lg">
-            <Plus className="size-4 mr-2" /> Add Product
+            <Plus className="size-4 mr-2" /> {t('inventory.addProduct')}
           </Button>
         </div>
       </div>
@@ -227,32 +237,32 @@ export default function InventoryPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="border-t-4 border-[#3b82f6] shadow-md bg-blue-50/10">
           <CardHeader className="pb-2 p-4">
-            <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Total Stock Value</CardTitle>
+            <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{t('inventory.totalValue')}</CardTitle>
           </CardHeader>
           <CardContent className="p-4 pt-0">
             <div className="text-xl md:text-2xl font-bold text-blue-700">{totalValue.toLocaleString()} FCFA</div>
-            <p className="text-[10px] text-muted-foreground mt-1 uppercase font-bold tracking-tighter">Based on cost price</p>
+            <p className="text-[10px] text-muted-foreground mt-1 uppercase font-bold tracking-tighter">{t('inventory.basedOnCost')}</p>
           </CardContent>
         </Card>
         <Card className="border-t-4 border-[#f59e0b] shadow-md bg-amber-50/10">
           <CardHeader className="pb-2 p-4">
-            <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Low Stock Alerts</CardTitle>
+            <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{t('inventory.lowStockAlerts')}</CardTitle>
           </CardHeader>
           <CardContent className="p-4 pt-0 flex items-center justify-between">
             <div>
               <div className="text-xl md:text-2xl font-bold text-amber-600">{lowStockItems.length} Items</div>
-              <p className="text-[10px] text-muted-foreground mt-1 uppercase font-bold tracking-tighter">Requires Re-stocking</p>
+              <p className="text-[10px] text-muted-foreground mt-1 uppercase font-bold tracking-tighter">{t('inventory.requiresRestocking')}</p>
             </div>
             <AlertTriangle className="size-8 text-amber-500 opacity-50" />
           </CardContent>
         </Card>
         <Card className="border-t-4 border-[#10b981] shadow-md bg-emerald-50/10">
           <CardHeader className="pb-2 p-4">
-            <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Active Products</CardTitle>
+            <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{t('inventory.activeProducts')}</CardTitle>
           </CardHeader>
           <CardContent className="p-4 pt-0">
             <div className="text-xl md:text-2xl font-bold text-emerald-700">{products.length} Items</div>
-            <p className="text-[10px] text-muted-foreground mt-1 uppercase font-bold tracking-tighter">Connected to Cloud Firestore</p>
+            <p className="text-[10px] text-muted-foreground mt-1 uppercase font-bold tracking-tighter">{t('inventory.connectedToCloud')}</p>
           </CardContent>
         </Card>
       </div>
@@ -262,7 +272,7 @@ export default function InventoryPage() {
           <div className="relative w-full md:w-96">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
             <input 
-              placeholder="Search products or categories..." 
+              placeholder={t('inventory.searchPlaceholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-9 pr-4 py-2 bg-muted/20 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
@@ -277,12 +287,12 @@ export default function InventoryPage() {
           <Table>
             <TableHeader className="bg-muted/50">
               <TableRow>
-                <TableHead>Product Name</TableHead>
-                <TableHead>Category</TableHead>
-                <TableHead>Stock Level</TableHead>
-                <TableHead>Price (Selling)</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead>{t('inventory.productName')}</TableHead>
+                <TableHead>{t('inventory.category')}</TableHead>
+                <TableHead>{t('inventory.stockLevel')}</TableHead>
+                <TableHead>{t('inventory.priceSelling')}</TableHead>
+                <TableHead>{t('inventory.status')}</TableHead>
+                <TableHead className="text-right">{t('common.actions')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

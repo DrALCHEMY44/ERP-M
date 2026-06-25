@@ -34,21 +34,48 @@ function AppContent({
   const isAuthPage = ['/login', '/register', '/create-business', '/join-business'].includes(pathname);
 
   React.useEffect(() => {
-    if (!authLoading && !user && !isAuthPage) {
-      router.push('/login');
+    if (!authLoading) {
+      if (!user) {
+        if (!isAuthPage) {
+          router.push('/login');
+        }
+      } else {
+        const hasCompleteProfile = profile && profile.tenantId && profile.businessId;
+        if (!hasCompleteProfile) {
+          if (pathname !== '/register') {
+            router.push('/register');
+          }
+        } else {
+          if (isAuthPage) {
+            router.push('/dashboard');
+          }
+        }
+      }
     }
-  }, [user, authLoading, isAuthPage, router]);
+  }, [user, profile, authLoading, isAuthPage, pathname, router]);
+
+  // Show toast after a full page reload if requested
+  React.useEffect(() => {
+    if (typeof window !== "undefined") {
+      const showToast = sessionStorage.getItem("show_refresh_toast");
+      if (showToast === "true") {
+        sessionStorage.removeItem("show_refresh_toast");
+        toast({
+          title: "System Synchronized",
+          description: "Your workspace data has been re-synced with the latest cloud records.",
+        });
+      }
+    }
+  }, [toast]);
 
   const handleRefresh = () => {
     setIsRefreshing(true);
-    router.refresh();
-    setTimeout(() => {
-      setIsRefreshing(false);
-      toast({
-        title: "System Synchronized",
-        description: "Your workspace data has been re-synced with the latest cloud records.",
-      });
-    }, 800);
+    // Mark in sessionStorage that we should display the toast after the reload
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem("show_refresh_toast", "true");
+    }
+    // Perform a full reload of the page to refresh all client-side states, contexts, and caches
+    window.location.reload();
   };
 
   if (authLoading) {

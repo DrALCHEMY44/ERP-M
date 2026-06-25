@@ -19,34 +19,28 @@ export default function EmployeesPage() {
   const { user, profile } = useAuth();
   const { data: employeesData, loading, unauthenticated, refetch } = useDataConnect({ 
     query: listEmployeesByBusinessQuery, 
-    variables: { tenantId: profile?.tenantId, businessId: profile?.businessId },
-    skip: !profile?.tenantId || !profile?.businessId
+    variables: { tenantId: profile?.tenantId || "", businessId: profile?.businessId || "" },
+    skip: !profile || !profile.tenantId || !profile.businessId
   });
-  const [employees, setEmployees] = React.useState<Employee[]>([]);
   const { toast } = useToast();
   
-  const fetchEmployees = React.useCallback(async () => {
-    if (!profile?.tenantId || !profile?.businessId) return;
-    try {
-      const response = await listEmployeesByBusinessQuery({
-        tenantId: profile.tenantId,
-        businessId: profile.businessId
-      });
-      // Map dataconnect format back to ui format
-      const mappedEmployees = ((response as any)?.employees || []).map((emp: any) => ({
-        ...emp,
-        employmentStatus: emp.status || 'Active',
-        salaryPaymentStatus: 'Paid', // Default placeholder since it's missing from schema
-      }));
-      setEmployees(mappedEmployees);
-    } catch (e) {
-      console.error("Failed to fetch employees:", e);
-    }
-  }, [profile]);
-
-  React.useEffect(() => {
-    fetchEmployees();
-  }, [fetchEmployees]);
+  const employees = React.useMemo(() => {
+    const sqlList = employeesData?.employees || [];
+    return sqlList.map((emp: any) => ({
+      id: emp.id,
+      tenantId: emp.tenantId,
+      businessId: emp.businessId,
+      fullName: emp.fullName,
+      position: emp.position,
+      salary: emp.salary,
+      department: emp.department,
+      startDate: emp.startDate,
+      status: emp.status,
+      createdAt: emp.createdAt,
+      employmentStatus: emp.status || 'Active',
+      salaryPaymentStatus: 'Paid', // Default placeholder since it's missing from schema
+    })) as unknown as Employee[];
+  }, [employeesData]);
   const [isDialogOpen, setIsDialogOpen] = React.useState(false)
   const [selectedEmployee, setSelectedEmployee] = React.useState<Employee | null>(null)
   const [searchQuery, setSearchQuery] = React.useState("")
@@ -71,7 +65,14 @@ export default function EmployeesPage() {
   }
 
   const handleSave = async (employeeData: Partial<Employee>) => {
-    if (!profile?.tenantId || !profile?.businessId) return;
+    if (!profile?.tenantId || !profile?.businessId) {
+      toast({
+        variant: "destructive",
+        title: "Configuration Error",
+        description: "Your user profile is missing business/tenant identifiers. Please complete registration or select a business."
+      });
+      return;
+    }
     try {
       if (selectedEmployee?.id) {
         await updateEmployeeMutation({
@@ -93,7 +94,7 @@ export default function EmployeesPage() {
         });
         toast({ title: "Employee Added", description: `${employeeData.fullName} is now part of your SME.` });
       }
-      fetchEmployees();
+      refetch();
     } catch (e) {
       console.error(e);
       toast({ variant: "destructive", title: "Error", description: "Could not save employee data." });
@@ -105,7 +106,7 @@ export default function EmployeesPage() {
       try {
         await deleteEmployeeMutation({ id });
         toast({ title: "Employee Removed", description: "Record deleted from secure cloud storage." });
-        fetchEmployees();
+        refetch();
       } catch (e) {
         toast({ variant: "destructive", title: "Error", description: "Failed to delete record." });
       }

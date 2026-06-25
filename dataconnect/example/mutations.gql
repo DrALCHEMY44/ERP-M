@@ -348,6 +348,9 @@ mutation CreateCustomer(
   $customerName: String!
   $phoneNumber: String
   $email: String
+  $location: String
+  $totalOrders: Int
+  $totalSpent: Float
 ) @auth(level: USER, insecureReason: "Multi-tenant ERP: tenant isolation enforced at the application layer") {
   customer_insert(data: {
     tenantId: $tenantId
@@ -355,6 +358,9 @@ mutation CreateCustomer(
     customerName: $customerName
     phoneNumber: $phoneNumber
     email: $email
+    location: $location
+    totalOrders: $totalOrders
+    totalSpent: $totalSpent
     createdAt_expr: "request.time"
   })
 }
@@ -366,6 +372,9 @@ mutation UpdateCustomer(
   $customerName: String
   $phoneNumber: String
   $email: String
+  $location: String
+  $totalOrders: Int
+  $totalSpent: Float
 ) @auth(level: USER, insecureReason: "Multi-tenant ERP: tenant isolation enforced at the application layer") {
   customer_update(id: $id, data: {
     tenantId: $tenantId
@@ -373,6 +382,9 @@ mutation UpdateCustomer(
     customerName: $customerName
     phoneNumber: $phoneNumber
     email: $email
+    location: $location
+    totalOrders: $totalOrders
+    totalSpent: $totalSpent
   })
 }
 

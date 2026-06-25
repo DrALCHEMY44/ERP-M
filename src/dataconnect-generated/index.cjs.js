@@ -697,6 +697,21 @@ exports.listCustomersByBusiness = function listCustomersByBusiness(dcOrVars, var
 }
 ;
 
+const listUsersByBusinessRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return queryRef(dcInstance, 'listUsersByBusiness', inputVars);
+}
+listUsersByBusinessRef.operationName = 'listUsersByBusiness';
+exports.listUsersByBusinessRef = listUsersByBusinessRef;
+
+exports.listUsersByBusiness = function listUsersByBusiness(dcOrVars, varsOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(listUsersByBusinessRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+;
+
 const listSuppliersByBusinessRef = (dcOrVars, vars) => {
   const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
   dcInstance._useGeneratedSdk();

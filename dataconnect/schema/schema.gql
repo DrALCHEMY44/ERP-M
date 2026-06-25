@@ -124,6 +124,9 @@ type Customer @table(key: "id") {
   customerName: String!
   phoneNumber: String
   email: String
+  location: String
+  totalOrders: Int
+  totalSpent: Float
   createdAt: Timestamp!
 }
 

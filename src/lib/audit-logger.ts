@@ -1,12 +1,9 @@
 
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from './firebase';
 import { MOCK_USER } from './mock-data';
-import { ActivityLog } from './types';
+import { createActivityLogMutation } from './data-service';
 
 /**
- * Automatically records system activities to Firestore.
- * This is an append-only collection for audit purposes.
+ * Automatically records system activities to the SQL Connect database.
  */
 export async function logActivity(params: {
   actionType: string;
@@ -24,25 +21,20 @@ export async function logActivity(params: {
   };
 }) {
   try {
-    const logData: Omit<ActivityLog, 'id'> = {
-      tenantId: params.userProfile?.tenantId || MOCK_USER.tenantId,
-      businessId: params.userProfile?.businessId || MOCK_USER.businessId,
-      userId: params.userProfile?.uid || MOCK_USER.uid,
-      userName: params.userProfile?.fullName || MOCK_USER.fullName,
-      userRole: params.userProfile?.role || MOCK_USER.role,
+    const tenantId = params.userProfile?.tenantId || MOCK_USER.tenantId;
+    const businessId = params.userProfile?.businessId || MOCK_USER.businessId;
+    const userId = params.userProfile?.uid || MOCK_USER.uid;
+    const userName = params.userProfile?.fullName || MOCK_USER.fullName;
+
+    await createActivityLogMutation({
+      tenantId,
+      businessId,
+      userId,
+      userName,
       actionType: params.actionType,
       module: params.module,
       description: params.description,
-      oldValue: params.oldValue ? JSON.stringify(params.oldValue) : undefined,
-      newValue: params.newValue ? JSON.stringify(params.newValue) : undefined,
       recordId: params.recordId,
-      deviceInfo: typeof navigator !== 'undefined' ? navigator.userAgent : 'Server/AI',
-      timestamp: new Date().toISOString(),
-    };
-
-    await addDoc(collection(db, 'activity_logs'), {
-      ...logData,
-      serverTimestamp: serverTimestamp(),
     });
   } catch (error) {
     console.error('Audit Logger Error:', error);

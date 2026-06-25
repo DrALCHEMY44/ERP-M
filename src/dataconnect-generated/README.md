@@ -15,6 +15,7 @@ This README will guide you through the process of using the generated JavaScript
   - [*getUserByEmail*](#getuserbyemail)
   - [*listProductsByBusiness*](#listproductsbybusiness)
   - [*listCustomersByBusiness*](#listcustomersbybusiness)
+  - [*listUsersByBusiness*](#listusersbybusiness)
   - [*listSuppliersByBusiness*](#listsuppliersbybusiness)
   - [*listTasksByBusiness*](#listtasksbybusiness)
   - [*listTransactionsByBusiness*](#listtransactionsbybusiness)
@@ -614,6 +615,9 @@ export interface ListCustomersByBusinessData {
     customerName: string;
     phoneNumber?: string | null;
     email?: string | null;
+    location?: string | null;
+    totalOrders?: number | null;
+    totalSpent?: number | null;
     createdAt: TimestampString;
     tenantId: string;
     businessId: string;
@@ -682,6 +686,128 @@ console.log(data.customers);
 executeQuery(ref).then((response) => {
   const data = response.data;
   console.log(data.customers);
+});
+```
+
+## listUsersByBusiness
+You can execute the `listUsersByBusiness` query using the following action shortcut function, or by calling `executeQuery()` after calling the following `QueryRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
+```typescript
+listUsersByBusiness(vars: ListUsersByBusinessVariables, options?: ExecuteQueryOptions): QueryPromise<ListUsersByBusinessData, ListUsersByBusinessVariables>;
+
+interface ListUsersByBusinessRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: ListUsersByBusinessVariables): QueryRef<ListUsersByBusinessData, ListUsersByBusinessVariables>;
+}
+export const listUsersByBusinessRef: ListUsersByBusinessRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `QueryRef` function.
+```typescript
+listUsersByBusiness(dc: DataConnect, vars: ListUsersByBusinessVariables, options?: ExecuteQueryOptions): QueryPromise<ListUsersByBusinessData, ListUsersByBusinessVariables>;
+
+interface ListUsersByBusinessRef {
+  ...
+  (dc: DataConnect, vars: ListUsersByBusinessVariables): QueryRef<ListUsersByBusinessData, ListUsersByBusinessVariables>;
+}
+export const listUsersByBusinessRef: ListUsersByBusinessRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the listUsersByBusinessRef:
+```typescript
+const name = listUsersByBusinessRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `listUsersByBusiness` query requires an argument of type `ListUsersByBusinessVariables`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface ListUsersByBusinessVariables {
+  tenantId: string;
+  businessId: string;
+}
+```
+### Return Type
+Recall that executing the `listUsersByBusiness` query returns a `QueryPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `ListUsersByBusinessData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface ListUsersByBusinessData {
+  users: ({
+    id: string;
+    email: string;
+    role: string;
+    department?: string | null;
+    phoneNumber?: string | null;
+    createdAt: TimestampString;
+    tenantId: string;
+    businessId: string;
+    fullName?: string | null;
+  } & User_Key)[];
+}
+```
+### Using `listUsersByBusiness`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, listUsersByBusiness, ListUsersByBusinessVariables } from '@dataconnect/generated';
+
+// The `listUsersByBusiness` query requires an argument of type `ListUsersByBusinessVariables`:
+const listUsersByBusinessVars: ListUsersByBusinessVariables = {
+  tenantId: ..., 
+  businessId: ..., 
+};
+
+// Call the `listUsersByBusiness()` function to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await listUsersByBusiness(listUsersByBusinessVars);
+// Variables can be defined inline as well.
+const { data } = await listUsersByBusiness({ tenantId: ..., businessId: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await listUsersByBusiness(dataConnect, listUsersByBusinessVars);
+
+console.log(data.users);
+
+// Or, you can use the `Promise` API.
+listUsersByBusiness(listUsersByBusinessVars).then((response) => {
+  const data = response.data;
+  console.log(data.users);
+});
+```
+
+### Using `listUsersByBusiness`'s `QueryRef` function
+
+```typescript
+import { getDataConnect, executeQuery } from 'firebase/data-connect';
+import { connectorConfig, listUsersByBusinessRef, ListUsersByBusinessVariables } from '@dataconnect/generated';
+
+// The `listUsersByBusiness` query requires an argument of type `ListUsersByBusinessVariables`:
+const listUsersByBusinessVars: ListUsersByBusinessVariables = {
+  tenantId: ..., 
+  businessId: ..., 
+};
+
+// Call the `listUsersByBusinessRef()` function to get a reference to the query.
+const ref = listUsersByBusinessRef(listUsersByBusinessVars);
+// Variables can be defined inline as well.
+const ref = listUsersByBusinessRef({ tenantId: ..., businessId: ..., });
+
+// You can also pass in a `DataConnect` instance to the `QueryRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = listUsersByBusinessRef(dataConnect, listUsersByBusinessVars);
+
+// Call `executeQuery()` on the reference to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeQuery(ref);
+
+console.log(data.users);
+
+// Or, you can use the `Promise` API.
+executeQuery(ref).then((response) => {
+  const data = response.data;
+  console.log(data.users);
 });
 ```
 
@@ -4298,6 +4424,9 @@ export interface CreateCustomerVariables {
   customerName: string;
   phoneNumber?: string | null;
   email?: string | null;
+  location?: string | null;
+  totalOrders?: number | null;
+  totalSpent?: number | null;
 }
 ```
 ### Return Type
@@ -4322,13 +4451,16 @@ const createCustomerVars: CreateCustomerVariables = {
   customerName: ..., 
   phoneNumber: ..., // optional
   email: ..., // optional
+  location: ..., // optional
+  totalOrders: ..., // optional
+  totalSpent: ..., // optional
 };
 
 // Call the `createCustomer()` function to execute the mutation.
 // You can use the `await` keyword to wait for the promise to resolve.
 const { data } = await createCustomer(createCustomerVars);
 // Variables can be defined inline as well.
-const { data } = await createCustomer({ tenantId: ..., businessId: ..., customerName: ..., phoneNumber: ..., email: ..., });
+const { data } = await createCustomer({ tenantId: ..., businessId: ..., customerName: ..., phoneNumber: ..., email: ..., location: ..., totalOrders: ..., totalSpent: ..., });
 
 // You can also pass in a `DataConnect` instance to the action shortcut function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -4356,12 +4488,15 @@ const createCustomerVars: CreateCustomerVariables = {
   customerName: ..., 
   phoneNumber: ..., // optional
   email: ..., // optional
+  location: ..., // optional
+  totalOrders: ..., // optional
+  totalSpent: ..., // optional
 };
 
 // Call the `createCustomerRef()` function to get a reference to the mutation.
 const ref = createCustomerRef(createCustomerVars);
 // Variables can be defined inline as well.
-const ref = createCustomerRef({ tenantId: ..., businessId: ..., customerName: ..., phoneNumber: ..., email: ..., });
+const ref = createCustomerRef({ tenantId: ..., businessId: ..., customerName: ..., phoneNumber: ..., email: ..., location: ..., totalOrders: ..., totalSpent: ..., });
 
 // You can also pass in a `DataConnect` instance to the `MutationRef` function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -4420,6 +4555,9 @@ export interface UpdateCustomerVariables {
   customerName?: string | null;
   phoneNumber?: string | null;
   email?: string | null;
+  location?: string | null;
+  totalOrders?: number | null;
+  totalSpent?: number | null;
 }
 ```
 ### Return Type
@@ -4445,13 +4583,16 @@ const updateCustomerVars: UpdateCustomerVariables = {
   customerName: ..., // optional
   phoneNumber: ..., // optional
   email: ..., // optional
+  location: ..., // optional
+  totalOrders: ..., // optional
+  totalSpent: ..., // optional
 };
 
 // Call the `updateCustomer()` function to execute the mutation.
 // You can use the `await` keyword to wait for the promise to resolve.
 const { data } = await updateCustomer(updateCustomerVars);
 // Variables can be defined inline as well.
-const { data } = await updateCustomer({ id: ..., tenantId: ..., businessId: ..., customerName: ..., phoneNumber: ..., email: ..., });
+const { data } = await updateCustomer({ id: ..., tenantId: ..., businessId: ..., customerName: ..., phoneNumber: ..., email: ..., location: ..., totalOrders: ..., totalSpent: ..., });
 
 // You can also pass in a `DataConnect` instance to the action shortcut function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -4480,12 +4621,15 @@ const updateCustomerVars: UpdateCustomerVariables = {
   customerName: ..., // optional
   phoneNumber: ..., // optional
   email: ..., // optional
+  location: ..., // optional
+  totalOrders: ..., // optional
+  totalSpent: ..., // optional
 };
 
 // Call the `updateCustomerRef()` function to get a reference to the mutation.
 const ref = updateCustomerRef(updateCustomerVars);
 // Variables can be defined inline as well.
-const ref = updateCustomerRef({ id: ..., tenantId: ..., businessId: ..., customerName: ..., phoneNumber: ..., email: ..., });
+const ref = updateCustomerRef({ id: ..., tenantId: ..., businessId: ..., customerName: ..., phoneNumber: ..., email: ..., location: ..., totalOrders: ..., totalSpent: ..., });
 
 // You can also pass in a `DataConnect` instance to the `MutationRef` function.
 const dataConnect = getDataConnect(connectorConfig);

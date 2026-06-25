@@ -21,11 +21,20 @@ import { listTransactionsByTypeQuery, createTransactionMutation, deleteTransacti
 import { TransactionType } from "@/dataconnect-generated"
 import { useToast } from "@/hooks/use-toast"
 import { MOCK_USER } from "@/lib/mock-data"
+import { useTranslation } from "@/components/language-provider"
+import { useAuth } from "@/hooks/use-auth"
 
 export default function ExpensesPage() {
+  const { t } = useTranslation();
+  const { profile, user } = useAuth();
   const { data: transactionsData, loading, unauthenticated, refetch } = useDataConnect({ 
     query: listTransactionsByTypeQuery, 
-    variables: { tenantId: MOCK_USER.tenantId, businessId: MOCK_USER.businessId, type: TransactionType.EXPENSE } 
+    variables: { 
+      tenantId: profile?.tenantId || "", 
+      businessId: profile?.businessId || "", 
+      type: TransactionType.EXPENSE 
+    },
+    skip: !profile || !profile.tenantId || !profile.businessId
   });
   
   const expenses = React.useMemo(() => (transactionsData?.transactions || []) as unknown as Expense[], [transactionsData]);
@@ -44,16 +53,24 @@ export default function ExpensesPage() {
   ).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
 
   const handleSave = async (expenseData: Partial<Expense>) => {
+    if (!profile?.tenantId || !profile?.businessId || !user) {
+      toast({
+        variant: "destructive",
+        title: "Configuration Error",
+        description: "Your user profile is missing business/tenant identifiers. Please complete registration or select a business."
+      });
+      return;
+    }
     try {
       await createTransactionMutation({
-        tenantId: MOCK_USER.tenantId,
-        businessId: MOCK_USER.businessId,
+        tenantId: profile.tenantId,
+        businessId: profile.businessId,
         type: TransactionType.EXPENSE,
         amount: expenseData.amount || 0,
         date: expenseData.date || new Date().toISOString(),
         category: expenseData.category || 'Other',
         receiptUrl: expenseData.receiptUrl,
-        recordedBy: MOCK_USER.uid
+        recordedBy: user.uid
       });
       await refetch();
       toast({ title: "Expense Recorded", description: "Your financial logs have been updated." });
@@ -111,12 +128,12 @@ export default function ExpensesPage() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="space-y-1">
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Business Expenses</h1>
-          <p className="text-sm text-muted-foreground">Log and categorize operational costs (FCFA).</p>
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">{t('expenses.title')}</h1>
+          <p className="text-sm text-muted-foreground">{t('expenses.subtitle')}</p>
         </div>
         <div className="flex items-center gap-2">
           <Button onClick={() => setIsDialogOpen(true)} className="bg-amber-600 hover:bg-amber-700 text-white w-full sm:w-auto font-bold uppercase text-xs tracking-widest shadow-lg">
-            <Plus className="size-4 mr-2" /> Record Expense
+            <Plus className="size-4 mr-2" /> {t('expenses.addExpense')}
           </Button>
         </div>
       </div>
@@ -124,11 +141,11 @@ export default function ExpensesPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="border-t-4 border-[#f59e0b] shadow-md bg-amber-50/10">
           <CardHeader className="pb-2 p-4">
-            <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Total This Month</CardTitle>
+            <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{t('expenses.totalExpenses')}</CardTitle>
           </CardHeader>
           <CardContent className="p-4 pt-0">
             <div className="text-xl md:text-2xl font-bold text-amber-700">{totalThisMonth.toLocaleString()} FCFA</div>
-            <p className="text-[10px] text-muted-foreground mt-1 uppercase font-bold tracking-tighter">Live Budget Oversight</p>
+            <p className="text-[10px] text-muted-foreground mt-1 uppercase font-bold tracking-tighter">{t('common.thisMonth')}</p>
           </CardContent>
         </Card>
         <Card className="border-t-4 border-[#3b82f6] shadow-md bg-blue-50/10">
@@ -156,7 +173,7 @@ export default function ExpensesPage() {
            <div className="relative max-w-sm">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
             <input 
-              placeholder="Search expenses..." 
+              placeholder={t('expenses.searchPlaceholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-9 pr-4 py-2 bg-muted/20 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"

@@ -23,14 +23,40 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { useFirestore } from "@/hooks/use-firestore"
+import { useAuth } from "@/hooks/use-auth"
+import { useDataConnect } from "@/hooks/use-dataconnect"
+import { listDocumentsByBusinessQuery, createDocumentMutation, deleteDocumentMutation } from "@/lib/data-service"
 import { BusinessDocument } from "@/lib/types"
 import { useToast } from "@/hooks/use-toast"
 import { DocumentDialog } from "@/components/documents/document-dialog"
 
 export default function DocumentsPage() {
-  const { data: documents, loading, addRecord, deleteRecord } = useFirestore<BusinessDocument>('documents');
+  const { profile, user } = useAuth();
   const { toast } = useToast();
+  const { data: documentsData, loading, refetch } = useDataConnect({
+    query: listDocumentsByBusinessQuery,
+    variables: {
+      tenantId: profile?.tenantId || "",
+      businessId: profile?.businessId || ""
+    },
+    skip: !profile || !profile.tenantId || !profile.businessId
+  });
+
+  const documents = React.useMemo(() => {
+    return (documentsData?.documents || []).map((sc: any) => ({
+      id: sc.id,
+      tenantId: sc.tenantId,
+      businessId: sc.businessId,
+      name: sc.title,
+      type: sc.documentType,
+      fileUrl: sc.fileUrl,
+      uploadedBy: sc.uploadedBy,
+      uploadedByName: 'Member',
+      uploadedAt: sc.uploadedAt,
+      description: ''
+    })) as BusinessDocument[];
+  }, [documentsData]);
+
   const [isDialogOpen, setIsDialogOpen] = React.useState(false)
   const [searchQuery, setSearchQuery] = React.useState("")
   const [selectedType, setSelectedType] = React.useState<BusinessDocument['type'] | 'All'>('All')
@@ -43,8 +69,24 @@ export default function DocumentsPage() {
   }).sort((a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime());
 
   const handleSave = async (docData: Partial<BusinessDocument>) => {
+    if (!profile?.tenantId || !profile?.businessId || !user) {
+      toast({
+        variant: "destructive",
+        title: "Configuration Error",
+        description: "Your user profile is missing business/tenant identifiers. Please complete registration or select a business."
+      });
+      return;
+    }
     try {
-      await addRecord(docData as Omit<BusinessDocument, 'id'>);
+      await createDocumentMutation({
+        tenantId: profile.tenantId,
+        businessId: profile.businessId,
+        title: docData.name || '',
+        documentType: docData.type || 'Other',
+        fileUrl: docData.fileUrl || '',
+        uploadedBy: user.uid
+      });
+      await refetch();
       toast({ title: "Document Saved", description: "File reference added to secure cloud directory." });
     } catch (e) {
       toast({ variant: "destructive", title: "Error", description: "Failed to index document." });
@@ -54,7 +96,8 @@ export default function DocumentsPage() {
   const handleDelete = async (id: string) => {
     if (confirm("Permanently delete this document from the vault?")) {
       try {
-        await deleteRecord(id);
+        await deleteDocumentMutation({ id });
+        await refetch();
         toast({ title: "Document Removed", description: "Reference deleted from cloud storage." });
       } catch (e) {
         toast({ variant: "destructive", title: "Error", description: "Failed to delete record." });

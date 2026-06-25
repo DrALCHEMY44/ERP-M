@@ -24,14 +24,39 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge"
 import { Switch } from "@/components/ui/switch"
 import { useFirestore } from "@/hooks/use-firestore"
+import { useAuth } from "@/hooks/use-auth"
+import { useDataConnect } from "@/hooks/use-dataconnect"
+import { listUsersByBusinessQuery } from "@/lib/data-service"
 import { BusinessSettings, UserProfile } from "@/lib/types"
 import { MOCK_USER } from "@/lib/mock-data"
 import { useToast } from "@/hooks/use-toast"
 
 export default function SettingsPage() {
   const { toast } = useToast()
+  const { profile } = useAuth()
   const { data: settingsList, updateRecord, addRecord, loading: settingsLoading } = useFirestore<BusinessSettings>('settings')
-  const { data: users, loading: usersLoading } = useFirestore<UserProfile>('users')
+  
+  const { data: usersData, loading: usersLoading } = useDataConnect({
+    query: listUsersByBusinessQuery,
+    variables: {
+      tenantId: profile?.tenantId || "",
+      businessId: profile?.businessId || ""
+    },
+    skip: !profile
+  });
+
+  const users = React.useMemo(() => {
+    return (usersData?.users || []).map((u: any) => ({
+      uid: u.id,
+      email: u.email,
+      fullName: u.fullName || u.email.split('@')[0],
+      role: u.role,
+      tenantId: u.tenantId,
+      businessId: u.businessId,
+      createdAt: u.createdAt,
+      permissions: []
+    })) as UserProfile[];
+  }, [usersData]);
   
   const [isSaving, setIsSaving] = React.useState(false)
   const settings = settingsList[0] // Should be unique per business
@@ -290,7 +315,7 @@ export default function SettingsPage() {
         <div className="flex items-center gap-2">
           <ShieldCheck className="size-5 text-primary opacity-50" />
           <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">
-            Tenant: {MOCK_USER.tenantId} • Multi-Tenant Encryption Active
+            Tenant: {profile?.tenantId || "Loading..."} • Multi-Tenant Encryption Active
           </p>
         </div>
         <Button 

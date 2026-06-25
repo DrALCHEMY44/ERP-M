@@ -19,18 +19,44 @@ import { Sale, Product } from "@/lib/types"
 import { useDataConnect } from "@/hooks/use-dataconnect"
 import { 
   listTransactionsByBusinessQuery,
-  listProductsByBusinessQuery 
+  listProductsByBusinessQuery,
+  createTransactionMutation
 } from "@/lib/data-service"
 import { MOCK_USER } from "@/lib/mock-data"
 import { useToast } from "@/hooks/use-toast"
+import { useAuth } from "@/hooks/use-auth"
+import { TransactionType } from "@dataconnect/generated"
 
 export default function SalesPage() {
-  const { data: transactionsData, loading: salesLoading, unauthenticated, refetch: refetchSales } = useDataConnect({ query: listTransactionsByBusinessQuery, variables: { tenantId: MOCK_USER.businessId, businessId: MOCK_USER.businessId } });
-  const { data: productsData, refetch: refetchProducts } = useDataConnect({ query: listProductsByBusinessQuery, variables: { tenantId: MOCK_USER.businessId, businessId: MOCK_USER.businessId } });
+  const { profile, user } = useAuth();
+  const { data: transactionsData, loading: salesLoading, unauthenticated, refetch: refetchSales } = useDataConnect({ 
+    query: listTransactionsByBusinessQuery, 
+    variables: { tenantId: profile?.tenantId || "", businessId: profile?.businessId || "" },
+    skip: !profile || !profile.tenantId || !profile.businessId
+  });
+  const { data: productsData, refetch: refetchProducts } = useDataConnect({ 
+    query: listProductsByBusinessQuery, 
+    variables: { tenantId: profile?.tenantId || "", businessId: profile?.businessId || "" },
+    skip: !profile || !profile.tenantId || !profile.businessId
+  });
   const { toast } = useToast();
   
   // Note: we'll have to deal with the mutations to record the sale, but for now we replace the list
-  const sales = React.useMemo(() => (transactionsData?.transactions || []).filter((t: any) => t.type === 'Sale') as unknown as Sale[], [transactionsData]);
+  const sales = React.useMemo(() => {
+    return (transactionsData?.transactions || [])
+      .filter((t: any) => t.type?.toUpperCase() === 'SALE')
+      .map((t: any) => ({
+        id: t.id,
+        tenantId: t.tenantId,
+        businessId: t.businessId,
+        totalAmount: t.amount,
+        saleDate: t.date,
+        recordedBy: t.recordedBy,
+        createdAt: t.createdAt,
+        paymentMethod: 'Cash',
+        productsSold: []
+      })) as unknown as Sale[];
+  }, [transactionsData]);
   const products = React.useMemo(() => (productsData?.products || []) as unknown as Product[], [productsData]);
 
   const [isDialogOpen, setIsDialogOpen] = React.useState(false)
@@ -49,10 +75,25 @@ export default function SalesPage() {
   ).sort((a, b) => new Date(b.saleDate).getTime() - new Date(a.saleDate).getTime())
 
   const handleNewSale = async (saleData: Partial<Sale>) => {
+    if (!profile?.tenantId || !profile?.businessId || !user) {
+      toast({
+        variant: "destructive",
+        title: "Configuration Error",
+        description: "Your user profile is missing business/tenant identifiers. Please complete registration or select a business."
+      });
+      return;
+    }
     try {
-      // 1. Record the sale - NOTE: Mutation needs to be updated to Data Connect
-      // For now we simulate success and refetch
-      toast({ title: "Mock Sale Completed", description: `Simulated transaction for ${saleData.totalAmount?.toLocaleString()} FCFA.` });
+      await createTransactionMutation({
+        tenantId: profile.tenantId,
+        businessId: profile.businessId,
+        type: TransactionType.SALE,
+        amount: saleData.totalAmount || 0,
+        date: saleData.saleDate || new Date().toISOString(),
+        category: 'Sale',
+        recordedBy: user.uid
+      });
+      toast({ title: "Sale Recorded", description: `Transaction for ${saleData.totalAmount?.toLocaleString()} FCFA recorded.` });
       refetchSales();
       refetchProducts();
     } catch (e) {

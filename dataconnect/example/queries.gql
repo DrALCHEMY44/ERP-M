@@ -66,9 +66,29 @@ query listCustomersByBusiness($tenantId: String!, $businessId: String!)
     customerName
     phoneNumber
     email
+    location
+    totalOrders
+    totalSpent
     createdAt
     tenantId
     businessId
+  }
+}
+
+query listUsersByBusiness($tenantId: String!, $businessId: String!)
+@auth(level: USER, insecureReason: "Multi-tenant ERP") {
+  users(
+    where: { tenantId: { eq: $tenantId }, businessId: { eq: $businessId } }
+  ) {
+    id
+    email
+    role
+    department
+    phoneNumber
+    createdAt
+    tenantId
+    businessId
+    fullName
   }
 }
 

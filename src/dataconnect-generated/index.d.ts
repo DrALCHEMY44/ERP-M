@@ -93,6 +93,9 @@ export interface CreateCustomerVariables {
   customerName: string;
   phoneNumber?: string | null;
   email?: string | null;
+  location?: string | null;
+  totalOrders?: number | null;
+  totalSpent?: number | null;
 }
 
 export interface CreateDocumentData {
@@ -439,6 +442,9 @@ export interface ListCustomersByBusinessData {
     customerName: string;
     phoneNumber?: string | null;
     email?: string | null;
+    location?: string | null;
+    totalOrders?: number | null;
+    totalSpent?: number | null;
     createdAt: TimestampString;
     tenantId: string;
     businessId: string;
@@ -603,6 +609,25 @@ export interface ListTransactionsByTypeVariables {
   type: TransactionType;
 }
 
+export interface ListUsersByBusinessData {
+  users: ({
+    id: string;
+    email: string;
+    role: string;
+    department?: string | null;
+    phoneNumber?: string | null;
+    createdAt: TimestampString;
+    tenantId: string;
+    businessId: string;
+    fullName?: string | null;
+  } & User_Key)[];
+}
+
+export interface ListUsersByBusinessVariables {
+  tenantId: string;
+  businessId: string;
+}
+
 export interface Notification_Key {
   id: string;
   __typename?: 'Notification_Key';
@@ -691,6 +716,9 @@ export interface UpdateCustomerVariables {
   customerName?: string | null;
   phoneNumber?: string | null;
   email?: string | null;
+  location?: string | null;
+  totalOrders?: number | null;
+  totalSpent?: number | null;
 }
 
 export interface UpdateDocumentData {
@@ -1408,6 +1436,18 @@ export const listCustomersByBusinessRef: ListCustomersByBusinessRef;
 
 export function listCustomersByBusiness(vars: ListCustomersByBusinessVariables, options?: ExecuteQueryOptions): QueryPromise<ListCustomersByBusinessData, ListCustomersByBusinessVariables>;
 export function listCustomersByBusiness(dc: DataConnect, vars: ListCustomersByBusinessVariables, options?: ExecuteQueryOptions): QueryPromise<ListCustomersByBusinessData, ListCustomersByBusinessVariables>;
+
+interface ListUsersByBusinessRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: ListUsersByBusinessVariables): QueryRef<ListUsersByBusinessData, ListUsersByBusinessVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: ListUsersByBusinessVariables): QueryRef<ListUsersByBusinessData, ListUsersByBusinessVariables>;
+  operationName: string;
+}
+export const listUsersByBusinessRef: ListUsersByBusinessRef;
+
+export function listUsersByBusiness(vars: ListUsersByBusinessVariables, options?: ExecuteQueryOptions): QueryPromise<ListUsersByBusinessData, ListUsersByBusinessVariables>;
+export function listUsersByBusiness(dc: DataConnect, vars: ListUsersByBusinessVariables, options?: ExecuteQueryOptions): QueryPromise<ListUsersByBusinessData, ListUsersByBusinessVariables>;
 
 interface ListSuppliersByBusinessRef {
   /* Allow users to create refs without passing in DataConnect */

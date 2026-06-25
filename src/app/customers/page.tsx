@@ -15,20 +15,19 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { useFirestore } from "@/hooks/use-firestore"
 import { Customer } from "@/lib/types"
 import { CustomerDialog } from "@/components/customers/customer-dialog"
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/hooks/use-auth"
 import { useDataConnect } from "@/hooks/use-dataconnect"
+import { useTranslation } from "@/components/language-provider"
 import { listCustomersByBusinessQuery, createCustomerMutation, updateCustomerMutation, deleteCustomerMutation } from "@/lib/data-service"
-import { doc, setDoc, deleteDoc } from "firebase/firestore"
-import { db } from "@/lib/firebase"
 import { LogIn } from "lucide-react"
 import Link from "next/link"
 
 export default function CustomersPage() {
   const { user, profile } = useAuth();
+  const { t } = useTranslation();
   
   const { data: dbCustomers, loading: dbLoading, error: dbError, unauthenticated, refetch } = useDataConnect({
     query: listCustomersByBusinessQuery,
@@ -36,27 +35,22 @@ export default function CustomersPage() {
       tenantId: profile?.tenantId || "",
       businessId: profile?.businessId || ""
     },
-    skip: !profile
+    skip: !profile || !profile.tenantId || !profile.businessId
   });
-
-  const { data: firestoreCustomers, loading: fsLoading } = useFirestore<Customer>('customers');
   
   const customers = React.useMemo(() => {
     const sqlList = dbCustomers?.customers || [];
-    return sqlList.map((sc: any) => {
-      const fc = firestoreCustomers.find(f => f.id === sc.id);
-      return {
-        id: sc.id,
-        name: sc.customerName,
-        phone: sc.phoneNumber || "",
-        email: sc.email || "",
-        location: fc?.location || "Douala",
-        totalOrders: fc?.totalOrders || 0,
-        totalSpent: fc?.totalSpent || 0,
-        createdAt: sc.createdAt
-      };
-    }) as Customer[];
-  }, [dbCustomers, firestoreCustomers]);
+    return sqlList.map((sc: any) => ({
+      id: sc.id,
+      name: sc.customerName,
+      phone: sc.phoneNumber || "",
+      email: sc.email || "",
+      location: sc.location || "Douala",
+      totalOrders: sc.totalOrders || 0,
+      totalSpent: sc.totalSpent || 0,
+      createdAt: sc.createdAt
+    })) as Customer[];
+  }, [dbCustomers]);
 
   const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = React.useState(false)
@@ -100,35 +94,37 @@ export default function CustomersPage() {
   }
 
   const handleSave = async (data: Partial<Customer>) => {
+    if (!profile?.tenantId || !profile?.businessId) {
+      toast({
+        variant: "destructive",
+        title: "Configuration Error",
+        description: "Your user profile is missing business/tenant identifiers. Please complete registration or select a business."
+      });
+      return;
+    }
     try {
       if (selectedCustomer?.id) {
         await updateCustomerMutation({
           id: selectedCustomer.id,
           customerName: data.name,
           phoneNumber: data.phone,
-          email: data.email
+          email: data.email,
+          location: data.location,
+          totalOrders: data.totalOrders,
+          totalSpent: data.totalSpent
         });
-        await setDoc(doc(db, 'customers', selectedCustomer.id), {
-          ...selectedCustomer,
-          ...data
-        }, { merge: true });
         await refetch();
         toast({ title: "Customer Updated", description: `${data.name}'s profile has been synchronized.` });
       } else {
-        const result = await createCustomerMutation({
+        await createCustomerMutation({
           tenantId: profile?.tenantId || "",
           businessId: profile?.businessId || "",
           customerName: data.name || "",
           phoneNumber: data.phone || "",
-          email: data.email || ""
-        });
-        const newId = result.data.customer_insert.id;
-        await setDoc(doc(db, 'customers', newId), {
-          ...data,
-          id: newId,
-          tenantId: profile?.tenantId || "",
-          businessId: profile?.businessId || "",
-          createdAt: new Date().toISOString()
+          email: data.email || "",
+          location: data.location || "Douala",
+          totalOrders: data.totalOrders || 0,
+          totalSpent: data.totalSpent || 0
         });
         await refetch();
         toast({ title: "Customer Added", description: `${data.name} is now in your directory.` });
@@ -142,7 +138,6 @@ export default function CustomersPage() {
     if (confirm("Are you sure you want to delete this customer? This action is permanent.")) {
       try {
         await deleteCustomerMutation({ id });
-        await deleteDoc(doc(db, 'customers', id));
         await refetch();
         toast({ title: "Customer Removed", description: "Data deleted from cloud database." });
       } catch (e) {
@@ -176,7 +171,7 @@ export default function CustomersPage() {
     );
   }
 
-  const loading = dbLoading || fsLoading;
+  const loading = dbLoading;
 
   if (loading) {
     return (
@@ -190,37 +185,37 @@ export default function CustomersPage() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="space-y-1">
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Customer Management</h1>
-          <p className="text-sm text-muted-foreground">Manage your client directory, purchase history, and loyalty.</p>
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">{t('customers.title')}</h1>
+          <p className="text-sm text-muted-foreground">{t('customers.subtitle')}</p>
         </div>
         <Button onClick={handleAddNew} className="bg-primary hover:bg-primary/90 text-white font-bold uppercase text-xs tracking-widest shadow-lg">
-          <Plus className="size-4 mr-2" /> New Customer
+          <Plus className="size-4 mr-2" /> {t('customers.newCustomer')}
         </Button>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="border-t-4 border-[#3b82f6] shadow-md bg-blue-50/10">
           <CardHeader className="pb-2 p-4">
-            <CardDescription className="text-[10px] font-bold uppercase tracking-widest">Total Clients</CardDescription>
+            <CardDescription className="text-[10px] font-bold uppercase tracking-widest">{t('customers.totalClients')}</CardDescription>
             <CardTitle className="text-2xl font-bold text-blue-700">{customers.length}</CardTitle>
           </CardHeader>
         </Card>
         <Card className="border-t-4 border-[#10b981] shadow-md bg-emerald-50/10">
           <CardHeader className="pb-2 p-4">
-            <CardDescription className="text-[10px] font-bold uppercase tracking-widest">Customer Revenue</CardDescription>
+            <CardDescription className="text-[10px] font-bold uppercase tracking-widest">{t('customers.customerRevenue')}</CardDescription>
             <CardTitle className="text-2xl font-bold text-emerald-700">{totalSpent.toLocaleString()} FCFA</CardTitle>
           </CardHeader>
         </Card>
         <Card className="border-t-4 border-[#f59e0b] shadow-md bg-amber-50/10">
           <CardHeader className="pb-2 p-4">
-            <CardDescription className="text-[10px] font-bold uppercase tracking-widest">Total Orders</CardDescription>
+            <CardDescription className="text-[10px] font-bold uppercase tracking-widest">{t('customers.totalOrders')}</CardDescription>
             <CardTitle className="text-2xl font-bold text-amber-700">{totalOrders}</CardTitle>
           </CardHeader>
         </Card>
         <Card className="border-t-4 border-primary shadow-md bg-primary/5">
           <CardHeader className="pb-2 p-4">
-            <CardDescription className="text-[10px] font-bold uppercase tracking-widest">Retention Rate</CardDescription>
-            <CardTitle className="text-2xl font-bold text-primary">Live Sync</CardTitle>
+            <CardDescription className="text-[10px] font-bold uppercase tracking-widest">{t('customers.retentionRate')}</CardDescription>
+            <CardTitle className="text-2xl font-bold text-primary">{t('customers.liveSync')}</CardTitle>
           </CardHeader>
         </Card>
       </div>
@@ -230,7 +225,7 @@ export default function CustomersPage() {
           <div className="relative w-full md:w-96">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
             <Input 
-              placeholder="Search by name, phone or city..." 
+              placeholder={t('customers.searchPlaceholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-9 bg-muted/20"
@@ -242,12 +237,12 @@ export default function CustomersPage() {
           <Table>
             <TableHeader className="bg-muted/50">
               <TableRow>
-                <TableHead>Customer</TableHead>
-                <TableHead>Contact info</TableHead>
-                <TableHead>Location</TableHead>
-                <TableHead>Purchases</TableHead>
-                <TableHead className="text-right">Total Spent</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead>{t('customers.customerName')}</TableHead>
+                <TableHead>{t('customers.contactInfo')}</TableHead>
+                <TableHead>{t('customers.location')}</TableHead>
+                <TableHead>{t('customers.purchases')}</TableHead>
+                <TableHead className="text-right">{t('customers.totalSpent')}</TableHead>
+                <TableHead className="text-right">{t('common.actions')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -298,7 +293,7 @@ export default function CustomersPage() {
                     <TableCell className="text-right">
                        <div className="flex items-center justify-end gap-1">
                         <Button variant="ghost" size="sm" onClick={() => handleEdit(customer)} className="text-[10px] uppercase font-bold tracking-widest">
-                          Edit
+                          {t('common.edit')}
                         </Button>
                         <Button variant="ghost" size="icon" onClick={() => handleDelete(customer.id!)} className="h-8 w-8 text-destructive">
                           <Trash2 className="size-4" />

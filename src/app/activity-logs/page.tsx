@@ -7,7 +7,9 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
-import { useFirestore } from "@/hooks/use-firestore"
+import { useAuth } from "@/hooks/use-auth"
+import { useDataConnect } from "@/hooks/use-dataconnect"
+import { listActivityLogsByBusinessQuery } from "@/lib/data-service"
 import { ActivityLog } from "@/lib/types"
 import {
   DropdownMenu,
@@ -17,7 +19,22 @@ import {
 } from "@/components/ui/dropdown-menu"
 
 export default function ActivityLogsPage() {
-  const { data: logs, loading } = useFirestore<ActivityLog>('activity_logs');
+  const { profile } = useAuth();
+  const { data: logsData, loading } = useDataConnect({
+    query: listActivityLogsByBusinessQuery,
+    variables: {
+      tenantId: profile?.tenantId || "",
+      businessId: profile?.businessId || ""
+    },
+    skip: !profile
+  });
+
+  const logs = React.useMemo(() => {
+    return (logsData?.activityLogs || []).map((l: any) => ({
+      ...l,
+      userRole: 'Member' // Fallback role for logs UI display
+    })) as ActivityLog[];
+  }, [logsData]);
   const [searchQuery, setSearchQuery] = React.useState("");
   const [filterModule, setFilterModule] = React.useState<string>("all");
 
