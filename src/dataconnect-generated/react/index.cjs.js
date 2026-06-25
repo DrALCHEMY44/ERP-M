@@ -1,4 +1,4 @@
-const { createTenantRef, updateTenantRef, deleteTenantRef, createUserRef, updateUserRef, deleteUserRef, createBusinessRef, updateBusinessRef, deleteBusinessRef, createProductRef, updateProductRef, deleteProductRef, createTransactionRef, updateTransactionRef, deleteTransactionRef, createTaskCommentRef, updateTaskCommentRef, deleteTaskCommentRef, createEmployeeRef, updateEmployeeRef, deleteEmployeeRef, createCustomerRef, updateCustomerRef, deleteCustomerRef, createSupplierRef, updateSupplierRef, deleteSupplierRef, createDocumentRef, updateDocumentRef, deleteDocumentRef, createActivityLogRef, updateActivityLogRef, deleteActivityLogRef, createAiQueryRef, updateAiQueryRef, deleteAiQueryRef, createNotificationRef, updateNotificationRef, deleteNotificationRef, createTaskRef, updateTaskRef, deleteTaskRef, listTenantsRef, listBusinessesRef, getUserByEmailRef, listProductsByBusinessRef, listCustomersByBusinessRef, listUsersByBusinessRef, listSuppliersByBusinessRef, listTasksByBusinessRef, listTransactionsByBusinessRef, listTransactionsByTypeRef, listEmployeesByBusinessRef, listDocumentsByBusinessRef, listActivityLogsByUserRef, listActivityLogsByBusinessRef, connectorConfig } = require('../index.cjs.js');
+const { createTenantRef, updateTenantRef, deleteTenantRef, createUserRef, updateUserRef, deleteUserRef, createBusinessRef, updateBusinessRef, deleteBusinessRef, createProductRef, updateProductRef, deleteProductRef, createTransactionRef, updateTransactionRef, deleteTransactionRef, createTaskCommentRef, updateTaskCommentRef, deleteTaskCommentRef, createEmployeeRef, updateEmployeeRef, deleteEmployeeRef, createCustomerRef, updateCustomerRef, deleteCustomerRef, createSupplierRef, updateSupplierRef, deleteSupplierRef, createDocumentRef, updateDocumentRef, deleteDocumentRef, createActivityLogRef, updateActivityLogRef, deleteActivityLogRef, createAiQueryRef, updateAiQueryRef, deleteAiQueryRef, createNotificationRef, updateNotificationRef, deleteNotificationRef, createTaskRef, updateTaskRef, deleteTaskRef, listTenantsRef, listUsersRef, listBusinessesRef, getUserByEmailRef, listProductsByBusinessRef, listCustomersByBusinessRef, listUsersByBusinessRef, listSuppliersByBusinessRef, listTasksByBusinessRef, listTransactionsByBusinessRef, listTransactionsByTypeRef, listEmployeesByBusinessRef, listDocumentsByBusinessRef, listActivityLogsByUserRef, listActivityLogsByBusinessRef, connectorConfig } = require('../index.cjs.js');
 const { validateArgs, CallerSdkTypeEnum } = require('firebase/data-connect');
 const { useDataConnectQuery, useDataConnectMutation, validateReactArgs } = require('@tanstack-query-firebase/react/data-connect');
 
@@ -342,6 +342,12 @@ exports.useDeleteTask = function useDeleteTask(dcOrOptions, options) {
 exports.useListTenants = function useListTenants(dcOrOptions, options) {
   const { dc: dcInstance, options: inputOpts } = validateReactArgs(connectorConfig, dcOrOptions, options);
   const ref = listTenantsRef(dcInstance);
+  return useDataConnectQuery(ref, inputOpts, CallerSdkTypeEnum.GeneratedReact);
+}
+
+exports.useListUsers = function useListUsers(dcOrOptions, options) {
+  const { dc: dcInstance, options: inputOpts } = validateReactArgs(connectorConfig, dcOrOptions, options);
+  const ref = listUsersRef(dcInstance);
   return useDataConnectQuery(ref, inputOpts, CallerSdkTypeEnum.GeneratedReact);
 }
 

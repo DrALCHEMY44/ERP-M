@@ -11,6 +11,7 @@ This README will guide you through the process of using the generated JavaScript
   - [*Connecting to the local Emulator*](#connecting-to-the-local-emulator)
 - [**Queries**](#queries)
   - [*ListTenants*](#listtenants)
+  - [*ListUsers*](#listusers)
   - [*ListBusinesses*](#listbusinesses)
   - [*getUserByEmail*](#getuserbyemail)
   - [*listProductsByBusiness*](#listproductsbybusiness)
@@ -154,6 +155,13 @@ export interface ListTenantsData {
     id: string;
     name: string;
     businessSector: string;
+    location: string;
+    ownerEmail: string;
+    taxId?: string | null;
+    logoUrl?: string | null;
+    subscriptionTier?: string | null;
+    status?: string | null;
+    createdAt: TimestampString;
   } & Tenant_Key)[];
 }
 ```
@@ -205,6 +213,99 @@ console.log(data.tenants);
 executeQuery(ref).then((response) => {
   const data = response.data;
   console.log(data.tenants);
+});
+```
+
+## ListUsers
+You can execute the `ListUsers` query using the following action shortcut function, or by calling `executeQuery()` after calling the following `QueryRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
+```typescript
+listUsers(options?: ExecuteQueryOptions): QueryPromise<ListUsersData, undefined>;
+
+interface ListUsersRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (): QueryRef<ListUsersData, undefined>;
+}
+export const listUsersRef: ListUsersRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `QueryRef` function.
+```typescript
+listUsers(dc: DataConnect, options?: ExecuteQueryOptions): QueryPromise<ListUsersData, undefined>;
+
+interface ListUsersRef {
+  ...
+  (dc: DataConnect): QueryRef<ListUsersData, undefined>;
+}
+export const listUsersRef: ListUsersRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the listUsersRef:
+```typescript
+const name = listUsersRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `ListUsers` query has no variables.
+### Return Type
+Recall that executing the `ListUsers` query returns a `QueryPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `ListUsersData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface ListUsersData {
+  users: ({
+    id: string;
+  } & User_Key)[];
+}
+```
+### Using `ListUsers`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, listUsers } from '@dataconnect/generated';
+
+
+// Call the `listUsers()` function to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await listUsers();
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await listUsers(dataConnect);
+
+console.log(data.users);
+
+// Or, you can use the `Promise` API.
+listUsers().then((response) => {
+  const data = response.data;
+  console.log(data.users);
+});
+```
+
+### Using `ListUsers`'s `QueryRef` function
+
+```typescript
+import { getDataConnect, executeQuery } from 'firebase/data-connect';
+import { connectorConfig, listUsersRef } from '@dataconnect/generated';
+
+
+// Call the `listUsersRef()` function to get a reference to the query.
+const ref = listUsersRef();
+
+// You can also pass in a `DataConnect` instance to the `QueryRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = listUsersRef(dataConnect);
+
+// Call `executeQuery()` on the reference to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeQuery(ref);
+
+console.log(data.users);
+
+// Or, you can use the `Promise` API.
+executeQuery(ref).then((response) => {
+  const data = response.data;
+  console.log(data.users);
 });
 ```
 
@@ -1858,6 +1959,7 @@ export interface CreateTenantVariables {
   taxId?: string | null;
   logoUrl?: string | null;
   subscriptionTier?: string | null;
+  status?: string | null;
 }
 ```
 ### Return Type
@@ -1884,13 +1986,14 @@ const createTenantVars: CreateTenantVariables = {
   taxId: ..., // optional
   logoUrl: ..., // optional
   subscriptionTier: ..., // optional
+  status: ..., // optional
 };
 
 // Call the `createTenant()` function to execute the mutation.
 // You can use the `await` keyword to wait for the promise to resolve.
 const { data } = await createTenant(createTenantVars);
 // Variables can be defined inline as well.
-const { data } = await createTenant({ name: ..., businessSector: ..., location: ..., ownerEmail: ..., taxId: ..., logoUrl: ..., subscriptionTier: ..., });
+const { data } = await createTenant({ name: ..., businessSector: ..., location: ..., ownerEmail: ..., taxId: ..., logoUrl: ..., subscriptionTier: ..., status: ..., });
 
 // You can also pass in a `DataConnect` instance to the action shortcut function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -1920,12 +2023,13 @@ const createTenantVars: CreateTenantVariables = {
   taxId: ..., // optional
   logoUrl: ..., // optional
   subscriptionTier: ..., // optional
+  status: ..., // optional
 };
 
 // Call the `createTenantRef()` function to get a reference to the mutation.
 const ref = createTenantRef(createTenantVars);
 // Variables can be defined inline as well.
-const ref = createTenantRef({ name: ..., businessSector: ..., location: ..., ownerEmail: ..., taxId: ..., logoUrl: ..., subscriptionTier: ..., });
+const ref = createTenantRef({ name: ..., businessSector: ..., location: ..., ownerEmail: ..., taxId: ..., logoUrl: ..., subscriptionTier: ..., status: ..., });
 
 // You can also pass in a `DataConnect` instance to the `MutationRef` function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -1986,6 +2090,7 @@ export interface UpdateTenantVariables {
   taxId?: string | null;
   logoUrl?: string | null;
   subscriptionTier?: string | null;
+  status?: string | null;
 }
 ```
 ### Return Type
@@ -2013,13 +2118,14 @@ const updateTenantVars: UpdateTenantVariables = {
   taxId: ..., // optional
   logoUrl: ..., // optional
   subscriptionTier: ..., // optional
+  status: ..., // optional
 };
 
 // Call the `updateTenant()` function to execute the mutation.
 // You can use the `await` keyword to wait for the promise to resolve.
 const { data } = await updateTenant(updateTenantVars);
 // Variables can be defined inline as well.
-const { data } = await updateTenant({ id: ..., name: ..., businessSector: ..., location: ..., ownerEmail: ..., taxId: ..., logoUrl: ..., subscriptionTier: ..., });
+const { data } = await updateTenant({ id: ..., name: ..., businessSector: ..., location: ..., ownerEmail: ..., taxId: ..., logoUrl: ..., subscriptionTier: ..., status: ..., });
 
 // You can also pass in a `DataConnect` instance to the action shortcut function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -2050,12 +2156,13 @@ const updateTenantVars: UpdateTenantVariables = {
   taxId: ..., // optional
   logoUrl: ..., // optional
   subscriptionTier: ..., // optional
+  status: ..., // optional
 };
 
 // Call the `updateTenantRef()` function to get a reference to the mutation.
 const ref = updateTenantRef(updateTenantVars);
 // Variables can be defined inline as well.
-const ref = updateTenantRef({ id: ..., name: ..., businessSector: ..., location: ..., ownerEmail: ..., taxId: ..., logoUrl: ..., subscriptionTier: ..., });
+const ref = updateTenantRef({ id: ..., name: ..., businessSector: ..., location: ..., ownerEmail: ..., taxId: ..., logoUrl: ..., subscriptionTier: ..., status: ..., });
 
 // You can also pass in a `DataConnect` instance to the `MutationRef` function.
 const dataConnect = getDataConnect(connectorConfig);

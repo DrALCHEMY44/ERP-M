@@ -1,6 +1,6 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
-import { getAuth } from "firebase/auth";
+import { getAuth, connectAuthEmulator } from "firebase/auth";
 import { getStorage } from "firebase/storage";
 // Import the core runtime
 import { getDataConnect, connectDataConnectEmulator } from "firebase/data-connect";
@@ -28,9 +28,10 @@ export const dataConnect = getDataConnect({
   connector: "example" 
 });
 
-/*if (process.env.NODE_ENV === "development" && process.env.NEXT_PUBLIC_USE_EMULATORS === "true") {
+if (process.env.NODE_ENV === "development" && process.env.NEXT_PUBLIC_USE_EMULATORS === "true") {
+  connectAuthEmulator(auth, "http://127.0.0.1:9099");
   connectDataConnectEmulator(dataConnect, "127.0.0.1", 9399);
-  console.log("🔌 Successfully mapped to local SQL Connect Emulator on port 9399!");
-}*/
+  console.log("🔌 Successfully mapped to local emulators!");
+}
 
 export { app, db, auth, storage };

@@ -6,6 +6,19 @@ query ListTenants @auth(level: USER, insecureReason: "Multi-tenant ERP") {
     id
     name
     businessSector
+    location
+    ownerEmail
+    taxId
+    logoUrl
+    subscriptionTier
+    status
+    createdAt
+  }
+}
+
+query ListUsers @auth(level: USER, insecureReason: "Multi-tenant ERP") {
+  users {
+    id
   }
 }
 

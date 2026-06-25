@@ -25,6 +25,7 @@ type Tenant @table(key: "id") {
   taxId: String
   logoUrl: String
   subscriptionTier: String
+  status: String
   createdAt: Timestamp!
 }
 

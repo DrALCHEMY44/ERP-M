@@ -207,6 +207,7 @@ export interface CreateTenantVariables {
   taxId?: string | null;
   logoUrl?: string | null;
   subscriptionTier?: string | null;
+  status?: string | null;
 }
 
 export interface CreateTransactionData {
@@ -565,6 +566,13 @@ export interface ListTenantsData {
     id: string;
     name: string;
     businessSector: string;
+    location: string;
+    ownerEmail: string;
+    taxId?: string | null;
+    logoUrl?: string | null;
+    subscriptionTier?: string | null;
+    status?: string | null;
+    createdAt: TimestampString;
   } & Tenant_Key)[];
 }
 
@@ -626,6 +634,12 @@ export interface ListUsersByBusinessData {
 export interface ListUsersByBusinessVariables {
   tenantId: string;
   businessId: string;
+}
+
+export interface ListUsersData {
+  users: ({
+    id: string;
+  } & User_Key)[];
 }
 
 export interface Notification_Key {
@@ -835,6 +849,7 @@ export interface UpdateTenantVariables {
   taxId?: string | null;
   logoUrl?: string | null;
   subscriptionTier?: string | null;
+  status?: string | null;
 }
 
 export interface UpdateTransactionData {
@@ -1388,6 +1403,18 @@ export const listTenantsRef: ListTenantsRef;
 
 export function listTenants(options?: ExecuteQueryOptions): QueryPromise<ListTenantsData, undefined>;
 export function listTenants(dc: DataConnect, options?: ExecuteQueryOptions): QueryPromise<ListTenantsData, undefined>;
+
+interface ListUsersRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (): QueryRef<ListUsersData, undefined>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect): QueryRef<ListUsersData, undefined>;
+  operationName: string;
+}
+export const listUsersRef: ListUsersRef;
+
+export function listUsers(options?: ExecuteQueryOptions): QueryPromise<ListUsersData, undefined>;
+export function listUsers(dc: DataConnect, options?: ExecuteQueryOptions): QueryPromise<ListUsersData, undefined>;
 
 interface ListBusinessesRef {
   /* Allow users to create refs without passing in DataConnect */

@@ -31,15 +31,36 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { useFirestore } from "@/hooks/use-firestore"
-import { Tenant, UserProfile } from "@/lib/types"
+import { useDataConnect } from "@/hooks/use-dataconnect"
+import { listTenantsQuery, listUsersQuery, updateTenant } from "@/lib/data-service"
 import { useAuth } from "@/hooks/use-auth"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Tenant } from "@/lib/types"
 
 export default function SuperAdminDashboard() {
   const { profile, loading: authLoading } = useAuth();
-  const { data: tenants, loading: tenantsLoading, updateRecord } = useFirestore<Tenant>('tenants', { bypassFilter: true });
-  const { data: users, loading: usersLoading } = useFirestore<UserProfile>('users', { bypassFilter: true });
+  
+  const { data: tenantsData, loading: tenantsLoading, refetch: refetchTenants } = useDataConnect({
+    query: listTenantsQuery
+  });
+  const { data: usersData, loading: usersLoading } = useDataConnect({
+    query: listUsersQuery
+  });
+
+  const tenants: Tenant[] = React.useMemo(() => {
+    return (tenantsData?.tenants || []).map((t: any) => ({
+      id: t.id,
+      name: t.name,
+      plan: (t.subscriptionTier || 'Basic') as 'Basic' | 'Premium' | 'Enterprise',
+      status: (t.status || 'Active') as 'Active' | 'Suspended',
+      createdAt: t.createdAt,
+      businessSector: t.businessSector,
+    }));
+  }, [tenantsData]);
+
+  const users = React.useMemo(() => {
+    return usersData?.users || [];
+  }, [usersData]);
   
   const [searchQuery, setSearchQuery] = React.useState("")
 
@@ -62,10 +83,15 @@ export default function SuperAdminDashboard() {
     };
   }, [tenants, users]);
 
-  const toggleStatus = async (tenant: Tenant) => {
+  const toggleStatus = async (tenant: any) => {
     const newStatus = tenant.status === 'Active' ? 'Suspended' : 'Active';
     if (confirm(`Are you sure you want to ${newStatus === 'Active' ? 'reactivate' : 'suspend'} ${tenant.name}?`)) {
-      await updateRecord(tenant.id, { status: newStatus });
+      try {
+        await updateTenant(tenant.id, { status: newStatus });
+        refetchTenants();
+      } catch (error) {
+        console.error("Failed to update tenant status:", error);
+      }
     }
   };
 

@@ -36,10 +36,14 @@ import {
   createDocument as createDocumentMutation,
   deleteDocument as deleteDocumentMutation,
   createActivityLog as createActivityLogMutation,
+  listTenants as listTenantsQuery,
+  listUsers as listUsersQuery,
+  updateTenant as updateTenantMutation,
   type GetUserByEmailData,
   type CreateUserVariables,
   type CreateBusinessVariables,
   type UpdateUserVariables,
+  type UpdateTenantVariables,
 } from "@dataconnect/generated";
 
 /**
@@ -92,6 +96,20 @@ export async function updateUser(
   return result.data.user_update;
 }
 
+/**
+ * Updates an existing tenant by ID.
+ */
+export async function updateTenant(
+  id: string,
+  data: Partial<Omit<UpdateTenantVariables, "id">>,
+) {
+  const result = await updateTenantMutation({
+    id,
+    ...data,
+  });
+  return result.data.tenant_update;
+}
+
 export {
   createBusinessMutation,
   createCustomerMutation,
@@ -130,4 +148,7 @@ export {
   createDocumentMutation,
   deleteDocumentMutation,
   createActivityLogMutation,
+  listTenantsQuery,
+  listUsersQuery,
+  updateTenantMutation,
 }

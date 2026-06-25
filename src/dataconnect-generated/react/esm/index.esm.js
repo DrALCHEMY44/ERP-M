@@ -1,4 +1,4 @@
-import { createTenantRef, updateTenantRef, deleteTenantRef, createUserRef, updateUserRef, deleteUserRef, createBusinessRef, updateBusinessRef, deleteBusinessRef, createProductRef, updateProductRef, deleteProductRef, createTransactionRef, updateTransactionRef, deleteTransactionRef, createTaskCommentRef, updateTaskCommentRef, deleteTaskCommentRef, createEmployeeRef, updateEmployeeRef, deleteEmployeeRef, createCustomerRef, updateCustomerRef, deleteCustomerRef, createSupplierRef, updateSupplierRef, deleteSupplierRef, createDocumentRef, updateDocumentRef, deleteDocumentRef, createActivityLogRef, updateActivityLogRef, deleteActivityLogRef, createAiQueryRef, updateAiQueryRef, deleteAiQueryRef, createNotificationRef, updateNotificationRef, deleteNotificationRef, createTaskRef, updateTaskRef, deleteTaskRef, listTenantsRef, listBusinessesRef, getUserByEmailRef, listProductsByBusinessRef, listCustomersByBusinessRef, listUsersByBusinessRef, listSuppliersByBusinessRef, listTasksByBusinessRef, listTransactionsByBusinessRef, listTransactionsByTypeRef, listEmployeesByBusinessRef, listDocumentsByBusinessRef, listActivityLogsByUserRef, listActivityLogsByBusinessRef, connectorConfig } from '../../esm/index.esm.js';
+import { createTenantRef, updateTenantRef, deleteTenantRef, createUserRef, updateUserRef, deleteUserRef, createBusinessRef, updateBusinessRef, deleteBusinessRef, createProductRef, updateProductRef, deleteProductRef, createTransactionRef, updateTransactionRef, deleteTransactionRef, createTaskCommentRef, updateTaskCommentRef, deleteTaskCommentRef, createEmployeeRef, updateEmployeeRef, deleteEmployeeRef, createCustomerRef, updateCustomerRef, deleteCustomerRef, createSupplierRef, updateSupplierRef, deleteSupplierRef, createDocumentRef, updateDocumentRef, deleteDocumentRef, createActivityLogRef, updateActivityLogRef, deleteActivityLogRef, createAiQueryRef, updateAiQueryRef, deleteAiQueryRef, createNotificationRef, updateNotificationRef, deleteNotificationRef, createTaskRef, updateTaskRef, deleteTaskRef, listTenantsRef, listUsersRef, listBusinessesRef, getUserByEmailRef, listProductsByBusinessRef, listCustomersByBusinessRef, listUsersByBusinessRef, listSuppliersByBusinessRef, listTasksByBusinessRef, listTransactionsByBusinessRef, listTransactionsByTypeRef, listEmployeesByBusinessRef, listDocumentsByBusinessRef, listActivityLogsByUserRef, listActivityLogsByBusinessRef, connectorConfig } from '../../esm/index.esm.js';
 import { validateArgs, CallerSdkTypeEnum } from 'firebase/data-connect';
 import { useDataConnectQuery, useDataConnectMutation, validateReactArgs } from '@tanstack-query-firebase/react/data-connect';
 
@@ -342,6 +342,12 @@ export function useDeleteTask(dcOrOptions, options) {
 export function useListTenants(dcOrOptions, options) {
   const { dc: dcInstance, options: inputOpts } = validateReactArgs(connectorConfig, dcOrOptions, options);
   const ref = listTenantsRef(dcInstance);
+  return useDataConnectQuery(ref, inputOpts, CallerSdkTypeEnum.GeneratedReact);
+}
+
+export function useListUsers(dcOrOptions, options) {
+  const { dc: dcInstance, options: inputOpts } = validateReactArgs(connectorConfig, dcOrOptions, options);
+  const ref = listUsersRef(dcInstance);
   return useDataConnectQuery(ref, inputOpts, CallerSdkTypeEnum.GeneratedReact);
 }
 
