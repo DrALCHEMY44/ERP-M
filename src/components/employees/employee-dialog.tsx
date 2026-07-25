@@ -36,6 +36,7 @@ import { MOCK_USER } from "@/lib/mock-data"
 const employeeSchema = z.object({
   fullName: z.string().min(2, "Name must be at least 2 characters"),
   position: z.string().min(2, "Position is required"),
+  role: z.enum(["Administrator", "Manager", "Employee"]),
   department: z.string().min(2, "Department is required"),
   salary: z.coerce.number().min(0, "Salary cannot be negative"),
   contact: z.string().min(8, "Contact number is required"),
@@ -60,6 +61,7 @@ export function EmployeeDialog({ employee, open, onOpenChange, onSave }: Employe
     defaultValues: {
       fullName: "",
       position: "",
+      role: "Employee",
       department: "",
       salary: 0,
       contact: "",
@@ -73,20 +75,22 @@ export function EmployeeDialog({ employee, open, onOpenChange, onSave }: Employe
   React.useEffect(() => {
     if (employee) {
       form.reset({
-        fullName: employee.fullName,
-        position: employee.position,
-        department: employee.department,
-        salary: employee.salary,
-        contact: employee.contact,
-        email: employee.email,
-        startDate: employee.startDate,
-        employmentStatus: employee.employmentStatus,
-        salaryPaymentStatus: employee.salaryPaymentStatus,
+        fullName: employee.fullName || "",
+        position: employee.position || "",
+        role: (employee.role as "Administrator" | "Manager" | "Employee") || "Employee",
+        department: employee.department || "",
+        salary: employee.salary || 0,
+        contact: employee.contact || "",
+        email: employee.email || "",
+        startDate: employee.startDate || new Date().toISOString().split('T')[0],
+        employmentStatus: employee.employmentStatus || "Active",
+        salaryPaymentStatus: employee.salaryPaymentStatus || "Paid",
       })
     } else {
       form.reset({
         fullName: "",
         position: "",
+        role: "Employee",
         department: "",
         salary: 0,
         contact: "",
@@ -118,7 +122,13 @@ export function EmployeeDialog({ employee, open, onOpenChange, onSave }: Employe
             <DialogHeader>
               <DialogTitle className="font-headline font-bold text-xl">{employee ? "Edit Employee" : "Register New Employee"}</DialogTitle>
               <DialogDescription>
-                Manage your SME workforce data according to OHADA standards.
+                {employee?.code ? (
+                  <span className="block mt-1 font-mono text-xs font-semibold text-primary">
+                    Employee Code: {employee.code}
+                  </span>
+                ) : (
+                  "Manage your SME workforce data according to OHADA standards."
+                )}
               </DialogDescription>
             </DialogHeader>
 
@@ -172,7 +182,7 @@ export function EmployeeDialog({ employee, open, onOpenChange, onSave }: Employe
                   name="position"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-[10px] font-bold uppercase tracking-widest">Position / Role</FormLabel>
+                      <FormLabel className="text-[10px] font-bold uppercase tracking-widest">Position / Poste</FormLabel>
                       <FormControl>
                         <Input placeholder="Store Manager" {...field} />
                       </FormControl>
@@ -180,6 +190,31 @@ export function EmployeeDialog({ employee, open, onOpenChange, onSave }: Employe
                     </FormItem>
                   )}
                 />
+                <FormField
+                  control={form.control}
+                  name="role"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-[10px] font-bold uppercase tracking-widest">Login Role</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select Role" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="Administrator">Administrator</SelectItem>
+                          <SelectItem value="Manager">Manager</SelectItem>
+                          <SelectItem value="Employee">Employee</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
                   name="department"
@@ -204,9 +239,6 @@ export function EmployeeDialog({ employee, open, onOpenChange, onSave }: Employe
                     </FormItem>
                   )}
                 />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
                   name="salary"
@@ -220,6 +252,9 @@ export function EmployeeDialog({ employee, open, onOpenChange, onSave }: Employe
                     </FormItem>
                   )}
                 />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
                   name="startDate"
@@ -233,9 +268,6 @@ export function EmployeeDialog({ employee, open, onOpenChange, onSave }: Employe
                     </FormItem>
                   )}
                 />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
                   name="employmentStatus"
@@ -259,6 +291,9 @@ export function EmployeeDialog({ employee, open, onOpenChange, onSave }: Employe
                     </FormItem>
                   )}
                 />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
                   name="salaryPaymentStatus"

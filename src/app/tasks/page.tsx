@@ -13,7 +13,7 @@ import { TaskDialog } from "@/components/tasks/task-dialog"
 import { Task, TaskStatus } from "@/lib/types"
 import { useDataConnect } from "@/hooks/use-dataconnect"
 import { useToast } from "@/hooks/use-toast"
-import { listTasksByBusinessQuery, createTaskMutation, updateTaskMutation, deleteTaskMutation } from "@/lib/data-service"
+import { listTasksByBusinessQuery, listUsersByBusinessQuery, createTaskMutation, updateTaskMutation, deleteTaskMutation } from "@/lib/data-service"
 import { MOCK_USER } from "@/lib/mock-data"
 import { startOfDay, parseISO, isBefore } from "date-fns"
 import { createNotification } from "@/lib/notifications"
@@ -77,7 +77,18 @@ export default function TasksPage() {
       tenantId: profile?.tenantId || "", 
       businessId: profile?.businessId || "" 
     },
-    skip: !profile || !profile.tenantId || !profile.businessId
+    skip: !profile || !profile.tenantId || !profile.businessId,
+    refreshInterval: 5000
+  });
+
+  const { data: usersData } = useDataConnect({
+    query: listUsersByBusinessQuery,
+    variables: {
+      tenantId: profile?.tenantId || "",
+      businessId: profile?.businessId || ""
+    },
+    skip: !profile || !profile.tenantId || !profile.businessId,
+    refreshInterval: 5000
   });
   
   const tasks = React.useMemo(() => {
@@ -86,7 +97,8 @@ export default function TasksPage() {
       ...t,
       status: mapStatusFromDb(t.status),
       priority: mapPriorityFromDb(t.priority),
-      assignedTo: t.assignedTo?.id || ''
+      assignedTo: t.assignedTo?.id || '',
+      assignedToName: t.assignedTo?.fullName || t.assignedTo?.email?.split('@')[0] || 'Unassigned'
     })) as unknown as Task[];
   }, [tasksData]);
 
@@ -111,10 +123,8 @@ export default function TasksPage() {
  
   const processedTasks = React.useMemo(() => {
     return tasks.map(task => {
-      const assignedToName = task.assignedToName || (task.assignedTo as any)?.email?.split('@')[0] || 'Unassigned';
       return {
         ...task,
-        assignedToName,
         displayStatus: getTaskStatus(task)
       }
     }).filter(task => 
@@ -173,6 +183,12 @@ export default function TasksPage() {
       });
       return;
     }
+
+    // Format dueDate to ISO-8601 Timestamp format required by Data Connect
+    const formattedDueDate = taskData.dueDate 
+      ? (taskData.dueDate.includes('T') ? taskData.dueDate : new Date(taskData.dueDate).toISOString())
+      : new Date().toISOString();
+
     try {
       if (selectedTask?.id) {
         await updateTaskMutation({
@@ -181,8 +197,8 @@ export default function TasksPage() {
           description: taskData.description,
           status: mapStatusToDb(taskData.status),
           priority: mapPriorityToDb(taskData.priority),
-          dueDate: taskData.dueDate,
-          assignedToId: taskData.assignedTo
+          dueDate: formattedDueDate,
+          assignedToId: taskData.assignedTo || null
         });
         await refetch();
         toast({ title: "Task Updated", description: "Operational tracking updated successfully." });
@@ -195,8 +211,8 @@ export default function TasksPage() {
           description: taskData.description,
           status: mapStatusToDb(taskData.status || 'Pending'),
           priority: mapPriorityToDb(taskData.priority),
-          dueDate: taskData.dueDate || new Date().toISOString(),
-          assignedToId: taskData.assignedTo,
+          dueDate: formattedDueDate,
+          assignedToId: taskData.assignedTo || null,
           createdBy: user.uid
         });
         await refetch();
@@ -218,6 +234,7 @@ export default function TasksPage() {
         toast({ title: "Task Created", description: "Assignment has been sent to the cloud." });
       }
     } catch (e) {
+      console.error('[Tasks Page] Save Error:', e);
       toast({ variant: "destructive", title: "Error", description: "Could not save task details." });
     }
   }
@@ -421,6 +438,7 @@ export default function TasksPage() {
         open={isDialogOpen}
         onOpenChange={setIsDialogOpen}
         onSave={handleSave}
+        users={usersData?.users || []}
       />
     </div>
   )

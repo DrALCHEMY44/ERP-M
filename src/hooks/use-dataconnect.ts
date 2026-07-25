@@ -5,6 +5,7 @@ interface UseDataConnectOptions<T, V> {
   query: any; // Using any to avoid overload resolution issues with DataConnect queries
   variables?: V;
   skip?: boolean;
+  refreshInterval?: number; // Time in milliseconds to poll the database
 }
 
 /**
@@ -13,7 +14,12 @@ interface UseDataConnectOptions<T, V> {
  * Returns `unauthenticated: true` when the user is not signed in,
  * so pages can display a sign-in prompt instead of an infinite spinner.
  */
-export function useDataConnect<T = any, V = any>({ query, variables, skip = false }: UseDataConnectOptions<T, V>) {
+export function useDataConnect<T = any, V = any>({ 
+  query, 
+  variables, 
+  skip = false,
+  refreshInterval
+}: UseDataConnectOptions<T, V>) {
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState(!skip);
   const [error, setError] = useState<Error | null>(null);
@@ -44,8 +50,26 @@ export function useDataConnect<T = any, V = any>({ query, variables, skip = fals
       // We know the generated Data Connect queries take variables and return { data }
       const result = await query(variables as V);
       setData(result.data);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Data Connect Query Error:', err);
+      
+      const isInvalidRefreshToken = err && (
+        err.message?.includes('auth/invalid-refresh-token') ||
+        err.code === 'auth/invalid-refresh-token' ||
+        JSON.stringify(err).includes('auth/invalid-refresh-token')
+      );
+
+      if (isInvalidRefreshToken) {
+        console.warn('Invalid refresh token detected. Signing out user...');
+        try {
+          const { signOut } = await import('firebase/auth');
+          const { auth } = await import('@/lib/firebase');
+          await signOut(auth);
+        } catch (signOutErr) {
+          console.error('Failed to sign out after invalid refresh token:', signOutErr);
+        }
+      }
+
       setError(err instanceof Error ? err : new Error('Unknown error occurred'));
     } finally {
       setLoading(false);
@@ -56,6 +80,22 @@ export function useDataConnect<T = any, V = any>({ query, variables, skip = fals
   useEffect(() => {
     fetcher();
   }, [fetcher]);
+
+  // Set up polling interval if refreshInterval is provided
+  useEffect(() => {
+    if (skip || !refreshInterval || unauthenticated) return;
+
+    const intervalId = setInterval(() => {
+      // Fetch without toggling the primary loading spinner for smoother background reload
+      query(variables).then((result: any) => {
+        setData(result.data);
+      }).catch((err: any) => {
+        console.error('Data Connect Polling Error:', err);
+      });
+    }, refreshInterval);
+
+    return () => clearInterval(intervalId);
+  }, [query, skip, refreshInterval, unauthenticated, JSON.stringify(variables)]);
 
   return { data: data as any, loading, error, unauthenticated, refetch: fetcher };
 }

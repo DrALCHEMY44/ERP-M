@@ -147,7 +147,7 @@ function AppContent({
                 
                 <div className="flex flex-col overflow-hidden">
                   <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-muted-foreground truncate">
-                    Tenant: {profile?.tenantId || 'Syncing...'}
+                    Tenant: {profile?.businessCode || profile?.tenantId || 'Syncing...'}
                   </span>
                   <span className="text-xs font-headline font-bold text-primary truncate max-w-[120px] md:max-w-none">
                     {profile?.fullName ? `SME Hub • ${profile.fullName.split(' ')[0]}` : 'SmartERP Workspace'}

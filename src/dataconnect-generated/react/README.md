@@ -21,6 +21,9 @@ You can also follow the instructions from the [Data Connect documentation](https
   - [*ListUsers*](#listusers)
   - [*ListBusinesses*](#listbusinesses)
   - [*getUserByEmail*](#getuserbyemail)
+  - [*getBusinessById*](#getbusinessbyid)
+  - [*getBusinessByCode*](#getbusinessbycode)
+  - [*verifyUserLogin*](#verifyuserlogin)
   - [*listProductsByBusiness*](#listproductsbybusiness)
   - [*listCustomersByBusiness*](#listcustomersbybusiness)
   - [*listUsersByBusiness*](#listusersbybusiness)
@@ -32,6 +35,8 @@ You can also follow the instructions from the [Data Connect documentation](https
   - [*listDocumentsByBusiness*](#listdocumentsbybusiness)
   - [*listActivityLogsByUser*](#listactivitylogsbyuser)
   - [*listActivityLogsByBusiness*](#listactivitylogsbybusiness)
+  - [*getUserById*](#getuserbyid)
+  - [*listNotifications*](#listnotifications)
 - [**Mutations**](#mutations)
   - [*CreateTenant*](#createtenant)
   - [*UpdateTenant*](#updatetenant)
@@ -495,6 +500,279 @@ export default function GetUserByEmailComponent() {
 }
 ```
 
+## getBusinessById
+You can execute the `getBusinessById` Query using the following Query hook function, which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts):
+
+```javascript
+useGetBusinessById(dc: DataConnect, vars: GetBusinessByIdVariables, options?: useDataConnectQueryOptions<GetBusinessByIdData>): UseDataConnectQueryResult<GetBusinessByIdData, GetBusinessByIdVariables>;
+```
+You can also pass in a `DataConnect` instance to the Query hook function.
+```javascript
+useGetBusinessById(vars: GetBusinessByIdVariables, options?: useDataConnectQueryOptions<GetBusinessByIdData>): UseDataConnectQueryResult<GetBusinessByIdData, GetBusinessByIdVariables>;
+```
+
+### Variables
+The `getBusinessById` Query requires an argument of type `GetBusinessByIdVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+
+```javascript
+export interface GetBusinessByIdVariables {
+  id: string;
+}
+```
+### Return Type
+Recall that calling the `getBusinessById` Query hook function returns a `UseQueryResult` object. This object holds the state of your Query, including whether the Query is loading, has completed, or has succeeded/failed, and any data returned by the Query, among other things.
+
+To check the status of a Query, use the `UseQueryResult.status` field. You can also check for pending / success / error status using the `UseQueryResult.isPending`, `UseQueryResult.isSuccess`, and `UseQueryResult.isError` fields.
+
+To access the data returned by a Query, use the `UseQueryResult.data` field. The data for the `getBusinessById` Query is of type `GetBusinessByIdData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+```javascript
+export interface GetBusinessByIdData {
+  business?: {
+    id: string;
+    tenantId: string;
+    name: string;
+    createdAt: TimestampString;
+    code: string;
+  } & Business_Key;
+}
+```
+
+To learn more about the `UseQueryResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useQuery).
+
+### Using `getBusinessById`'s Query hook function
+
+```javascript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, GetBusinessByIdVariables } from '@dataconnect/generated';
+import { useGetBusinessById } from '@dataconnect/generated/react'
+
+export default function GetBusinessByIdComponent() {
+  // The `useGetBusinessById` Query hook requires an argument of type `GetBusinessByIdVariables`:
+  const getBusinessByIdVars: GetBusinessByIdVariables = {
+    id: ..., 
+  };
+
+  // You don't have to do anything to "execute" the Query.
+  // Call the Query hook function to get a `UseQueryResult` object which holds the state of your Query.
+  const query = useGetBusinessById(getBusinessByIdVars);
+  // Variables can be defined inline as well.
+  const query = useGetBusinessById({ id: ..., });
+
+  // You can also pass in a `DataConnect` instance to the Query hook function.
+  const dataConnect = getDataConnect(connectorConfig);
+  const query = useGetBusinessById(dataConnect, getBusinessByIdVars);
+
+  // You can also pass in a `useDataConnectQueryOptions` object to the Query hook function.
+  const options = { staleTime: 5 * 1000 };
+  const query = useGetBusinessById(getBusinessByIdVars, options);
+
+  // You can also pass both a `DataConnect` instance and a `useDataConnectQueryOptions` object.
+  const dataConnect = getDataConnect(connectorConfig);
+  const options = { staleTime: 5 * 1000 };
+  const query = useGetBusinessById(dataConnect, getBusinessByIdVars, options);
+
+  // Then, you can render your component dynamically based on the status of the Query.
+  if (query.isPending) {
+    return <div>Loading...</div>;
+  }
+
+  if (query.isError) {
+    return <div>Error: {query.error.message}</div>;
+  }
+
+  // If the Query is successful, you can access the data returned using the `UseQueryResult.data` field.
+  if (query.isSuccess) {
+    console.log(query.data.business);
+  }
+  return <div>Query execution {query.isSuccess ? 'successful' : 'failed'}!</div>;
+}
+```
+
+## getBusinessByCode
+You can execute the `getBusinessByCode` Query using the following Query hook function, which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts):
+
+```javascript
+useGetBusinessByCode(dc: DataConnect, vars: GetBusinessByCodeVariables, options?: useDataConnectQueryOptions<GetBusinessByCodeData>): UseDataConnectQueryResult<GetBusinessByCodeData, GetBusinessByCodeVariables>;
+```
+You can also pass in a `DataConnect` instance to the Query hook function.
+```javascript
+useGetBusinessByCode(vars: GetBusinessByCodeVariables, options?: useDataConnectQueryOptions<GetBusinessByCodeData>): UseDataConnectQueryResult<GetBusinessByCodeData, GetBusinessByCodeVariables>;
+```
+
+### Variables
+The `getBusinessByCode` Query requires an argument of type `GetBusinessByCodeVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+
+```javascript
+export interface GetBusinessByCodeVariables {
+  code: string;
+}
+```
+### Return Type
+Recall that calling the `getBusinessByCode` Query hook function returns a `UseQueryResult` object. This object holds the state of your Query, including whether the Query is loading, has completed, or has succeeded/failed, and any data returned by the Query, among other things.
+
+To check the status of a Query, use the `UseQueryResult.status` field. You can also check for pending / success / error status using the `UseQueryResult.isPending`, `UseQueryResult.isSuccess`, and `UseQueryResult.isError` fields.
+
+To access the data returned by a Query, use the `UseQueryResult.data` field. The data for the `getBusinessByCode` Query is of type `GetBusinessByCodeData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+```javascript
+export interface GetBusinessByCodeData {
+  businesses: ({
+    id: string;
+    tenantId: string;
+    name: string;
+  } & Business_Key)[];
+}
+```
+
+To learn more about the `UseQueryResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useQuery).
+
+### Using `getBusinessByCode`'s Query hook function
+
+```javascript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, GetBusinessByCodeVariables } from '@dataconnect/generated';
+import { useGetBusinessByCode } from '@dataconnect/generated/react'
+
+export default function GetBusinessByCodeComponent() {
+  // The `useGetBusinessByCode` Query hook requires an argument of type `GetBusinessByCodeVariables`:
+  const getBusinessByCodeVars: GetBusinessByCodeVariables = {
+    code: ..., 
+  };
+
+  // You don't have to do anything to "execute" the Query.
+  // Call the Query hook function to get a `UseQueryResult` object which holds the state of your Query.
+  const query = useGetBusinessByCode(getBusinessByCodeVars);
+  // Variables can be defined inline as well.
+  const query = useGetBusinessByCode({ code: ..., });
+
+  // You can also pass in a `DataConnect` instance to the Query hook function.
+  const dataConnect = getDataConnect(connectorConfig);
+  const query = useGetBusinessByCode(dataConnect, getBusinessByCodeVars);
+
+  // You can also pass in a `useDataConnectQueryOptions` object to the Query hook function.
+  const options = { staleTime: 5 * 1000 };
+  const query = useGetBusinessByCode(getBusinessByCodeVars, options);
+
+  // You can also pass both a `DataConnect` instance and a `useDataConnectQueryOptions` object.
+  const dataConnect = getDataConnect(connectorConfig);
+  const options = { staleTime: 5 * 1000 };
+  const query = useGetBusinessByCode(dataConnect, getBusinessByCodeVars, options);
+
+  // Then, you can render your component dynamically based on the status of the Query.
+  if (query.isPending) {
+    return <div>Loading...</div>;
+  }
+
+  if (query.isError) {
+    return <div>Error: {query.error.message}</div>;
+  }
+
+  // If the Query is successful, you can access the data returned using the `UseQueryResult.data` field.
+  if (query.isSuccess) {
+    console.log(query.data.businesses);
+  }
+  return <div>Query execution {query.isSuccess ? 'successful' : 'failed'}!</div>;
+}
+```
+
+## verifyUserLogin
+You can execute the `verifyUserLogin` Query using the following Query hook function, which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts):
+
+```javascript
+useVerifyUserLogin(dc: DataConnect, vars: VerifyUserLoginVariables, options?: useDataConnectQueryOptions<VerifyUserLoginData>): UseDataConnectQueryResult<VerifyUserLoginData, VerifyUserLoginVariables>;
+```
+You can also pass in a `DataConnect` instance to the Query hook function.
+```javascript
+useVerifyUserLogin(vars: VerifyUserLoginVariables, options?: useDataConnectQueryOptions<VerifyUserLoginData>): UseDataConnectQueryResult<VerifyUserLoginData, VerifyUserLoginVariables>;
+```
+
+### Variables
+The `verifyUserLogin` Query requires an argument of type `VerifyUserLoginVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+
+```javascript
+export interface VerifyUserLoginVariables {
+  email: string;
+  fullName: string;
+  role: string;
+  accessCode: string;
+  tenantId: string;
+  businessId: string;
+}
+```
+### Return Type
+Recall that calling the `verifyUserLogin` Query hook function returns a `UseQueryResult` object. This object holds the state of your Query, including whether the Query is loading, has completed, or has succeeded/failed, and any data returned by the Query, among other things.
+
+To check the status of a Query, use the `UseQueryResult.status` field. You can also check for pending / success / error status using the `UseQueryResult.isPending`, `UseQueryResult.isSuccess`, and `UseQueryResult.isError` fields.
+
+To access the data returned by a Query, use the `UseQueryResult.data` field. The data for the `verifyUserLogin` Query is of type `VerifyUserLoginData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+```javascript
+export interface VerifyUserLoginData {
+  users: ({
+    id: string;
+    email: string;
+    role: string;
+    fullName?: string | null;
+    tenantId: string;
+    businessId: string;
+  } & User_Key)[];
+}
+```
+
+To learn more about the `UseQueryResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useQuery).
+
+### Using `verifyUserLogin`'s Query hook function
+
+```javascript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, VerifyUserLoginVariables } from '@dataconnect/generated';
+import { useVerifyUserLogin } from '@dataconnect/generated/react'
+
+export default function VerifyUserLoginComponent() {
+  // The `useVerifyUserLogin` Query hook requires an argument of type `VerifyUserLoginVariables`:
+  const verifyUserLoginVars: VerifyUserLoginVariables = {
+    email: ..., 
+    fullName: ..., 
+    role: ..., 
+    accessCode: ..., 
+    tenantId: ..., 
+    businessId: ..., 
+  };
+
+  // You don't have to do anything to "execute" the Query.
+  // Call the Query hook function to get a `UseQueryResult` object which holds the state of your Query.
+  const query = useVerifyUserLogin(verifyUserLoginVars);
+  // Variables can be defined inline as well.
+  const query = useVerifyUserLogin({ email: ..., fullName: ..., role: ..., accessCode: ..., tenantId: ..., businessId: ..., });
+
+  // You can also pass in a `DataConnect` instance to the Query hook function.
+  const dataConnect = getDataConnect(connectorConfig);
+  const query = useVerifyUserLogin(dataConnect, verifyUserLoginVars);
+
+  // You can also pass in a `useDataConnectQueryOptions` object to the Query hook function.
+  const options = { staleTime: 5 * 1000 };
+  const query = useVerifyUserLogin(verifyUserLoginVars, options);
+
+  // You can also pass both a `DataConnect` instance and a `useDataConnectQueryOptions` object.
+  const dataConnect = getDataConnect(connectorConfig);
+  const options = { staleTime: 5 * 1000 };
+  const query = useVerifyUserLogin(dataConnect, verifyUserLoginVars, options);
+
+  // Then, you can render your component dynamically based on the status of the Query.
+  if (query.isPending) {
+    return <div>Loading...</div>;
+  }
+
+  if (query.isError) {
+    return <div>Error: {query.error.message}</div>;
+  }
+
+  // If the Query is successful, you can access the data returned using the `UseQueryResult.data` field.
+  if (query.isSuccess) {
+    console.log(query.data.users);
+  }
+  return <div>Query execution {query.isSuccess ? 'successful' : 'failed'}!</div>;
+}
+```
+
 ## listProductsByBusiness
 You can execute the `listProductsByBusiness` Query using the following Query hook function, which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts):
 
@@ -913,6 +1191,7 @@ export interface ListTasksByBusinessData {
       id: string;
       email: string;
       role: string;
+      fullName?: string | null;
     } & User_Key;
     createdBy: string;
     createdAt: TimestampString;
@@ -1199,6 +1478,7 @@ export interface ListEmployeesByBusinessData {
     id: string;
     fullName: string;
     position: string;
+    role?: string | null;
     salary?: number | null;
     department?: string | null;
     startDate?: DateString | null;
@@ -1206,6 +1486,7 @@ export interface ListEmployeesByBusinessData {
     createdAt: TimestampString;
     tenantId: string;
     businessId: string;
+    code?: string | null;
   } & Employee_Key)[];
 }
 ```
@@ -1542,6 +1823,192 @@ export default function ListActivityLogsByBusinessComponent() {
   // If the Query is successful, you can access the data returned using the `UseQueryResult.data` field.
   if (query.isSuccess) {
     console.log(query.data.activityLogs);
+  }
+  return <div>Query execution {query.isSuccess ? 'successful' : 'failed'}!</div>;
+}
+```
+
+## getUserById
+You can execute the `getUserById` Query using the following Query hook function, which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts):
+
+```javascript
+useGetUserById(dc: DataConnect, vars: GetUserByIdVariables, options?: useDataConnectQueryOptions<GetUserByIdData>): UseDataConnectQueryResult<GetUserByIdData, GetUserByIdVariables>;
+```
+You can also pass in a `DataConnect` instance to the Query hook function.
+```javascript
+useGetUserById(vars: GetUserByIdVariables, options?: useDataConnectQueryOptions<GetUserByIdData>): UseDataConnectQueryResult<GetUserByIdData, GetUserByIdVariables>;
+```
+
+### Variables
+The `getUserById` Query requires an argument of type `GetUserByIdVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+
+```javascript
+export interface GetUserByIdVariables {
+  id: string;
+}
+```
+### Return Type
+Recall that calling the `getUserById` Query hook function returns a `UseQueryResult` object. This object holds the state of your Query, including whether the Query is loading, has completed, or has succeeded/failed, and any data returned by the Query, among other things.
+
+To check the status of a Query, use the `UseQueryResult.status` field. You can also check for pending / success / error status using the `UseQueryResult.isPending`, `UseQueryResult.isSuccess`, and `UseQueryResult.isError` fields.
+
+To access the data returned by a Query, use the `UseQueryResult.data` field. The data for the `getUserById` Query is of type `GetUserByIdData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+```javascript
+export interface GetUserByIdData {
+  user?: {
+    id: string;
+    email: string;
+    role: string;
+    department?: string | null;
+    phoneNumber?: string | null;
+    createdAt: TimestampString;
+    tenantId: string;
+    businessId: string;
+    fullName?: string | null;
+  } & User_Key;
+}
+```
+
+To learn more about the `UseQueryResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useQuery).
+
+### Using `getUserById`'s Query hook function
+
+```javascript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, GetUserByIdVariables } from '@dataconnect/generated';
+import { useGetUserById } from '@dataconnect/generated/react'
+
+export default function GetUserByIdComponent() {
+  // The `useGetUserById` Query hook requires an argument of type `GetUserByIdVariables`:
+  const getUserByIdVars: GetUserByIdVariables = {
+    id: ..., 
+  };
+
+  // You don't have to do anything to "execute" the Query.
+  // Call the Query hook function to get a `UseQueryResult` object which holds the state of your Query.
+  const query = useGetUserById(getUserByIdVars);
+  // Variables can be defined inline as well.
+  const query = useGetUserById({ id: ..., });
+
+  // You can also pass in a `DataConnect` instance to the Query hook function.
+  const dataConnect = getDataConnect(connectorConfig);
+  const query = useGetUserById(dataConnect, getUserByIdVars);
+
+  // You can also pass in a `useDataConnectQueryOptions` object to the Query hook function.
+  const options = { staleTime: 5 * 1000 };
+  const query = useGetUserById(getUserByIdVars, options);
+
+  // You can also pass both a `DataConnect` instance and a `useDataConnectQueryOptions` object.
+  const dataConnect = getDataConnect(connectorConfig);
+  const options = { staleTime: 5 * 1000 };
+  const query = useGetUserById(dataConnect, getUserByIdVars, options);
+
+  // Then, you can render your component dynamically based on the status of the Query.
+  if (query.isPending) {
+    return <div>Loading...</div>;
+  }
+
+  if (query.isError) {
+    return <div>Error: {query.error.message}</div>;
+  }
+
+  // If the Query is successful, you can access the data returned using the `UseQueryResult.data` field.
+  if (query.isSuccess) {
+    console.log(query.data.user);
+  }
+  return <div>Query execution {query.isSuccess ? 'successful' : 'failed'}!</div>;
+}
+```
+
+## listNotifications
+You can execute the `listNotifications` Query using the following Query hook function, which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts):
+
+```javascript
+useListNotifications(dc: DataConnect, vars: ListNotificationsVariables, options?: useDataConnectQueryOptions<ListNotificationsData>): UseDataConnectQueryResult<ListNotificationsData, ListNotificationsVariables>;
+```
+You can also pass in a `DataConnect` instance to the Query hook function.
+```javascript
+useListNotifications(vars: ListNotificationsVariables, options?: useDataConnectQueryOptions<ListNotificationsData>): UseDataConnectQueryResult<ListNotificationsData, ListNotificationsVariables>;
+```
+
+### Variables
+The `listNotifications` Query requires an argument of type `ListNotificationsVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+
+```javascript
+export interface ListNotificationsVariables {
+  tenantId: string;
+  businessId: string;
+  userId: string;
+}
+```
+### Return Type
+Recall that calling the `listNotifications` Query hook function returns a `UseQueryResult` object. This object holds the state of your Query, including whether the Query is loading, has completed, or has succeeded/failed, and any data returned by the Query, among other things.
+
+To check the status of a Query, use the `UseQueryResult.status` field. You can also check for pending / success / error status using the `UseQueryResult.isPending`, `UseQueryResult.isSuccess`, and `UseQueryResult.isError` fields.
+
+To access the data returned by a Query, use the `UseQueryResult.data` field. The data for the `listNotifications` Query is of type `ListNotificationsData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+```javascript
+export interface ListNotificationsData {
+  notifications: ({
+    id: string;
+    tenantId: string;
+    businessId: string;
+    userId: string;
+    message: string;
+    isRead: boolean;
+    createdAt: TimestampString;
+  } & Notification_Key)[];
+}
+```
+
+To learn more about the `UseQueryResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useQuery).
+
+### Using `listNotifications`'s Query hook function
+
+```javascript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, ListNotificationsVariables } from '@dataconnect/generated';
+import { useListNotifications } from '@dataconnect/generated/react'
+
+export default function ListNotificationsComponent() {
+  // The `useListNotifications` Query hook requires an argument of type `ListNotificationsVariables`:
+  const listNotificationsVars: ListNotificationsVariables = {
+    tenantId: ..., 
+    businessId: ..., 
+    userId: ..., 
+  };
+
+  // You don't have to do anything to "execute" the Query.
+  // Call the Query hook function to get a `UseQueryResult` object which holds the state of your Query.
+  const query = useListNotifications(listNotificationsVars);
+  // Variables can be defined inline as well.
+  const query = useListNotifications({ tenantId: ..., businessId: ..., userId: ..., });
+
+  // You can also pass in a `DataConnect` instance to the Query hook function.
+  const dataConnect = getDataConnect(connectorConfig);
+  const query = useListNotifications(dataConnect, listNotificationsVars);
+
+  // You can also pass in a `useDataConnectQueryOptions` object to the Query hook function.
+  const options = { staleTime: 5 * 1000 };
+  const query = useListNotifications(listNotificationsVars, options);
+
+  // You can also pass both a `DataConnect` instance and a `useDataConnectQueryOptions` object.
+  const dataConnect = getDataConnect(connectorConfig);
+  const options = { staleTime: 5 * 1000 };
+  const query = useListNotifications(dataConnect, listNotificationsVars, options);
+
+  // Then, you can render your component dynamically based on the status of the Query.
+  if (query.isPending) {
+    return <div>Loading...</div>;
+  }
+
+  if (query.isError) {
+    return <div>Error: {query.error.message}</div>;
+  }
+
+  // If the Query is successful, you can access the data returned using the `UseQueryResult.data` field.
+  if (query.isSuccess) {
+    console.log(query.data.notifications);
   }
   return <div>Query execution {query.isSuccess ? 'successful' : 'failed'}!</div>;
 }
@@ -1906,6 +2373,7 @@ export interface CreateUserVariables {
   fullName?: string | null;
   department?: string | null;
   phoneNumber?: string | null;
+  accessCode?: string | null;
 }
 ```
 ### Return Type
@@ -1962,10 +2430,11 @@ export default function CreateUserComponent() {
     fullName: ..., // optional
     department: ..., // optional
     phoneNumber: ..., // optional
+    accessCode: ..., // optional
   };
   mutation.mutate(createUserVars);
   // Variables can be defined inline as well.
-  mutation.mutate({ tenantId: ..., businessId: ..., email: ..., role: ..., fullName: ..., department: ..., phoneNumber: ..., });
+  mutation.mutate({ tenantId: ..., businessId: ..., email: ..., role: ..., fullName: ..., department: ..., phoneNumber: ..., accessCode: ..., });
 
   // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
   const options = {
@@ -2013,6 +2482,7 @@ export interface UpdateUserVariables {
   fullName?: string | null;
   department?: string | null;
   phoneNumber?: string | null;
+  accessCode?: string | null;
 }
 ```
 ### Return Type
@@ -2070,10 +2540,11 @@ export default function UpdateUserComponent() {
     fullName: ..., // optional
     department: ..., // optional
     phoneNumber: ..., // optional
+    accessCode: ..., // optional
   };
   mutation.mutate(updateUserVars);
   // Variables can be defined inline as well.
-  mutation.mutate({ id: ..., tenantId: ..., businessId: ..., email: ..., role: ..., fullName: ..., department: ..., phoneNumber: ..., });
+  mutation.mutate({ id: ..., tenantId: ..., businessId: ..., email: ..., role: ..., fullName: ..., department: ..., phoneNumber: ..., accessCode: ..., });
 
   // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
   const options = {
@@ -2212,6 +2683,7 @@ export interface CreateBusinessVariables {
   location: string;
   businessType?: string | null;
   region?: string | null;
+  code: string;
 }
 ```
 ### Return Type
@@ -2266,10 +2738,11 @@ export default function CreateBusinessComponent() {
     location: ..., 
     businessType: ..., // optional
     region: ..., // optional
+    code: ..., 
   };
   mutation.mutate(createBusinessVars);
   // Variables can be defined inline as well.
-  mutation.mutate({ tenantId: ..., name: ..., location: ..., businessType: ..., region: ..., });
+  mutation.mutate({ tenantId: ..., name: ..., location: ..., businessType: ..., region: ..., code: ..., });
 
   // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
   const options = {
@@ -2315,6 +2788,7 @@ export interface UpdateBusinessVariables {
   location?: string | null;
   businessType?: string | null;
   region?: string | null;
+  code?: string | null;
 }
 ```
 ### Return Type
@@ -2370,10 +2844,11 @@ export default function UpdateBusinessComponent() {
     location: ..., // optional
     businessType: ..., // optional
     region: ..., // optional
+    code: ..., // optional
   };
   mutation.mutate(updateBusinessVars);
   // Variables can be defined inline as well.
-  mutation.mutate({ id: ..., tenantId: ..., name: ..., location: ..., businessType: ..., region: ..., });
+  mutation.mutate({ id: ..., tenantId: ..., name: ..., location: ..., businessType: ..., region: ..., code: ..., });
 
   // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
   const options = {
@@ -3443,10 +3918,12 @@ export interface CreateEmployeeVariables {
   businessId: string;
   fullName: string;
   position: string;
+  role?: string | null;
   salary?: number | null;
   department?: string | null;
   startDate?: DateString | null;
   status?: string | null;
+  code?: string | null;
 }
 ```
 ### Return Type
@@ -3500,14 +3977,16 @@ export default function CreateEmployeeComponent() {
     businessId: ..., 
     fullName: ..., 
     position: ..., 
+    role: ..., // optional
     salary: ..., // optional
     department: ..., // optional
     startDate: ..., // optional
     status: ..., // optional
+    code: ..., // optional
   };
   mutation.mutate(createEmployeeVars);
   // Variables can be defined inline as well.
-  mutation.mutate({ tenantId: ..., businessId: ..., fullName: ..., position: ..., salary: ..., department: ..., startDate: ..., status: ..., });
+  mutation.mutate({ tenantId: ..., businessId: ..., fullName: ..., position: ..., role: ..., salary: ..., department: ..., startDate: ..., status: ..., code: ..., });
 
   // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
   const options = {
@@ -3552,6 +4031,7 @@ export interface UpdateEmployeeVariables {
   businessId?: string | null;
   fullName?: string | null;
   position?: string | null;
+  role?: string | null;
   salary?: number | null;
   department?: string | null;
   startDate?: DateString | null;
@@ -3610,6 +4090,7 @@ export default function UpdateEmployeeComponent() {
     businessId: ..., // optional
     fullName: ..., // optional
     position: ..., // optional
+    role: ..., // optional
     salary: ..., // optional
     department: ..., // optional
     startDate: ..., // optional
@@ -3617,7 +4098,7 @@ export default function UpdateEmployeeComponent() {
   };
   mutation.mutate(updateEmployeeVars);
   // Variables can be defined inline as well.
-  mutation.mutate({ id: ..., tenantId: ..., businessId: ..., fullName: ..., position: ..., salary: ..., department: ..., startDate: ..., status: ..., });
+  mutation.mutate({ id: ..., tenantId: ..., businessId: ..., fullName: ..., position: ..., role: ..., salary: ..., department: ..., startDate: ..., status: ..., });
 
   // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
   const options = {

@@ -152,6 +152,7 @@ export type Employee = {
   businessId: string;
   fullName: string;
   position: string;
+  role?: string;
   department: string;
   salary: number;
   contact: string;
@@ -162,6 +163,7 @@ export type Employee = {
   salaryPaymentStatus: PaymentStatus;
   createdBy: string;
   createdAt: string;
+  code?: string;
 };
 
 export type Attendance = {

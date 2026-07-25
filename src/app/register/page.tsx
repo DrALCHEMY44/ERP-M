@@ -1,4 +1,3 @@
-
 "use client"
 
 import * as React from "react"
@@ -13,6 +12,8 @@ import {
   User,
   Mail,
   Lock,
+  Eye,
+  EyeOff,
   MapPin,
   Briefcase,
   Globe,
@@ -59,16 +60,16 @@ const BUSINESS_SECTORS = [
 ]
 
 const CAMEROON_REGIONS = [
-  "Littoral",
-  "Centre",
-  "West",
-  "South-West",
-  "North-West",
-  "South",
-  "East",
-  "Adamawa",
-  "North",
-  "Far North",
+  "Littoral Region",
+  "Centre Region",
+  "West Region",
+  "South-West Region",
+  "North-West Region",
+  "South Region",
+  "East Region",
+  "Adamawa Region",
+  "North Region",
+  "Far North Region",
 ]
 
 const PIPELINE_STAGES = [
@@ -79,15 +80,11 @@ const PIPELINE_STAGES = [
   "Finalizing your workspace...",
 ]
 
-// ─── Step 1 Data Interface ───────────────────────────────────────────────────
-
 interface Step1Data {
   fullName: string
   email: string
   password: string
 }
-
-// ─── Component ───────────────────────────────────────────────────────────────
 
 export default function RegisterPage() {
   const { user, profile, refetchProfile } = useAuth()
@@ -96,13 +93,24 @@ export default function RegisterPage() {
   const [step, setStep] = React.useState(1)
   const [slideDirection, setSlideDirection] = React.useState<"forward" | "backward">("forward")
 
-  // Step 1 fields (local only — no DB writes until Step 2)
+  // Step 1 fields
   const [fullName, setFullName] = React.useState("")
   const [email, setEmail] = React.useState("")
   const [password, setPassword] = React.useState("")
   const [confirmPassword, setConfirmPassword] = React.useState("")
+  const [showPassword, setShowPassword] = React.useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = React.useState(false)
 
-  // Step 1 data snapshot (frozen on advance)
+  // Password criteria checklist
+  const criteria = React.useMemo(() => {
+    return {
+      length: password.length >= 8,
+      uppercase: /[A-Z]/.test(password),
+      number: /[0-9]/.test(password),
+    }
+  }, [password])
+
+  // Step 1 data snapshot
   const [step1Data, setStep1Data] = React.useState<Step1Data | null>(null)
 
   // Step 2 fields
@@ -139,7 +147,7 @@ export default function RegisterPage() {
     }
   }, [user, profile, step])
 
-  // ─── Step 1: Local Validation Only ───────────────────────────────────────
+  // ─── Step 1: Validation & Advance ────────────────────────────────────────
 
   const handleStep1Continue = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -150,11 +158,13 @@ export default function RegisterPage() {
     if (!email.trim()) newErrors.email = "Email is required"
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
       newErrors.email = "Enter a valid email address"
-    if (!password) newErrors.password = "Password is required"
-    else if (password.length < 6)
-      newErrors.password = "Password must be at least 6 characters"
-    if (!confirmPassword) newErrors.confirmPassword = "Please confirm your password"
-    else if (password !== confirmPassword)
+    
+    // Enforce criteria matching mockup
+    if (!criteria.length || !criteria.uppercase || !criteria.number) {
+      newErrors.password = "Password does not meet criteria checklist"
+    }
+    
+    if (password !== confirmPassword)
       newErrors.confirmPassword = "Passwords do not match"
 
     if (Object.keys(newErrors).length > 0) {
@@ -162,7 +172,6 @@ export default function RegisterPage() {
       return
     }
 
-    // Check if email already exists in the database (getUserByEmail is PUBLIC)
     setIsLoading(true)
     setErrors({})
     try {
@@ -173,17 +182,16 @@ export default function RegisterPage() {
         return
       }
     } catch {
-      // If the lookup fails, proceed anyway — the mutation will catch duplicates
+      // If query fails, continue; mutation will enforce constraints
     }
     setIsLoading(false)
 
-    // ✅ Freeze credentials into step1Data and advance
     setStep1Data({ fullName: fullName.trim(), email: email.trim(), password })
     setSlideDirection("forward")
     setStep(2)
   }
 
-  // ─── Step 2: Atomic Database Transaction Chain ───────────────────────────
+  // ─── Step 2: Atomic Setup Transaction Chain ─────────────────────────────
 
   const handleStep2Submit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -205,18 +213,17 @@ export default function RegisterPage() {
     setPipelineProgress(0)
 
     try {
-      // ── Stage 1: Secure credentials (silent transport auth) ────────────
+      // ── Stage 1: Auth sign up ────────────
       setPipelineStage(PIPELINE_STAGES[0])
       setPipelineProgress(1)
 
       const isAdminEmail = step1Data.email.toLowerCase() === "admin@smarterp.ai"
       const userRole = isAdminEmail ? "Platform Super Admin" : "Business Owner"
 
-      let credential
       const currentAuthUser = auth.currentUser
       if (!currentAuthUser || currentAuthUser.email?.toLowerCase() !== step1Data.email.toLowerCase()) {
         try {
-          credential = await createUserWithEmailAndPassword(
+          await createUserWithEmailAndPassword(
             auth,
             step1Data.email,
             step1Data.password
@@ -232,7 +239,7 @@ export default function RegisterPage() {
         }
       }
 
-      // ── Stage 2: Create Tenant ─────────────────────────────────────────
+      // ── Stage 2: Create Tenant ────────────
       setPipelineStage(PIPELINE_STAGES[1])
       setPipelineProgress(2)
 
@@ -245,9 +252,17 @@ export default function RegisterPage() {
       })
       const tenantId = tenantResult.data.tenant_insert.id
 
-      // ── Stage 3: Create Business ───────────────────────────────────────
+      // ── Stage 3: Create Business ────────────
       setPipelineStage(PIPELINE_STAGES[2])
       setPipelineProgress(3)
+
+      const now = new Date()
+      const dateStr = now.toISOString().split('T')[0]
+      const normalizedName = businessName
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '_')
+        .replace(/^_+|_+$/g, '')
+      const code = `${normalizedName}_${dateStr}`
 
       const businessResult = await createBusinessMutation({
         tenantId: tenantId,
@@ -255,10 +270,11 @@ export default function RegisterPage() {
         location: `${city.trim()}, ${region}`,
         businessType: sector,
         region: region,
+        code: code,
       })
       const businessId = businessResult.data.business_insert.id
 
-      // ── Stage 4: Create User record ────────────────────────────────────
+      // ── Stage 4: Create User Profile ────────────
       setPipelineStage(PIPELINE_STAGES[3])
       setPipelineProgress(4)
 
@@ -270,18 +286,13 @@ export default function RegisterPage() {
         fullName: step1Data.fullName,
       })
 
-      // ── Stage 5: Finalize ──────────────────────────────────────────────
+      // ── Stage 5: Finalize ────────────
       setPipelineStage(PIPELINE_STAGES[4])
       setPipelineProgress(5)
 
-      // Refetch the user profile so the AuthProvider session is updated in memory
       await refetchProfile()
-
-      // Small delay so the user sees the final stage
       await new Promise((r) => setTimeout(r, 600))
 
-      // ✅ Session is now live via onAuthStateChanged → getUserByEmail
-      // The AuthProvider will automatically resolve the profile from Data Connect
       setIsComplete(true)
       setPipelineStage("")
 
@@ -291,12 +302,10 @@ export default function RegisterPage() {
       })
 
       setTimeout(() => {
-        router.push("/dashboard")
+        window.location.href = "/dashboard"
       }, 1800)
     } catch (error: any) {
       console.error("Registration pipeline failed:", error)
-
-      // Parse common database constraint errors
       let message = "Failed to set up your workspace. Please try again."
       const errMsg = error.message?.toLowerCase() || ""
       if (errMsg.includes("unique") || errMsg.includes("duplicate") || errMsg.includes("already exists")) {
@@ -322,499 +331,374 @@ export default function RegisterPage() {
     }
   }
 
-  // ─── Render ──────────────────────────────────────────────────────────────
-
   return (
-    <div className="min-h-screen flex items-center justify-center relative overflow-hidden p-4">
-      {/* ── Background ─────────────────────────────────────────────────────── */}
-      <div className="fixed inset-0 bg-gradient-to-br from-[#0a0e27] via-[#0d1442] to-[#10083a]" />
-      <div
-        className="fixed inset-0 opacity-[0.03]"
-        style={{
-          backgroundImage: `radial-gradient(circle at 1px 1px, rgba(130,160,255,0.5) 1px, transparent 0)`,
-          backgroundSize: "32px 32px",
-        }}
-      />
-      <div className="fixed top-1/4 -left-40 w-[500px] h-[500px] bg-blue-600/15 rounded-full blur-[140px]" />
-      <div className="fixed bottom-1/4 -right-40 w-[500px] h-[500px] bg-indigo-600/15 rounded-full blur-[140px]" />
+    <div className="min-h-screen w-full flex flex-col justify-between bg-[#f8fafc] text-foreground p-6 font-sans">
+      {/* Top Header Row */}
+      <div className="w-full max-w-7xl mx-auto flex items-center justify-between py-4">
+        <div className="flex items-center gap-2">
+          <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-blue-500/20">
+            <Building2 className="size-4" />
+          </div>
+          <span className="font-bold tracking-tight text-slate-800 text-lg">SmartERP</span>
+        </div>
+      </div>
 
-      {/* ── Main Container ─────────────────────────────────────────────────── */}
-      <div className="relative z-10 w-full max-w-[480px]">
-        {/* Logo */}
-        <div className="flex flex-col items-center text-center mb-8">
-          <div className="relative mb-4">
-            <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white shadow-2xl shadow-blue-500/25">
-              <Building2 className="size-8" />
+      {/* Main card section */}
+      <div className="flex-1 flex flex-col items-center justify-center py-8">
+        
+        {/* Step Indicator Header */}
+        <div className="w-full max-w-[390px] mb-6">
+          <div className="flex items-center justify-center gap-3">
+            {/* Step 1 */}
+            <div className="flex flex-col items-center gap-1">
+              <div className={`h-6 w-6 rounded-full flex items-center justify-center text-[10px] font-bold transition-all ${
+                step === 1 
+                  ? "bg-blue-600 text-white shadow-md shadow-blue-500/30" 
+                  : "bg-emerald-500 text-white"
+              }`}>
+                {step > 1 ? <CheckCircle2 className="size-3.5" /> : "1"}
+              </div>
+              <span className={`text-[9px] font-bold uppercase tracking-wider ${
+                step === 1 ? "text-blue-600" : "text-emerald-500"
+              }`}>Account</span>
             </div>
-            <div className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-gradient-to-r from-amber-400 to-orange-500 flex items-center justify-center">
-              <Sparkles className="size-3 text-white" />
+
+            {/* Connection Line */}
+            <div className={`flex-1 h-0.5 max-w-[80px] rounded-full transition-all ${
+              step > 1 ? "bg-emerald-500" : "bg-slate-200"
+            }`} />
+
+            {/* Step 2 */}
+            <div className="flex flex-col items-center gap-1">
+              <div className={`h-6 w-6 rounded-full flex items-center justify-center text-[10px] font-bold transition-all ${
+                step === 2 
+                  ? "bg-blue-600 text-white shadow-md shadow-blue-500/30" 
+                  : "bg-slate-200 text-slate-400"
+              }`}>
+                2
+              </div>
+              <span className={`text-[9px] font-bold uppercase tracking-wider ${
+                step === 2 ? "text-blue-600" : "text-slate-400"
+              }`}>Workspace</span>
             </div>
           </div>
-          <h1 className="text-3xl font-headline font-bold tracking-tighter text-white">
-            SmartERP AI
-          </h1>
-          <p className="text-[11px] text-blue-300/50 font-semibold mt-1 uppercase tracking-[0.25em]">
-            Intelligent SME Platform • Cameroon
-          </p>
         </div>
 
-        {/* ── Step Indicator ────────────────────────────────────────────────── */}
-        <div className="flex items-center justify-center gap-3 mb-4">
-          {[1, 2].map((s) => (
-            <React.Fragment key={s}>
-              <div
-                className={`
-                  flex items-center justify-center h-9 w-9 rounded-full text-xs font-bold
-                  transition-all duration-500 ease-out
-                  ${step >= s
-                    ? "bg-gradient-to-br from-blue-500 to-indigo-500 text-white shadow-lg shadow-blue-500/30"
-                    : "bg-white/[0.05] text-white/25 border border-white/[0.08]"
-                  }
-                  ${step === s && !isComplete ? "ring-2 ring-blue-400/40 ring-offset-2 ring-offset-[#0d1442]" : ""}
-                  ${isComplete && s === 2 ? "!bg-gradient-to-br !from-emerald-500 !to-green-500 !shadow-emerald-500/30" : ""}
-                `}
-              >
-                {(isComplete && s <= 2) || step > s ? (
-                  <CheckCircle2 className="size-4" />
-                ) : (
-                  s
-                )}
-              </div>
-              {s < 2 && (
-                <div
-                  className={`w-20 h-0.5 rounded-full transition-all duration-700 ${
-                    step > 1 ? "bg-gradient-to-r from-blue-500 to-indigo-500" : "bg-white/[0.06]"
-                  }`}
-                />
-              )}
-            </React.Fragment>
-          ))}
-        </div>
-
-        {/* Step Labels */}
-        <div className="flex justify-between px-4 mb-6">
-          <span
-            className={`text-[10px] font-bold uppercase tracking-[0.2em] transition-colors duration-300 ${
-              step >= 1 ? "text-blue-400" : "text-white/15"
-            }`}
-          >
-            Credentials
-          </span>
-          <span
-            className={`text-[10px] font-bold uppercase tracking-[0.2em] transition-colors duration-300 ${
-              step >= 2 ? "text-blue-400" : "text-white/15"
-            }`}
-          >
-            Workspace
-          </span>
-        </div>
-
-        {/* ── Glass Card ───────────────────────────────────────────────────── */}
-        <div className="relative rounded-2xl border border-white/[0.06] bg-white/[0.03] backdrop-blur-2xl shadow-2xl shadow-black/50 overflow-hidden">
-          {/* Top accent gradient */}
-          <div className="h-[3px] w-full bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
-
-          {/* ── Completion Overlay ──────────────────────────────────────────── */}
+        {/* Card */}
+        <div className="w-full max-w-[390px] bg-[#0d111c] border border-slate-800/60 rounded-3xl p-8 shadow-2xl shadow-slate-950/20 text-white relative overflow-hidden">
+          
+          {/* Completion Overlay */}
           {isComplete && (
-            <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-[#0a0e27]/95 backdrop-blur-sm">
-              <div className="h-20 w-20 rounded-full bg-gradient-to-r from-emerald-500 to-green-500 flex items-center justify-center shadow-2xl shadow-emerald-500/40 animate-bounce">
-                <CheckCircle2 className="size-10 text-white" />
+            <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-[#0d111c]/95 backdrop-blur-sm">
+              <div className="h-16 w-16 rounded-full bg-gradient-to-r from-emerald-500 to-green-500 flex items-center justify-center shadow-xl shadow-emerald-500/40 animate-bounce">
+                <CheckCircle2 className="size-8 text-white" />
               </div>
-              <h3 className="text-xl font-headline font-bold text-white mt-6">
-                Workspace Ready!
-              </h3>
-              <p className="text-sm text-emerald-300/60 mt-2">
-                Redirecting to your dashboard...
-              </p>
-              <div className="mt-4 flex items-center gap-2 text-emerald-400/50">
-                <Loader2 className="size-3 animate-spin" />
-                <span className="text-xs font-medium">Loading dashboard</span>
+              <h3 className="text-lg font-bold text-white mt-4">Workspace Ready!</h3>
+              <p className="text-xs text-emerald-400/60 mt-1">Redirecting to your dashboard...</p>
+              <div className="mt-3 flex items-center gap-1.5 text-slate-500">
+                <Loader2 className="size-3 animate-spin text-slate-400" />
+                <span className="text-[10px] font-medium">Launching SmartERP</span>
               </div>
             </div>
           )}
 
-          {/* ── Form Container ─────────────────────────────────────────────── */}
-          <div className="relative overflow-hidden">
-            {/* ═══════════════ STEP 1: CREDENTIALS ═══════════════════════════ */}
-            <div
-              className={`transition-all duration-500 ease-out ${
-                step === 1
-                  ? "opacity-100 translate-x-0"
-                  : slideDirection === "forward"
-                    ? "opacity-0 -translate-x-full absolute inset-0 pointer-events-none"
-                    : "opacity-0 translate-x-full absolute inset-0 pointer-events-none"
-              }`}
-            >
-              {step === 1 && (
-                <form onSubmit={handleStep1Continue}>
-                  {/* Header */}
-                  <div className="px-6 pt-6 pb-3">
-                    <h2 className="text-lg font-headline font-bold text-white">
-                      Create Your Account
-                    </h2>
-                    <p className="text-[13px] text-white/35 mt-1">
-                      Start with your personal credentials to secure your workspace.
-                    </p>
+          {/* Form Content */}
+          <div>
+            {step === 1 ? (
+              <form onSubmit={handleStep1Continue} className="space-y-4">
+                <div className="space-y-1 mb-6">
+                  <h2 className="text-xl font-bold tracking-tight">Create your account</h2>
+                  <p className="text-[11px] text-slate-400">Start with your personal credentials.</p>
+                </div>
+
+                {/* Full Name */}
+                <div className="space-y-1.5">
+                  <Label htmlFor="reg-name" className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                    Full name
+                  </Label>
+                  <div className="relative">
+                    <User className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-slate-500" />
+                    <Input
+                      id="reg-name"
+                      placeholder="Jean-Pierre Kamga"
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      className="pl-11 h-11 bg-[#161f30] border-slate-800/80 text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 rounded-xl text-sm"
+                      required
+                    />
                   </div>
+                  {errors.fullName && <p className="text-[10px] text-red-400">{errors.fullName}</p>}
+                </div>
 
-                  <div className="px-6 pb-6 space-y-4">
-                    {/* Form-level error */}
-                    {errors.form && (
-                      <div className="rounded-xl bg-red-500/10 border border-red-500/15 px-4 py-3">
-                        <p className="text-xs text-red-400 font-medium">{errors.form}</p>
-                      </div>
-                    )}
+                {/* Email */}
+                <div className="space-y-1.5">
+                  <Label htmlFor="reg-email" className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                    Email address
+                  </Label>
+                  <div className="relative">
+                    <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-slate-500" />
+                    <Input
+                      id="reg-email"
+                      type="email"
+                      placeholder="jp@business.cm"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="pl-11 h-11 bg-[#161f30] border-slate-800/80 text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 rounded-xl text-sm"
+                      required
+                    />
+                  </div>
+                  {errors.email && <p className="text-[10px] text-red-400">{errors.email}</p>}
+                </div>
 
-                    {/* Full Name */}
-                    <div className="space-y-1.5">
-                      <Label className="text-[11px] font-bold text-white/50 uppercase tracking-[0.15em]">
-                        Full Name
-                      </Label>
-                      <div className="relative">
-                        <User className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-white/15" />
-                        <Input
-                          id="register-fname"
-                          placeholder="Jean-Pierre Kamga"
-                          value={fullName}
-                          onChange={(e) => {
-                            setFullName(e.target.value)
-                            setErrors((p) => ({ ...p, fullName: "" }))
-                          }}
-                          className="pl-11 h-12 bg-white/[0.04] border-white/[0.06] text-white placeholder:text-white/15 focus:border-blue-500/40 focus:ring-1 focus:ring-blue-500/20 rounded-xl text-sm"
-                          required
-                        />
-                      </div>
-                      {errors.fullName && (
-                        <p className="text-[11px] text-red-400 font-medium pl-1">{errors.fullName}</p>
-                      )}
-                    </div>
-
-                    {/* Email */}
-                    <div className="space-y-1.5">
-                      <Label className="text-[11px] font-bold text-white/50 uppercase tracking-[0.15em]">
-                        Email Address
-                      </Label>
-                      <div className="relative">
-                        <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-white/15" />
-                        <Input
-                          id="register-email"
-                          type="email"
-                          placeholder="jp@business.cm"
-                          value={email}
-                          onChange={(e) => {
-                            setEmail(e.target.value)
-                            setErrors((p) => ({ ...p, email: "" }))
-                          }}
-                          className="pl-11 h-12 bg-white/[0.04] border-white/[0.06] text-white placeholder:text-white/15 focus:border-blue-500/40 focus:ring-1 focus:ring-blue-500/20 rounded-xl text-sm"
-                          required
-                        />
-                      </div>
-                      {errors.email && (
-                        <p className="text-[11px] text-red-400 font-medium pl-1">{errors.email}</p>
-                      )}
-                    </div>
-
-                    {/* Password */}
-                    <div className="space-y-1.5">
-                      <Label className="text-[11px] font-bold text-white/50 uppercase tracking-[0.15em]">
-                        Password
-                      </Label>
-                      <div className="relative">
-                        <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-white/15" />
-                        <Input
-                          id="register-password"
-                          type="password"
-                          placeholder="Min. 6 characters"
-                          value={password}
-                          onChange={(e) => {
-                            setPassword(e.target.value)
-                            setErrors((p) => ({ ...p, password: "" }))
-                          }}
-                          className="pl-11 h-12 bg-white/[0.04] border-white/[0.06] text-white placeholder:text-white/15 focus:border-blue-500/40 focus:ring-1 focus:ring-blue-500/20 rounded-xl text-sm"
-                          required
-                        />
-                      </div>
-                      {errors.password && (
-                        <p className="text-[11px] text-red-400 font-medium pl-1">{errors.password}</p>
-                      )}
-                    </div>
-
-                    {/* Confirm Password */}
-                    <div className="space-y-1.5">
-                      <Label className="text-[11px] font-bold text-white/50 uppercase tracking-[0.15em]">
-                        Confirm Password
-                      </Label>
-                      <div className="relative">
-                        <ShieldCheck className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-white/15" />
-                        <Input
-                          id="register-confirm-password"
-                          type="password"
-                          placeholder="Re-enter your password"
-                          value={confirmPassword}
-                          onChange={(e) => {
-                            setConfirmPassword(e.target.value)
-                            setErrors((p) => ({ ...p, confirmPassword: "" }))
-                          }}
-                          className="pl-11 h-12 bg-white/[0.04] border-white/[0.06] text-white placeholder:text-white/15 focus:border-blue-500/40 focus:ring-1 focus:ring-blue-500/20 rounded-xl text-sm"
-                          required
-                        />
-                      </div>
-                      {errors.confirmPassword && (
-                        <p className="text-[11px] text-red-400 font-medium pl-1">{errors.confirmPassword}</p>
-                      )}
-                    </div>
-
-                    {/* Continue Button */}
-                    <Button
-                      type="submit"
-                      disabled={isLoading}
-                      className="w-full h-12 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold uppercase tracking-[0.2em] text-xs shadow-lg shadow-blue-600/20 transition-all duration-300 hover:shadow-blue-500/35 hover:scale-[1.01] active:scale-[0.99] border-0 rounded-xl"
+                {/* Password */}
+                <div className="space-y-1.5">
+                  <Label htmlFor="reg-pass" className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                    Password
+                  </Label>
+                  <div className="relative">
+                    <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-slate-500" />
+                    <Input
+                      id="reg-pass"
+                      type={showPassword ? "text" : "password"}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="pl-11 pr-11 h-11 bg-[#161f30] border-slate-800/80 text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 rounded-xl text-sm"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-350"
                     >
-                      {isLoading ? (
-                        <Loader2 className="size-4 animate-spin" />
-                      ) : (
-                        <>
-                          Continue
-                          <ArrowRight className="ml-2 size-4" />
-                        </>
-                      )}
-                    </Button>
+                      {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                    </button>
                   </div>
-                </form>
-              )}
-            </div>
+                </div>
 
-            {/* ═══════════════ STEP 2: WORKSPACE CONFIG ══════════════════════ */}
-            <div
-              className={`transition-all duration-500 ease-out ${
-                step === 2
-                  ? "opacity-100 translate-x-0"
-                  : slideDirection === "backward"
-                    ? "opacity-0 -translate-x-full absolute inset-0 pointer-events-none"
-                    : "opacity-0 translate-x-full absolute inset-0 pointer-events-none"
-              }`}
-            >
-              {step === 2 && (
-                <form onSubmit={handleStep2Submit}>
-                  {/* Header with back button */}
-                  <div className="px-6 pt-6 pb-3">
-                    <div className="flex items-center gap-3">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (isLoading) return
-                          setSlideDirection("backward")
-                          setErrors({})
-                          setStep(1)
-                        }}
-                        className="h-8 w-8 rounded-lg bg-white/[0.04] border border-white/[0.06] flex items-center justify-center text-white/30 hover:text-white hover:bg-white/[0.08] transition-all shrink-0"
-                        disabled={isLoading}
-                      >
-                        <ArrowLeft className="size-4" />
-                      </button>
-                      <div>
-                        <h2 className="text-lg font-headline font-bold text-white">
-                          Configure Your Workspace
-                        </h2>
-                        <p className="text-[13px] text-white/35 mt-0.5">
-                          Tell us about your business to personalize your hub.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="px-6 pb-6 space-y-4 mt-1">
-                    {/* Form-level error */}
-                    {errors.form && (
-                      <div className="rounded-xl bg-red-500/10 border border-red-500/15 px-4 py-3">
-                        <p className="text-xs text-red-400 font-medium">{errors.form}</p>
-                      </div>
-                    )}
-
-                    {/* Business Name */}
-                    <div className="space-y-1.5">
-                      <Label className="text-[11px] font-bold text-white/50 uppercase tracking-[0.15em]">
-                        Business Name
-                      </Label>
-                      <div className="relative">
-                        <Briefcase className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-white/15" />
-                        <Input
-                          id="register-business-name"
-                          placeholder="Kamga Enterprises SARL"
-                          value={businessName}
-                          onChange={(e) => {
-                            setBusinessName(e.target.value)
-                            setErrors((p) => ({ ...p, businessName: "" }))
-                          }}
-                          className="pl-11 h-12 bg-white/[0.04] border-white/[0.06] text-white placeholder:text-white/15 focus:border-blue-500/40 focus:ring-1 focus:ring-blue-500/20 rounded-xl text-sm"
-                          required
-                          disabled={isLoading}
-                        />
-                      </div>
-                      {errors.businessName && (
-                        <p className="text-[11px] text-red-400 font-medium pl-1">{errors.businessName}</p>
-                      )}
-                    </div>
-
-                    {/* Business Sector */}
-                    <div className="space-y-1.5">
-                      <Label className="text-[11px] font-bold text-white/50 uppercase tracking-[0.15em]">
-                        Business Sector
-                      </Label>
-                      <Select
-                        value={sector}
-                        onValueChange={(v) => {
-                          setSector(v)
-                          setErrors((p) => ({ ...p, sector: "" }))
-                        }}
-                        disabled={isLoading}
-                      >
-                        <SelectTrigger className="h-12 bg-white/[0.04] border-white/[0.06] text-white rounded-xl [&>span]:text-white/15 data-[state=open]:border-blue-500/40">
-                          <div className="flex items-center gap-2.5">
-                            <Globe className="size-4 text-white/15 shrink-0" />
-                            <SelectValue placeholder="Select your industry" />
-                          </div>
-                        </SelectTrigger>
-                        <SelectContent className="bg-[#131940] border-white/[0.08] rounded-xl">
-                          {BUSINESS_SECTORS.map((s) => (
-                            <SelectItem
-                              key={s}
-                              value={s}
-                              className="text-white/70 focus:bg-white/[0.06] focus:text-white rounded-lg"
-                            >
-                              {s}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      {errors.sector && (
-                        <p className="text-[11px] text-red-400 font-medium pl-1">{errors.sector}</p>
-                      )}
-                    </div>
-
-                    {/* City / Location */}
-                    <div className="space-y-1.5">
-                      <Label className="text-[11px] font-bold text-white/50 uppercase tracking-[0.15em]">
-                        City / Location
-                      </Label>
-                      <div className="relative">
-                        <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-white/15" />
-                        <Input
-                          id="register-city"
-                          placeholder="Douala"
-                          value={city}
-                          onChange={(e) => {
-                            setCity(e.target.value)
-                            setErrors((p) => ({ ...p, city: "" }))
-                          }}
-                          className="pl-11 h-12 bg-white/[0.04] border-white/[0.06] text-white placeholder:text-white/15 focus:border-blue-500/40 focus:ring-1 focus:ring-blue-500/20 rounded-xl text-sm"
-                          required
-                          disabled={isLoading}
-                        />
-                      </div>
-                      {errors.city && (
-                        <p className="text-[11px] text-red-400 font-medium pl-1">{errors.city}</p>
-                      )}
-                    </div>
-
-                    {/* Region */}
-                    <div className="space-y-1.5">
-                      <Label className="text-[11px] font-bold text-white/50 uppercase tracking-[0.15em]">
-                        Region
-                      </Label>
-                      <Select
-                        value={region}
-                        onValueChange={(v) => {
-                          setRegion(v)
-                          setErrors((p) => ({ ...p, region: "" }))
-                        }}
-                        disabled={isLoading}
-                      >
-                        <SelectTrigger className="h-12 bg-white/[0.04] border-white/[0.06] text-white rounded-xl [&>span]:text-white/15 data-[state=open]:border-blue-500/40">
-                          <div className="flex items-center gap-2.5">
-                            <MapPin className="size-4 text-white/15 shrink-0" />
-                            <SelectValue placeholder="Select your region" />
-                          </div>
-                        </SelectTrigger>
-                        <SelectContent className="bg-[#131940] border-white/[0.08] rounded-xl">
-                          {CAMEROON_REGIONS.map((r) => (
-                            <SelectItem
-                              key={r}
-                              value={r}
-                              className="text-white/70 focus:bg-white/[0.06] focus:text-white rounded-lg"
-                            >
-                              {r}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      {errors.region && (
-                        <p className="text-[11px] text-red-400 font-medium pl-1">{errors.region}</p>
-                      )}
-                    </div>
-
-                    {/* Pipeline Progress Indicator */}
-                    {isLoading && pipelineStage && (
-                      <div className="rounded-xl bg-blue-500/[0.06] border border-blue-500/10 px-4 py-3.5">
-                        <div className="flex items-center gap-3">
-                          <Loader2 className="size-4 text-blue-400 animate-spin shrink-0" />
-                          <div className="flex-1 min-w-0">
-                            <p className="text-xs text-blue-300/80 font-medium truncate">
-                              {pipelineStage}
-                            </p>
-                            <div className="mt-2.5 h-1 w-full bg-white/[0.04] rounded-full overflow-hidden">
-                              <div
-                                className="h-full bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full transition-all duration-700 ease-out"
-                                style={{
-                                  width: `${(pipelineProgress / PIPELINE_STAGES.length) * 100}%`,
-                                }}
-                              />
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Launch Button */}
-                    <Button
-                      type="submit"
-                      disabled={isLoading}
-                      className="w-full h-12 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold uppercase tracking-[0.2em] text-xs shadow-lg shadow-blue-600/20 transition-all duration-300 hover:shadow-blue-500/35 hover:scale-[1.01] active:scale-[0.99] border-0 rounded-xl"
+                {/* Confirm Password */}
+                <div className="space-y-1.5">
+                  <Label htmlFor="reg-confirm" className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                    Confirm password
+                  </Label>
+                  <div className="relative">
+                    <ShieldCheck className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-slate-500" />
+                    <Input
+                      id="reg-confirm"
+                      type={showConfirmPassword ? "text" : "password"}
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      className="pl-11 pr-11 h-11 bg-[#161f30] border-slate-800/80 text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 rounded-xl text-sm"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-350"
                     >
-                      {isLoading ? (
-                        <>
-                          <Loader2 className="size-4 animate-spin mr-2" />
-                          Creating Workspace...
-                        </>
-                      ) : (
-                        <>
-                          Launch Workspace
-                          <ChevronRight className="ml-2 size-4" />
-                        </>
-                      )}
-                    </Button>
+                      {showConfirmPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                    </button>
                   </div>
-                </form>
-              )}
-            </div>
-          </div>
+                  {errors.confirmPassword && <p className="text-[10px] text-red-400">{errors.confirmPassword}</p>}
+                </div>
 
-          {/* Footer */}
-          <div className="border-t border-white/[0.04] px-6 py-4 bg-white/[0.01]">
-            <p className="text-center text-xs text-white/25">
-              Already have an account?{" "}
-              <Link
-                href="/login"
-                className="text-blue-400 font-bold hover:text-blue-300 transition-colors hover:underline"
-              >
-                Login here
-              </Link>
-            </p>
+                {/* Password Criteria checklist */}
+                <div className="space-y-1 pt-1 text-[11px]">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className={`size-3.5 transition-colors ${criteria.length ? "text-emerald-500" : "text-slate-700"}`} />
+                    <span className={criteria.length ? "text-emerald-400" : "text-slate-500"}>At least 8 characters</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className={`size-3.5 transition-colors ${criteria.uppercase ? "text-emerald-500" : "text-slate-700"}`} />
+                    <span className={criteria.uppercase ? "text-emerald-400" : "text-slate-500"}>One uppercase letter</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className={`size-3.5 transition-colors ${criteria.number ? "text-emerald-500" : "text-slate-700"}`} />
+                    <span className={criteria.number ? "text-emerald-400" : "text-slate-500"}>One number</span>
+                  </div>
+                </div>
+
+                <Button
+                  type="submit"
+                  className="w-full h-11 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold uppercase tracking-wider text-xs shadow-lg shadow-blue-600/10 transition-all rounded-xl border-0 flex items-center justify-center gap-1 mt-6"
+                >
+                  Continue
+                  <ArrowRight className="size-4" />
+                </Button>
+              </form>
+            ) : (
+              <form onSubmit={handleStep2Submit} className="space-y-4">
+                <div className="flex items-center gap-2.5 mb-6">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (isLoading) return
+                      setSlideDirection("backward")
+                      setStep(1)
+                    }}
+                    className="h-7 w-7 rounded-lg bg-slate-800 border border-slate-700/60 flex items-center justify-center text-slate-400 hover:text-white transition-all shrink-0"
+                    disabled={isLoading}
+                  >
+                    <ArrowLeft className="size-3.5" />
+                  </button>
+                  <div className="space-y-0.5">
+                    <h2 className="text-xl font-bold tracking-tight">Configure your workspace</h2>
+                    <p className="text-[11px] text-slate-400">Tell us about your business.</p>
+                  </div>
+                </div>
+
+                {errors.form && <p className="text-[11px] text-red-400">{errors.form}</p>}
+
+                {/* Business Name */}
+                <div className="space-y-1.5">
+                  <Label htmlFor="biz-name" className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                    Business name
+                  </Label>
+                  <div className="relative">
+                    <Briefcase className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-slate-500" />
+                    <Input
+                      id="biz-name"
+                      placeholder="Kamga Enterprises SARL"
+                      value={businessName}
+                      onChange={(e) => setBusinessName(e.target.value)}
+                      className="pl-11 h-11 bg-[#161f30] border-slate-800/80 text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 rounded-xl text-sm"
+                      required
+                      disabled={isLoading}
+                    />
+                  </div>
+                  {errors.businessName && <p className="text-[10px] text-red-400">{errors.businessName}</p>}
+                </div>
+
+                {/* Business Sector */}
+                <div className="space-y-1.5">
+                  <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                    Business sector
+                  </Label>
+                  <Select
+                    value={sector}
+                    onValueChange={(v) => setSector(v)}
+                    disabled={isLoading}
+                  >
+                    <SelectTrigger className="h-11 bg-[#161f30] border-slate-800/80 text-white rounded-xl focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
+                      <div className="flex items-center gap-2.5">
+                        <Globe className="size-4 text-slate-500 shrink-0" />
+                        <SelectValue placeholder="Information Technology" />
+                      </div>
+                    </SelectTrigger>
+                    <SelectContent className="bg-[#0f172a] border-slate-800 rounded-xl">
+                      {BUSINESS_SECTORS.map((s) => (
+                        <SelectItem
+                          key={s}
+                          value={s}
+                          className="text-slate-300 focus:bg-slate-800 focus:text-white rounded-lg cursor-pointer"
+                        >
+                          {s}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {errors.sector && <p className="text-[10px] text-red-400">{errors.sector}</p>}
+                </div>
+
+                {/* City / Location */}
+                <div className="space-y-1.5">
+                  <Label htmlFor="biz-city" className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                    City / Location
+                  </Label>
+                  <div className="relative">
+                    <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-slate-500" />
+                    <Input
+                      id="biz-city"
+                      placeholder="Douala"
+                      value={city}
+                      onChange={(e) => setCity(e.target.value)}
+                      className="pl-11 h-11 bg-[#161f30] border-slate-800/80 text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 rounded-xl text-sm"
+                      required
+                      disabled={isLoading}
+                    />
+                  </div>
+                  {errors.city && <p className="text-[10px] text-red-400">{errors.city}</p>}
+                </div>
+
+                {/* Region */}
+                <div className="space-y-1.5">
+                  <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                    Region
+                  </Label>
+                  <Select
+                    value={region}
+                    onValueChange={(v) => setRegion(v)}
+                    disabled={isLoading}
+                  >
+                    <SelectTrigger className="h-11 bg-[#161f30] border-slate-800/80 text-white rounded-xl focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
+                      <div className="flex items-center gap-2.5">
+                        <MapPin className="size-4 text-slate-500 shrink-0" />
+                        <SelectValue placeholder="Littoral Region" />
+                      </div>
+                    </SelectTrigger>
+                    <SelectContent className="bg-[#0f172a] border-slate-800 rounded-xl">
+                      {CAMEROON_REGIONS.map((r) => (
+                        <SelectItem
+                          key={r}
+                          value={r}
+                          className="text-slate-300 focus:bg-slate-800 focus:text-white rounded-lg cursor-pointer"
+                        >
+                          {r}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {errors.region && <p className="text-[10px] text-red-400">{errors.region}</p>}
+                </div>
+
+                {/* Pipeline Progress Indicator */}
+                {isLoading && pipelineStage && (
+                  <div className="rounded-xl bg-slate-900 border border-slate-800 p-3.5 mt-4 space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Loader2 className="size-3.5 text-blue-500 animate-spin shrink-0" />
+                      <p className="text-[10px] text-slate-300 font-medium truncate">{pipelineStage}</p>
+                    </div>
+                    <div className="h-1 w-full bg-slate-850 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full transition-all duration-700"
+                        style={{ width: `${(pipelineProgress / PIPELINE_STAGES.length) * 100}%` }}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                <Button
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full h-11 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold uppercase tracking-wider text-xs shadow-lg shadow-blue-600/10 transition-all rounded-xl border-0 flex items-center justify-center gap-1 mt-6"
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="size-4 animate-spin mr-2" />
+                      Creating Workspace...
+                    </>
+                  ) : (
+                    <>
+                      Launch Workspace
+                      <ChevronRight className="ml-2 size-4" />
+                    </>
+                  )}
+                </Button>
+              </form>
+            )}
           </div>
         </div>
 
-        {/* Bottom Badge */}
-        <p className="text-center text-[10px] text-white/15 uppercase tracking-[0.2em] font-bold mt-6">
+        <div className="text-center text-xs text-slate-500 mt-8">
+          Already have an account?{" "}
+          <Link href="/login" className="text-blue-500 font-bold hover:underline">
+            Login here
+          </Link>
+        </div>
+      </div>
+
+      {/* Bottom Footer Row */}
+      <div className="w-full text-center py-4 border-t border-slate-200">
+        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">
           OHADA Compliant • Secured in Cameroon • AES-256 Encrypted
         </p>
       </div>

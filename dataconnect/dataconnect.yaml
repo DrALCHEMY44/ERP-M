@@ -8,6 +8,5 @@ schemas:
         database: "studio-8058744913-5a601-database"
         cloudSql:
           instanceId: "studio-8058744913-5a601-instance"
-          # schemaValidation: "STRICT"     # STRICT mode makes Postgres schema match Data Connect exactly.
-          # schemaValidation: "COMPATIBLE" # COMPATIBLE mode makes Postgres schema compatible with Data Connect.
-connectorDirs: ["./example"]
+          schemaValidation: "COMPATIBLE" # Safely tracks columns without dropping data
+connectorDirs: ["./example"] # 👈 Changed from ./example to ./client

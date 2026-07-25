@@ -43,7 +43,8 @@ export default function FinancePage() {
       tenantId: profile?.tenantId || "",
       businessId: profile?.businessId || ""
     },
-    skip: !profile || !profile.tenantId || !profile.businessId
+    skip: !profile || !profile.tenantId || !profile.businessId,
+    refreshInterval: 5000
   });
 
   const transactions = dbTransactions?.transactions || [];

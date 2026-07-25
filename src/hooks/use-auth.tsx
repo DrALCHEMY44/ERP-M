@@ -5,7 +5,7 @@ import { createContext, useContext, useEffect, useState, ReactNode } from 'react
 import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase'; 
 import { doc, getDoc } from 'firebase/firestore';
-import { getUserByEmail, createUser } from '@/lib/data-service';
+import { getUserByEmail, createUser, getBusinessById } from '@/lib/data-service';
 
 export interface AppUser {
   id: string;
@@ -14,6 +14,7 @@ export interface AppUser {
   tenantId: string;
   businessId: string;
   fullName?: string | null;
+  businessCode?: string | null;
 }
 
 interface AuthContextType {
@@ -63,7 +64,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           console.warn('No user profile found in Firestore for UID:', firebaseUser.uid);
         }
       }
-      setProfile(appUser);
+      if (appUser) {
+        let businessCode: string | null = null;
+        try {
+          const business = await getBusinessById(appUser.businessId);
+          if (business) {
+            businessCode = business.code;
+          }
+        } catch (bizErr) {
+          console.error('Failed to fetch business details for code display:', bizErr);
+        }
+        
+        const userProfile: AppUser = {
+          id: appUser.id,
+          email: appUser.email,
+          role: appUser.role,
+          tenantId: appUser.tenantId,
+          businessId: appUser.businessId,
+          fullName: appUser.fullName,
+          businessCode: businessCode,
+        };
+        setProfile(userProfile);
+      } else {
+        setProfile(null);
+      }
     } catch (e) {
       console.error('Failed to fetch user profile:', e);
       setProfile(null);

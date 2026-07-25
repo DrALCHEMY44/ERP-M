@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { useDataConnect } from "@/hooks/use-dataconnect"
-import { listEmployeesByBusinessQuery, createEmployeeMutation, updateEmployeeMutation, deleteEmployeeMutation } from "@/lib/data-service"
+import { listEmployeesByBusinessQuery, createEmployeeMutation, updateEmployeeMutation, deleteEmployeeMutation, createUserMutation, updateUserMutation, getUserByEmailQuery } from "@/lib/data-service"
 import { useAuth } from "@/hooks/use-auth"
 import { Employee } from "@/lib/types"
 import { useToast } from "@/hooks/use-toast"
@@ -20,7 +20,8 @@ export default function EmployeesPage() {
   const { data: employeesData, loading, unauthenticated, refetch } = useDataConnect({ 
     query: listEmployeesByBusinessQuery, 
     variables: { tenantId: profile?.tenantId || "", businessId: profile?.businessId || "" },
-    skip: !profile || !profile.tenantId || !profile.businessId
+    skip: !profile || !profile.tenantId || !profile.businessId,
+    refreshInterval: 5000
   });
   const { toast } = useToast();
   
@@ -32,11 +33,13 @@ export default function EmployeesPage() {
       businessId: emp.businessId,
       fullName: emp.fullName,
       position: emp.position,
+      role: emp.role,
       salary: emp.salary,
       department: emp.department,
       startDate: emp.startDate,
       status: emp.status,
       createdAt: emp.createdAt,
+      code: emp.code,
       employmentStatus: emp.status || 'Active',
       salaryPaymentStatus: 'Paid', // Default placeholder since it's missing from schema
     })) as unknown as Employee[];
@@ -74,25 +77,83 @@ export default function EmployeesPage() {
       return;
     }
     try {
+      // Map UI Roles to Database / System Roles
+      let userRole = "Staff";
+      if (employeeData.role === "Administrator") {
+        userRole = "Business Owner";
+      } else if (employeeData.role === "Manager") {
+        userRole = "Manager";
+      }
+
       if (selectedEmployee?.id) {
         await updateEmployeeMutation({
           id: selectedEmployee.id,
           fullName: employeeData.fullName,
           position: employeeData.position,
+          role: employeeData.role,
           department: employeeData.department,
           salary: employeeData.salary,
         });
+
+        // Sync corresponding user record in SQL database
+        if (employeeData.email) {
+          try {
+            const userRes = await getUserByEmailQuery({ email: employeeData.email.trim().toLowerCase() });
+            const userToUpdate = userRes.data.users[0];
+            if (userToUpdate) {
+              await updateUserMutation({
+                id: userToUpdate.id,
+                fullName: employeeData.fullName,
+                role: userRole,
+                department: employeeData.department,
+                phoneNumber: employeeData.contact,
+              });
+            }
+          } catch (userErr) {
+            console.error("Failed to sync updated user profile for employee:", userErr);
+          }
+        }
+
         toast({ title: "Employee Updated", description: `${employeeData.fullName}'s records have been modified.` });
       } else {
+        const randomNum = Math.floor(1000 + Math.random() * 9000);
+        const namePart = (employeeData.fullName || "emp")
+          .trim()
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, '_')
+          .substring(0, 15);
+        const employeeCode = `emp_${namePart}_${randomNum}`;
+
         await createEmployeeMutation({
           tenantId: profile.tenantId,
           businessId: profile.businessId,
           fullName: employeeData.fullName || "",
           position: employeeData.position || "",
+          role: employeeData.role,
           department: employeeData.department,
           salary: employeeData.salary,
+          code: employeeCode,
         });
-        toast({ title: "Employee Added", description: `${employeeData.fullName} is now part of your SME.` });
+
+        // Create user record in SQL database so they can log in
+        if (employeeData.email) {
+          try {
+            await createUserMutation({
+              tenantId: profile.tenantId,
+              businessId: profile.businessId,
+              email: employeeData.email.trim().toLowerCase(),
+              role: userRole,
+              fullName: employeeData.fullName || "",
+              department: employeeData.department || "",
+              phoneNumber: employeeData.contact || "",
+              accessCode: employeeCode,
+            });
+          } catch (userErr) {
+            console.error("Failed to create user login profile for employee:", userErr);
+          }
+        }
+
+        toast({ title: "Employee Added", description: `${employeeData.fullName} is now part of your SME. Code: ${employeeCode}` });
       }
       refetch();
     } catch (e) {
@@ -208,14 +269,24 @@ export default function EmployeesPage() {
                 <CardContent className="p-6">
                   <div className="flex items-start justify-between mb-4">
                     <Avatar className="h-12 w-12 rounded-lg border-2 border-muted group-hover:border-primary/30 transition-colors">
-                      <AvatarFallback className="bg-primary/10 text-primary font-bold">{emp.fullName[0]}</AvatarFallback>
+                      <AvatarFallback className="bg-primary/10 text-primary font-bold">{emp.fullName[0]?.toUpperCase()}</AvatarFallback>
                     </Avatar>
-                    <div className="flex flex-col items-end gap-1">
+                    <div className="flex flex-col items-end gap-1.5">
                       <Badge variant="secondary" className={`text-[9px] uppercase font-bold tracking-tighter ${
                         emp.employmentStatus === 'Active' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'
                       }`}>
                         {emp.employmentStatus}
                       </Badge>
+                      {emp.role && (
+                        <Badge variant="outline" className="text-[8px] uppercase tracking-tighter py-0.5 px-1.5 font-bold text-muted-foreground bg-muted/10">
+                          {emp.role}
+                        </Badge>
+                      )}
+                      {emp.code && (
+                        <span className="text-[9px] font-mono text-muted-foreground bg-muted/60 px-1.5 py-0.5 rounded tracking-tighter uppercase font-semibold">
+                          {emp.code}
+                        </span>
+                      )}
                     </div>
                   </div>
                   <div className="space-y-1 mb-4">

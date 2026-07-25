@@ -39,6 +39,7 @@ const taskSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters"),
   description: z.string().min(5, "Description is required"),
   assignedToName: z.string().min(1, "Assignee name is required"),
+  assignedTo: z.string().min(1, "Assignee ID is required"),
   department: z.string().min(1, "Department is required"),
   priority: z.enum(["Low", "Medium", "High", "Urgent"]),
   status: z.enum(["Pending", "Ongoing", "Completed", "Cancelled", "Late", "Overdue"]),
@@ -53,15 +54,17 @@ interface TaskDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   onSave: (task: Partial<Task>) => void
+  users?: Array<{ id: string; fullName: string | null; email: string; department: string | null }>
 }
 
-export function TaskDialog({ task, open, onOpenChange, onSave }: TaskDialogProps) {
+export function TaskDialog({ task, open, onOpenChange, onSave, users = [] }: TaskDialogProps) {
   const form = useForm<TaskFormValues>({
     resolver: zodResolver(taskSchema),
     defaultValues: {
       title: "",
       description: "",
       assignedToName: "",
+      assignedTo: "",
       department: "Operations",
       priority: "Medium",
       status: "Pending",
@@ -76,6 +79,7 @@ export function TaskDialog({ task, open, onOpenChange, onSave }: TaskDialogProps
         title: task.title,
         description: task.description,
         assignedToName: task.assignedToName,
+        assignedTo: task.assignedTo,
         department: task.department,
         priority: task.priority,
         status: task.status,
@@ -87,6 +91,7 @@ export function TaskDialog({ task, open, onOpenChange, onSave }: TaskDialogProps
         title: "",
         description: "",
         assignedToName: "",
+        assignedTo: "",
         department: "Operations",
         priority: "Medium",
         status: "Pending",
@@ -102,7 +107,6 @@ export function TaskDialog({ task, open, onOpenChange, onSave }: TaskDialogProps
       tenantId: MOCK_USER.tenantId,
       businessId: MOCK_USER.businessId,
       assignedBy: MOCK_USER.uid,
-      assignedTo: task?.assignedTo || `staff_${Math.random().toString(36).substr(2, 4)}`,
       completedAt: values.status === 'Completed' ? new Date().toISOString() : undefined,
     }
     
@@ -161,13 +165,36 @@ export function TaskDialog({ task, open, onOpenChange, onSave }: TaskDialogProps
               <div className="grid grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
-                  name="assignedToName"
+                  name="assignedTo"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-[10px] font-bold uppercase tracking-widest">Assigned Employee</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Full Name" {...field} />
-                      </FormControl>
+                      <Select 
+                        onValueChange={(val) => {
+                          field.onChange(val);
+                          const selectedUser = users.find(u => u.id === val);
+                          if (selectedUser) {
+                            form.setValue("assignedToName", selectedUser.fullName || selectedUser.email.split('@')[0]);
+                            if (selectedUser.department) {
+                              form.setValue("department", selectedUser.department);
+                            }
+                          }
+                        }} 
+                        value={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select Employee" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {users.map(u => (
+                            <SelectItem key={u.id} value={u.id}>
+                              {u.fullName || u.email.split('@')[0]}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                       <FormMessage />
                     </FormItem>
                   )}

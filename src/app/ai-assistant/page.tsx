@@ -2,33 +2,57 @@
 "use client"
 
 import * as React from "react"
-import { Send, Bot, User, Sparkles, ShieldAlert, Loader2 } from "lucide-react"
+import { Send, Bot, User, Sparkles, ShieldAlert, Loader2, LogIn } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { masterAssistant } from "@/ai/flows/master-assistant-flow"
-import { MOCK_USER } from "@/lib/mock-data"
+import { useAuth } from "@/hooks/use-auth"
 import { logActivity } from "@/lib/audit-logger"
+import Link from "next/link"
 
 interface Message {
   role: "assistant" | "user"
   content: string
 }
 
+interface AIQueryResponse {
+  response: string
+  metadata?: {
+    model: string
+    role: string
+    processingTimeMs: number
+    contextModules: string[]
+  }
+  error?: string
+}
+
 export default function AIAssistantPage() {
-  const [messages, setMessages] = React.useState<Message[]>([
-    { role: "assistant", content: `Hello ${MOCK_USER.fullName.split(' ')[0]}! I am your SmartERP AI assistant. I can analyze your sales, inventory, and tasks for ${MOCK_USER.tenantId}. How can I help you today?` }
-  ])
+  const { user, profile, loading: authLoading } = useAuth()
+
+  const [messages, setMessages] = React.useState<Message[]>([])
   const [input, setInput] = React.useState("")
   const [isLoading, setIsLoading] = React.useState(false)
   const scrollRef = React.useRef<HTMLDivElement>(null)
 
+  // Set the initial greeting once the profile is loaded
+  React.useEffect(() => {
+    if (profile && messages.length === 0) {
+      const firstName = profile.fullName?.split(' ')[0] || 'there'
+      setMessages([
+        {
+          role: "assistant",
+          content: `Hello ${firstName}! I am your SmartERP AI assistant. I can analyze your sales, inventory, tasks, and more based on your role as **${profile.role}**. How can I help you today?`,
+        },
+      ])
+    }
+  }, [profile, messages.length])
+
   const handleSend = async () => {
-    if (!input.trim() || isLoading) return
+    if (!input.trim() || isLoading || !profile) return
     const userMsg = input.trim()
     setInput("")
-    setMessages(prev => [...prev, { role: "user", content: userMsg }])
+    setMessages((prev) => [...prev, { role: "user", content: userMsg }])
     setIsLoading(true)
 
     try {
@@ -37,19 +61,55 @@ export default function AIAssistantPage() {
         actionType: 'AI_QUERY',
         module: 'AI Assistant',
         description: `User asked AI: "${userMsg.substring(0, 50)}${userMsg.length > 50 ? '...' : ''}"`,
-      });
-
-      const response = await masterAssistant({
-        query: userMsg,
-        tenantId: MOCK_USER.tenantId,
-        businessId: MOCK_USER.businessId,
-        userId: MOCK_USER.uid,
-        userRole: MOCK_USER.role,
-        permissions: MOCK_USER.permissions,
+        userProfile: {
+          tenantId: profile.tenantId,
+          businessId: profile.businessId,
+          uid: profile.id,
+          fullName: profile.fullName,
+          role: profile.role,
+        },
       })
-      setMessages(prev => [...prev, { role: "assistant", content: response.response }])
+
+      // Call our secure server-side API route
+      const response = await fetch('/api/ai/query', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          queryText: userMsg,
+          tenantId: profile.tenantId,
+          businessId: profile.businessId,
+          userId: profile.id,
+          role: profile.role,
+          userName: profile.fullName || profile.email,
+        }),
+      })
+
+      const data: AIQueryResponse = await response.json()
+
+      if (!response.ok || data.error) {
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: "assistant",
+            content: data.error || "I'm sorry, something went wrong. Please try again.",
+          },
+        ])
+      } else {
+        setMessages((prev) => [
+          ...prev,
+          { role: "assistant", content: data.response },
+        ])
+      }
     } catch (error) {
-      setMessages(prev => [...prev, { role: "assistant", content: "I'm sorry, I encountered an error connecting to the intelligence engine. Please try again." }])
+      console.error('AI Assistant error:', error)
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          content:
+            "I'm sorry, I encountered an error connecting to the intelligence engine. Please check your connection and try again.",
+        },
+      ])
     } finally {
       setIsLoading(false)
     }
@@ -64,6 +124,35 @@ export default function AIAssistantPage() {
     }
   }, [messages])
 
+  // Auth loading state
+  if (authLoading) {
+    return (
+      <div className="flex items-center justify-center h-[calc(100vh-10rem)]">
+        <Loader2 className="size-8 animate-spin text-primary" />
+      </div>
+    )
+  }
+
+  // Not authenticated
+  if (!user || !profile) {
+    return (
+      <div className="flex flex-col items-center justify-center h-[calc(100vh-10rem)] gap-4">
+        <ShieldAlert className="size-12 text-muted-foreground" />
+        <h2 className="text-xl font-semibold">Authentication Required</h2>
+        <p className="text-muted-foreground text-sm text-center max-w-md">
+          You must be signed in to use the AI Business Intelligence assistant.
+          Your data access is determined by your role and tenant.
+        </p>
+        <Button asChild>
+          <Link href="/login">
+            <LogIn className="size-4 mr-2" />
+            Sign In
+          </Link>
+        </Button>
+      </div>
+    )
+  }
+
   return (
     <div className="flex flex-col h-[calc(100vh-10rem)] max-w-4xl mx-auto space-y-4">
       <div className="flex flex-col gap-1">
@@ -71,14 +160,16 @@ export default function AIAssistantPage() {
           <Sparkles className="size-6 text-primary" />
           AI Business Intelligence
         </h1>
-        <p className="text-xs text-muted-foreground">Context-aware assistant for your Cameroonian SME.</p>
+        <p className="text-xs text-muted-foreground">
+          Context-aware assistant for your Cameroonian SME • Role: <span className="font-semibold text-foreground">{profile.role}</span>
+        </p>
       </div>
 
       <Alert className="bg-primary/5 border-primary/20 py-3">
         <ShieldAlert className="size-4 text-primary" />
         <AlertTitle className="text-primary text-xs font-bold uppercase tracking-widest">Security Protocol Active</AlertTitle>
         <AlertDescription className="text-[10px] uppercase font-bold text-muted-foreground mt-1">
-          Read-Only Assistant • Multi-Tenant Isolated • Permission Aware
+          Read-Only Assistant • Multi-Tenant Isolated • Permission Aware • Powered by Gemma 4
         </AlertDescription>
       </Alert>
 
@@ -97,7 +188,7 @@ export default function AIAssistantPage() {
                     ? 'bg-muted text-foreground rounded-tl-none' 
                     : 'bg-primary text-primary-foreground rounded-tr-none'
                 }`}>
-                  {msg.content}
+                  <AIResponseRenderer content={msg.content} role={msg.role} />
                 </div>
                 {msg.role === 'user' && (
                   <div className="h-8 w-8 rounded-lg bg-secondary flex items-center justify-center shrink-0 border shadow-sm">
@@ -125,7 +216,7 @@ export default function AIAssistantPage() {
             className="flex gap-2"
           >
             <Input 
-              placeholder="Ask me: 'Who edited this product?' or 'What are the recent changes?'..." 
+              placeholder="Ask me: 'What are my total sales?' or 'Show low stock items'..." 
               value={input}
               onChange={(e) => setInput(e.target.value)}
               className="bg-background rounded-full px-6 shadow-inner h-12 border-primary/20 focus-visible:ring-primary"
@@ -136,7 +227,7 @@ export default function AIAssistantPage() {
           </form>
           <div className="flex items-center justify-center gap-4 mt-3">
              <p className="text-[8px] text-muted-foreground uppercase tracking-widest font-bold">
-               Secure Audit Sync: Douala_001
+               Tenant: {profile.tenantId}
              </p>
              <p className="text-[8px] text-primary uppercase tracking-widest font-bold">
                Immutable Log Protocol
@@ -147,3 +238,56 @@ export default function AIAssistantPage() {
     </div>
   )
 }
+
+function AIResponseRenderer({ content, role }: { content: string; role: 'assistant' | 'user' }) {
+  // Parse bold and italics markdown inline
+  const parseMarkdown = (text: string) => {
+    // Splitting by **bold** first
+    const boldParts = text.split(/(\*\*.*?\*\*)/g);
+    
+    return boldParts.map((boldPart, i) => {
+      if (boldPart.startsWith('**') && boldPart.endsWith('**')) {
+        const innerText = boldPart.slice(2, -2);
+        return (
+          <strong 
+            key={`b-${i}`} 
+            className={`font-bold ${role === 'user' ? 'text-white' : 'text-primary'}`}
+          >
+            {innerText}
+          </strong>
+        );
+      }
+      
+      // Split by *italics*
+      const italicParts = boldPart.split(/(\*.*?\*)/g);
+      return italicParts.map((italicPart, j) => {
+        if (italicPart.startsWith('*') && italicPart.endsWith('*')) {
+          const innerItalicText = italicPart.slice(1, -1);
+          return (
+            <em 
+              key={`i-${j}`} 
+              className={`italic ${role === 'user' ? 'text-white/90' : 'text-muted-foreground text-xs'}`}
+            >
+              {innerItalicText}
+            </em>
+          );
+        }
+        return italicPart;
+      });
+    });
+  };
+
+  // Split content by newline to preserve paragraph separation
+  const lines = content.split('\n');
+
+  return (
+    <div className="space-y-1.5">
+      {lines.map((line, index) => (
+        <p key={index} className="leading-relaxed">
+          {parseMarkdown(line)}
+        </p>
+      ))}
+    </div>
+  );
+}
+

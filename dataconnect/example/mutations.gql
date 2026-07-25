@@ -60,6 +60,7 @@ mutation CreateUser(
   $fullName: String
   $department: String
   $phoneNumber: String
+  $accessCode: String
 ) @auth(level: USER, insecureReason: "Multi-tenant ERP: tenant isolation enforced at the application layer") {
   user_insert(data: {
     tenantId: $tenantId
@@ -70,6 +71,7 @@ mutation CreateUser(
     department: $department
     phoneNumber: $phoneNumber
     createdAt_expr: "request.time"
+    accessCode: $accessCode
   })
 }
 
@@ -82,6 +84,7 @@ mutation UpdateUser(
   $fullName: String
   $department: String
   $phoneNumber: String
+  $accessCode: String
 ) @auth(level: USER, insecureReason: "Multi-tenant ERP: tenant isolation enforced at the application layer") {
   user_update(id: $id, data: {
     tenantId: $tenantId
@@ -91,6 +94,7 @@ mutation UpdateUser(
     fullName: $fullName
     department: $department
     phoneNumber: $phoneNumber
+    accessCode: $accessCode
   })
 }
 
@@ -106,6 +110,7 @@ mutation CreateBusiness(
   $location: String!
   $businessType: String
   $region: String
+  $code: String!
 ) @auth(level: USER, insecureReason: "Multi-tenant ERP: tenant isolation enforced at the application layer") {
   business_insert(data: {
     tenantId: $tenantId
@@ -114,6 +119,7 @@ mutation CreateBusiness(
     businessType: $businessType
     region: $region
     createdAt_expr: "request.time"
+    code: $code
   })
 }
 
@@ -124,6 +130,7 @@ mutation UpdateBusiness(
   $location: String
   $businessType: String
   $region: String
+  $code: String
 ) @auth(level: USER, insecureReason: "Multi-tenant ERP: tenant isolation enforced at the application layer") {
   business_update(id: $id, data: {
     tenantId: $tenantId
@@ -131,6 +138,7 @@ mutation UpdateBusiness(
     location: $location
     businessType: $businessType
     region: $region
+    code: $code
   })
 }
 
@@ -264,8 +272,8 @@ mutation CreateTaskComment(
   taskComment_insert(data: {
     tenantId: $tenantId
     businessId: $businessId
-    task: { id: $taskId }
-    user: { id: $userId }
+    taskId: $taskId
+    userId: $userId
     content: $content
     createdAt_expr: "request.time"
   })
@@ -282,8 +290,8 @@ mutation UpdateTaskComment(
   taskComment_update(id: $id, data: {
     tenantId: $tenantId
     businessId: $businessId
-    task: { id: $taskId }
-    user: { id: $userId }
+    taskId: $taskId
+    userId: $userId
     content: $content
   })
 }
@@ -299,21 +307,25 @@ mutation CreateEmployee(
   $businessId: String!
   $fullName: String!
   $position: String!
+  $role: String
   $salary: Float
   $department: String
   $startDate: Date
   $status: String
+  $code: String
 ) @auth(level: USER, insecureReason: "Multi-tenant ERP: tenant isolation enforced at the application layer") {
   employee_insert(data: {
     tenantId: $tenantId
     businessId: $businessId
     fullName: $fullName
     position: $position
+    role: $role
     salary: $salary
     department: $department
     startDate: $startDate
     status: $status
     createdAt_expr: "request.time"
+    code: $code
   })
 }
 
@@ -323,6 +335,7 @@ mutation UpdateEmployee(
   $businessId: String
   $fullName: String
   $position: String
+  $role: String
   $salary: Float
   $department: String
   $startDate: Date
@@ -333,6 +346,7 @@ mutation UpdateEmployee(
     businessId: $businessId
     fullName: $fullName
     position: $position
+    role: $role
     salary: $salary
     department: $department
     startDate: $startDate
@@ -540,7 +554,7 @@ mutation CreateAiQuery(
   $userId: String!
   $queryText: String!
   $response: String
-) @auth(level: USER, insecureReason: "Multi-tenant ERP: tenant isolation enforced at the application layer") {
+) @auth(level: PUBLIC, insecureReason: "Allowed for server-side assistant logging") {
   aiQuery_insert(data: {
     tenantId: $tenantId
     businessId: $businessId

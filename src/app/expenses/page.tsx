@@ -34,7 +34,8 @@ export default function ExpensesPage() {
       businessId: profile?.businessId || "", 
       type: TransactionType.EXPENSE 
     },
-    skip: !profile || !profile.tenantId || !profile.businessId
+    skip: !profile || !profile.tenantId || !profile.businessId,
+    refreshInterval: 5000
   });
   
   const expenses = React.useMemo(() => (transactionsData?.transactions || []) as unknown as Expense[], [transactionsData]);

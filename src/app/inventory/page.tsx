@@ -40,7 +40,8 @@ export default function InventoryPage() {
       tenantId: profile?.tenantId || "",
       businessId: profile?.businessId || "" 
     },
-    skip: !profile || !profile.tenantId || !profile.businessId
+    skip: !profile || !profile.tenantId || !profile.businessId,
+    refreshInterval: 5000
   });
   const { toast } = useToast();
   

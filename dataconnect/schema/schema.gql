@@ -39,6 +39,7 @@ type User @table(key: "id") {
   department: String
   phoneNumber: String
   createdAt: Timestamp!
+  accessCode: String
 }
 
 type Business @table(key: "id") {
@@ -49,6 +50,7 @@ type Business @table(key: "id") {
   businessType: String
   region: String
   createdAt: Timestamp!
+  code: String!
 }
 
 type Product @table(key: "id") {
@@ -111,11 +113,13 @@ type Employee @table(key: "id") {
   businessId: String!
   fullName: String!
   position: String!
+  role: String
   salary: Float
   department: String
   startDate: Date
   status: String
   createdAt: Timestamp!
+  code: String
 }
 
 type Customer @table(key: "id") {

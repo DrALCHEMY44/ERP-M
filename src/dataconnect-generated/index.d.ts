@@ -81,6 +81,7 @@ export interface CreateBusinessVariables {
   location: string;
   businessType?: string | null;
   region?: string | null;
+  code: string;
 }
 
 export interface CreateCustomerData {
@@ -120,10 +121,12 @@ export interface CreateEmployeeVariables {
   businessId: string;
   fullName: string;
   position: string;
+  role?: string | null;
   salary?: number | null;
   department?: string | null;
   startDate?: DateString | null;
   status?: string | null;
+  code?: string | null;
 }
 
 export interface CreateNotificationData {
@@ -237,6 +240,7 @@ export interface CreateUserVariables {
   fullName?: string | null;
   department?: string | null;
   phoneNumber?: string | null;
+  accessCode?: string | null;
 }
 
 export interface Customer_Key {
@@ -366,6 +370,32 @@ export interface Employee_Key {
   __typename?: 'Employee_Key';
 }
 
+export interface GetBusinessByCodeData {
+  businesses: ({
+    id: string;
+    tenantId: string;
+    name: string;
+  } & Business_Key)[];
+}
+
+export interface GetBusinessByCodeVariables {
+  code: string;
+}
+
+export interface GetBusinessByIdData {
+  business?: {
+    id: string;
+    tenantId: string;
+    name: string;
+    createdAt: TimestampString;
+    code: string;
+  } & Business_Key;
+}
+
+export interface GetBusinessByIdVariables {
+  id: string;
+}
+
 export interface GetUserByEmailData {
   users: ({
     id: string;
@@ -382,6 +412,24 @@ export interface GetUserByEmailData {
 
 export interface GetUserByEmailVariables {
   email: string;
+}
+
+export interface GetUserByIdData {
+  user?: {
+    id: string;
+    email: string;
+    role: string;
+    department?: string | null;
+    phoneNumber?: string | null;
+    createdAt: TimestampString;
+    tenantId: string;
+    businessId: string;
+    fullName?: string | null;
+  } & User_Key;
+}
+
+export interface GetUserByIdVariables {
+  id: string;
 }
 
 export interface ListActivityLogsByBusinessData {
@@ -480,6 +528,7 @@ export interface ListEmployeesByBusinessData {
     id: string;
     fullName: string;
     position: string;
+    role?: string | null;
     salary?: number | null;
     department?: string | null;
     startDate?: DateString | null;
@@ -487,12 +536,31 @@ export interface ListEmployeesByBusinessData {
     createdAt: TimestampString;
     tenantId: string;
     businessId: string;
+    code?: string | null;
   } & Employee_Key)[];
 }
 
 export interface ListEmployeesByBusinessVariables {
   tenantId: string;
   businessId: string;
+}
+
+export interface ListNotificationsData {
+  notifications: ({
+    id: string;
+    tenantId: string;
+    businessId: string;
+    userId: string;
+    message: string;
+    isRead: boolean;
+    createdAt: TimestampString;
+  } & Notification_Key)[];
+}
+
+export interface ListNotificationsVariables {
+  tenantId: string;
+  businessId: string;
+  userId: string;
 }
 
 export interface ListProductsByBusinessData {
@@ -547,6 +615,7 @@ export interface ListTasksByBusinessData {
       id: string;
       email: string;
       role: string;
+      fullName?: string | null;
     } & User_Key;
     createdBy: string;
     createdAt: TimestampString;
@@ -717,6 +786,7 @@ export interface UpdateBusinessVariables {
   location?: string | null;
   businessType?: string | null;
   region?: string | null;
+  code?: string | null;
 }
 
 export interface UpdateCustomerData {
@@ -759,6 +829,7 @@ export interface UpdateEmployeeVariables {
   businessId?: string | null;
   fullName?: string | null;
   position?: string | null;
+  role?: string | null;
   salary?: number | null;
   department?: string | null;
   startDate?: DateString | null;
@@ -881,11 +952,32 @@ export interface UpdateUserVariables {
   fullName?: string | null;
   department?: string | null;
   phoneNumber?: string | null;
+  accessCode?: string | null;
 }
 
 export interface User_Key {
   id: string;
   __typename?: 'User_Key';
+}
+
+export interface VerifyUserLoginData {
+  users: ({
+    id: string;
+    email: string;
+    role: string;
+    fullName?: string | null;
+    tenantId: string;
+    businessId: string;
+  } & User_Key)[];
+}
+
+export interface VerifyUserLoginVariables {
+  email: string;
+  fullName: string;
+  role: string;
+  accessCode: string;
+  tenantId: string;
+  businessId: string;
 }
 
 interface CreateTenantRef {
@@ -1440,6 +1532,42 @@ export const getUserByEmailRef: GetUserByEmailRef;
 export function getUserByEmail(vars: GetUserByEmailVariables, options?: ExecuteQueryOptions): QueryPromise<GetUserByEmailData, GetUserByEmailVariables>;
 export function getUserByEmail(dc: DataConnect, vars: GetUserByEmailVariables, options?: ExecuteQueryOptions): QueryPromise<GetUserByEmailData, GetUserByEmailVariables>;
 
+interface GetBusinessByIdRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: GetBusinessByIdVariables): QueryRef<GetBusinessByIdData, GetBusinessByIdVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: GetBusinessByIdVariables): QueryRef<GetBusinessByIdData, GetBusinessByIdVariables>;
+  operationName: string;
+}
+export const getBusinessByIdRef: GetBusinessByIdRef;
+
+export function getBusinessById(vars: GetBusinessByIdVariables, options?: ExecuteQueryOptions): QueryPromise<GetBusinessByIdData, GetBusinessByIdVariables>;
+export function getBusinessById(dc: DataConnect, vars: GetBusinessByIdVariables, options?: ExecuteQueryOptions): QueryPromise<GetBusinessByIdData, GetBusinessByIdVariables>;
+
+interface GetBusinessByCodeRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: GetBusinessByCodeVariables): QueryRef<GetBusinessByCodeData, GetBusinessByCodeVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: GetBusinessByCodeVariables): QueryRef<GetBusinessByCodeData, GetBusinessByCodeVariables>;
+  operationName: string;
+}
+export const getBusinessByCodeRef: GetBusinessByCodeRef;
+
+export function getBusinessByCode(vars: GetBusinessByCodeVariables, options?: ExecuteQueryOptions): QueryPromise<GetBusinessByCodeData, GetBusinessByCodeVariables>;
+export function getBusinessByCode(dc: DataConnect, vars: GetBusinessByCodeVariables, options?: ExecuteQueryOptions): QueryPromise<GetBusinessByCodeData, GetBusinessByCodeVariables>;
+
+interface VerifyUserLoginRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: VerifyUserLoginVariables): QueryRef<VerifyUserLoginData, VerifyUserLoginVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: VerifyUserLoginVariables): QueryRef<VerifyUserLoginData, VerifyUserLoginVariables>;
+  operationName: string;
+}
+export const verifyUserLoginRef: VerifyUserLoginRef;
+
+export function verifyUserLogin(vars: VerifyUserLoginVariables, options?: ExecuteQueryOptions): QueryPromise<VerifyUserLoginData, VerifyUserLoginVariables>;
+export function verifyUserLogin(dc: DataConnect, vars: VerifyUserLoginVariables, options?: ExecuteQueryOptions): QueryPromise<VerifyUserLoginData, VerifyUserLoginVariables>;
+
 interface ListProductsByBusinessRef {
   /* Allow users to create refs without passing in DataConnect */
   (vars: ListProductsByBusinessVariables): QueryRef<ListProductsByBusinessData, ListProductsByBusinessVariables>;
@@ -1571,4 +1699,28 @@ export const listActivityLogsByBusinessRef: ListActivityLogsByBusinessRef;
 
 export function listActivityLogsByBusiness(vars: ListActivityLogsByBusinessVariables, options?: ExecuteQueryOptions): QueryPromise<ListActivityLogsByBusinessData, ListActivityLogsByBusinessVariables>;
 export function listActivityLogsByBusiness(dc: DataConnect, vars: ListActivityLogsByBusinessVariables, options?: ExecuteQueryOptions): QueryPromise<ListActivityLogsByBusinessData, ListActivityLogsByBusinessVariables>;
+
+interface GetUserByIdRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: GetUserByIdVariables): QueryRef<GetUserByIdData, GetUserByIdVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: GetUserByIdVariables): QueryRef<GetUserByIdData, GetUserByIdVariables>;
+  operationName: string;
+}
+export const getUserByIdRef: GetUserByIdRef;
+
+export function getUserById(vars: GetUserByIdVariables, options?: ExecuteQueryOptions): QueryPromise<GetUserByIdData, GetUserByIdVariables>;
+export function getUserById(dc: DataConnect, vars: GetUserByIdVariables, options?: ExecuteQueryOptions): QueryPromise<GetUserByIdData, GetUserByIdVariables>;
+
+interface ListNotificationsRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: ListNotificationsVariables): QueryRef<ListNotificationsData, ListNotificationsVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: ListNotificationsVariables): QueryRef<ListNotificationsData, ListNotificationsVariables>;
+  operationName: string;
+}
+export const listNotificationsRef: ListNotificationsRef;
+
+export function listNotifications(vars: ListNotificationsVariables, options?: ExecuteQueryOptions): QueryPromise<ListNotificationsData, ListNotificationsVariables>;
+export function listNotifications(dc: DataConnect, vars: ListNotificationsVariables, options?: ExecuteQueryOptions): QueryPromise<ListNotificationsData, ListNotificationsVariables>;
 

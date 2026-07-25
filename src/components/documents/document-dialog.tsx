@@ -33,7 +33,7 @@ import {
 } from "@/components/ui/select"
 import { BusinessDocument } from "@/lib/types"
 import { MOCK_USER } from "@/lib/mock-data"
-import { Loader2, UploadCloud } from "lucide-react"
+import { Loader2, UploadCloud, FileText } from "lucide-react"
 
 const documentSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -51,6 +51,10 @@ interface DocumentDialogProps {
 
 export function DocumentDialog({ open, onOpenChange, onSave }: DocumentDialogProps) {
   const [isUploading, setIsUploading] = React.useState(false)
+  const fileInputRef = React.useRef<HTMLInputElement>(null)
+  const [selectedFile, setSelectedFile] = React.useState<File | null>(null)
+  const [isDragActive, setIsDragActive] = React.useState(false)
+
   const form = useForm<DocumentFormValues>({
     resolver: zodResolver(documentSchema),
     defaultValues: {
@@ -60,12 +64,88 @@ export function DocumentDialog({ open, onOpenChange, onSave }: DocumentDialogPro
     },
   })
 
+  React.useEffect(() => {
+    if (!open) {
+      setSelectedFile(null)
+      form.reset()
+    }
+  }, [open, form])
+
+  const handleDrag = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (e.type === "dragenter" || e.type === "dragover") {
+      setIsDragActive(true)
+    } else if (e.type === "dragleave") {
+      setIsDragActive(false)
+    }
+  }
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragActive(false)
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      const file = e.dataTransfer.files[0]
+      setSelectedFile(file)
+      if (!form.getValues("name")) {
+        const nameWithoutExtension = file.name.substring(0, file.name.lastIndexOf('.')) || file.name
+        form.setValue("name", nameWithoutExtension)
+      }
+    }
+  }
+
   const onSubmit = async (values: DocumentFormValues) => {
+    if (!selectedFile) {
+      form.setError("root", { message: "Please select a file to upload." })
+      return
+    }
+
     setIsUploading(true)
     try {
-      // In a real implementation, we would upload to Firebase Storage here
-      // and get the fileUrl. For this prototype, we'll simulate it.
-      const simulatedUrl = "https://example.com/simulated-file.pdf"
+      let fileUrl = ""
+      
+      try {
+        const { ref: storageRef, uploadBytes, getDownloadURL } = await import("firebase/storage")
+        const { storage } = await import("@/lib/firebase")
+        
+        const path = `documents/uploads/${Date.now()}_${selectedFile.name}`
+        const fileRef = storageRef(storage, path)
+        
+        const snapshot = await uploadBytes(fileRef, selectedFile)
+        fileUrl = await getDownloadURL(snapshot.ref)
+        console.log("Uploaded successfully to Firebase Storage:", fileUrl)
+      } catch (uploadError) {
+        console.warn("Firebase Storage upload failed, falling back to local server upload:", uploadError)
+        
+        try {
+          const formData = new FormData()
+          formData.append("file", selectedFile)
+          
+          const res = await fetch("/api/upload", {
+            method: "POST",
+            body: formData,
+          })
+          
+          if (!res.ok) {
+            throw new Error(`Local upload API returned status ${res.status}`)
+          }
+          
+          const data = await res.json()
+          if (!data.fileUrl) {
+            throw new Error("No fileUrl returned from local upload API")
+          }
+          
+          fileUrl = data.fileUrl
+          console.log("Uploaded successfully to local server:", fileUrl)
+        } catch (localError) {
+          console.error("Local server upload failed, falling back to transient Blob URL:", localError)
+          fileUrl = URL.createObjectURL(selectedFile)
+        }
+      }
+
+      const sizeInMB = selectedFile.size / (1024 * 1024)
+      const fileSizeStr = sizeInMB < 0.1 ? `${(selectedFile.size / 1024).toFixed(1)} KB` : `${sizeInMB.toFixed(1)} MB`
       
       await onSave({
         ...values,
@@ -74,14 +154,14 @@ export function DocumentDialog({ open, onOpenChange, onSave }: DocumentDialogPro
         uploadedBy: MOCK_USER.uid,
         uploadedByName: MOCK_USER.fullName,
         uploadedAt: new Date().toISOString(),
-        fileUrl: simulatedUrl,
-        fileSize: "1.2 MB"
+        fileUrl: fileUrl,
+        fileSize: fileSizeStr
       } as BusinessDocument)
       
-      form.reset()
       onOpenChange(false)
     } catch (error) {
       console.error("Upload error:", error)
+      form.setError("root", { message: "Failed to upload document. Please try again." })
     } finally {
       setIsUploading(false)
     }
@@ -166,13 +246,72 @@ export function DocumentDialog({ open, onOpenChange, onSave }: DocumentDialogPro
               <FormItem>
                 <FormLabel>File Attachment</FormLabel>
                 <FormControl>
-                  <div className="border-2 border-dashed rounded-xl p-8 flex flex-col items-center justify-center gap-2 bg-muted/20 hover:bg-muted/30 transition-colors cursor-pointer">
-                    <UploadCloud className="size-8 text-muted-foreground" />
-                    <p className="text-xs font-medium">Click or drag file to upload</p>
-                    <p className="text-[10px] text-muted-foreground uppercase">PDF, JPG, PNG up to 10MB</p>
-                    <input type="file" className="hidden" />
+                  <div 
+                    onClick={() => fileInputRef.current?.click()}
+                    onDragEnter={handleDrag}
+                    onDragOver={handleDrag}
+                    onDragLeave={handleDrag}
+                    onDrop={handleDrop}
+                    className={`border-2 border-dashed rounded-xl p-8 flex flex-col items-center justify-center gap-2 transition-colors cursor-pointer ${
+                      isDragActive 
+                        ? "border-primary bg-primary/5" 
+                        : "border-muted-foreground/20 bg-muted/20 hover:bg-muted/30"
+                    }`}
+                  >
+                    <input 
+                      type="file" 
+                      ref={fileInputRef}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          setSelectedFile(file);
+                          if (!form.getValues("name")) {
+                            const nameWithoutExtension = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
+                            form.setValue("name", nameWithoutExtension);
+                          }
+                        }
+                      }}
+                      className="hidden" 
+                      accept=".pdf,.jpg,.jpeg,.png"
+                    />
+                    
+                    {selectedFile ? (
+                      <div className="flex flex-col items-center gap-1 text-center w-full">
+                        <div className="p-3 bg-primary/10 rounded-full text-primary mb-1">
+                          <FileText className="size-8" />
+                        </div>
+                        <p className="text-xs font-semibold truncate max-w-full px-4">{selectedFile.name}</p>
+                        <p className="text-[10px] text-muted-foreground">
+                          {(selectedFile.size / (1024 * 1024)).toFixed(2)} MB
+                        </p>
+                        <Button 
+                          type="button" 
+                          variant="ghost" 
+                          size="sm" 
+                          className="mt-2 text-[10px] uppercase font-bold text-destructive hover:text-destructive/80 hover:bg-destructive/10"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedFile(null);
+                            if (fileInputRef.current) fileInputRef.current.value = "";
+                          }}
+                        >
+                          Remove File
+                        </Button>
+                      </div>
+                    ) : (
+                      <>
+                        <UploadCloud className="size-8 text-muted-foreground" />
+                        <p className="text-xs font-medium">Click or drag file to upload</p>
+                        <p className="text-[10px] text-muted-foreground uppercase">PDF, JPG, PNG up to 10MB</p>
+                      </>
+                    )}
                   </div>
                 </FormControl>
+                {form.formState.errors.root && (
+                  <p className="text-xs font-semibold text-destructive mt-1 text-center">
+                    {form.formState.errors.root.message}
+                  </p>
+                )}
               </FormItem>
             </div>
 

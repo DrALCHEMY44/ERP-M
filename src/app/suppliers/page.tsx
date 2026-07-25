@@ -28,39 +28,25 @@ export default function SuppliersPage() {
   const { data: suppliersData, loading, unauthenticated, refetch } = useDataConnect({
     query: listSuppliersByBusinessQuery,
     variables: { tenantId: profile?.tenantId, businessId: profile?.businessId },
-    skip: !profile?.tenantId || !profile?.businessId
+    skip: !profile?.tenantId || !profile?.businessId,
+    refreshInterval: 5000
   });
-  const [suppliers, setSuppliers] = React.useState<Supplier[]>([]);
   const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = React.useState(false)
   const [selectedSupplier, setSelectedSupplier] = React.useState<Supplier | null>(null)
   const [searchQuery, setSearchQuery] = React.useState("")
 
-  const fetchSuppliers = React.useCallback(async () => {
-    if (!profile?.tenantId || !profile?.businessId) return;
-    try {
-      const response = await listSuppliersByBusinessQuery({
-        tenantId: profile.tenantId,
-        businessId: profile.businessId
-      });
-      // Map dataconnect format back to ui format
-      const mappedSuppliers = ((response as any)?.suppliers || []).map((s: any) => ({
-        ...s,
-        name: s.supplierName,
-        phone: s.phoneNumber || '',
-        location: 'Unknown',
-        productsSupplied: [],
-        paymentStatus: 'Paid'
-      }));
-      setSuppliers(mappedSuppliers);
-    } catch (e) {
-      console.error("Failed to fetch suppliers:", e);
-    }
-  }, [profile]);
-
-  React.useEffect(() => {
-    fetchSuppliers();
-  }, [fetchSuppliers]);
+  const suppliers = React.useMemo(() => {
+    const sqlList = suppliersData?.suppliers || [];
+    return sqlList.map((s: any) => ({
+      ...s,
+      name: s.supplierName,
+      phone: s.phoneNumber || '',
+      location: 'Unknown',
+      productsSupplied: [],
+      paymentStatus: 'Paid'
+    })) as Supplier[];
+  }, [suppliersData]);
 
   const filteredSuppliers = suppliers.filter(s => 
     s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -107,7 +93,7 @@ export default function SuppliersPage() {
         });
         toast({ title: "Supplier Added", description: `${data.name} is now a registered partner.` });
       }
-      fetchSuppliers();
+      refetch();
     } catch (e) {
       console.error(e);
       toast({ variant: "destructive", title: "Error", description: "Operation failed. Check connection." });
@@ -119,7 +105,7 @@ export default function SuppliersPage() {
       try {
         await deleteSupplierMutation({ id });
         toast({ title: "Deleted", description: "Supplier removed from cloud storage." });
-        fetchSuppliers();
+        refetch();
       } catch (e) {
         toast({ variant: "destructive", title: "Error", description: "Failed to delete record." });
       }

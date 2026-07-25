@@ -41,10 +41,12 @@ export default function SuperAdminDashboard() {
   const { profile, loading: authLoading } = useAuth();
   
   const { data: tenantsData, loading: tenantsLoading, refetch: refetchTenants } = useDataConnect({
-    query: listTenantsQuery
+    query: listTenantsQuery,
+    refreshInterval: 5000
   });
   const { data: usersData, loading: usersLoading } = useDataConnect({
-    query: listUsersQuery
+    query: listUsersQuery,
+    refreshInterval: 5000
   });
 
   const tenants: Tenant[] = React.useMemo(() => {

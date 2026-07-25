@@ -7,3 +7,11 @@ generate:
       react: true
       angular: false
       clientCache: {}
+  dartSdk:
+    - outputDir: ../../erp_mobile/lib/generated
+      package: dataconnect_generated
+      packageJsonDir: ../../erp_mobile
+      clientCache: {}
+  flutterSdk:
+    - outputDir: ../../erp_mobile/lib/generated_sdk
+      package: dataconnect_generated_sdk

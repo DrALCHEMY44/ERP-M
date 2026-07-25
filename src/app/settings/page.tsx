@@ -42,7 +42,8 @@ export default function SettingsPage() {
       tenantId: profile?.tenantId || "",
       businessId: profile?.businessId || ""
     },
-    skip: !profile
+    skip: !profile,
+    refreshInterval: 5000
   });
 
   const users = React.useMemo(() => {

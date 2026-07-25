@@ -15,6 +15,7 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { SaleDialog } from "@/components/sales/sale-dialog"
+import { ReceiptDialog } from "@/components/sales/receipt-dialog"
 import { Sale, Product } from "@/lib/types"
 import { useDataConnect } from "@/hooks/use-dataconnect"
 import { 
@@ -32,12 +33,14 @@ export default function SalesPage() {
   const { data: transactionsData, loading: salesLoading, unauthenticated, refetch: refetchSales } = useDataConnect({ 
     query: listTransactionsByBusinessQuery, 
     variables: { tenantId: profile?.tenantId || "", businessId: profile?.businessId || "" },
-    skip: !profile || !profile.tenantId || !profile.businessId
+    skip: !profile || !profile.tenantId || !profile.businessId,
+    refreshInterval: 5000
   });
   const { data: productsData, refetch: refetchProducts } = useDataConnect({ 
     query: listProductsByBusinessQuery, 
     variables: { tenantId: profile?.tenantId || "", businessId: profile?.businessId || "" },
-    skip: !profile || !profile.tenantId || !profile.businessId
+    skip: !profile || !profile.tenantId || !profile.businessId,
+    refreshInterval: 5000
   });
   const { toast } = useToast();
   
@@ -61,6 +64,8 @@ export default function SalesPage() {
 
   const [isDialogOpen, setIsDialogOpen] = React.useState(false)
   const [searchQuery, setSearchQuery] = React.useState("")
+  const [selectedReceipt, setSelectedReceipt] = React.useState<Sale | null>(null)
+  const [isReceiptOpen, setIsReceiptOpen] = React.useState(false)
 
   const totalToday = sales.reduce((acc, sale) => {
     const isToday = new Date(sale.saleDate).toDateString() === new Date().toDateString();
@@ -241,7 +246,14 @@ export default function SalesPage() {
                       {sale.totalAmount.toLocaleString()} FCFA
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button variant="ghost" size="sm" className="text-[10px] uppercase font-bold">Print Receipt</Button>
+                      <Button 
+                        onClick={() => { setSelectedReceipt(sale); setIsReceiptOpen(true); }}
+                        variant="ghost" 
+                        size="sm" 
+                        className="text-[10px] uppercase font-bold text-primary hover:text-primary-foreground hover:bg-primary"
+                      >
+                        Print Receipt
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))
@@ -261,6 +273,13 @@ export default function SalesPage() {
         open={isDialogOpen}
         onOpenChange={setIsDialogOpen}
         onSave={handleNewSale}
+      />
+
+      <ReceiptDialog 
+        sale={selectedReceipt}
+        open={isReceiptOpen}
+        onOpenChange={setIsReceiptOpen}
+        allProducts={products}
       />
     </div>
   )

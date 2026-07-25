@@ -26,7 +26,8 @@ export default function ActivityLogsPage() {
       tenantId: profile?.tenantId || "",
       businessId: profile?.businessId || ""
     },
-    skip: !profile
+    skip: !profile,
+    refreshInterval: 5000
   });
 
   const logs = React.useMemo(() => {
@@ -51,6 +52,44 @@ export default function ActivityLogsPage() {
     }).sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
   }, [logs, searchQuery, filterModule]);
 
+  const handleExportCSV = () => {
+    if (filteredLogs.length === 0) return;
+    
+    const headers = ["Timestamp", "User", "Action", "Module", "Description", "Details (Record ID)"];
+    const rows = filteredLogs.map(log => [
+      new Date(log.timestamp).toISOString(),
+      log.userName,
+      log.actionType,
+      log.module,
+      log.description || "",
+      log.recordId || ""
+    ]);
+
+    const csvContent = [
+      headers.join(","),
+      ...rows.map(row => 
+        row.map(value => {
+          const stringVal = String(value);
+          if (stringVal.includes(",") || stringVal.includes('"') || stringVal.includes("\n")) {
+            return `"${stringVal.replace(/"/g, '""')}"`;
+          }
+          return stringVal;
+        }).join(",")
+      )
+    ].join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    const dateStr = new Date().toISOString().split('T')[0];
+    link.setAttribute("download", `smarterp_audit_trail_${dateStr}.csv`);
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const modules = Array.from(new Set(logs.map(l => l.module)));
 
   if (loading) {
@@ -68,7 +107,12 @@ export default function ActivityLogsPage() {
           <h1 className="text-2xl md:text-3xl font-bold tracking-tight">System Audit Trail</h1>
           <p className="text-sm text-muted-foreground">Immutable, append-only records of all user and AI interactions.</p>
         </div>
-        <Button variant="outline" size="sm" className="bg-card shadow-sm font-bold uppercase text-[10px] tracking-widest">
+        <Button 
+          onClick={handleExportCSV}
+          variant="outline" 
+          size="sm" 
+          className="bg-card shadow-sm font-bold uppercase text-[10px] tracking-widest text-primary hover:bg-primary hover:text-primary-foreground"
+        >
           <Download className="size-4 mr-2" /> Export Full Audit
         </Button>
       </div>

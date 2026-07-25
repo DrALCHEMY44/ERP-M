@@ -1,5 +1,6 @@
 import {
   getUserByEmail as getUserByEmailQuery,
+  getBusinessById as getBusinessByIdQuery,
   createUser as createUserMutation,
   createBusiness as createBusinessMutation,
   updateUser as updateUserMutation,
@@ -59,6 +60,17 @@ export async function getUserByEmail(email: string) {
 }
 
 /**
+ * Fetches a business by its ID from the database.
+ *
+ * @param id - The ID of the business to retrieve.
+ * @returns The business object if found, otherwise null.
+ */
+export async function getBusinessById(id: string) {
+  const result = await getBusinessByIdQuery({ id });
+  return result.data.business;
+}
+
+/**
  * Creates a new user in the database.
  */
 export async function createUser(data: CreateUserVariables) {
@@ -74,10 +86,18 @@ export async function createBusiness(params: {
   country: string;
   ownerId: string;
 }) {
+  const dateStr = new Date().toISOString().split('T')[0];
+  const normalizedName = params.name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '_')
+    .replace(/^_+|_+$/g, '');
+  const code = `${normalizedName}_${dateStr}`;
+
   const result = await createBusinessMutation({
     tenantId: params.ownerId,
     name: params.name,
     location: params.country,
+    code: code,
   });
   return { id: result.data.business_insert.id };
 }

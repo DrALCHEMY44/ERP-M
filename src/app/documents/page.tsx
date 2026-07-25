@@ -11,7 +11,8 @@ import {
   FileCheck, 
   ShieldCheck,
   MoreVertical,
-  Loader2
+  Loader2,
+  Eye
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -39,7 +40,8 @@ export default function DocumentsPage() {
       tenantId: profile?.tenantId || "",
       businessId: profile?.businessId || ""
     },
-    skip: !profile || !profile.tenantId || !profile.businessId
+    skip: !profile || !profile.tenantId || !profile.businessId,
+    refreshInterval: 5000
   });
 
   const documents = React.useMemo(() => {
@@ -103,6 +105,66 @@ export default function DocumentsPage() {
         toast({ variant: "destructive", title: "Error", description: "Failed to delete record." });
       }
     }
+  }
+
+  const handleDownload = async (fileUrl: string, fileName: string) => {
+    if (!fileUrl) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "No file URL associated with this document."
+      });
+      return;
+    }
+    try {
+      // For API-served files, force download mode
+      let downloadUrl = fileUrl;
+      if (fileUrl.startsWith('/api/download')) {
+        const separator = fileUrl.includes('?') ? '&' : '?';
+        downloadUrl = `${fileUrl}${separator}mode=download`;
+      }
+
+      // Fetch the file and trigger a proper browser download
+      const response = await fetch(downloadUrl);
+      if (!response.ok) {
+        throw new Error(`Download failed with status ${response.status}`);
+      }
+      const blob = await response.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(blobUrl);
+      toast({ title: "Download Started", description: `Downloading ${fileName}...` });
+    } catch (e) {
+      console.error("Failed to download document:", e);
+      toast({
+        variant: "destructive",
+        title: "Download Failed",
+        description: "Could not download the file. It may have been removed."
+      });
+    }
+  }
+
+  const handleView = (fileUrl: string, fileName: string) => {
+    if (!fileUrl) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "No file URL associated with this document."
+      });
+      return;
+    }
+    // For API-served files, use view mode (inline)
+    let viewUrl = fileUrl;
+    if (fileUrl.startsWith('/api/download')) {
+      const separator = fileUrl.includes('?') ? '&' : '?';
+      viewUrl = `${fileUrl}${separator}mode=view`;
+    }
+    window.open(viewUrl, '_blank', 'noopener,noreferrer');
   }
 
   if (loading) {
@@ -181,7 +243,11 @@ export default function DocumentsPage() {
               <Card key={doc.id} className="group hover:border-primary/50 transition-all shadow-sm overflow-hidden flex flex-col">
                 <div className="p-4 flex-1">
                   <div className="flex items-start justify-between mb-3">
-                    <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary border">
+                    <div 
+                      className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary border cursor-pointer hover:bg-primary/20 transition-colors"
+                      onClick={() => handleView(doc.fileUrl, doc.name)}
+                      title="Click to view"
+                    >
                       <FileText className="size-6" />
                     </div>
                     <DropdownMenu>
@@ -191,7 +257,16 @@ export default function DocumentsPage() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem className="text-[10px] font-bold uppercase cursor-pointer">
+                        <DropdownMenuItem 
+                          className="text-[10px] font-bold uppercase cursor-pointer"
+                          onClick={() => handleView(doc.fileUrl, doc.name)}
+                        >
+                          <Eye className="size-3 mr-2" /> View
+                        </DropdownMenuItem>
+                        <DropdownMenuItem 
+                          className="text-[10px] font-bold uppercase cursor-pointer"
+                          onClick={() => handleDownload(doc.fileUrl, doc.name)}
+                        >
                           <Download className="size-3 mr-2" /> Download
                         </DropdownMenuItem>
                         <DropdownMenuItem 
@@ -238,6 +313,11 @@ export default function DocumentsPage() {
           )}
         </div>
       </div>
+      <DocumentDialog 
+        open={isDialogOpen}
+        onOpenChange={setIsDialogOpen}
+        onSave={handleSave}
+      />
     </div>
   )
 }

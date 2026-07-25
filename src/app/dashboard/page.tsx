@@ -37,8 +37,7 @@ import {
   listEmployeesByBusinessQuery,
   listSuppliersByBusinessQuery
 } from "@/lib/data-service"
-import { businessPerformanceSummary } from "@/ai/flows/business-performance-summary-flow"
-import { MOCK_USER } from "@/lib/mock-data"
+
 import Link from "next/link"
 import { useTranslation } from "@/components/language-provider"
 import { Sale, Product, Expense, Task, Customer, ActivityLog } from "@/lib/types"
@@ -51,43 +50,51 @@ export default function DashboardPage() {
   const { data: salesDataResult, loading: salesLoading, unauthenticated } = useDataConnect({ 
     query: listTransactionsByBusinessQuery, 
     variables: { tenantId: profile?.tenantId || "", businessId: profile?.businessId || "" },
-    skip: !profile || !profile.tenantId || !profile.businessId
+    skip: !profile || !profile.tenantId || !profile.businessId,
+    refreshInterval: 5000
   });
   const { data: productsData, loading: productsLoading } = useDataConnect({ 
     query: listProductsByBusinessQuery, 
     variables: { tenantId: profile?.tenantId || "", businessId: profile?.businessId || "" },
-    skip: !profile || !profile.tenantId || !profile.businessId
+    skip: !profile || !profile.tenantId || !profile.businessId,
+    refreshInterval: 5000
   });
   // Note: Assuming transactions represent both sales and expenses. Filtering will be done client-side for now based on 'type'.
   const { data: expensesDataResult, loading: expensesLoading } = useDataConnect({ 
     query: listTransactionsByBusinessQuery, 
     variables: { tenantId: profile?.tenantId || "", businessId: profile?.businessId || "" },
-    skip: !profile || !profile.tenantId || !profile.businessId
+    skip: !profile || !profile.tenantId || !profile.businessId,
+    refreshInterval: 5000
   }); 
   const { data: tasksData, loading: tasksLoading } = useDataConnect({ 
     query: listTasksByBusinessQuery, 
     variables: { tenantId: profile?.tenantId || "", businessId: profile?.businessId || "" },
-    skip: !profile || !profile.tenantId || !profile.businessId
+    skip: !profile || !profile.tenantId || !profile.businessId,
+    refreshInterval: 5000
   });
   const { data: customersData, loading: customersLoading } = useDataConnect({ 
     query: listCustomersByBusinessQuery, 
     variables: { tenantId: profile?.tenantId || "", businessId: profile?.businessId || "" },
-    skip: !profile || !profile.tenantId || !profile.businessId
+    skip: !profile || !profile.tenantId || !profile.businessId,
+    refreshInterval: 5000
   });
   const { data: logsData, loading: logsLoading } = useDataConnect({ 
     query: listActivityLogsByUserQuery, 
     variables: { tenantId: profile?.tenantId || "", businessId: profile?.businessId || "", userId: user?.uid || "" },
-    skip: !profile || !profile.tenantId || !profile.businessId || !user
+    skip: !profile || !profile.tenantId || !profile.businessId || !user,
+    refreshInterval: 5000
   });
   const { data: employeesData, loading: employeesLoading } = useDataConnect({ 
     query: listEmployeesByBusinessQuery, 
     variables: { tenantId: profile?.tenantId || "", businessId: profile?.businessId || "" },
-    skip: !profile || !profile.tenantId || !profile.businessId
+    skip: !profile || !profile.tenantId || !profile.businessId,
+    refreshInterval: 5000
   });
   const { data: suppliersData, loading: suppliersLoading } = useDataConnect({ 
     query: listSuppliersByBusinessQuery, 
     variables: { tenantId: profile?.tenantId || "", businessId: profile?.businessId || "" },
-    skip: !profile || !profile.tenantId || !profile.businessId
+    skip: !profile || !profile.tenantId || !profile.businessId,
+    refreshInterval: 5000
   });
 
   // Map generated types back to existing frontend types
@@ -158,16 +165,27 @@ export default function DashboardPage() {
     if (isAiLoading || !profile || !user) return;
     setIsAiLoading(true);
     try {
-      const result = await businessPerformanceSummary({
-        period: 'this month',
-        tenantId: profile.tenantId,
-        businessId: profile.businessId,
-        userId: user.uid,
-        userRole: profile.role,
+      const response = await fetch('/api/ai/query', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          queryText: 'Give me a concise business performance summary for this month. Include total sales, expenses, net profit, low stock alerts, and any actionable insights. Format all amounts in FCFA.',
+          tenantId: profile.tenantId,
+          businessId: profile.businessId,
+          userId: profile.id,
+          role: profile.role,
+          userName: profile.fullName || profile.email,
+        }),
       });
-      setAiSummary(result.summary);
+      const data = await response.json();
+      if (response.ok && data.response) {
+        setAiSummary(data.response);
+      } else {
+        setAiSummary(data.error || 'Unable to generate AI insights at this time.');
+      }
     } catch (error) {
       console.error("AI Summary Error:", error);
+      setAiSummary('Unable to connect to the AI engine. Please try again.');
     } finally {
       setIsAiLoading(false);
     }
@@ -195,7 +213,7 @@ export default function DashboardPage() {
      });
      
      // Fallback to dummy data if no sales yet for visual demo
-     if (sales.length === 0) {
+     /*if (sales.length === 0) {
         return [
             { name: "Mon", total: 120000 },
             { name: "Tue", total: 150000 },
@@ -205,7 +223,7 @@ export default function DashboardPage() {
             { name: "Sat", total: 250000 },
             { name: "Sun", total: 140000 },
           ];
-     }
+     }*/
      return data;
   }, [sales]);
 
@@ -327,9 +345,7 @@ export default function DashboardPage() {
                   <Skeleton className="h-4 w-[75%]" />
                 </div>
               ) : (
-                <p className="text-sm text-foreground leading-relaxed italic">
-                  {aiSummary || "Connecting to intelligence engine..."}
-                </p>
+                <AIInsightsRenderer content={aiSummary || "Connecting to intelligence engine..."} />
               )}
             </CardContent>
           </Card>
@@ -424,3 +440,88 @@ export default function DashboardPage() {
     </div>
   )
 }
+
+function AIInsightsRenderer({ content }: { content: string }) {
+  // Split content by line breaks
+  const lines = content.split('\n');
+
+  return (
+    <div className="space-y-2.5 text-sm text-foreground/90 leading-relaxed font-sans">
+      {lines.map((line, idx) => {
+        const trimmed = line.trim();
+
+        // 1. Render Table Rows (containing pipes)
+        if (trimmed.startsWith('|')) {
+          // Skip markdown divider lines like |---|---|
+          if (trimmed.includes('---')) return null;
+
+          const cells = trimmed
+            .split('|')
+            .map((c) => c.trim())
+            .filter((_, i) => i > 0 && i < trimmed.split('|').length - 1);
+
+          const isHeader = idx === 0 || (lines[idx - 1] && lines[idx - 1].trim().includes('---')) || lines[idx + 1]?.trim().includes('---');
+
+          return (
+            <div
+              key={idx}
+              className={`grid grid-cols-2 gap-4 py-2 px-3 border-b border-primary/5 last:border-0 ${
+                isHeader 
+                  ? 'bg-primary/10 font-bold text-primary rounded-t-lg border-b-2 border-primary/20' 
+                  : 'odd:bg-muted/30 even:bg-background'
+              }`}
+            >
+              {cells.map((cell, cIdx) => (
+                <span key={cIdx} className={isHeader ? 'uppercase tracking-wider text-[10px]' : ''}>
+                  {parseBoldText(cell)}
+                </span>
+              ))}
+            </div>
+          );
+        }
+
+        // 2. Render List Items
+        if (trimmed.startsWith('-') || trimmed.startsWith('•') || trimmed.startsWith('*')) {
+          // Filter out italic indicators or generic bullets
+          const listText = trimmed.replace(/^[-•*]\s*/, '');
+          // If the list item was italicized like *Item*, strip outer asterisks
+          const cleanText = listText.startsWith('*') && listText.endsWith('*') ? listText.slice(1, -1) : listText;
+          return (
+            <div key={idx} className="flex items-start gap-2 pl-2 my-1">
+              <span className="text-primary mt-1.5 h-1.5 w-1.5 rounded-full bg-primary shrink-0" />
+              <span>{parseBoldText(cleanText)}</span>
+            </div>
+          );
+        }
+
+        // 3. Render Empty Lines as Spacing
+        if (!trimmed) {
+          return <div key={idx} className="h-1" />;
+        }
+
+        // 4. Render Normal Paragraphs
+        return (
+          <p key={idx} className={trimmed.startsWith('*') && trimmed.endsWith('*') ? 'italic text-xs text-muted-foreground' : ''}>
+            {parseBoldText(trimmed.startsWith('*') && trimmed.endsWith('*') ? trimmed.slice(1, -1) : trimmed)}
+          </p>
+        );
+      })}
+    </div>
+  );
+}
+
+// Regex helper to format **bold** text inline
+function parseBoldText(text: string) {
+  const parts = text.split(/(\*\*.*?\*\*)/g);
+  return parts.map((part, i) => {
+    if (part.startsWith('**') && part.endsWith('**')) {
+      return (
+        <strong key={i} className="font-bold text-primary">
+          {part.slice(2, -2)}
+        </strong>
+      );
+    }
+    return part;
+  });
+}
+
