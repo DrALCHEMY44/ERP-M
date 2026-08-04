@@ -51,11 +51,12 @@ const QueryRequestSchema = z.object({
 
 const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
 
-// Resilient list of general-purpose free models on OpenRouter
+// Resilient list of active general-purpose free models on OpenRouter
 const MODELS_PIPELINE = [
-  'google/gemma-4-31b-it:free',            // Primary
-  'openai/gpt-oss-120b:free',             // Secondary
-  'meta-llama/llama-3-8b-instruct:free',   // Fast Backup
+  'openai/gpt-oss-120b:free',               // Primary - High performance
+  'google/gemma-4-31b-it:free',             // Secondary - Google Gemma
+  'openai/gpt-oss-20b:free',                // Fast Backup
+  'openrouter/free',                         // Zero-Cost Auto-Router (Always online)
 ] as const;
 
 // ---------------------------------------------------------------------------
@@ -128,7 +129,7 @@ export async function POST(request: NextRequest) {
     const systemMessage = buildSystemMessage(tenantContext);
 
     // ------------------------------------------------------------------
-    // 5. Call OpenRouter API with Fallback Execution Pipeline (Mitigate 429s)
+    // 5. Call OpenRouter API with Resilient Fallback Pipeline
     // ------------------------------------------------------------------
     let aiResponseText = '';
     let chosenModel = '';
@@ -142,7 +143,7 @@ export async function POST(request: NextRequest) {
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${apiKey}`,
-            'HTTP-Referer': process.env.NEXT_PUBLIC_APP_URL || 'https://smarterp.ai',
+            'HTTP-Referer': process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:9002',
             'X-Title': 'SmartERP AI Assistant',
           },
           body: JSON.stringify({
@@ -157,42 +158,25 @@ export async function POST(request: NextRequest) {
                 content: queryText,
               },
             ],
-            temperature: 0.2, // Lower temperature for more deterministic, factual output
+            temperature: 0.2, // Lower temperature for factual ERP output
             max_tokens: 1500,
             top_p: 0.9,
           }),
         });
 
-        // Catch rate limits (429) or gateway timeouts (504, 502, 503)
-        if (openRouterResponse.status === 429) {
-          console.warn(`[AI Query] Model ${model} is rate limited (429). Falling back...`);
-          lastError = new Error(`Model ${model} was rate limited (429).`);
-          continue;
-        }
-
+        // Handle error status codes (429, 400, 500, etc.) by logging and attempting next fallback
         if (!openRouterResponse.ok) {
           const errorBody = await openRouterResponse.text();
           console.warn(
-            `[AI Query] Model ${model} returned error status ${openRouterResponse.status}:`,
-            errorBody,
+            `[AI Query] Model ${model} returned error status ${openRouterResponse.status}: ${errorBody.substring(0, 150)}`
           );
-          
+
           lastError = new Error(
-            `Model ${model} failed with status ${openRouterResponse.status}: ${errorBody.substring(0, 100)}`
+            `Model ${model} failed with HTTP ${openRouterResponse.status}`
           );
 
-          // Fallback on transient server errors
-          if (
-            openRouterResponse.status === 408 || // Request Timeout
-            openRouterResponse.status === 502 || // Bad Gateway
-            openRouterResponse.status === 503 || // Service Unavailable
-            openRouterResponse.status === 504    // Gateway Timeout
-          ) {
-            continue;
-          }
-
-          // If it's a fatal client error (400, 401, 403), stop pipeline and throw
-          throw lastError;
+          // Continue loop to try next model in pipeline
+          continue;
         }
 
         const openRouterData = await openRouterResponse.json();
@@ -226,7 +210,7 @@ export async function POST(request: NextRequest) {
     }
 
     // ------------------------------------------------------------------
-    // 6. Log query to AiQuery table in Data Connect (Safe and Unauthenticated)
+    // 6. Log query to AiQuery table in Data Connect (Non-blocking)
     // ------------------------------------------------------------------
     try {
       await createAiQuery({
