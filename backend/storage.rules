@@ -1,0 +1,36 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function userProfile() {
+      return firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function belongsToBusiness(tenantId, businessId) {
+      return isSignedIn()
+        && userProfile().tenantId == tenantId
+        && userProfile().businessId == businessId;
+    }
+
+    match /documents/{tenantId}/{businessId}/{ownerId}/{fileName} {
+      allow read: if belongsToBusiness(tenantId, businessId);
+      allow create: if belongsToBusiness(tenantId, businessId)
+        && ownerId == request.auth.uid
+        && request.resource.size < 25 * 1024 * 1024
+        && request.resource.metadata.tenantId == tenantId
+        && request.resource.metadata.businessId == businessId
+        && request.resource.metadata.uploadedBy == request.auth.uid;
+      allow update: if false;
+      allow delete: if belongsToBusiness(tenantId, businessId)
+        && (ownerId == request.auth.uid || userProfile().role in ['Business Owner', 'Manager']);
+    }
+
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

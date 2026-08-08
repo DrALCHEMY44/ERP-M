@@ -16,6 +16,9 @@
 # next.js
 /.next/
 /out/
+**/.next/
+**/.next-production/
+**/out/
 
 # production
 /build
@@ -49,8 +52,9 @@ node_modules/
 .next/
 out/
 
-# Firebase Data Connect Local Database Caches (CRITICAL)
-dataconnect/.dataconnect/
+# Firebase Data Connect local database and generated emulator caches.
+# Data Connect now lives under backend/, so ignore this directory at any depth.
+**/.dataconnect/
 *-debug.log
 .firebase/
 
@@ -58,3 +62,4 @@ dataconnect/.dataconnect/
 .DS_Store
 .env
 .env*.local
+.env_copy

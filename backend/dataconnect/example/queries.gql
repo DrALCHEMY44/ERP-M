@@ -1,0 +1,406 @@
+# -----------------------------------
+# Tenant & User Queries
+# -----------------------------------
+query ListTenants @auth(level: USER, insecureReason: "Multi-tenant ERP") {
+  tenants {
+    id
+    name
+    businessSector
+    location
+    ownerEmail
+    taxId
+    logoUrl
+    subscriptionTier
+    status
+    createdAt
+  }
+}
+
+query ListUsers @auth(level: USER, insecureReason: "Multi-tenant ERP") {
+  users {
+    id
+  }
+}
+
+query ListBusinesses($tenantId: String!)
+@auth(level: USER, insecureReason: "Multi-tenant ERP") {
+  businesses(where: { tenantId: { eq: $tenantId } }) {
+    id
+    name
+    location
+  }
+}
+
+query getUserByEmail($email: String!)
+@auth(level: PUBLIC, insecureReason: "Auth lookup before login") {
+  users(where: { email: { eq: $email } }) {
+    id
+    email
+    role
+    department
+    phoneNumber
+    createdAt
+    tenantId
+    businessId
+    fullName
+  }
+}
+
+query getBusinessById($id: String!)
+@auth(level: PUBLIC, insecureReason: "Auth lookup during login") {
+  business(id: $id) {
+    id
+    tenantId
+    name
+    createdAt
+    code
+  }
+}
+
+query getBusinessByCode($code: String!)
+@auth(level: PUBLIC, insecureReason: "Auth lookup before login") {
+  businesses(where: { code: { eq: $code } }) {
+    id
+    tenantId
+    name
+  }
+}
+
+query getBusinessesByName($name: String!)
+@auth(level: PUBLIC, insecureReason: "Employee onboarding lookup before login") {
+  businesses(where: { name: { eq: $name } }) {
+    id
+    tenantId
+    name
+    code
+  }
+}
+
+query verifyEmployeeAccess(
+  $fullName: String!
+  $role: String!
+  $accessCode: String!
+  $tenantId: String!
+  $businessId: String!
+) @auth(level: PUBLIC, insecureReason: "Employee access-code verification before login") {
+  users(
+    where: {
+      fullName: { eq: $fullName }
+      role: { eq: $role }
+      accessCode: { eq: $accessCode }
+      tenantId: { eq: $tenantId }
+      businessId: { eq: $businessId }
+    }
+  ) {
+    id
+    email
+    role
+    fullName
+    tenantId
+    businessId
+  }
+}
+
+query verifyUserLogin(
+  $email: String!
+  $fullName: String!
+  $role: String!
+  $accessCode: String!
+  $tenantId: String!
+  $businessId: String!
+) @auth(level: PUBLIC, insecureReason: "Auth verification during login") {
+  users(
+    where: {
+      email: { eq: $email }
+      fullName: { eq: $fullName }
+      role: { eq: $role }
+      accessCode: { eq: $accessCode }
+      tenantId: { eq: $tenantId }
+      businessId: { eq: $businessId }
+    }
+  ) {
+    id
+    email
+    role
+    fullName
+    tenantId
+    businessId
+  }
+}
+
+
+
+# -----------------------------------
+# Business Data Queries
+# -----------------------------------
+query listProductsByBusiness($tenantId: String!, $businessId: String!)
+@auth(level: USER, insecureReason: "Products are restricted to the authenticated application's selected tenant and business") {
+  products(
+    where: { tenantId: { eq: $tenantId }, businessId: { eq: $businessId } }
+  ) {
+    id
+    name
+    category
+    quantity
+    costPrice
+    sellingPrice
+    expiryDate
+    lowStockLevel
+    createdBy
+    createdAt
+    updatedAt
+    tenantId
+    businessId
+  }
+}
+
+query listCustomersByBusiness($tenantId: String!, $businessId: String!)
+@auth(level: PUBLIC, insecureReason: "Allowed for server-side assistant context querying") {
+  customers(
+    where: { tenantId: { eq: $tenantId }, businessId: { eq: $businessId } }
+  ) {
+    id
+    customerName
+    phoneNumber
+    email
+    location
+    totalOrders
+    totalSpent
+    createdAt
+    tenantId
+    businessId
+  }
+}
+
+query listUsersByBusiness($tenantId: String!, $businessId: String!)
+@auth(level: PUBLIC, insecureReason: "Allowed for server-side assistant context querying") {
+  users(
+    where: { tenantId: { eq: $tenantId }, businessId: { eq: $businessId } }
+  ) {
+    id
+    email
+    role
+    department
+    phoneNumber
+    createdAt
+    tenantId
+    businessId
+    fullName
+  }
+}
+
+query listSuppliersByBusiness($tenantId: String!, $businessId: String!)
+@auth(level: PUBLIC, insecureReason: "Allowed for server-side assistant context querying") {
+  suppliers(
+    where: { tenantId: { eq: $tenantId }, businessId: { eq: $businessId } }
+  ) {
+    id
+    supplierName
+    phoneNumber
+    email
+    createdAt
+    tenantId
+    businessId
+  }
+}
+
+query listTasksByBusiness($tenantId: String!, $businessId: String!)
+@auth(level: PUBLIC, insecureReason: "Allowed for server-side assistant context querying") {
+  tasks(
+    where: { tenantId: { eq: $tenantId }, businessId: { eq: $businessId } }
+  ) {
+    id
+    title
+    description
+    status
+    priority
+    dueDate
+    assignedTo {
+      id
+      email
+      role
+      fullName
+    }
+    createdBy
+    createdAt
+    updatedAt
+    tenantId
+    businessId
+  }
+}
+
+query listTasksAssignedToUser($tenantId: String!, $businessId: String!, $userId: String!)
+@auth(level: PUBLIC, insecureReason: "Access is limited to the employee identity verified by the mobile session") {
+  tasks(
+    where: {
+      tenantId: { eq: $tenantId }
+      businessId: { eq: $businessId }
+      assignedToId: { eq: $userId }
+    }
+  ) {
+    id
+    title
+    description
+    status
+    priority
+    dueDate
+    assignedTo { id email role fullName }
+    createdBy
+    createdAt
+    updatedAt
+    tenantId
+    businessId
+  }
+}
+
+query listTransactionsByBusiness($tenantId: String!, $businessId: String!)
+@auth(level: PUBLIC, insecureReason: "Allowed for server-side assistant context querying") {
+  transactions(
+    where: { tenantId: { eq: $tenantId }, businessId: { eq: $businessId } }
+  ) {
+    id
+    type
+    amount
+    date
+    category
+    receiptUrl
+    recordedBy
+    createdAt
+    tenantId
+    businessId
+  }
+}
+
+query listTransactionsByType(
+  $tenantId: String!
+  $businessId: String!
+  $type: TransactionType!
+) @auth(level: USER, insecureReason: "Multi-tenant ERP") {
+  transactions(
+    where: {
+      tenantId: { eq: $tenantId }
+      businessId: { eq: $businessId }
+      type: { eq: $type }
+    }
+  ) {
+    id
+    type
+    amount
+    date
+    category
+    receiptUrl
+    recordedBy
+    createdAt
+    tenantId
+    businessId
+  }
+}
+
+query listEmployeesByBusiness($tenantId: String!, $businessId: String!)
+@auth(level: PUBLIC, insecureReason: "Allowed for server-side assistant context querying") {
+  employees(
+    where: { tenantId: { eq: $tenantId }, businessId: { eq: $businessId } }
+  ) {
+    id
+    fullName
+    position
+    role
+    salary
+    department
+    startDate
+    status
+    createdAt
+    tenantId
+    businessId
+    code
+  }
+}
+
+query listDocumentsByBusiness($tenantId: String!, $businessId: String!)
+@auth(level: PUBLIC, insecureReason: "Allowed for server-side assistant context querying") {
+  documents(
+    where: { tenantId: { eq: $tenantId }, businessId: { eq: $businessId } }
+  ) {
+    id
+    title
+    documentType
+    fileUrl
+    uploadedBy
+    uploadedAt
+    tenantId
+    businessId
+  }
+}
+
+query listActivityLogsByUser(
+  $tenantId: String!
+  $businessId: String!
+  $userId: String!
+) @auth(level: USER, insecureReason: "Multi-tenant ERP") {
+  activityLogs(
+    where: {
+      tenantId: { eq: $tenantId }
+      businessId: { eq: $businessId }
+      userId: { eq: $userId }
+    }
+  ) {
+    id
+    tenantId
+    businessId
+    userId
+    userName
+    actionType
+    module
+    description
+    recordId
+    timestamp
+  }
+}
+
+query listActivityLogsByBusiness($tenantId: String!, $businessId: String!)
+@auth(level: PUBLIC, insecureReason: "Allowed for server-side assistant context querying") {
+  activityLogs(
+    where: { tenantId: { eq: $tenantId }, businessId: { eq: $businessId } }
+  ) {
+    id
+    tenantId
+    businessId
+    userId
+    userName
+    actionType
+    module
+    description
+    recordId
+    timestamp
+  }
+}
+
+query getUserById($id: String!)
+@auth(level: USER, insecureReason: "Multi-tenant ERP") {
+  user(id: $id) {
+    id
+    email
+    role
+    department
+    phoneNumber
+    createdAt
+    tenantId
+    businessId
+    fullName
+  }
+}
+
+query listNotifications($tenantId: String!, $businessId: String!, $userId: String!)
+@auth(level: USER, insecureReason: "Multi-tenant ERP") {
+  notifications(
+    where: { tenantId: { eq: $tenantId }, businessId: { eq: $businessId }, userId: { eq: $userId } }
+  ) {
+    id
+    tenantId
+    businessId
+    userId
+    message
+    isRead
+    createdAt
+  }
+}

@@ -3,36 +3,46 @@
 
 An AI-powered Enterprise Resource Planning platform for SMEs in Cameroon.
 
-**Official Repository:** [https://github.com/DrALCHEMY44/ERP-M](https://github.com/DrALCHEMY44/ERP-M)
+## Repository structure
 
-## Data Strategy: NoSQL to SQL Transition
+```text
+.
+├── frontend/   # Next.js web application and server-side API routes
+├── mobile/     # Flutter application
+├── backend/    # Firebase configuration, Data Connect schema and operations
+└── docs/       # Product and architecture documentation
+```
 
-This application is moving towards **Firebase Data Connect** to leverage the power of PostgreSQL for relational SME data.
+The OpenRouter integration lives in `frontend/src/app/api/ai/query`. Next.js API
+routes remain with the frontend because they are compiled and deployed by the
+Next.js server. The database schema, GraphQL operations, generated-client
+configuration, Firestore rules, and Firebase emulator configuration are in
+`backend/`.
 
-### Database Options
-1. **Cloud Firestore (Current Prototype)**: High-speed NoSQL for real-time updates and notifications.
-2. **Firebase Data Connect (SQL Integration)**: Managed PostgreSQL for complex reporting, SYCOHADA accounting integrity, and relational queries.
+## Common commands
 
-### Setup Instructions
+```bash
+# Web application
+npm run frontend:dev
+npm run frontend:typecheck
+npm run frontend:build
 
-#### 1. Firebase Data Connect (SQL)
-- Go to the [Firebase Console](https://console.firebase.google.com/).
-- Navigate to **Data Connect** in the build menu.
-- Connect your project to a **Google Cloud SQL for PostgreSQL** instance.
-- Run `firebase init dataconnect` in your local CLI to generate the GraphQL SDK.
+# Firebase emulators and Data Connect SDK generation
+npm run backend:emulators
+npm run backend:generate
 
-#### 2. Environment Setup
-- Copy configuration values from the console into your `.env` file.
-- Ensure your `POSTGRES_CONNECTION_STRING` is secured.
+# Flutter application
+cd mobile
+flutter pub get
+flutter run
+```
 
-## Project Structure
+Environment variables used by Next.js belong in `frontend/.env`.
 
-- `src/app/`: Root routes and core modules.
-- `src/ai/`: Genkit flow definitions and AI logic.
-- `src/lib/dataconnect/`: (Future) Generated SQL/GraphQL SDKs.
-- `src/lib/firebase.ts`: Initialization for Auth, Firestore, and Storage.
+## Core features
 
-## Core Features
-- **Multi-Tenant SaaS**: Isolated data via `tenantId`.
-- **Relational Integrity**: SQL-ready schemas for accounting and inventory.
-- **AI Business Assistant**: Context-aware intelligence powered by Genkit.
+- Multi-tenant SaaS data model
+- Sales, inventory, finance, HR, tasks, documents, and reporting
+- Firebase Data Connect/PostgreSQL relational backend
+- OpenRouter-powered, context-aware AI assistant
+- Next.js web and Flutter mobile clients
