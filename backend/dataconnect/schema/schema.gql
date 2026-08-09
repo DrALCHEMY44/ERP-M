@@ -39,6 +39,9 @@ type User @table(key: "id") {
   department: String
   phoneNumber: String
   createdAt: Timestamp!
+  accessCodeHash: String
+  # Transitional only: backfill script hashes and clears this value before the
+  # column is removed in a later schema deployment.
   accessCode: String
 }
 
@@ -60,8 +63,8 @@ type Product @table(key: "id") {
   name: String!
   category: String
   quantity: Int!
-  costPrice: Float
-  sellingPrice: Float!
+  costPrice: Float @col(dataType: "numeric(19,2)")
+  sellingPrice: Float! @col(dataType: "numeric(19,2)")
   expiryDate: Date
   lowStockLevel: Int
   createdBy: String!
@@ -74,7 +77,7 @@ type Transaction @table(key: "id") {
   tenantId: String!
   businessId: String!
   type: TransactionType! # 💡 Linked to your TransactionType Enum
-  amount: Float!
+  amount: Float! @col(dataType: "numeric(19,2)")
   date: Timestamp!
   category: String
   receiptUrl: String
@@ -114,7 +117,7 @@ type Employee @table(key: "id") {
   fullName: String!
   position: String!
   role: String
-  salary: Float
+  salary: Float @col(dataType: "numeric(19,2)")
   department: String
   startDate: Date
   status: String
@@ -131,7 +134,7 @@ type Customer @table(key: "id") {
   email: String
   location: String
   totalOrders: Int
-  totalSpent: Float
+  totalSpent: Float @col(dataType: "numeric(19,2)")
   createdAt: Timestamp!
 }
 
@@ -187,4 +190,20 @@ type Notification @table(key: "id") {
   message: String!
   isRead: Boolean!
   createdAt: Timestamp!
+}
+
+type MirrorOutbox @table(key: "id") {
+  id: String! @default(expr: "uuidV4()")
+  tenantId: String!
+  businessId: String!
+  entityType: String!
+  operation: String!
+  recordId: String!
+  payload: Any!
+  status: String!
+  attempts: Int!
+  nextAttemptAt: Timestamp!
+  lastError: String
+  createdAt: Timestamp!
+  deliveredAt: Timestamp
 }

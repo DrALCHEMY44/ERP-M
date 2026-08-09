@@ -1,6 +1,5 @@
 
-import { MOCK_USER } from './mock-data';
-import { createActivityLogMutation } from './data-service';
+import { auth } from './firebase';
 
 /**
  * Automatically records system activities to the SQL Connect database.
@@ -21,21 +20,19 @@ export async function logActivity(params: {
   };
 }) {
   try {
-    const tenantId = params.userProfile?.tenantId || MOCK_USER.tenantId;
-    const businessId = params.userProfile?.businessId || MOCK_USER.businessId;
-    const userId = params.userProfile?.uid || MOCK_USER.uid;
-    const userName = params.userProfile?.fullName || MOCK_USER.fullName;
-
-    await createActivityLogMutation({
-      tenantId,
-      businessId,
-      userId,
-      userName,
+    const token = await auth.currentUser?.getIdToken();
+    if (!token) throw new Error('Authentication required');
+    const response = await fetch('/api/audit', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
       actionType: params.actionType,
       module: params.module,
       description: params.description,
       recordId: params.recordId,
+      }),
     });
+    if (!response.ok) throw new Error('Audit write failed');
   } catch (error) {
     console.error('Audit Logger Error:', error);
   }

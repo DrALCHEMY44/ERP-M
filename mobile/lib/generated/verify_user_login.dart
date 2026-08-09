@@ -4,12 +4,12 @@ class VerifyUserLoginVariablesBuilder {
   String email;
   String fullName;
   String role;
-  String accessCode;
+  String accessCodeHash;
   String tenantId;
   String businessId;
 
   final FirebaseDataConnect _dataConnect;
-  VerifyUserLoginVariablesBuilder(this._dataConnect, {required  this.email,required  this.fullName,required  this.role,required  this.accessCode,required  this.tenantId,required  this.businessId,});
+  VerifyUserLoginVariablesBuilder(this._dataConnect, {required  this.email,required  this.fullName,required  this.role,required  this.accessCodeHash,required  this.tenantId,required  this.businessId,});
   Deserializer<VerifyUserLoginData> dataDeserializer = (dynamic json)  => VerifyUserLoginData.fromJson(jsonDecode(json));
   Serializer<VerifyUserLoginVariables> varsSerializer = (VerifyUserLoginVariables vars) => jsonEncode(vars.toJson());
   Future<QueryResult<VerifyUserLoginData, VerifyUserLoginVariables>> execute({QueryFetchPolicy fetchPolicy = QueryFetchPolicy.preferCache}) {
@@ -17,7 +17,7 @@ class VerifyUserLoginVariablesBuilder {
   }
 
   QueryRef<VerifyUserLoginData, VerifyUserLoginVariables> ref() {
-    VerifyUserLoginVariables vars= VerifyUserLoginVariables(email: email,fullName: fullName,role: role,accessCode: accessCode,tenantId: tenantId,businessId: businessId,);
+    VerifyUserLoginVariables vars= VerifyUserLoginVariables(email: email,fullName: fullName,role: role,accessCodeHash: accessCodeHash,tenantId: tenantId,businessId: businessId,);
     return _dataConnect.query("verifyUserLogin", dataDeserializer, varsSerializer, vars);
   }
 }
@@ -124,7 +124,7 @@ class VerifyUserLoginVariables {
   final String email;
   final String fullName;
   final String role;
-  final String accessCode;
+  final String accessCodeHash;
   final String tenantId;
   final String businessId;
   @Deprecated('fromJson is deprecated for Variable classes as they are no longer required for deserialization.')
@@ -133,7 +133,7 @@ class VerifyUserLoginVariables {
   email = nativeFromJson<String>(json['email']),
   fullName = nativeFromJson<String>(json['fullName']),
   role = nativeFromJson<String>(json['role']),
-  accessCode = nativeFromJson<String>(json['accessCode']),
+  accessCodeHash = nativeFromJson<String>(json['accessCodeHash']),
   tenantId = nativeFromJson<String>(json['tenantId']),
   businessId = nativeFromJson<String>(json['businessId']);
   @override
@@ -149,13 +149,13 @@ class VerifyUserLoginVariables {
     return email == otherTyped.email && 
     fullName == otherTyped.fullName && 
     role == otherTyped.role && 
-    accessCode == otherTyped.accessCode && 
+    accessCodeHash == otherTyped.accessCodeHash && 
     tenantId == otherTyped.tenantId && 
     businessId == otherTyped.businessId;
     
   }
   @override
-  int get hashCode => Object.hashAll([email.hashCode, fullName.hashCode, role.hashCode, accessCode.hashCode, tenantId.hashCode, businessId.hashCode]);
+  int get hashCode => Object.hashAll([email.hashCode, fullName.hashCode, role.hashCode, accessCodeHash.hashCode, tenantId.hashCode, businessId.hashCode]);
   
 
   Map<String, dynamic> toJson() {
@@ -163,7 +163,7 @@ class VerifyUserLoginVariables {
     json['email'] = nativeToJson<String>(email);
     json['fullName'] = nativeToJson<String>(fullName);
     json['role'] = nativeToJson<String>(role);
-    json['accessCode'] = nativeToJson<String>(accessCode);
+    json['accessCodeHash'] = nativeToJson<String>(accessCodeHash);
     json['tenantId'] = nativeToJson<String>(tenantId);
     json['businessId'] = nativeToJson<String>(businessId);
     return json;
@@ -173,7 +173,7 @@ class VerifyUserLoginVariables {
     required this.email,
     required this.fullName,
     required this.role,
-    required this.accessCode,
+    required this.accessCodeHash,
     required this.tenantId,
     required this.businessId,
   });

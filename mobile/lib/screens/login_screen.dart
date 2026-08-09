@@ -17,14 +17,13 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
-  
-  // Controllers with pre-seeded values for Samuel Eto'o (Business Owner)
-  final _fullNameController = TextEditingController(text: "Samuel Eto'o");
-  final _emailController = TextEditingController(text: 'admin@smarterp.ai');
-  final _passwordController = TextEditingController(text: 'password123');
+
+  final _fullNameController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
   final _businessNameController = TextEditingController();
   final _accessCodeController = TextEditingController();
-  
+
   String _selectedRoleProfile = 'Business Owner';
   bool _isLoadingState = false;
   bool _obscurePassword = true;
@@ -56,7 +55,10 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _loadAllProviderData() async {
     final core = Provider.of<CoreProvider>(context, listen: false);
     final inventory = Provider.of<InventoryProvider>(context, listen: false);
-    final transaction = Provider.of<TransactionProvider>(context, listen: false);
+    final transaction = Provider.of<TransactionProvider>(
+      context,
+      listen: false,
+    );
     final taskProvider = Provider.of<TaskProvider>(context, listen: false);
 
     if (AuthService.currentUser?.role == UserRole.staff) {
@@ -87,13 +89,18 @@ class _LoginScreenState extends State<LoginScreen> {
         if (user != null) {
           await _loadAllProviderData();
           if (!mounted) return;
-          Navigator.pushReplacementNamed(context, user.role == UserRole.staff ? '/tasks' : '/dashboard');
+          Navigator.pushReplacementNamed(
+            context,
+            user.role == UserRole.staff ? '/tasks' : '/dashboard',
+          );
         }
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Login failed: ${e.toString().replaceAll('Exception: ', '')}'),
+              content: Text(
+                'Login failed: ${e.toString().replaceAll('Exception: ', '')}',
+              ),
               backgroundColor: Colors.red,
               behavior: SnackBarBehavior.floating,
             ),
@@ -112,7 +119,7 @@ class _LoginScreenState extends State<LoginScreen> {
       _selectedRoleProfile = _getDemoRoleProfile(user.role);
       _fullNameController.text = user.name;
       _emailController.text = user.email;
-      _passwordController.text = 'password123';
+      _passwordController.clear();
       _isLoadingState = true;
     });
 
@@ -124,7 +131,9 @@ class _LoginScreenState extends State<LoginScreen> {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Logged in as ${loggedInUser.name} (${loggedInUser.role.displayName})'),
+            content: Text(
+              'Logged in as ${loggedInUser.name} (${loggedInUser.role.displayName})',
+            ),
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -134,7 +143,9 @@ class _LoginScreenState extends State<LoginScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Demo login failed: ${e.toString().replaceAll('Exception: ', '')}'),
+            content: Text(
+              'Demo login failed: ${e.toString().replaceAll('Exception: ', '')}',
+            ),
             backgroundColor: Colors.red,
             behavior: SnackBarBehavior.floating,
           ),
@@ -164,74 +175,104 @@ class _LoginScreenState extends State<LoginScreen> {
           child: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Quick Demo Accounts',
-                    style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Quick Demo Accounts',
+                      style: theme.textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const Icon(Icons.flash_on, color: Colors.amber),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Select a pre-seeded account to test tenant-isolation and role-based views instantly.',
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: Colors.grey.shade600,
                   ),
-                  const Icon(Icons.flash_on, color: Colors.amber),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Select a pre-seeded account to test tenant-isolation and role-based views instantly.',
-                style: theme.textTheme.bodyMedium?.copyWith(color: Colors.grey.shade600),
-              ),
-              const SizedBox(height: 24),
-              ConstrainedBox(
-                constraints: BoxConstraints(
-                  maxHeight: MediaQuery.of(context).size.height * 0.45,
                 ),
-                child: ListView.separated(
-                  shrinkWrap: true,
-                  itemCount: AuthService.demoUsers.length,
-                  separatorBuilder: (context, index) => const SizedBox(height: 12),
-                  itemBuilder: (context, index) {
-                    final user = AuthService.demoUsers[index];
-                    final isDouala = user.tenantId == 'tenant_douala_001';
-                    
-                    return Card(
-                      elevation: 0,
-                      color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.5),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                        side: BorderSide(color: theme.colorScheme.outlineVariant.withOpacity(0.3)),
-                      ),
-                      child: ListTile(
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        leading: CircleAvatar(
-                          backgroundColor: isDouala ? Colors.blue.withOpacity(0.1) : Colors.teal.withOpacity(0.1),
-                          child: Icon(
-                            user.role == UserRole.businessOwner ? Icons.workspace_premium : Icons.person,
-                            color: isDouala ? Colors.blue : Colors.teal,
+                const SizedBox(height: 24),
+                ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxHeight: MediaQuery.of(context).size.height * 0.45,
+                  ),
+                  child: ListView.separated(
+                    shrinkWrap: true,
+                    itemCount: AuthService.demoUsers.length,
+                    separatorBuilder: (context, index) =>
+                        const SizedBox(height: 12),
+                    itemBuilder: (context, index) {
+                      final user = AuthService.demoUsers[index];
+                      final isDouala = user.tenantId == 'tenant_douala_001';
+
+                      return Card(
+                        elevation: 0,
+                        color: theme.colorScheme.surfaceContainerHighest
+                            .withOpacity(0.5),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          side: BorderSide(
+                            color: theme.colorScheme.outlineVariant.withOpacity(
+                              0.3,
+                            ),
                           ),
                         ),
-                        title: Text(user.name, style: const TextStyle(fontWeight: FontWeight.bold)),
-                        subtitle: Text('${user.role.displayName}\n${isDouala ? "Superette de l'Avenir (Douala)" : "Boutique Bastos (Yaoundé)"}', style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
-                        isThreeLine: true,
-                        trailing: Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: theme.colorScheme.primary.withOpacity(0.1),
-                            shape: BoxShape.circle,
+                        child: ListTile(
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
                           ),
-                          child: Icon(Icons.arrow_forward_ios, size: 14, color: theme.colorScheme.primary),
+                          leading: CircleAvatar(
+                            backgroundColor: isDouala
+                                ? Colors.blue.withOpacity(0.1)
+                                : Colors.teal.withOpacity(0.1),
+                            child: Icon(
+                              user.role == UserRole.businessOwner
+                                  ? Icons.workspace_premium
+                                  : Icons.person,
+                              color: isDouala ? Colors.blue : Colors.teal,
+                            ),
+                          ),
+                          title: Text(
+                            user.name,
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          subtitle: Text(
+                            '${user.role.displayName}\n${isDouala ? "Superette de l'Avenir (Douala)" : "Boutique Bastos (Yaoundé)"}',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey.shade600,
+                            ),
+                          ),
+                          isThreeLine: true,
+                          trailing: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: theme.colorScheme.primary.withOpacity(0.1),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              Icons.arrow_forward_ios,
+                              size: 14,
+                              color: theme.colorScheme.primary,
+                            ),
+                          ),
+                          onTap: () {
+                            Navigator.pop(context);
+                            _handleDemoLogin(user);
+                          },
                         ),
-                        onTap: () {
-                          Navigator.pop(context);
-                          _handleDemoLogin(user);
-                        },
-                      ),
-                    );
-                  },
+                      );
+                    },
+                  ),
                 ),
-              ),
-            ],
-          ),
+              ],
+            ),
           ),
         );
       },
@@ -260,7 +301,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ),
           ),
-          
+
           // Glassmorphism login card
           SafeArea(
             child: Center(
@@ -276,13 +317,17 @@ class _LoginScreenState extends State<LoginScreen> {
                       decoration: BoxDecoration(
                         color: theme.colorScheme.surface.withOpacity(0.7),
                         borderRadius: BorderRadius.circular(32),
-                        border: Border.all(color: theme.colorScheme.outlineVariant.withOpacity(0.5)),
+                        border: Border.all(
+                          color: theme.colorScheme.outlineVariant.withOpacity(
+                            0.5,
+                          ),
+                        ),
                         boxShadow: [
                           BoxShadow(
                             color: Colors.black.withOpacity(0.05),
                             blurRadius: 24,
                             offset: const Offset(0, 8),
-                          )
+                          ),
                         ],
                       ),
                       child: Form(
@@ -296,7 +341,9 @@ class _LoginScreenState extends State<LoginScreen> {
                               child: Container(
                                 padding: const EdgeInsets.all(16),
                                 decoration: BoxDecoration(
-                                  color: theme.colorScheme.primary.withOpacity(0.1),
+                                  color: theme.colorScheme.primary.withOpacity(
+                                    0.1,
+                                  ),
                                   shape: BoxShape.circle,
                                 ),
                                 child: Icon(
@@ -323,74 +370,6 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                             ),
                             const SizedBox(height: 32),
-                            
-                            // Demo Quick Access Card
-                            InkWell(
-                              onTap: _showDemoAccountsPanel,
-                              borderRadius: BorderRadius.circular(16),
-                              child: Ink(
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    colors: [
-                                      theme.colorScheme.primary.withOpacity(0.1),
-                                      theme.colorScheme.secondary.withOpacity(0.05),
-                                    ],
-                                  ),
-                                  borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(color: theme.colorScheme.primary.withOpacity(0.2)),
-                                ),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(16.0),
-                                  child: Row(
-                                    children: [
-                                      Container(
-                                        padding: const EdgeInsets.all(8),
-                                        decoration: BoxDecoration(
-                                          color: theme.colorScheme.primary.withOpacity(0.2),
-                                          shape: BoxShape.circle,
-                                        ),
-                                        child: Icon(Icons.flash_on, color: theme.colorScheme.primary, size: 24),
-                                      ),
-                                      const SizedBox(width: 16),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              'Quick-Login for Demo',
-                                              style: theme.textTheme.titleMedium?.copyWith(
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
-                                            const SizedBox(height: 4),
-                                            Text(
-                                              'Tap to pick role & tenant',
-                                              style: theme.textTheme.bodySmall?.copyWith(
-                                                color: Colors.grey.shade600,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      Icon(Icons.keyboard_arrow_right, color: theme.colorScheme.primary),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-
-                            const SizedBox(height: 32),
-                            
-                            Row(
-                              children: [
-                                Expanded(child: Divider(color: theme.colorScheme.outlineVariant)),
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                                  child: Text('OR LOGIN MANUALLY', style: theme.textTheme.labelSmall?.copyWith(color: Colors.grey.shade500, letterSpacing: 1.2)),
-                                ),
-                                Expanded(child: Divider(color: theme.colorScheme.outlineVariant)),
-                              ],
-                            ),
 
                             const SizedBox(height: 24),
 
@@ -401,14 +380,19 @@ class _LoginScreenState extends State<LoginScreen> {
                                 labelText: 'Role Profile',
                                 prefixIcon: Icon(Icons.person_outline),
                               ),
-                              items: _roleOptions.map((role) => DropdownMenuItem(
-                                value: role,
-                                child: Text(role),
-                              )).toList(),
-                              onChanged: (val) => setState(() => _selectedRoleProfile = val!),
+                              items: _roleOptions
+                                  .map(
+                                    (role) => DropdownMenuItem(
+                                      value: role,
+                                      child: Text(role),
+                                    ),
+                                  )
+                                  .toList(),
+                              onChanged: (val) =>
+                                  setState(() => _selectedRoleProfile = val!),
                             ),
                             const SizedBox(height: 16),
-                            
+
                             // 2. Registered Full Name
                             TextFormField(
                               controller: _fullNameController,
@@ -417,7 +401,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                 prefixIcon: Icon(Icons.badge_outlined),
                               ),
                               validator: (value) =>
-                                  value == null || value.trim().isEmpty ? 'Please enter your registered name' : null,
+                                  value == null || value.trim().isEmpty
+                                  ? 'Please enter your registered name'
+                                  : null,
                             ),
                             const SizedBox(height: 16),
 
@@ -430,20 +416,25 @@ class _LoginScreenState extends State<LoginScreen> {
                                   hintText: 'Enter the exact business name',
                                   prefixIcon: Icon(Icons.domain_outlined),
                                 ),
-                                validator: (value) => value == null || value.trim().isEmpty
+                                validator: (value) =>
+                                    value == null || value.trim().isEmpty
                                     ? 'Business name is required'
                                     : null,
                               ),
                               const SizedBox(height: 16),
                               TextFormField(
                                 controller: _accessCodeController,
-                                textCapitalization: TextCapitalization.characters,
+                                textCapitalization:
+                                    TextCapitalization.characters,
                                 decoration: InputDecoration(
-                                  labelText: _selectedRoleProfile == 'Manager' ? 'Manager Code' : 'Employee Code',
+                                  labelText: _selectedRoleProfile == 'Manager'
+                                      ? 'Manager Code'
+                                      : 'Employee Code',
                                   hintText: 'EMP-XXXXXX-XXXXXXXX',
                                   prefixIcon: const Icon(Icons.key_outlined),
                                 ),
-                                validator: (value) => value == null || value.trim().isEmpty
+                                validator: (value) =>
+                                    value == null || value.trim().isEmpty
                                     ? 'Your unique access code is required'
                                     : null,
                               ),
@@ -455,7 +446,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                   labelText: 'Email Address',
                                   prefixIcon: Icon(Icons.email_outlined),
                                 ),
-                                validator: (value) => value == null || !value.contains('@')
+                                validator: (value) =>
+                                    value == null || !value.contains('@')
                                     ? 'Invalid registered email address'
                                     : null,
                               ),
@@ -467,33 +459,58 @@ class _LoginScreenState extends State<LoginScreen> {
                                   labelText: 'Password',
                                   prefixIcon: const Icon(Icons.lock_outline),
                                   suffixIcon: IconButton(
-                                    icon: Icon(_obscurePassword ? Icons.visibility : Icons.visibility_off),
-                                    onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                                    icon: Icon(
+                                      _obscurePassword
+                                          ? Icons.visibility
+                                          : Icons.visibility_off,
+                                    ),
+                                    onPressed: () => setState(
+                                      () =>
+                                          _obscurePassword = !_obscurePassword,
+                                    ),
                                   ),
                                 ),
-                                validator: (value) => value == null || value.isEmpty
+                                validator: (value) =>
+                                    value == null || value.isEmpty
                                     ? 'Please enter your password'
                                     : null,
                               ),
                             ],
                             const SizedBox(height: 32),
-                            
+
                             _isLoadingState
-                                ? const Center(child: CircularProgressIndicator())
+                                ? const Center(
+                                    child: CircularProgressIndicator(),
+                                  )
                                 : FilledButton(
                                     onPressed: _handleLogin,
                                     style: FilledButton.styleFrom(
-                                      padding: const EdgeInsets.symmetric(vertical: 16),
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 16,
+                                      ),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(16),
+                                      ),
                                     ),
-                                    child: const Text('Sign In', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, letterSpacing: 1.1)),
+                                    child: const Text(
+                                      'Sign In',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                        letterSpacing: 1.1,
+                                      ),
+                                    ),
                                   ),
                             const SizedBox(height: 24),
-                            
+
                             Center(
                               child: TextButton(
-                                onPressed: () => Navigator.pushNamed(context, '/register'),
-                                child: const Text('Don\'t have an account? Register', style: TextStyle(fontWeight: FontWeight.w600)),
+                                onPressed: () =>
+                                    Navigator.pushNamed(context, '/register'),
+                                child: const Text(
+                                  'Don\'t have an account? Register',
+                                  style: TextStyle(fontWeight: FontWeight.w600),
+                                ),
                               ),
                             ),
                           ],

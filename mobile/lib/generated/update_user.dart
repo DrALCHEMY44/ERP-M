@@ -9,7 +9,7 @@ class UpdateUserVariablesBuilder {
   Optional<String> _fullName = Optional.optional(nativeFromJson, nativeToJson);
   Optional<String> _department = Optional.optional(nativeFromJson, nativeToJson);
   Optional<String> _phoneNumber = Optional.optional(nativeFromJson, nativeToJson);
-  Optional<String> _accessCode = Optional.optional(nativeFromJson, nativeToJson);
+  Optional<String> _accessCodeHash = Optional.optional(nativeFromJson, nativeToJson);
 
   final FirebaseDataConnect _dataConnect;  UpdateUserVariablesBuilder tenantId(String? t) {
    _tenantId.value = t;
@@ -39,8 +39,8 @@ class UpdateUserVariablesBuilder {
    _phoneNumber.value = t;
    return this;
   }
-  UpdateUserVariablesBuilder accessCode(String? t) {
-   _accessCode.value = t;
+  UpdateUserVariablesBuilder accessCodeHash(String? t) {
+   _accessCodeHash.value = t;
    return this;
   }
 
@@ -52,7 +52,7 @@ class UpdateUserVariablesBuilder {
   }
 
   MutationRef<UpdateUserData, UpdateUserVariables> ref() {
-    UpdateUserVariables vars= UpdateUserVariables(id: id,tenantId: _tenantId,businessId: _businessId,email: _email,role: _role,fullName: _fullName,department: _department,phoneNumber: _phoneNumber,accessCode: _accessCode,);
+    UpdateUserVariables vars= UpdateUserVariables(id: id,tenantId: _tenantId,businessId: _businessId,email: _email,role: _role,fullName: _fullName,department: _department,phoneNumber: _phoneNumber,accessCodeHash: _accessCodeHash,);
     return _dataConnect.mutation("UpdateUser", dataDeserializer, varsSerializer, vars);
   }
 }
@@ -137,7 +137,7 @@ class UpdateUserVariables {
   late final Optional<String>fullName;
   late final Optional<String>department;
   late final Optional<String>phoneNumber;
-  late final Optional<String>accessCode;
+  late final Optional<String>accessCodeHash;
   @Deprecated('fromJson is deprecated for Variable classes as they are no longer required for deserialization.')
   UpdateUserVariables.fromJson(Map<String, dynamic> json):
   
@@ -173,8 +173,8 @@ class UpdateUserVariables {
     phoneNumber.value = json['phoneNumber'] == null ? null : nativeFromJson<String>(json['phoneNumber']);
   
   
-    accessCode = Optional.optional(nativeFromJson, nativeToJson);
-    accessCode.value = json['accessCode'] == null ? null : nativeFromJson<String>(json['accessCode']);
+    accessCodeHash = Optional.optional(nativeFromJson, nativeToJson);
+    accessCodeHash.value = json['accessCodeHash'] == null ? null : nativeFromJson<String>(json['accessCodeHash']);
   
   }
   @override
@@ -195,11 +195,11 @@ class UpdateUserVariables {
     fullName == otherTyped.fullName && 
     department == otherTyped.department && 
     phoneNumber == otherTyped.phoneNumber && 
-    accessCode == otherTyped.accessCode;
+    accessCodeHash == otherTyped.accessCodeHash;
     
   }
   @override
-  int get hashCode => Object.hashAll([id.hashCode, tenantId.hashCode, businessId.hashCode, email.hashCode, role.hashCode, fullName.hashCode, department.hashCode, phoneNumber.hashCode, accessCode.hashCode]);
+  int get hashCode => Object.hashAll([id.hashCode, tenantId.hashCode, businessId.hashCode, email.hashCode, role.hashCode, fullName.hashCode, department.hashCode, phoneNumber.hashCode, accessCodeHash.hashCode]);
   
 
   Map<String, dynamic> toJson() {
@@ -226,8 +226,8 @@ class UpdateUserVariables {
     if(phoneNumber.state == OptionalState.set) {
       json['phoneNumber'] = phoneNumber.toJson();
     }
-    if(accessCode.state == OptionalState.set) {
-      json['accessCode'] = accessCode.toJson();
+    if(accessCodeHash.state == OptionalState.set) {
+      json['accessCodeHash'] = accessCodeHash.toJson();
     }
     return json;
   }
@@ -241,7 +241,7 @@ class UpdateUserVariables {
     required this.fullName,
     required this.department,
     required this.phoneNumber,
-    required this.accessCode,
+    required this.accessCodeHash,
   });
 }
 

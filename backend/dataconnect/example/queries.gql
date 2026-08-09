@@ -1,7 +1,7 @@
 # -----------------------------------
 # Tenant & User Queries
 # -----------------------------------
-query ListTenants @auth(level: USER, insecureReason: "Multi-tenant ERP") {
+query ListTenants @auth(level: NO_ACCESS) {
   tenants {
     id
     name
@@ -16,14 +16,21 @@ query ListTenants @auth(level: USER, insecureReason: "Multi-tenant ERP") {
   }
 }
 
-query ListUsers @auth(level: USER, insecureReason: "Multi-tenant ERP") {
+query ListUsers @auth(level: NO_ACCESS) {
   users {
     id
   }
 }
 
+query ListLegacyAccessCodes @auth(level: NO_ACCESS) {
+  users(where: { accessCode: { isNull: false } }) {
+    id
+    accessCode
+  }
+}
+
 query ListBusinesses($tenantId: String!)
-@auth(level: USER, insecureReason: "Multi-tenant ERP") {
+@auth(level: NO_ACCESS) {
   businesses(where: { tenantId: { eq: $tenantId } }) {
     id
     name
@@ -32,7 +39,7 @@ query ListBusinesses($tenantId: String!)
 }
 
 query getUserByEmail($email: String!)
-@auth(level: PUBLIC, insecureReason: "Auth lookup before login") {
+@auth(level: NO_ACCESS) {
   users(where: { email: { eq: $email } }) {
     id
     email
@@ -47,7 +54,7 @@ query getUserByEmail($email: String!)
 }
 
 query getBusinessById($id: String!)
-@auth(level: PUBLIC, insecureReason: "Auth lookup during login") {
+@auth(level: NO_ACCESS) {
   business(id: $id) {
     id
     tenantId
@@ -58,7 +65,7 @@ query getBusinessById($id: String!)
 }
 
 query getBusinessByCode($code: String!)
-@auth(level: PUBLIC, insecureReason: "Auth lookup before login") {
+@auth(level: NO_ACCESS) {
   businesses(where: { code: { eq: $code } }) {
     id
     tenantId
@@ -67,7 +74,7 @@ query getBusinessByCode($code: String!)
 }
 
 query getBusinessesByName($name: String!)
-@auth(level: PUBLIC, insecureReason: "Employee onboarding lookup before login") {
+@auth(level: NO_ACCESS) {
   businesses(where: { name: { eq: $name } }) {
     id
     tenantId
@@ -79,15 +86,15 @@ query getBusinessesByName($name: String!)
 query verifyEmployeeAccess(
   $fullName: String!
   $role: String!
-  $accessCode: String!
+  $accessCodeHash: String!
   $tenantId: String!
   $businessId: String!
-) @auth(level: PUBLIC, insecureReason: "Employee access-code verification before login") {
+) @auth(level: NO_ACCESS) {
   users(
     where: {
       fullName: { eq: $fullName }
       role: { eq: $role }
-      accessCode: { eq: $accessCode }
+      accessCodeHash: { eq: $accessCodeHash }
       tenantId: { eq: $tenantId }
       businessId: { eq: $businessId }
     }
@@ -105,16 +112,16 @@ query verifyUserLogin(
   $email: String!
   $fullName: String!
   $role: String!
-  $accessCode: String!
+  $accessCodeHash: String!
   $tenantId: String!
   $businessId: String!
-) @auth(level: PUBLIC, insecureReason: "Auth verification during login") {
+) @auth(level: NO_ACCESS) {
   users(
     where: {
       email: { eq: $email }
       fullName: { eq: $fullName }
       role: { eq: $role }
-      accessCode: { eq: $accessCode }
+      accessCodeHash: { eq: $accessCodeHash }
       tenantId: { eq: $tenantId }
       businessId: { eq: $businessId }
     }
@@ -134,7 +141,7 @@ query verifyUserLogin(
 # Business Data Queries
 # -----------------------------------
 query listProductsByBusiness($tenantId: String!, $businessId: String!)
-@auth(level: USER, insecureReason: "Products are restricted to the authenticated application's selected tenant and business") {
+@auth(level: NO_ACCESS) {
   products(
     where: { tenantId: { eq: $tenantId }, businessId: { eq: $businessId } }
   ) {
@@ -155,7 +162,7 @@ query listProductsByBusiness($tenantId: String!, $businessId: String!)
 }
 
 query listCustomersByBusiness($tenantId: String!, $businessId: String!)
-@auth(level: PUBLIC, insecureReason: "Allowed for server-side assistant context querying") {
+@auth(level: NO_ACCESS) {
   customers(
     where: { tenantId: { eq: $tenantId }, businessId: { eq: $businessId } }
   ) {
@@ -173,7 +180,7 @@ query listCustomersByBusiness($tenantId: String!, $businessId: String!)
 }
 
 query listUsersByBusiness($tenantId: String!, $businessId: String!)
-@auth(level: PUBLIC, insecureReason: "Allowed for server-side assistant context querying") {
+@auth(level: NO_ACCESS) {
   users(
     where: { tenantId: { eq: $tenantId }, businessId: { eq: $businessId } }
   ) {
@@ -186,11 +193,12 @@ query listUsersByBusiness($tenantId: String!, $businessId: String!)
     tenantId
     businessId
     fullName
+    accessCodeHash
   }
 }
 
 query listSuppliersByBusiness($tenantId: String!, $businessId: String!)
-@auth(level: PUBLIC, insecureReason: "Allowed for server-side assistant context querying") {
+@auth(level: NO_ACCESS) {
   suppliers(
     where: { tenantId: { eq: $tenantId }, businessId: { eq: $businessId } }
   ) {
@@ -205,7 +213,7 @@ query listSuppliersByBusiness($tenantId: String!, $businessId: String!)
 }
 
 query listTasksByBusiness($tenantId: String!, $businessId: String!)
-@auth(level: PUBLIC, insecureReason: "Allowed for server-side assistant context querying") {
+@auth(level: NO_ACCESS) {
   tasks(
     where: { tenantId: { eq: $tenantId }, businessId: { eq: $businessId } }
   ) {
@@ -230,7 +238,7 @@ query listTasksByBusiness($tenantId: String!, $businessId: String!)
 }
 
 query listTasksAssignedToUser($tenantId: String!, $businessId: String!, $userId: String!)
-@auth(level: PUBLIC, insecureReason: "Access is limited to the employee identity verified by the mobile session") {
+@auth(level: NO_ACCESS) {
   tasks(
     where: {
       tenantId: { eq: $tenantId }
@@ -254,7 +262,7 @@ query listTasksAssignedToUser($tenantId: String!, $businessId: String!, $userId:
 }
 
 query listTransactionsByBusiness($tenantId: String!, $businessId: String!)
-@auth(level: PUBLIC, insecureReason: "Allowed for server-side assistant context querying") {
+@auth(level: NO_ACCESS) {
   transactions(
     where: { tenantId: { eq: $tenantId }, businessId: { eq: $businessId } }
   ) {
@@ -275,7 +283,7 @@ query listTransactionsByType(
   $tenantId: String!
   $businessId: String!
   $type: TransactionType!
-) @auth(level: USER, insecureReason: "Multi-tenant ERP") {
+) @auth(level: NO_ACCESS) {
   transactions(
     where: {
       tenantId: { eq: $tenantId }
@@ -297,7 +305,7 @@ query listTransactionsByType(
 }
 
 query listEmployeesByBusiness($tenantId: String!, $businessId: String!)
-@auth(level: PUBLIC, insecureReason: "Allowed for server-side assistant context querying") {
+@auth(level: NO_ACCESS) {
   employees(
     where: { tenantId: { eq: $tenantId }, businessId: { eq: $businessId } }
   ) {
@@ -317,7 +325,7 @@ query listEmployeesByBusiness($tenantId: String!, $businessId: String!)
 }
 
 query listDocumentsByBusiness($tenantId: String!, $businessId: String!)
-@auth(level: PUBLIC, insecureReason: "Allowed for server-side assistant context querying") {
+@auth(level: NO_ACCESS) {
   documents(
     where: { tenantId: { eq: $tenantId }, businessId: { eq: $businessId } }
   ) {
@@ -336,7 +344,7 @@ query listActivityLogsByUser(
   $tenantId: String!
   $businessId: String!
   $userId: String!
-) @auth(level: USER, insecureReason: "Multi-tenant ERP") {
+) @auth(level: NO_ACCESS) {
   activityLogs(
     where: {
       tenantId: { eq: $tenantId }
@@ -358,7 +366,7 @@ query listActivityLogsByUser(
 }
 
 query listActivityLogsByBusiness($tenantId: String!, $businessId: String!)
-@auth(level: PUBLIC, insecureReason: "Allowed for server-side assistant context querying") {
+@auth(level: NO_ACCESS) {
   activityLogs(
     where: { tenantId: { eq: $tenantId }, businessId: { eq: $businessId } }
   ) {
@@ -376,7 +384,7 @@ query listActivityLogsByBusiness($tenantId: String!, $businessId: String!)
 }
 
 query getUserById($id: String!)
-@auth(level: USER, insecureReason: "Multi-tenant ERP") {
+@auth(level: NO_ACCESS) {
   user(id: $id) {
     id
     email
@@ -391,7 +399,7 @@ query getUserById($id: String!)
 }
 
 query listNotifications($tenantId: String!, $businessId: String!, $userId: String!)
-@auth(level: USER, insecureReason: "Multi-tenant ERP") {
+@auth(level: NO_ACCESS) {
   notifications(
     where: { tenantId: { eq: $tenantId }, businessId: { eq: $businessId }, userId: { eq: $userId } }
   ) {
@@ -402,5 +410,11 @@ query listNotifications($tenantId: String!, $businessId: String!, $userId: Strin
     message
     isRead
     createdAt
+  }
+}
+
+query ListPendingMirrorOutbox @auth(level: NO_ACCESS) {
+  mirrorOutboxes(where: { status: { in: ["PENDING", "FAILED"] } }, orderBy: [{ nextAttemptAt: ASC }], limit: 100) {
+    id tenantId businessId entityType operation recordId payload status attempts nextAttemptAt lastError createdAt
   }
 }

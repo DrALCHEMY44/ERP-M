@@ -1,36 +1,36 @@
-// This is a Flutter widget test for SmartERPApp's login screen.
-
-import 'package:flutter_test/flutter_test.dart';
-import 'package:provider/provider.dart';
-import 'package:erp_mobile/main.dart';
 import 'package:erp_mobile/providers/core_provider.dart';
 import 'package:erp_mobile/providers/inventory_provider.dart';
-import 'package:erp_mobile/providers/transaction_provider.dart';
 import 'package:erp_mobile/providers/task_provider.dart';
-import 'package:erp_mobile/providers/theme_provider.dart';
+import 'package:erp_mobile/providers/transaction_provider.dart';
+import 'package:erp_mobile/screens/login_screen.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:provider/provider.dart';
 
 void main() {
-  testWidgets('SmartERP Login Screen smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
+  testWidgets('authenticated login form renders without demo credentials', (
+    WidgetTester tester,
+  ) async {
+    tester.view.physicalSize = const Size(1080, 1920);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
     await tester.pumpWidget(
       MultiProvider(
         providers: [
-          ChangeNotifierProvider(create: (_) => ThemeProvider()),
-        ChangeNotifierProvider(create: (_) => CoreProvider()),
-        ChangeNotifierProvider(create: (_) => InventoryProvider()),
-        ChangeNotifierProvider(create: (_) => TransactionProvider()),
-        ChangeNotifierProvider(create: (_) => TaskProvider()),
+          ChangeNotifierProvider(create: (_) => CoreProvider()),
+          ChangeNotifierProvider(create: (_) => InventoryProvider()),
+          ChangeNotifierProvider(create: (_) => TransactionProvider()),
+          ChangeNotifierProvider(create: (_) => TaskProvider()),
         ],
-        child: const SmartERPApp(),
+        child: const MaterialApp(home: LoginScreen()),
       ),
     );
 
-    // Verify that the login screen title and subtitle are present.
-    expect(find.text('martERP AI'), findsOneWidget);
-    expect(find.text('AI-Powered SME Operations Platform'), findsOneWidget);
-
-    // Verify that the "Password" field and "Sign In to Account" button are present.
+    expect(find.text('Welcome to SmartERP'), findsOneWidget);
     expect(find.text('Password'), findsOneWidget);
-    expect(find.text('Sign In to Account'), findsOneWidget);
+    expect(find.text('Sign In'), findsOneWidget);
+    expect(find.textContaining('Quick-Login'), findsNothing);
   });
 }

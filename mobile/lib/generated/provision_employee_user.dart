@@ -8,7 +8,7 @@ class ProvisionEmployeeUserVariablesBuilder {
   String fullName;
   Optional<String> _department = Optional.optional(nativeFromJson, nativeToJson);
   Optional<String> _phoneNumber = Optional.optional(nativeFromJson, nativeToJson);
-  String accessCode;
+  String accessCodeHash;
 
   final FirebaseDataConnect _dataConnect;  ProvisionEmployeeUserVariablesBuilder department(String? t) {
    _department.value = t;
@@ -19,7 +19,7 @@ class ProvisionEmployeeUserVariablesBuilder {
    return this;
   }
 
-  ProvisionEmployeeUserVariablesBuilder(this._dataConnect, {required  this.tenantId,required  this.businessId,required  this.email,required  this.role,required  this.fullName,required  this.accessCode,});
+  ProvisionEmployeeUserVariablesBuilder(this._dataConnect, {required  this.tenantId,required  this.businessId,required  this.email,required  this.role,required  this.fullName,required  this.accessCodeHash,});
   Deserializer<ProvisionEmployeeUserData> dataDeserializer = (dynamic json)  => ProvisionEmployeeUserData.fromJson(jsonDecode(json));
   Serializer<ProvisionEmployeeUserVariables> varsSerializer = (ProvisionEmployeeUserVariables vars) => jsonEncode(vars.toJson());
   Future<OperationResult<ProvisionEmployeeUserData, ProvisionEmployeeUserVariables>> execute() {
@@ -27,7 +27,7 @@ class ProvisionEmployeeUserVariablesBuilder {
   }
 
   MutationRef<ProvisionEmployeeUserData, ProvisionEmployeeUserVariables> ref() {
-    ProvisionEmployeeUserVariables vars= ProvisionEmployeeUserVariables(tenantId: tenantId,businessId: businessId,email: email,role: role,fullName: fullName,department: _department,phoneNumber: _phoneNumber,accessCode: accessCode,);
+    ProvisionEmployeeUserVariables vars= ProvisionEmployeeUserVariables(tenantId: tenantId,businessId: businessId,email: email,role: role,fullName: fullName,department: _department,phoneNumber: _phoneNumber,accessCodeHash: accessCodeHash,);
     return _dataConnect.mutation("ProvisionEmployeeUser", dataDeserializer, varsSerializer, vars);
   }
 }
@@ -109,7 +109,7 @@ class ProvisionEmployeeUserVariables {
   final String fullName;
   late final Optional<String>department;
   late final Optional<String>phoneNumber;
-  final String accessCode;
+  final String accessCodeHash;
   @Deprecated('fromJson is deprecated for Variable classes as they are no longer required for deserialization.')
   ProvisionEmployeeUserVariables.fromJson(Map<String, dynamic> json):
   
@@ -118,7 +118,7 @@ class ProvisionEmployeeUserVariables {
   email = nativeFromJson<String>(json['email']),
   role = nativeFromJson<String>(json['role']),
   fullName = nativeFromJson<String>(json['fullName']),
-  accessCode = nativeFromJson<String>(json['accessCode']) {
+  accessCodeHash = nativeFromJson<String>(json['accessCodeHash']) {
   
   
   
@@ -152,11 +152,11 @@ class ProvisionEmployeeUserVariables {
     fullName == otherTyped.fullName && 
     department == otherTyped.department && 
     phoneNumber == otherTyped.phoneNumber && 
-    accessCode == otherTyped.accessCode;
+    accessCodeHash == otherTyped.accessCodeHash;
     
   }
   @override
-  int get hashCode => Object.hashAll([tenantId.hashCode, businessId.hashCode, email.hashCode, role.hashCode, fullName.hashCode, department.hashCode, phoneNumber.hashCode, accessCode.hashCode]);
+  int get hashCode => Object.hashAll([tenantId.hashCode, businessId.hashCode, email.hashCode, role.hashCode, fullName.hashCode, department.hashCode, phoneNumber.hashCode, accessCodeHash.hashCode]);
   
 
   Map<String, dynamic> toJson() {
@@ -172,7 +172,7 @@ class ProvisionEmployeeUserVariables {
     if(phoneNumber.state == OptionalState.set) {
       json['phoneNumber'] = phoneNumber.toJson();
     }
-    json['accessCode'] = nativeToJson<String>(accessCode);
+    json['accessCodeHash'] = nativeToJson<String>(accessCodeHash);
     return json;
   }
 
@@ -184,7 +184,7 @@ class ProvisionEmployeeUserVariables {
     required this.fullName,
     required this.department,
     required this.phoneNumber,
-    required this.accessCode,
+    required this.accessCodeHash,
   });
 }
 

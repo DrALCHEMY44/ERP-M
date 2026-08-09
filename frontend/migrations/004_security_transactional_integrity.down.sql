@@ -1,0 +1,12 @@
+BEGIN;
+DROP TABLE IF EXISTS integration_outbox;
+DROP TABLE IF EXISTS inventory_movements;
+DROP TABLE IF EXISTS sale_lines;
+DROP TABLE IF EXISTS sales;
+DROP INDEX IF EXISTS products_company_sku_uidx;
+DROP INDEX IF EXISTS users_company_email_uidx;
+DROP INDEX IF EXISTS businesses_tenant_code_uidx;
+ALTER TABLE products DROP COLUMN IF EXISTS version;
+ALTER TABLE products DROP COLUMN IF EXISTS sku;
+ALTER TABLE businesses DROP COLUMN IF EXISTS version;
+COMMIT;

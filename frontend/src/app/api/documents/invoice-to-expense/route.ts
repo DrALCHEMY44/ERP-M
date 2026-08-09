@@ -1,9 +1,9 @@
-import { getDataConnect } from "firebase-admin/data-connect"
 import { NextResponse } from "next/server"
 import { z } from "zod"
 import { neon } from "@neondatabase/serverless"
-import { authorizeRequest, firebaseAdminApp } from "@/lib/server/firebase-token"
-import { mirrorRecord } from "@/lib/server/neon"
+import { authorizeRequest } from "@/lib/server/firebase-token"
+import { requirePermission } from "@/lib/server/authorization"
+import { executeOperationalOperation } from "@/lib/server/operational-data"
 
 export const runtime = "nodejs"
 const schema = z.object({ documentId: z.string().min(1), commit: z.boolean().default(false) })
@@ -11,6 +11,7 @@ const schema = z.object({ documentId: z.string().min(1), commit: z.boolean().def
 export async function POST(request: Request) {
   try {
     const profile = await authorizeRequest(request)
+    requirePermission(profile, "expenses:write")
     const input = schema.parse(await request.json())
     if (!process.env.DATABASE_URL) throw new Error("DATABASE_URL is not configured")
     const sql = neon(process.env.DATABASE_URL)
@@ -30,15 +31,14 @@ export async function POST(request: Request) {
     }
     if (!input.commit) return NextResponse.json({ committed: false, suggestion })
 
-    const dc = getDataConnect({ location: "us-east4", serviceId: "studio-8058744913-5a601-service", connector: "example" }, firebaseAdminApp())
-    const inserted = await dc.executeMutation<{ transaction_insert: { id: string } }, any>("CreateTransaction", {
+    const inserted = await executeOperationalOperation("CreateTransaction", {
       tenantId: profile.tenantId, businessId: profile.businessId, type: "EXPENSE", amount: total,
       date: new Date(suggestion.date).toISOString(), category: suggestion.category,
       receiptUrl: input.documentId, recordedBy: profile.uid,
     })
-    const recordId = inserted.data.transaction_insert.id
-    await mirrorRecord({ entity: "transaction", operation: "upsert", recordId, tenantId: profile.tenantId, businessId: profile.businessId,
-      payload: { id: recordId, tenantId: profile.tenantId, businessId: profile.businessId, ...suggestion, receiptUrl: input.documentId, recordedBy: profile.uid, createdAt: new Date().toISOString() } })
+    const transaction = inserted && "transaction_insert" in inserted ? inserted.transaction_insert : null
+    if (!transaction?.id) throw new Error("Expense transaction was not created")
+    const recordId = transaction.id as string
     return NextResponse.json({ committed: true, transactionId: recordId, suggestion })
   } catch (error) {
     console.error("Invoice conversion failed", error)

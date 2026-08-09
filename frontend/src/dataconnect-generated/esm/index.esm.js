@@ -100,6 +100,18 @@ export function deleteUser(dcOrVars, vars) {
   return executeMutation(deleteUserRef(dcInstance, inputVars));
 }
 
+export const clearLegacyAccessCodeRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'ClearLegacyAccessCode', inputVars);
+}
+clearLegacyAccessCodeRef.operationName = 'ClearLegacyAccessCode';
+
+export function clearLegacyAccessCode(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(clearLegacyAccessCodeRef(dcInstance, inputVars));
+}
+
 export const createBusinessRef = (dcOrVars, vars) => {
   const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
   dcInstance._useGeneratedSdk();
@@ -424,30 +436,6 @@ export function createActivityLog(dcOrVars, vars) {
   return executeMutation(createActivityLogRef(dcInstance, inputVars));
 }
 
-export const updateActivityLogRef = (dcOrVars, vars) => {
-  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
-  dcInstance._useGeneratedSdk();
-  return mutationRef(dcInstance, 'UpdateActivityLog', inputVars);
-}
-updateActivityLogRef.operationName = 'UpdateActivityLog';
-
-export function updateActivityLog(dcOrVars, vars) {
-  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
-  return executeMutation(updateActivityLogRef(dcInstance, inputVars));
-}
-
-export const deleteActivityLogRef = (dcOrVars, vars) => {
-  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
-  dcInstance._useGeneratedSdk();
-  return mutationRef(dcInstance, 'DeleteActivityLog', inputVars);
-}
-deleteActivityLogRef.operationName = 'DeleteActivityLog';
-
-export function deleteActivityLog(dcOrVars, vars) {
-  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
-  return executeMutation(deleteActivityLogRef(dcInstance, inputVars));
-}
-
 export const createAiQueryRef = (dcOrVars, vars) => {
   const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
   dcInstance._useGeneratedSdk();
@@ -556,6 +544,30 @@ export function deleteTask(dcOrVars, vars) {
   return executeMutation(deleteTaskRef(dcInstance, inputVars));
 }
 
+export const createMirrorOutboxRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'CreateMirrorOutbox', inputVars);
+}
+createMirrorOutboxRef.operationName = 'CreateMirrorOutbox';
+
+export function createMirrorOutbox(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(createMirrorOutboxRef(dcInstance, inputVars));
+}
+
+export const updateMirrorOutboxRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'UpdateMirrorOutbox', inputVars);
+}
+updateMirrorOutboxRef.operationName = 'UpdateMirrorOutbox';
+
+export function updateMirrorOutbox(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(updateMirrorOutboxRef(dcInstance, inputVars));
+}
+
 export const listTenantsRef = (dc) => {
   const { dc: dcInstance} = validateArgs(connectorConfig, dc, undefined);
   dcInstance._useGeneratedSdk();
@@ -580,6 +592,19 @@ export function listUsers(dcOrOptions, options) {
   
   const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrOptions, options, undefined,false, false);
   return executeQuery(listUsersRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+
+export const listLegacyAccessCodesRef = (dc) => {
+  const { dc: dcInstance} = validateArgs(connectorConfig, dc, undefined);
+  dcInstance._useGeneratedSdk();
+  return queryRef(dcInstance, 'ListLegacyAccessCodes');
+}
+listLegacyAccessCodesRef.operationName = 'ListLegacyAccessCodes';
+
+export function listLegacyAccessCodes(dcOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrOptions, options, undefined,false, false);
+  return executeQuery(listLegacyAccessCodesRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
 
 export const listBusinessesRef = (dcOrVars, vars) => {
@@ -853,5 +878,18 @@ export function listNotifications(dcOrVars, varsOrOptions, options) {
   
   const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
   return executeQuery(listNotificationsRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+
+export const listPendingMirrorOutboxRef = (dc) => {
+  const { dc: dcInstance} = validateArgs(connectorConfig, dc, undefined);
+  dcInstance._useGeneratedSdk();
+  return queryRef(dcInstance, 'ListPendingMirrorOutbox');
+}
+listPendingMirrorOutboxRef.operationName = 'ListPendingMirrorOutbox';
+
+export function listPendingMirrorOutbox(dcOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrOptions, options, undefined,false, false);
+  return executeQuery(listPendingMirrorOutboxRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
 

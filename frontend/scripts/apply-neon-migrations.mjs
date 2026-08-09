@@ -7,6 +7,7 @@ const migrations = [
   "../migrations/001_normalized_erp_schema.sql",
   "../migrations/002_document_intelligence.sql",
   "../migrations/003_announcements.sql",
+  "../migrations/004_security_transactional_integrity.sql",
 ]
 const client = new Client(process.env.DATABASE_URL)
 try {

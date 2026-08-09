@@ -103,6 +103,47 @@ ref.subscribe(...);
 ```
 
 
+### ListLegacyAccessCodes
+#### Required Arguments
+```dart
+// No required arguments
+ExampleConnector.instance.listLegacyAccessCodes().execute();
+```
+
+
+
+#### Return Type
+`execute()` returns a `QueryResult<ListLegacyAccessCodesData, void>`
+```dart
+/// Result of an Operation Request (query/mutation).
+class OperationResult<Data, Variables> {
+  OperationResult(this.dataConnect, this.data, this.ref);
+  Data data;
+  OperationRef<Data, Variables> ref;
+  FirebaseDataConnect dataConnect;
+}
+
+/// Result of a query request. Created to hold extra variables in the future.
+class QueryResult<Data, Variables> extends OperationResult<Data, Variables> {
+  QueryResult(super.dataConnect, super.data, super.ref);
+}
+
+final result = await ExampleConnector.instance.listLegacyAccessCodes();
+ListLegacyAccessCodesData data = result.data;
+final ref = result.ref;
+```
+
+#### Getting the Ref
+Each builder returns an `execute` function, which is a helper function that creates a `Ref` object, and executes the underlying operation.
+An example of how to use the `Ref` object is shown below:
+```dart
+final ref = ExampleConnector.instance.listLegacyAccessCodes().ref();
+ref.execute();
+
+ref.subscribe(...);
+```
+
+
 ### ListBusinesses
 #### Required Arguments
 ```dart
@@ -353,13 +394,13 @@ ref.subscribe(...);
 ```dart
 String fullName = ...;
 String role = ...;
-String accessCode = ...;
+String accessCodeHash = ...;
 String tenantId = ...;
 String businessId = ...;
 ExampleConnector.instance.verifyEmployeeAccess(
   fullName: fullName,
   role: role,
-  accessCode: accessCode,
+  accessCodeHash: accessCodeHash,
   tenantId: tenantId,
   businessId: businessId,
 ).execute();
@@ -386,7 +427,7 @@ class QueryResult<Data, Variables> extends OperationResult<Data, Variables> {
 final result = await ExampleConnector.instance.verifyEmployeeAccess(
   fullName: fullName,
   role: role,
-  accessCode: accessCode,
+  accessCodeHash: accessCodeHash,
   tenantId: tenantId,
   businessId: businessId,
 );
@@ -400,14 +441,14 @@ An example of how to use the `Ref` object is shown below:
 ```dart
 String fullName = ...;
 String role = ...;
-String accessCode = ...;
+String accessCodeHash = ...;
 String tenantId = ...;
 String businessId = ...;
 
 final ref = ExampleConnector.instance.verifyEmployeeAccess(
   fullName: fullName,
   role: role,
-  accessCode: accessCode,
+  accessCodeHash: accessCodeHash,
   tenantId: tenantId,
   businessId: businessId,
 ).ref();
@@ -423,14 +464,14 @@ ref.subscribe(...);
 String email = ...;
 String fullName = ...;
 String role = ...;
-String accessCode = ...;
+String accessCodeHash = ...;
 String tenantId = ...;
 String businessId = ...;
 ExampleConnector.instance.verifyUserLogin(
   email: email,
   fullName: fullName,
   role: role,
-  accessCode: accessCode,
+  accessCodeHash: accessCodeHash,
   tenantId: tenantId,
   businessId: businessId,
 ).execute();
@@ -458,7 +499,7 @@ final result = await ExampleConnector.instance.verifyUserLogin(
   email: email,
   fullName: fullName,
   role: role,
-  accessCode: accessCode,
+  accessCodeHash: accessCodeHash,
   tenantId: tenantId,
   businessId: businessId,
 );
@@ -473,7 +514,7 @@ An example of how to use the `Ref` object is shown below:
 String email = ...;
 String fullName = ...;
 String role = ...;
-String accessCode = ...;
+String accessCodeHash = ...;
 String tenantId = ...;
 String businessId = ...;
 
@@ -481,7 +522,7 @@ final ref = ExampleConnector.instance.verifyUserLogin(
   email: email,
   fullName: fullName,
   role: role,
-  accessCode: accessCode,
+  accessCodeHash: accessCodeHash,
   tenantId: tenantId,
   businessId: businessId,
 ).ref();
@@ -1261,6 +1302,47 @@ ref.execute();
 ref.subscribe(...);
 ```
 
+
+### ListPendingMirrorOutbox
+#### Required Arguments
+```dart
+// No required arguments
+ExampleConnector.instance.listPendingMirrorOutbox().execute();
+```
+
+
+
+#### Return Type
+`execute()` returns a `QueryResult<ListPendingMirrorOutboxData, void>`
+```dart
+/// Result of an Operation Request (query/mutation).
+class OperationResult<Data, Variables> {
+  OperationResult(this.dataConnect, this.data, this.ref);
+  Data data;
+  OperationRef<Data, Variables> ref;
+  FirebaseDataConnect dataConnect;
+}
+
+/// Result of a query request. Created to hold extra variables in the future.
+class QueryResult<Data, Variables> extends OperationResult<Data, Variables> {
+  QueryResult(super.dataConnect, super.data, super.ref);
+}
+
+final result = await ExampleConnector.instance.listPendingMirrorOutbox();
+ListPendingMirrorOutboxData data = result.data;
+final ref = result.ref;
+```
+
+#### Getting the Ref
+Each builder returns an `execute` function, which is a helper function that creates a `Ref` object, and executes the underlying operation.
+An example of how to use the `Ref` object is shown below:
+```dart
+final ref = ExampleConnector.instance.listPendingMirrorOutbox().ref();
+ref.execute();
+
+ref.subscribe(...);
+```
+
 ## Mutations
 
 ### CreateTenant
@@ -1496,11 +1578,13 @@ ref.execute();
 ### CreateUser
 #### Required Arguments
 ```dart
+String id = ...;
 String tenantId = ...;
 String businessId = ...;
 String email = ...;
 String role = ...;
 ExampleConnector.instance.createUser(
+  id: id,
   tenantId: tenantId,
   businessId: businessId,
   email: email,
@@ -1526,14 +1610,15 @@ class CreateUserVariablesBuilder {
    _phoneNumber.value = t;
    return this;
   }
-  CreateUserVariablesBuilder accessCode(String? t) {
-   _accessCode.value = t;
+  CreateUserVariablesBuilder accessCodeHash(String? t) {
+   _accessCodeHash.value = t;
    return this;
   }
 
   ...
 }
 ExampleConnector.instance.createUser(
+  id: id,
   tenantId: tenantId,
   businessId: businessId,
   email: email,
@@ -1542,7 +1627,7 @@ ExampleConnector.instance.createUser(
 .fullName(fullName)
 .department(department)
 .phoneNumber(phoneNumber)
-.accessCode(accessCode)
+.accessCodeHash(accessCodeHash)
 .execute();
 ```
 
@@ -1558,6 +1643,7 @@ class OperationResult<Data, Variables> {
 }
 
 final result = await ExampleConnector.instance.createUser(
+  id: id,
   tenantId: tenantId,
   businessId: businessId,
   email: email,
@@ -1571,12 +1657,14 @@ final ref = result.ref;
 Each builder returns an `execute` function, which is a helper function that creates a `Ref` object, and executes the underlying operation.
 An example of how to use the `Ref` object is shown below:
 ```dart
+String id = ...;
 String tenantId = ...;
 String businessId = ...;
 String email = ...;
 String role = ...;
 
 final ref = ExampleConnector.instance.createUser(
+  id: id,
   tenantId: tenantId,
   businessId: businessId,
   email: email,
@@ -1629,8 +1717,8 @@ class UpdateUserVariablesBuilder {
    _phoneNumber.value = t;
    return this;
   }
-  UpdateUserVariablesBuilder accessCode(String? t) {
-   _accessCode.value = t;
+  UpdateUserVariablesBuilder accessCodeHash(String? t) {
+   _accessCodeHash.value = t;
    return this;
   }
 
@@ -1646,7 +1734,7 @@ ExampleConnector.instance.updateUser(
 .fullName(fullName)
 .department(department)
 .phoneNumber(phoneNumber)
-.accessCode(accessCode)
+.accessCodeHash(accessCodeHash)
 .execute();
 ```
 
@@ -1717,6 +1805,48 @@ An example of how to use the `Ref` object is shown below:
 String id = ...;
 
 final ref = ExampleConnector.instance.deleteUser(
+  id: id,
+).ref();
+ref.execute();
+```
+
+
+### ClearLegacyAccessCode
+#### Required Arguments
+```dart
+String id = ...;
+ExampleConnector.instance.clearLegacyAccessCode(
+  id: id,
+).execute();
+```
+
+
+
+#### Return Type
+`execute()` returns a `OperationResult<ClearLegacyAccessCodeData, ClearLegacyAccessCodeVariables>`
+```dart
+/// Result of an Operation Request (query/mutation).
+class OperationResult<Data, Variables> {
+  OperationResult(this.dataConnect, this.data, this.ref);
+  Data data;
+  OperationRef<Data, Variables> ref;
+  FirebaseDataConnect dataConnect;
+}
+
+final result = await ExampleConnector.instance.clearLegacyAccessCode(
+  id: id,
+);
+ClearLegacyAccessCodeData data = result.data;
+final ref = result.ref;
+```
+
+#### Getting the Ref
+Each builder returns an `execute` function, which is a helper function that creates a `Ref` object, and executes the underlying operation.
+An example of how to use the `Ref` object is shown below:
+```dart
+String id = ...;
+
+final ref = ExampleConnector.instance.clearLegacyAccessCode(
   id: id,
 ).ref();
 ref.execute();
@@ -1941,14 +2071,14 @@ String businessId = ...;
 String email = ...;
 String role = ...;
 String fullName = ...;
-String accessCode = ...;
+String accessCodeHash = ...;
 ExampleConnector.instance.provisionEmployeeUser(
   tenantId: tenantId,
   businessId: businessId,
   email: email,
   role: role,
   fullName: fullName,
-  accessCode: accessCode,
+  accessCodeHash: accessCodeHash,
 ).execute();
 ```
 
@@ -1975,7 +2105,7 @@ ExampleConnector.instance.provisionEmployeeUser(
   email: email,
   role: role,
   fullName: fullName,
-  accessCode: accessCode,
+  accessCodeHash: accessCodeHash,
 )
 .department(department)
 .phoneNumber(phoneNumber)
@@ -1999,7 +2129,7 @@ final result = await ExampleConnector.instance.provisionEmployeeUser(
   email: email,
   role: role,
   fullName: fullName,
-  accessCode: accessCode,
+  accessCodeHash: accessCodeHash,
 );
 ProvisionEmployeeUserData data = result.data;
 final ref = result.ref;
@@ -2014,7 +2144,7 @@ String businessId = ...;
 String email = ...;
 String role = ...;
 String fullName = ...;
-String accessCode = ...;
+String accessCodeHash = ...;
 
 final ref = ExampleConnector.instance.provisionEmployeeUser(
   tenantId: tenantId,
@@ -2022,7 +2152,7 @@ final ref = ExampleConnector.instance.provisionEmployeeUser(
   email: email,
   role: role,
   fullName: fullName,
-  accessCode: accessCode,
+  accessCodeHash: accessCodeHash,
 ).ref();
 ref.execute();
 ```
@@ -2033,11 +2163,9 @@ ref.execute();
 ```dart
 String taskId = ...;
 String userId = ...;
-String accessCode = ...;
 ExampleConnector.instance.completeAssignedTask(
   taskId: taskId,
   userId: userId,
-  accessCode: accessCode,
 ).execute();
 ```
 
@@ -2057,7 +2185,6 @@ class OperationResult<Data, Variables> {
 final result = await ExampleConnector.instance.completeAssignedTask(
   taskId: taskId,
   userId: userId,
-  accessCode: accessCode,
 );
 CompleteAssignedTaskData data = result.data;
 final ref = result.ref;
@@ -2069,12 +2196,10 @@ An example of how to use the `Ref` object is shown below:
 ```dart
 String taskId = ...;
 String userId = ...;
-String accessCode = ...;
 
 final ref = ExampleConnector.instance.completeAssignedTask(
   taskId: taskId,
   userId: userId,
-  accessCode: accessCode,
 ).ref();
 ref.execute();
 ```
@@ -3710,143 +3835,6 @@ ref.execute();
 ```
 
 
-### UpdateActivityLog
-#### Required Arguments
-```dart
-String id = ...;
-ExampleConnector.instance.updateActivityLog(
-  id: id,
-).execute();
-```
-
-#### Optional Arguments
-We return a builder for each query. For UpdateActivityLog, we created `UpdateActivityLogBuilder`. For queries and mutations with optional parameters, we return a builder class.
-The builder pattern allows Data Connect to distinguish between fields that haven't been set and fields that have been set to null. A field can be set by calling its respective setter method like below:
-```dart
-class UpdateActivityLogVariablesBuilder {
-  ...
-   UpdateActivityLogVariablesBuilder tenantId(String? t) {
-   _tenantId.value = t;
-   return this;
-  }
-  UpdateActivityLogVariablesBuilder businessId(String? t) {
-   _businessId.value = t;
-   return this;
-  }
-  UpdateActivityLogVariablesBuilder userId(String? t) {
-   _userId.value = t;
-   return this;
-  }
-  UpdateActivityLogVariablesBuilder userName(String? t) {
-   _userName.value = t;
-   return this;
-  }
-  UpdateActivityLogVariablesBuilder actionType(String? t) {
-   _actionType.value = t;
-   return this;
-  }
-  UpdateActivityLogVariablesBuilder module(String? t) {
-   _module.value = t;
-   return this;
-  }
-  UpdateActivityLogVariablesBuilder description(String? t) {
-   _description.value = t;
-   return this;
-  }
-  UpdateActivityLogVariablesBuilder recordId(String? t) {
-   _recordId.value = t;
-   return this;
-  }
-
-  ...
-}
-ExampleConnector.instance.updateActivityLog(
-  id: id,
-)
-.tenantId(tenantId)
-.businessId(businessId)
-.userId(userId)
-.userName(userName)
-.actionType(actionType)
-.module(module)
-.description(description)
-.recordId(recordId)
-.execute();
-```
-
-#### Return Type
-`execute()` returns a `OperationResult<UpdateActivityLogData, UpdateActivityLogVariables>`
-```dart
-/// Result of an Operation Request (query/mutation).
-class OperationResult<Data, Variables> {
-  OperationResult(this.dataConnect, this.data, this.ref);
-  Data data;
-  OperationRef<Data, Variables> ref;
-  FirebaseDataConnect dataConnect;
-}
-
-final result = await ExampleConnector.instance.updateActivityLog(
-  id: id,
-);
-UpdateActivityLogData data = result.data;
-final ref = result.ref;
-```
-
-#### Getting the Ref
-Each builder returns an `execute` function, which is a helper function that creates a `Ref` object, and executes the underlying operation.
-An example of how to use the `Ref` object is shown below:
-```dart
-String id = ...;
-
-final ref = ExampleConnector.instance.updateActivityLog(
-  id: id,
-).ref();
-ref.execute();
-```
-
-
-### DeleteActivityLog
-#### Required Arguments
-```dart
-String id = ...;
-ExampleConnector.instance.deleteActivityLog(
-  id: id,
-).execute();
-```
-
-
-
-#### Return Type
-`execute()` returns a `OperationResult<DeleteActivityLogData, DeleteActivityLogVariables>`
-```dart
-/// Result of an Operation Request (query/mutation).
-class OperationResult<Data, Variables> {
-  OperationResult(this.dataConnect, this.data, this.ref);
-  Data data;
-  OperationRef<Data, Variables> ref;
-  FirebaseDataConnect dataConnect;
-}
-
-final result = await ExampleConnector.instance.deleteActivityLog(
-  id: id,
-);
-DeleteActivityLogData data = result.data;
-final ref = result.ref;
-```
-
-#### Getting the Ref
-Each builder returns an `execute` function, which is a helper function that creates a `Ref` object, and executes the underlying operation.
-An example of how to use the `Ref` object is shown below:
-```dart
-String id = ...;
-
-final ref = ExampleConnector.instance.deleteActivityLog(
-  id: id,
-).ref();
-ref.execute();
-```
-
-
 ### CreateAiQuery
 #### Required Arguments
 ```dart
@@ -4453,6 +4441,156 @@ String id = ...;
 
 final ref = ExampleConnector.instance.deleteTask(
   id: id,
+).ref();
+ref.execute();
+```
+
+
+### CreateMirrorOutbox
+#### Required Arguments
+```dart
+String tenantId = ...;
+String businessId = ...;
+String entityType = ...;
+String operation = ...;
+String recordId = ...;
+AnyValue payload = ...;
+ExampleConnector.instance.createMirrorOutbox(
+  tenantId: tenantId,
+  businessId: businessId,
+  entityType: entityType,
+  operation: operation,
+  recordId: recordId,
+  payload: payload,
+).execute();
+```
+
+
+
+#### Return Type
+`execute()` returns a `OperationResult<CreateMirrorOutboxData, CreateMirrorOutboxVariables>`
+```dart
+/// Result of an Operation Request (query/mutation).
+class OperationResult<Data, Variables> {
+  OperationResult(this.dataConnect, this.data, this.ref);
+  Data data;
+  OperationRef<Data, Variables> ref;
+  FirebaseDataConnect dataConnect;
+}
+
+final result = await ExampleConnector.instance.createMirrorOutbox(
+  tenantId: tenantId,
+  businessId: businessId,
+  entityType: entityType,
+  operation: operation,
+  recordId: recordId,
+  payload: payload,
+);
+CreateMirrorOutboxData data = result.data;
+final ref = result.ref;
+```
+
+#### Getting the Ref
+Each builder returns an `execute` function, which is a helper function that creates a `Ref` object, and executes the underlying operation.
+An example of how to use the `Ref` object is shown below:
+```dart
+String tenantId = ...;
+String businessId = ...;
+String entityType = ...;
+String operation = ...;
+String recordId = ...;
+AnyValue payload = ...;
+
+final ref = ExampleConnector.instance.createMirrorOutbox(
+  tenantId: tenantId,
+  businessId: businessId,
+  entityType: entityType,
+  operation: operation,
+  recordId: recordId,
+  payload: payload,
+).ref();
+ref.execute();
+```
+
+
+### UpdateMirrorOutbox
+#### Required Arguments
+```dart
+String id = ...;
+String status = ...;
+int attempts = ...;
+Timestamp nextAttemptAt = ...;
+ExampleConnector.instance.updateMirrorOutbox(
+  id: id,
+  status: status,
+  attempts: attempts,
+  nextAttemptAt: nextAttemptAt,
+).execute();
+```
+
+#### Optional Arguments
+We return a builder for each query. For UpdateMirrorOutbox, we created `UpdateMirrorOutboxBuilder`. For queries and mutations with optional parameters, we return a builder class.
+The builder pattern allows Data Connect to distinguish between fields that haven't been set and fields that have been set to null. A field can be set by calling its respective setter method like below:
+```dart
+class UpdateMirrorOutboxVariablesBuilder {
+  ...
+   UpdateMirrorOutboxVariablesBuilder lastError(String? t) {
+   _lastError.value = t;
+   return this;
+  }
+  UpdateMirrorOutboxVariablesBuilder deliveredAt(Timestamp? t) {
+   _deliveredAt.value = t;
+   return this;
+  }
+
+  ...
+}
+ExampleConnector.instance.updateMirrorOutbox(
+  id: id,
+  status: status,
+  attempts: attempts,
+  nextAttemptAt: nextAttemptAt,
+)
+.lastError(lastError)
+.deliveredAt(deliveredAt)
+.execute();
+```
+
+#### Return Type
+`execute()` returns a `OperationResult<UpdateMirrorOutboxData, UpdateMirrorOutboxVariables>`
+```dart
+/// Result of an Operation Request (query/mutation).
+class OperationResult<Data, Variables> {
+  OperationResult(this.dataConnect, this.data, this.ref);
+  Data data;
+  OperationRef<Data, Variables> ref;
+  FirebaseDataConnect dataConnect;
+}
+
+final result = await ExampleConnector.instance.updateMirrorOutbox(
+  id: id,
+  status: status,
+  attempts: attempts,
+  nextAttemptAt: nextAttemptAt,
+);
+UpdateMirrorOutboxData data = result.data;
+final ref = result.ref;
+```
+
+#### Getting the Ref
+Each builder returns an `execute` function, which is a helper function that creates a `Ref` object, and executes the underlying operation.
+An example of how to use the `Ref` object is shown below:
+```dart
+String id = ...;
+String status = ...;
+int attempts = ...;
+Timestamp nextAttemptAt = ...;
+
+final ref = ExampleConnector.instance.updateMirrorOutbox(
+  id: id,
+  status: status,
+  attempts: attempts,
+  nextAttemptAt: nextAttemptAt,
 ).ref();
 ref.execute();
 ```

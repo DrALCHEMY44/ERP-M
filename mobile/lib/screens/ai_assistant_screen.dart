@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/core_provider.dart';
-import '../providers/inventory_provider.dart';
-import '../providers/transaction_provider.dart';
-import '../providers/task_provider.dart';
-import '../providers/theme_provider.dart';
 import '../widgets/app_drawer.dart';
 
 class AiAssistantScreen extends StatefulWidget {
@@ -18,8 +14,9 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
   final List<Map<String, String>> _messages = [
     {
       'role': 'assistant',
-      'content': 'Hello! I am your SmartERP AI. I am contextually aware of your active business tenant data, stock records, and Cameroon local business rules. Ask me anything!'
-    }
+      'content':
+          'Hello! I am your SmartERP AI. I am contextually aware of your active business tenant data, stock records, and Cameroon local business rules. Ask me anything!',
+    },
   ];
   final _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
@@ -58,12 +55,9 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
     });
     _scrollToBottom();
 
-    // Call the live AI model simulation in ErpProvider
+    // The mobile client calls the authenticated Next.js AI boundary. Provider
+    // credentials and authorization context never enter the Flutter bundle.
     final core = Provider.of<CoreProvider>(context, listen: false);
-    final inventory = Provider.of<InventoryProvider>(context, listen: false);
-    final transaction = Provider.of<TransactionProvider>(context, listen: false);
-    final taskProvider = Provider.of<TaskProvider>(context, listen: false);
-    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
     final String response = await core.askAi(query);
 
     if (mounted) {
@@ -80,9 +74,7 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('SmartERP AI Assistant'),
-      ),
+      appBar: AppBar(title: const Text('SmartERP AI Assistant')),
       drawer: const AppDrawer(currentRoute: '/ai-assistant'),
       body: Column(
         children: [
@@ -96,8 +88,10 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    'Powered by Genkit & Gemini. Context is automatically populated for your tenant ID.',
-                    style: theme.textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w600),
+                    'Powered by the authenticated SmartERP OpenRouter service. Company context is resolved server-side.',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
               ],
@@ -114,22 +108,33 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
                 final msg = _messages[index];
                 final isUser = msg['role'] == 'user';
                 return Align(
-                  alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
+                  alignment: isUser
+                      ? Alignment.centerRight
+                      : Alignment.centerLeft,
                   child: Container(
                     margin: const EdgeInsets.only(bottom: 12),
                     padding: const EdgeInsets.all(14),
-                    constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.8),
+                    constraints: BoxConstraints(
+                      maxWidth: MediaQuery.of(context).size.width * 0.8,
+                    ),
                     decoration: BoxDecoration(
                       color: isUser
                           ? theme.colorScheme.primary
                           : theme.colorScheme.surfaceContainerHighest,
                       borderRadius: BorderRadius.circular(16).copyWith(
-                        bottomRight: isUser ? const Radius.circular(0) : const Radius.circular(16),
-                        bottomLeft: isUser ? const Radius.circular(16) : const Radius.circular(0),
+                        bottomRight: isUser
+                            ? const Radius.circular(0)
+                            : const Radius.circular(16),
+                        bottomLeft: isUser
+                            ? const Radius.circular(16)
+                            : const Radius.circular(0),
                       ),
-                      border: isUser 
-                          ? null 
-                          : Border.all(color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5)),
+                      border: isUser
+                          ? null
+                          : Border.all(
+                              color: theme.colorScheme.outlineVariant
+                                  .withValues(alpha: 0.5),
+                            ),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -140,7 +145,9 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
                             fontWeight: FontWeight.bold,
                             fontSize: 10,
                             color: isUser
-                                ? theme.colorScheme.onPrimary.withValues(alpha: 0.7)
+                                ? theme.colorScheme.onPrimary.withValues(
+                                    alpha: 0.7,
+                                  )
                                 : theme.colorScheme.primary,
                           ),
                         ),
@@ -169,7 +176,9 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
                   const SizedBox(width: 8),
                   Text(
                     'SmartERP AI is analyzing tenant database registers...',
-                    style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey),
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: Colors.grey,
+                    ),
                   ),
                 ],
               ),
@@ -189,7 +198,10 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
                   return Padding(
                     padding: const EdgeInsets.only(right: 8.0),
                     child: ActionChip(
-                      label: Text(pillText, style: const TextStyle(fontSize: 12)),
+                      label: Text(
+                        pillText,
+                        style: const TextStyle(fontSize: 12),
+                      ),
                       onPressed: () => _sendMessage(pillText),
                       backgroundColor: theme.colorScheme.surface,
                     ),
@@ -208,8 +220,13 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
                     controller: _messageController,
                     decoration: InputDecoration(
                       hintText: 'Ask AI about inventory, sales, VAT...',
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
                     ),
                     onSubmitted: (_) => _sendMessage(),
                   ),
@@ -229,7 +246,9 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
 
   Widget _renderMessageContent(String text, bool isUser, ThemeData theme) {
     final style = TextStyle(
-      color: isUser ? theme.colorScheme.onPrimary : theme.colorScheme.onSurfaceVariant,
+      color: isUser
+          ? theme.colorScheme.onPrimary
+          : theme.colorScheme.onSurfaceVariant,
       fontSize: 14,
       height: 1.3,
     );
@@ -251,7 +270,10 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
               padding: const EdgeInsets.only(top: 8.0, bottom: 4.0),
               child: Text(
                 line.replaceAll('###', '').trim(),
-                style: style.copyWith(fontWeight: FontWeight.bold, fontSize: 15),
+                style: style.copyWith(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 15,
+                ),
               ),
             );
           }

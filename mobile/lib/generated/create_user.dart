@@ -1,6 +1,7 @@
 part of 'example.dart';
 
 class CreateUserVariablesBuilder {
+  String id;
   String tenantId;
   String businessId;
   String email;
@@ -8,7 +9,7 @@ class CreateUserVariablesBuilder {
   Optional<String> _fullName = Optional.optional(nativeFromJson, nativeToJson);
   Optional<String> _department = Optional.optional(nativeFromJson, nativeToJson);
   Optional<String> _phoneNumber = Optional.optional(nativeFromJson, nativeToJson);
-  Optional<String> _accessCode = Optional.optional(nativeFromJson, nativeToJson);
+  Optional<String> _accessCodeHash = Optional.optional(nativeFromJson, nativeToJson);
 
   final FirebaseDataConnect _dataConnect;  CreateUserVariablesBuilder fullName(String? t) {
    _fullName.value = t;
@@ -22,12 +23,12 @@ class CreateUserVariablesBuilder {
    _phoneNumber.value = t;
    return this;
   }
-  CreateUserVariablesBuilder accessCode(String? t) {
-   _accessCode.value = t;
+  CreateUserVariablesBuilder accessCodeHash(String? t) {
+   _accessCodeHash.value = t;
    return this;
   }
 
-  CreateUserVariablesBuilder(this._dataConnect, {required  this.tenantId,required  this.businessId,required  this.email,required  this.role,});
+  CreateUserVariablesBuilder(this._dataConnect, {required  this.id,required  this.tenantId,required  this.businessId,required  this.email,required  this.role,});
   Deserializer<CreateUserData> dataDeserializer = (dynamic json)  => CreateUserData.fromJson(jsonDecode(json));
   Serializer<CreateUserVariables> varsSerializer = (CreateUserVariables vars) => jsonEncode(vars.toJson());
   Future<OperationResult<CreateUserData, CreateUserVariables>> execute() {
@@ -35,7 +36,7 @@ class CreateUserVariablesBuilder {
   }
 
   MutationRef<CreateUserData, CreateUserVariables> ref() {
-    CreateUserVariables vars= CreateUserVariables(tenantId: tenantId,businessId: businessId,email: email,role: role,fullName: _fullName,department: _department,phoneNumber: _phoneNumber,accessCode: _accessCode,);
+    CreateUserVariables vars= CreateUserVariables(id: id,tenantId: tenantId,businessId: businessId,email: email,role: role,fullName: _fullName,department: _department,phoneNumber: _phoneNumber,accessCodeHash: _accessCodeHash,);
     return _dataConnect.mutation("CreateUser", dataDeserializer, varsSerializer, vars);
   }
 }
@@ -110,6 +111,7 @@ class CreateUserData {
 
 @immutable
 class CreateUserVariables {
+  final String id;
   final String tenantId;
   final String businessId;
   final String email;
@@ -117,14 +119,16 @@ class CreateUserVariables {
   late final Optional<String>fullName;
   late final Optional<String>department;
   late final Optional<String>phoneNumber;
-  late final Optional<String>accessCode;
+  late final Optional<String>accessCodeHash;
   @Deprecated('fromJson is deprecated for Variable classes as they are no longer required for deserialization.')
   CreateUserVariables.fromJson(Map<String, dynamic> json):
   
+  id = nativeFromJson<String>(json['id']),
   tenantId = nativeFromJson<String>(json['tenantId']),
   businessId = nativeFromJson<String>(json['businessId']),
   email = nativeFromJson<String>(json['email']),
   role = nativeFromJson<String>(json['role']) {
+  
   
   
   
@@ -143,8 +147,8 @@ class CreateUserVariables {
     phoneNumber.value = json['phoneNumber'] == null ? null : nativeFromJson<String>(json['phoneNumber']);
   
   
-    accessCode = Optional.optional(nativeFromJson, nativeToJson);
-    accessCode.value = json['accessCode'] == null ? null : nativeFromJson<String>(json['accessCode']);
+    accessCodeHash = Optional.optional(nativeFromJson, nativeToJson);
+    accessCodeHash.value = json['accessCodeHash'] == null ? null : nativeFromJson<String>(json['accessCodeHash']);
   
   }
   @override
@@ -157,22 +161,24 @@ class CreateUserVariables {
     }
 
     final CreateUserVariables otherTyped = other as CreateUserVariables;
-    return tenantId == otherTyped.tenantId && 
+    return id == otherTyped.id && 
+    tenantId == otherTyped.tenantId && 
     businessId == otherTyped.businessId && 
     email == otherTyped.email && 
     role == otherTyped.role && 
     fullName == otherTyped.fullName && 
     department == otherTyped.department && 
     phoneNumber == otherTyped.phoneNumber && 
-    accessCode == otherTyped.accessCode;
+    accessCodeHash == otherTyped.accessCodeHash;
     
   }
   @override
-  int get hashCode => Object.hashAll([tenantId.hashCode, businessId.hashCode, email.hashCode, role.hashCode, fullName.hashCode, department.hashCode, phoneNumber.hashCode, accessCode.hashCode]);
+  int get hashCode => Object.hashAll([id.hashCode, tenantId.hashCode, businessId.hashCode, email.hashCode, role.hashCode, fullName.hashCode, department.hashCode, phoneNumber.hashCode, accessCodeHash.hashCode]);
   
 
   Map<String, dynamic> toJson() {
     Map<String, dynamic> json = {};
+    json['id'] = nativeToJson<String>(id);
     json['tenantId'] = nativeToJson<String>(tenantId);
     json['businessId'] = nativeToJson<String>(businessId);
     json['email'] = nativeToJson<String>(email);
@@ -186,13 +192,14 @@ class CreateUserVariables {
     if(phoneNumber.state == OptionalState.set) {
       json['phoneNumber'] = phoneNumber.toJson();
     }
-    if(accessCode.state == OptionalState.set) {
-      json['accessCode'] = accessCode.toJson();
+    if(accessCodeHash.state == OptionalState.set) {
+      json['accessCodeHash'] = accessCodeHash.toJson();
     }
     return json;
   }
 
   CreateUserVariables({
+    required this.id,
     required this.tenantId,
     required this.businessId,
     required this.email,
@@ -200,7 +207,7 @@ class CreateUserVariables {
     required this.fullName,
     required this.department,
     required this.phoneNumber,
-    required this.accessCode,
+    required this.accessCodeHash,
   });
 }
 

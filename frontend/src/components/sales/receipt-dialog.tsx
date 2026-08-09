@@ -32,19 +32,17 @@ export function ReceiptDialog({
   taxId = "M012345678901L",
   allProducts,
 }: ReceiptDialogProps) {
-  if (!sale) return null;
-
-  const formattedDate = new Date(sale.saleDate).toLocaleString("en-US", {
+  const formattedDate = sale ? new Date(sale.saleDate).toLocaleString("en-US", {
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
     hour: "2-digit",
     minute: "2-digit",
-  });
+  }) : "";
 
   // Calculate items details
   const items = React.useMemo(() => {
-    if (sale.productsSold && sale.productsSold.length > 0) {
+    if (sale?.productsSold && sale.productsSold.length > 0) {
       return sale.productsSold.map((item) => {
         const product = allProducts.find((p) => p.id === item.productId);
         return {
@@ -60,11 +58,13 @@ export function ReceiptDialog({
       {
         name: "General Merchandise",
         quantity: 1,
-        price: sale.totalAmount,
-        total: sale.totalAmount,
+        price: sale?.totalAmount ?? 0,
+        total: sale?.totalAmount ?? 0,
       },
     ];
   }, [sale, allProducts]);
+
+  if (!sale) return null;
 
   // Calculations using whole integers for FCFA
   const subtotal = sale.totalAmount;

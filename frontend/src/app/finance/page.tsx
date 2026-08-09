@@ -204,7 +204,7 @@ export default function FinancePage() {
         <Card className="border-t-4 border-emerald-500 shadow-sm bg-emerald-50/10">
           <CardHeader className="pb-2 p-4">
             <div className="flex justify-between items-start">
-              <CardDescription className="text-[10px] font-bold uppercase tracking-widest">Chiffre d'Affaires</CardDescription>
+              <CardDescription className="text-[10px] font-bold uppercase tracking-widest">Chiffre d&apos;Affaires</CardDescription>
               <ArrowUpRight className="size-4 text-emerald-600" />
             </div>
             <CardTitle className="text-xl font-bold text-emerald-700">{stats.totalIncome.toLocaleString()} FCFA</CardTitle>

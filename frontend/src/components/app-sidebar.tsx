@@ -67,7 +67,19 @@ export function AppSidebar() {
     }
   }
 
-  // All groups are now visible to everyone
+  const allowedRoutes: Record<string, string[]> = {
+    "/admin/dashboard": ["Platform Super Admin"],
+    "/inventory": ["Business Owner", "Manager", "Staff", "Viewer", "Accountant"],
+    "/sales": ["Business Owner", "Manager", "Accountant", "Staff", "Viewer"],
+    "/expenses": ["Business Owner", "Manager", "Accountant"],
+    "/finance": ["Business Owner", "Accountant"],
+    "/employees": ["Business Owner", "HR Officer"],
+    "/customers": ["Business Owner", "Manager"],
+    "/suppliers": ["Business Owner", "Manager"],
+    "/activity-logs": ["Business Owner", "Manager"],
+    "/settings": ["Business Owner"],
+  }
+  const canOpen = (href: string) => !allowedRoutes[href] || allowedRoutes[href].includes(profile?.role || "")
   const groups = [
     {
       label: "Platform Administration",
@@ -146,7 +158,7 @@ export function AppSidebar() {
             </SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
-                {group.items.map((item) => (
+                {group.items.filter((item) => canOpen(item.href)).map((item) => (
                   <SidebarMenuItem key={item.name}>
                     <SidebarMenuButton
                       asChild

@@ -7,10 +7,10 @@ ExampleConnector.instance.DeleteTenant(deleteTenantVariables).execute();
 ExampleConnector.instance.CreateUser(createUserVariables).execute();
 ExampleConnector.instance.UpdateUser(updateUserVariables).execute();
 ExampleConnector.instance.DeleteUser(deleteUserVariables).execute();
+ExampleConnector.instance.ClearLegacyAccessCode(clearLegacyAccessCodeVariables).execute();
 ExampleConnector.instance.CreateBusiness(createBusinessVariables).execute();
 ExampleConnector.instance.UpdateBusiness(updateBusinessVariables).execute();
 ExampleConnector.instance.DeleteBusiness(deleteBusinessVariables).execute();
-ExampleConnector.instance.ProvisionEmployeeUser(provisionEmployeeUserVariables).execute();
 
 ```
 
@@ -23,8 +23,8 @@ Optional fields can be discovered based on classes that have `Optional` object t
 This is an example of a mutation with an optional field:
 
 ```dart
-await ExampleConnector.instance.UpdateTask({ ... })
-.title(...)
+await ExampleConnector.instance.UpdateMirrorOutbox({ ... })
+.lastError(...)
 .execute();
 ```
 

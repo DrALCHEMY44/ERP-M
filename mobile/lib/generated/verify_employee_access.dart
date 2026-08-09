@@ -3,12 +3,12 @@ part of 'example.dart';
 class VerifyEmployeeAccessVariablesBuilder {
   String fullName;
   String role;
-  String accessCode;
+  String accessCodeHash;
   String tenantId;
   String businessId;
 
   final FirebaseDataConnect _dataConnect;
-  VerifyEmployeeAccessVariablesBuilder(this._dataConnect, {required  this.fullName,required  this.role,required  this.accessCode,required  this.tenantId,required  this.businessId,});
+  VerifyEmployeeAccessVariablesBuilder(this._dataConnect, {required  this.fullName,required  this.role,required  this.accessCodeHash,required  this.tenantId,required  this.businessId,});
   Deserializer<VerifyEmployeeAccessData> dataDeserializer = (dynamic json)  => VerifyEmployeeAccessData.fromJson(jsonDecode(json));
   Serializer<VerifyEmployeeAccessVariables> varsSerializer = (VerifyEmployeeAccessVariables vars) => jsonEncode(vars.toJson());
   Future<QueryResult<VerifyEmployeeAccessData, VerifyEmployeeAccessVariables>> execute({QueryFetchPolicy fetchPolicy = QueryFetchPolicy.preferCache}) {
@@ -16,7 +16,7 @@ class VerifyEmployeeAccessVariablesBuilder {
   }
 
   QueryRef<VerifyEmployeeAccessData, VerifyEmployeeAccessVariables> ref() {
-    VerifyEmployeeAccessVariables vars= VerifyEmployeeAccessVariables(fullName: fullName,role: role,accessCode: accessCode,tenantId: tenantId,businessId: businessId,);
+    VerifyEmployeeAccessVariables vars= VerifyEmployeeAccessVariables(fullName: fullName,role: role,accessCodeHash: accessCodeHash,tenantId: tenantId,businessId: businessId,);
     return _dataConnect.query("verifyEmployeeAccess", dataDeserializer, varsSerializer, vars);
   }
 }
@@ -122,7 +122,7 @@ class VerifyEmployeeAccessData {
 class VerifyEmployeeAccessVariables {
   final String fullName;
   final String role;
-  final String accessCode;
+  final String accessCodeHash;
   final String tenantId;
   final String businessId;
   @Deprecated('fromJson is deprecated for Variable classes as they are no longer required for deserialization.')
@@ -130,7 +130,7 @@ class VerifyEmployeeAccessVariables {
   
   fullName = nativeFromJson<String>(json['fullName']),
   role = nativeFromJson<String>(json['role']),
-  accessCode = nativeFromJson<String>(json['accessCode']),
+  accessCodeHash = nativeFromJson<String>(json['accessCodeHash']),
   tenantId = nativeFromJson<String>(json['tenantId']),
   businessId = nativeFromJson<String>(json['businessId']);
   @override
@@ -145,20 +145,20 @@ class VerifyEmployeeAccessVariables {
     final VerifyEmployeeAccessVariables otherTyped = other as VerifyEmployeeAccessVariables;
     return fullName == otherTyped.fullName && 
     role == otherTyped.role && 
-    accessCode == otherTyped.accessCode && 
+    accessCodeHash == otherTyped.accessCodeHash && 
     tenantId == otherTyped.tenantId && 
     businessId == otherTyped.businessId;
     
   }
   @override
-  int get hashCode => Object.hashAll([fullName.hashCode, role.hashCode, accessCode.hashCode, tenantId.hashCode, businessId.hashCode]);
+  int get hashCode => Object.hashAll([fullName.hashCode, role.hashCode, accessCodeHash.hashCode, tenantId.hashCode, businessId.hashCode]);
   
 
   Map<String, dynamic> toJson() {
     Map<String, dynamic> json = {};
     json['fullName'] = nativeToJson<String>(fullName);
     json['role'] = nativeToJson<String>(role);
-    json['accessCode'] = nativeToJson<String>(accessCode);
+    json['accessCodeHash'] = nativeToJson<String>(accessCodeHash);
     json['tenantId'] = nativeToJson<String>(tenantId);
     json['businessId'] = nativeToJson<String>(businessId);
     return json;
@@ -167,7 +167,7 @@ class VerifyEmployeeAccessVariables {
   VerifyEmployeeAccessVariables({
     required this.fullName,
     required this.role,
-    required this.accessCode,
+    required this.accessCodeHash,
     required this.tenantId,
     required this.businessId,
   });

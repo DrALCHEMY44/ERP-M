@@ -3,9 +3,7 @@
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
-import { auth, db } from '@/lib/firebase'; 
-import { doc, getDoc } from 'firebase/firestore';
-import { getUserByEmail, createUser, getBusinessById } from '@/lib/data-service';
+import { auth } from '@/lib/firebase';
 
 export interface AppUser {
   id: string;
@@ -32,62 +30,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   const fetchProfile = async (firebaseUser: FirebaseUser) => {
-    if (!firebaseUser.email) {
-      setProfile(null);
-      return;
-    }
-
     try {
-      let appUser = await getUserByEmail(firebaseUser.email);
-      if (!appUser) {
-        console.log('User profile not found in SQL Connect. Checking Firestore for auto-migration...');
-        const userDocSnap = await getDoc(doc(db, 'users', firebaseUser.uid));
-        if (userDocSnap.exists()) {
-          const data = userDocSnap.data();
-          console.log('Found Firestore user profile. Migrating to SQL Connect:', data);
-          const tenantId = data.tenantId || "";
-          const businessId = data.businessId || "";
-          if (tenantId && businessId) {
-            await createUser({
-              tenantId,
-              businessId,
-              email: firebaseUser.email,
-              role: data.role || "Business Owner",
-              fullName: data.fullName || "",
-            });
-            console.log('Successfully created migrated user in SQL Connect.');
-            appUser = await getUserByEmail(firebaseUser.email);
-          } else {
-            console.warn('Firestore user profile found but tenantId/businessId is missing:', data);
-          }
-        } else {
-          console.warn('No user profile found in Firestore for UID:', firebaseUser.uid);
-        }
-      }
-      if (appUser) {
-        let businessCode: string | null = null;
-        try {
-          const business = await getBusinessById(appUser.businessId);
-          if (business) {
-            businessCode = business.code;
-          }
-        } catch (bizErr) {
-          console.error('Failed to fetch business details for code display:', bizErr);
-        }
-        
-        const userProfile: AppUser = {
-          id: appUser.id,
-          email: appUser.email,
-          role: appUser.role,
-          tenantId: appUser.tenantId,
-          businessId: appUser.businessId,
-          fullName: appUser.fullName,
-          businessCode: businessCode,
-        };
-        setProfile(userProfile);
-      } else {
-        setProfile(null);
-      }
+      const token = await firebaseUser.getIdToken();
+      const response = await fetch('/api/profile', { headers: { Authorization: `Bearer ${token}` } });
+      const body = await response.json();
+      if (!response.ok) throw new Error(body.error || 'Profile lookup failed');
+      setProfile(body.user);
     } catch (e) {
       console.error('Failed to fetch user profile:', e);
       setProfile(null);
