@@ -40,6 +40,7 @@ export async function freeCompletion(input: {
           temperature: input.temperature ?? 0,
           max_tokens: input.maxTokens ?? 4000,
         }),
+        signal: AbortSignal.timeout(30_000),
       })
       if (!response.ok) {
         lastError = new Error(`${model} returned ${response.status}`)
@@ -67,6 +68,7 @@ export async function createEmbeddings(inputs: string[]): Promise<number[][] | n
       method: "POST",
       headers: headers(),
       body: JSON.stringify({ model, input: inputs, dimensions: 384, input_type: "search_document" }),
+      signal: AbortSignal.timeout(20_000),
     })
     if (!response.ok) return null
     const body = await response.json()

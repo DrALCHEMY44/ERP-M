@@ -1,4 +1,4 @@
-import { createTenantRef, updateTenantRef, deleteTenantRef, createUserRef, updateUserRef, deleteUserRef, createBusinessRef, updateBusinessRef, deleteBusinessRef, provisionEmployeeUserRef, completeAssignedTaskRef, createProductRef, updateProductRef, deleteProductRef, createTransactionRef, updateTransactionRef, deleteTransactionRef, createTaskCommentRef, updateTaskCommentRef, deleteTaskCommentRef, createEmployeeRef, updateEmployeeRef, deleteEmployeeRef, createCustomerRef, updateCustomerRef, deleteCustomerRef, createSupplierRef, updateSupplierRef, deleteSupplierRef, createDocumentRef, updateDocumentRef, deleteDocumentRef, createActivityLogRef, updateActivityLogRef, deleteActivityLogRef, createAiQueryRef, updateAiQueryRef, deleteAiQueryRef, createNotificationRef, updateNotificationRef, deleteNotificationRef, createTaskRef, updateTaskRef, deleteTaskRef, listTenantsRef, listUsersRef, listBusinessesRef, getUserByEmailRef, getBusinessByIdRef, getBusinessByCodeRef, getBusinessesByNameRef, verifyEmployeeAccessRef, verifyUserLoginRef, listProductsByBusinessRef, listCustomersByBusinessRef, listUsersByBusinessRef, listSuppliersByBusinessRef, listTasksByBusinessRef, listTasksAssignedToUserRef, listTransactionsByBusinessRef, listTransactionsByTypeRef, listEmployeesByBusinessRef, listDocumentsByBusinessRef, listActivityLogsByUserRef, listActivityLogsByBusinessRef, getUserByIdRef, listNotificationsRef, connectorConfig } from '../../esm/index.esm.js';
+import { createTenantRef, updateTenantRef, deleteTenantRef, createUserRef, updateUserRef, deleteUserRef, clearLegacyAccessCodeRef, createBusinessRef, updateBusinessRef, deleteBusinessRef, provisionEmployeeUserRef, completeAssignedTaskRef, createProductRef, updateProductRef, deleteProductRef, createTransactionRef, updateTransactionRef, deleteTransactionRef, createTaskCommentRef, updateTaskCommentRef, deleteTaskCommentRef, createEmployeeRef, updateEmployeeRef, deleteEmployeeRef, createCustomerRef, updateCustomerRef, deleteCustomerRef, createSupplierRef, updateSupplierRef, deleteSupplierRef, createDocumentRef, updateDocumentRef, deleteDocumentRef, createActivityLogRef, createAiQueryRef, updateAiQueryRef, deleteAiQueryRef, createNotificationRef, updateNotificationRef, deleteNotificationRef, createTaskRef, updateTaskRef, deleteTaskRef, createMirrorOutboxRef, updateMirrorOutboxRef, listTenantsRef, listUsersRef, listLegacyAccessCodesRef, listBusinessesRef, getUserByEmailRef, getBusinessByIdRef, getBusinessByCodeRef, getBusinessesByNameRef, verifyEmployeeAccessRef, verifyUserLoginRef, listProductsByBusinessRef, listCustomersByBusinessRef, listUsersByBusinessRef, listSuppliersByBusinessRef, listTasksByBusinessRef, listTasksAssignedToUserRef, listTransactionsByBusinessRef, listTransactionsByTypeRef, listEmployeesByBusinessRef, listDocumentsByBusinessRef, listActivityLogsByUserRef, listActivityLogsByBusinessRef, getUserByIdRef, listNotificationsRef, listPendingMirrorOutboxRef, connectorConfig } from '../../esm/index.esm.js';
 import { validateArgs, CallerSdkTypeEnum } from 'firebase/data-connect';
 import { useDataConnectQuery, useDataConnectMutation, validateReactArgs } from '@tanstack-query-firebase/react/data-connect';
 
@@ -46,6 +46,14 @@ export function useDeleteUser(dcOrOptions, options) {
   const { dc: dcInstance, vars: inputOpts } = validateArgs(connectorConfig, dcOrOptions, options);
   function refFactory(vars) {
     return deleteUserRef(dcInstance, vars);
+  }
+  return useDataConnectMutation(refFactory, inputOpts, CallerSdkTypeEnum.GeneratedReact);
+}
+
+export function useClearLegacyAccessCode(dcOrOptions, options) {
+  const { dc: dcInstance, vars: inputOpts } = validateArgs(connectorConfig, dcOrOptions, options);
+  function refFactory(vars) {
+    return clearLegacyAccessCodeRef(dcInstance, vars);
   }
   return useDataConnectMutation(refFactory, inputOpts, CallerSdkTypeEnum.GeneratedReact);
 }
@@ -266,22 +274,6 @@ export function useCreateActivityLog(dcOrOptions, options) {
   return useDataConnectMutation(refFactory, inputOpts, CallerSdkTypeEnum.GeneratedReact);
 }
 
-export function useUpdateActivityLog(dcOrOptions, options) {
-  const { dc: dcInstance, vars: inputOpts } = validateArgs(connectorConfig, dcOrOptions, options);
-  function refFactory(vars) {
-    return updateActivityLogRef(dcInstance, vars);
-  }
-  return useDataConnectMutation(refFactory, inputOpts, CallerSdkTypeEnum.GeneratedReact);
-}
-
-export function useDeleteActivityLog(dcOrOptions, options) {
-  const { dc: dcInstance, vars: inputOpts } = validateArgs(connectorConfig, dcOrOptions, options);
-  function refFactory(vars) {
-    return deleteActivityLogRef(dcInstance, vars);
-  }
-  return useDataConnectMutation(refFactory, inputOpts, CallerSdkTypeEnum.GeneratedReact);
-}
-
 export function useCreateAiQuery(dcOrOptions, options) {
   const { dc: dcInstance, vars: inputOpts } = validateArgs(connectorConfig, dcOrOptions, options);
   function refFactory(vars) {
@@ -354,6 +346,22 @@ export function useDeleteTask(dcOrOptions, options) {
   return useDataConnectMutation(refFactory, inputOpts, CallerSdkTypeEnum.GeneratedReact);
 }
 
+export function useCreateMirrorOutbox(dcOrOptions, options) {
+  const { dc: dcInstance, vars: inputOpts } = validateArgs(connectorConfig, dcOrOptions, options);
+  function refFactory(vars) {
+    return createMirrorOutboxRef(dcInstance, vars);
+  }
+  return useDataConnectMutation(refFactory, inputOpts, CallerSdkTypeEnum.GeneratedReact);
+}
+
+export function useUpdateMirrorOutbox(dcOrOptions, options) {
+  const { dc: dcInstance, vars: inputOpts } = validateArgs(connectorConfig, dcOrOptions, options);
+  function refFactory(vars) {
+    return updateMirrorOutboxRef(dcInstance, vars);
+  }
+  return useDataConnectMutation(refFactory, inputOpts, CallerSdkTypeEnum.GeneratedReact);
+}
+
 
 export function useListTenants(dcOrOptions, options) {
   const { dc: dcInstance, options: inputOpts } = validateReactArgs(connectorConfig, dcOrOptions, options);
@@ -364,6 +372,12 @@ export function useListTenants(dcOrOptions, options) {
 export function useListUsers(dcOrOptions, options) {
   const { dc: dcInstance, options: inputOpts } = validateReactArgs(connectorConfig, dcOrOptions, options);
   const ref = listUsersRef(dcInstance);
+  return useDataConnectQuery(ref, inputOpts, CallerSdkTypeEnum.GeneratedReact);
+}
+
+export function useListLegacyAccessCodes(dcOrOptions, options) {
+  const { dc: dcInstance, options: inputOpts } = validateReactArgs(connectorConfig, dcOrOptions, options);
+  const ref = listLegacyAccessCodesRef(dcInstance);
   return useDataConnectQuery(ref, inputOpts, CallerSdkTypeEnum.GeneratedReact);
 }
 
@@ -490,5 +504,11 @@ export function useGetUserById(dcOrVars, varsOrOptions, options) {
 export function useListNotifications(dcOrVars, varsOrOptions, options) {
   const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateReactArgs(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
   const ref = listNotificationsRef(dcInstance, inputVars);
+  return useDataConnectQuery(ref, inputOpts, CallerSdkTypeEnum.GeneratedReact);
+}
+
+export function useListPendingMirrorOutbox(dcOrOptions, options) {
+  const { dc: dcInstance, options: inputOpts } = validateReactArgs(connectorConfig, dcOrOptions, options);
+  const ref = listPendingMirrorOutboxRef(dcInstance);
   return useDataConnectQuery(ref, inputOpts, CallerSdkTypeEnum.GeneratedReact);
 }

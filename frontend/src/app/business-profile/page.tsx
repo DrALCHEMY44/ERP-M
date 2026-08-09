@@ -79,7 +79,7 @@ export default function BusinessProfilePage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="taxId">Tax ID (NIU - Numero d'Identifiant Unique)</Label>
+                <Label htmlFor="taxId">Tax ID (NIU - Numero d&apos;Identifiant Unique)</Label>
                 <Input 
                   id="taxId" 
                   value={formData.taxId || ""} 

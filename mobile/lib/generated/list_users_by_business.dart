@@ -29,6 +29,7 @@ class ListUsersByBusinessUsers {
   final String tenantId;
   final String businessId;
   final String? fullName;
+  final String? accessCodeHash;
   ListUsersByBusinessUsers.fromJson(dynamic json):
   
   id = nativeFromJson<String>(json['id']),
@@ -39,7 +40,8 @@ class ListUsersByBusinessUsers {
   createdAt = Timestamp.fromJson(json['createdAt']),
   tenantId = nativeFromJson<String>(json['tenantId']),
   businessId = nativeFromJson<String>(json['businessId']),
-  fullName = json['fullName'] == null ? null : nativeFromJson<String>(json['fullName']);
+  fullName = json['fullName'] == null ? null : nativeFromJson<String>(json['fullName']),
+  accessCodeHash = json['accessCodeHash'] == null ? null : nativeFromJson<String>(json['accessCodeHash']);
   @override
   bool operator ==(Object other) {
     if(identical(this, other)) {
@@ -58,11 +60,12 @@ class ListUsersByBusinessUsers {
     createdAt == otherTyped.createdAt && 
     tenantId == otherTyped.tenantId && 
     businessId == otherTyped.businessId && 
-    fullName == otherTyped.fullName;
+    fullName == otherTyped.fullName && 
+    accessCodeHash == otherTyped.accessCodeHash;
     
   }
   @override
-  int get hashCode => Object.hashAll([id.hashCode, email.hashCode, role.hashCode, department.hashCode, phoneNumber.hashCode, createdAt.hashCode, tenantId.hashCode, businessId.hashCode, fullName.hashCode]);
+  int get hashCode => Object.hashAll([id.hashCode, email.hashCode, role.hashCode, department.hashCode, phoneNumber.hashCode, createdAt.hashCode, tenantId.hashCode, businessId.hashCode, fullName.hashCode, accessCodeHash.hashCode]);
   
 
   Map<String, dynamic> toJson() {
@@ -82,6 +85,9 @@ class ListUsersByBusinessUsers {
     if (fullName != null) {
       json['fullName'] = nativeToJson<String?>(fullName);
     }
+    if (accessCodeHash != null) {
+      json['accessCodeHash'] = nativeToJson<String?>(accessCodeHash);
+    }
     return json;
   }
 
@@ -95,6 +101,7 @@ class ListUsersByBusinessUsers {
     required this.tenantId,
     required this.businessId,
     this.fullName,
+    this.accessCodeHash,
   });
 }
 

@@ -16,6 +16,8 @@ part 'update_user.dart';
 
 part 'delete_user.dart';
 
+part 'clear_legacy_access_code.dart';
+
 part 'create_business.dart';
 
 part 'update_business.dart';
@@ -70,10 +72,6 @@ part 'delete_document.dart';
 
 part 'create_activity_log.dart';
 
-part 'update_activity_log.dart';
-
-part 'delete_activity_log.dart';
-
 part 'create_ai_query.dart';
 
 part 'update_ai_query.dart';
@@ -92,9 +90,15 @@ part 'update_task.dart';
 
 part 'delete_task.dart';
 
+part 'create_mirror_outbox.dart';
+
+part 'update_mirror_outbox.dart';
+
 part 'list_tenants.dart';
 
 part 'list_users.dart';
+
+part 'list_legacy_access_codes.dart';
 
 part 'list_businesses.dart';
 
@@ -137,6 +141,8 @@ part 'list_activity_logs_by_business.dart';
 part 'get_user_by_id.dart';
 
 part 'list_notifications.dart';
+
+part 'list_pending_mirror_outbox.dart';
 
 
 
@@ -302,8 +308,8 @@ class ExampleConnector {
   }
   
   
-  CreateUserVariablesBuilder createUser ({required String tenantId, required String businessId, required String email, required String role, }) {
-    return CreateUserVariablesBuilder(dataConnect, tenantId: tenantId,businessId: businessId,email: email,role: role,);
+  CreateUserVariablesBuilder createUser ({required String id, required String tenantId, required String businessId, required String email, required String role, }) {
+    return CreateUserVariablesBuilder(dataConnect, id: id,tenantId: tenantId,businessId: businessId,email: email,role: role,);
   }
   
   
@@ -314,6 +320,11 @@ class ExampleConnector {
   
   DeleteUserVariablesBuilder deleteUser ({required String id, }) {
     return DeleteUserVariablesBuilder(dataConnect, id: id,);
+  }
+  
+  
+  ClearLegacyAccessCodeVariablesBuilder clearLegacyAccessCode ({required String id, }) {
+    return ClearLegacyAccessCodeVariablesBuilder(dataConnect, id: id,);
   }
   
   
@@ -332,13 +343,13 @@ class ExampleConnector {
   }
   
   
-  ProvisionEmployeeUserVariablesBuilder provisionEmployeeUser ({required String tenantId, required String businessId, required String email, required String role, required String fullName, required String accessCode, }) {
-    return ProvisionEmployeeUserVariablesBuilder(dataConnect, tenantId: tenantId,businessId: businessId,email: email,role: role,fullName: fullName,accessCode: accessCode,);
+  ProvisionEmployeeUserVariablesBuilder provisionEmployeeUser ({required String tenantId, required String businessId, required String email, required String role, required String fullName, required String accessCodeHash, }) {
+    return ProvisionEmployeeUserVariablesBuilder(dataConnect, tenantId: tenantId,businessId: businessId,email: email,role: role,fullName: fullName,accessCodeHash: accessCodeHash,);
   }
   
   
-  CompleteAssignedTaskVariablesBuilder completeAssignedTask ({required String taskId, required String userId, required String accessCode, }) {
-    return CompleteAssignedTaskVariablesBuilder(dataConnect, taskId: taskId,userId: userId,accessCode: accessCode,);
+  CompleteAssignedTaskVariablesBuilder completeAssignedTask ({required String taskId, required String userId, }) {
+    return CompleteAssignedTaskVariablesBuilder(dataConnect, taskId: taskId,userId: userId,);
   }
   
   
@@ -452,16 +463,6 @@ class ExampleConnector {
   }
   
   
-  UpdateActivityLogVariablesBuilder updateActivityLog ({required String id, }) {
-    return UpdateActivityLogVariablesBuilder(dataConnect, id: id,);
-  }
-  
-  
-  DeleteActivityLogVariablesBuilder deleteActivityLog ({required String id, }) {
-    return DeleteActivityLogVariablesBuilder(dataConnect, id: id,);
-  }
-  
-  
   CreateAiQueryVariablesBuilder createAiQuery ({required String tenantId, required String businessId, required String userId, required String queryText, }) {
     return CreateAiQueryVariablesBuilder(dataConnect, tenantId: tenantId,businessId: businessId,userId: userId,queryText: queryText,);
   }
@@ -507,6 +508,16 @@ class ExampleConnector {
   }
   
   
+  CreateMirrorOutboxVariablesBuilder createMirrorOutbox ({required String tenantId, required String businessId, required String entityType, required String operation, required String recordId, required dynamic payload, }) {
+    return CreateMirrorOutboxVariablesBuilder(dataConnect, tenantId: tenantId,businessId: businessId,entityType: entityType,operation: operation,recordId: recordId,payload: payload,);
+  }
+  
+  
+  UpdateMirrorOutboxVariablesBuilder updateMirrorOutbox ({required String id, required String status, required int attempts, required Timestamp nextAttemptAt, }) {
+    return UpdateMirrorOutboxVariablesBuilder(dataConnect, id: id,status: status,attempts: attempts,nextAttemptAt: nextAttemptAt,);
+  }
+  
+  
   ListTenantsVariablesBuilder listTenants () {
     return ListTenantsVariablesBuilder(dataConnect, );
   }
@@ -514,6 +525,11 @@ class ExampleConnector {
   
   ListUsersVariablesBuilder listUsers () {
     return ListUsersVariablesBuilder(dataConnect, );
+  }
+  
+  
+  ListLegacyAccessCodesVariablesBuilder listLegacyAccessCodes () {
+    return ListLegacyAccessCodesVariablesBuilder(dataConnect, );
   }
   
   
@@ -542,13 +558,13 @@ class ExampleConnector {
   }
   
   
-  VerifyEmployeeAccessVariablesBuilder verifyEmployeeAccess ({required String fullName, required String role, required String accessCode, required String tenantId, required String businessId, }) {
-    return VerifyEmployeeAccessVariablesBuilder(dataConnect, fullName: fullName,role: role,accessCode: accessCode,tenantId: tenantId,businessId: businessId,);
+  VerifyEmployeeAccessVariablesBuilder verifyEmployeeAccess ({required String fullName, required String role, required String accessCodeHash, required String tenantId, required String businessId, }) {
+    return VerifyEmployeeAccessVariablesBuilder(dataConnect, fullName: fullName,role: role,accessCodeHash: accessCodeHash,tenantId: tenantId,businessId: businessId,);
   }
   
   
-  VerifyUserLoginVariablesBuilder verifyUserLogin ({required String email, required String fullName, required String role, required String accessCode, required String tenantId, required String businessId, }) {
-    return VerifyUserLoginVariablesBuilder(dataConnect, email: email,fullName: fullName,role: role,accessCode: accessCode,tenantId: tenantId,businessId: businessId,);
+  VerifyUserLoginVariablesBuilder verifyUserLogin ({required String email, required String fullName, required String role, required String accessCodeHash, required String tenantId, required String businessId, }) {
+    return VerifyUserLoginVariablesBuilder(dataConnect, email: email,fullName: fullName,role: role,accessCodeHash: accessCodeHash,tenantId: tenantId,businessId: businessId,);
   }
   
   
@@ -619,6 +635,11 @@ class ExampleConnector {
   
   ListNotificationsVariablesBuilder listNotifications ({required String tenantId, required String businessId, required String userId, }) {
     return ListNotificationsVariablesBuilder(dataConnect, tenantId: tenantId,businessId: businessId,userId: userId,);
+  }
+  
+  
+  ListPendingMirrorOutboxVariablesBuilder listPendingMirrorOutbox () {
+    return ListPendingMirrorOutboxVariablesBuilder(dataConnect, );
   }
   
 

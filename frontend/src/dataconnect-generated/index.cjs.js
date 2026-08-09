@@ -118,6 +118,20 @@ exports.deleteUser = function deleteUser(dcOrVars, vars) {
 }
 ;
 
+const clearLegacyAccessCodeRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'ClearLegacyAccessCode', inputVars);
+}
+clearLegacyAccessCodeRef.operationName = 'ClearLegacyAccessCode';
+exports.clearLegacyAccessCodeRef = clearLegacyAccessCodeRef;
+
+exports.clearLegacyAccessCode = function clearLegacyAccessCode(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(clearLegacyAccessCodeRef(dcInstance, inputVars));
+}
+;
+
 const createBusinessRef = (dcOrVars, vars) => {
   const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
   dcInstance._useGeneratedSdk();
@@ -496,34 +510,6 @@ exports.createActivityLog = function createActivityLog(dcOrVars, vars) {
 }
 ;
 
-const updateActivityLogRef = (dcOrVars, vars) => {
-  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
-  dcInstance._useGeneratedSdk();
-  return mutationRef(dcInstance, 'UpdateActivityLog', inputVars);
-}
-updateActivityLogRef.operationName = 'UpdateActivityLog';
-exports.updateActivityLogRef = updateActivityLogRef;
-
-exports.updateActivityLog = function updateActivityLog(dcOrVars, vars) {
-  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
-  return executeMutation(updateActivityLogRef(dcInstance, inputVars));
-}
-;
-
-const deleteActivityLogRef = (dcOrVars, vars) => {
-  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
-  dcInstance._useGeneratedSdk();
-  return mutationRef(dcInstance, 'DeleteActivityLog', inputVars);
-}
-deleteActivityLogRef.operationName = 'DeleteActivityLog';
-exports.deleteActivityLogRef = deleteActivityLogRef;
-
-exports.deleteActivityLog = function deleteActivityLog(dcOrVars, vars) {
-  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
-  return executeMutation(deleteActivityLogRef(dcInstance, inputVars));
-}
-;
-
 const createAiQueryRef = (dcOrVars, vars) => {
   const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
   dcInstance._useGeneratedSdk();
@@ -650,6 +636,34 @@ exports.deleteTask = function deleteTask(dcOrVars, vars) {
 }
 ;
 
+const createMirrorOutboxRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'CreateMirrorOutbox', inputVars);
+}
+createMirrorOutboxRef.operationName = 'CreateMirrorOutbox';
+exports.createMirrorOutboxRef = createMirrorOutboxRef;
+
+exports.createMirrorOutbox = function createMirrorOutbox(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(createMirrorOutboxRef(dcInstance, inputVars));
+}
+;
+
+const updateMirrorOutboxRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'UpdateMirrorOutbox', inputVars);
+}
+updateMirrorOutboxRef.operationName = 'UpdateMirrorOutbox';
+exports.updateMirrorOutboxRef = updateMirrorOutboxRef;
+
+exports.updateMirrorOutbox = function updateMirrorOutbox(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(updateMirrorOutboxRef(dcInstance, inputVars));
+}
+;
+
 const listTenantsRef = (dc) => {
   const { dc: dcInstance} = validateArgs(connectorConfig, dc, undefined);
   dcInstance._useGeneratedSdk();
@@ -677,6 +691,21 @@ exports.listUsers = function listUsers(dcOrOptions, options) {
   
   const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrOptions, options, undefined,false, false);
   return executeQuery(listUsersRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+;
+
+const listLegacyAccessCodesRef = (dc) => {
+  const { dc: dcInstance} = validateArgs(connectorConfig, dc, undefined);
+  dcInstance._useGeneratedSdk();
+  return queryRef(dcInstance, 'ListLegacyAccessCodes');
+}
+listLegacyAccessCodesRef.operationName = 'ListLegacyAccessCodes';
+exports.listLegacyAccessCodesRef = listLegacyAccessCodesRef;
+
+exports.listLegacyAccessCodes = function listLegacyAccessCodes(dcOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrOptions, options, undefined,false, false);
+  return executeQuery(listLegacyAccessCodesRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
 ;
 
@@ -992,5 +1021,20 @@ exports.listNotifications = function listNotifications(dcOrVars, varsOrOptions, 
   
   const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
   return executeQuery(listNotificationsRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+;
+
+const listPendingMirrorOutboxRef = (dc) => {
+  const { dc: dcInstance} = validateArgs(connectorConfig, dc, undefined);
+  dcInstance._useGeneratedSdk();
+  return queryRef(dcInstance, 'ListPendingMirrorOutbox');
+}
+listPendingMirrorOutboxRef.operationName = 'ListPendingMirrorOutbox';
+exports.listPendingMirrorOutboxRef = listPendingMirrorOutboxRef;
+
+exports.listPendingMirrorOutbox = function listPendingMirrorOutbox(dcOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrOptions, options, undefined,false, false);
+  return executeQuery(listPendingMirrorOutboxRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
 ;

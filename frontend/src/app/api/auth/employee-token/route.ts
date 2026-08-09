@@ -2,7 +2,9 @@ import { NextResponse } from "next/server"
 import { getAuth } from "firebase-admin/auth"
 import { z } from "zod"
 
-import { firebaseAdminApp } from "@/lib/server/firebase-token"
+import { adminDataConnect, firebaseAdminApp } from "@/lib/server/firebase-token"
+import { consumeRateLimit } from "@/lib/server/rate-limit"
+import { verifySecret } from "@/lib/server/secret-hash"
 
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
@@ -14,87 +16,33 @@ const loginSchema = z.object({
   roleProfile: z.enum(["Manager", "Employee"]),
 })
 
-type Attempt = { count: number; resetAt: number }
-const attempts = new Map<string, Attempt>()
-
-function rateLimited(request: Request) {
-  const key = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim()
-    || request.headers.get("x-real-ip")
-    || "local"
-  const now = Date.now()
-  const attempt = attempts.get(key)
-  if (!attempt || attempt.resetAt <= now) {
-    attempts.set(key, { count: 1, resetAt: now + 60_000 })
-    return false
-  }
-  attempt.count += 1
-  return attempt.count > 10
-}
-
 export async function POST(request: Request) {
   try {
-    if (rateLimited(request)) {
-      return NextResponse.json(
-        { error: "Too many login attempts. Wait one minute and try again." },
-        { status: 429 },
-      )
+    if (!await consumeRateLimit({ request, bucket: "employee-login", limit: 8, windowSeconds: 60 })) {
+      return NextResponse.json({ error: "Too many login attempts. Wait one minute and try again." }, { status: 429 })
     }
-
     const input = loginSchema.parse(await request.json())
-    await import("@/lib/firebase")
-    const { getBusinessesByName, verifyEmployeeAccess } = await import("@dataconnect/generated")
-    const businessResult = await getBusinessesByName({ name: input.businessName })
+    const dc = adminDataConnect()
+    const businesses = await dc.executeQuery<{ businesses: Array<{ id: string; tenantId: string; name: string; code: string }> }, { name: string }>("getBusinessesByName", { name: input.businessName })
     const expectedRole = input.roleProfile === "Manager" ? "Manager" : "Staff"
-
-    for (const business of businessResult.data.businesses) {
-      const result = await verifyEmployeeAccess({
-        fullName: input.fullName,
-        role: expectedRole,
-        accessCode: input.accessCode,
+    for (const business of businesses.data.businesses) {
+      const users = await dc.executeQuery<{ users: Array<{ id: string; email: string; role: string; fullName?: string; tenantId: string; businessId: string; accessCodeHash?: string }> }, Record<string, string>>("listUsersByBusiness", {
         tenantId: business.tenantId,
         businessId: business.id,
       })
-      const account = result.data.users[0]
-      if (!account) continue
-
-      const token = await getAuth(firebaseAdminApp()).createCustomToken(account.id, {
-        tenantId: account.tenantId,
-        businessId: account.businessId,
-        role: account.role,
-      })
-      return NextResponse.json({
-        token,
-        user: {
-          id: account.id,
-          fullName: account.fullName || input.fullName,
-          email: account.email,
-          role: account.role,
-          tenantId: account.tenantId,
-          businessId: account.businessId,
-          businessCode: business.code,
-        },
-      })
+      for (const account of users.data.users) {
+        if (account.fullName?.trim() !== input.fullName || account.role !== expectedRole || !account.accessCodeHash) continue
+        if (!await verifySecret(input.accessCode, account.accessCodeHash)) continue
+        const token = await getAuth(firebaseAdminApp()).createCustomToken(account.id, {
+          tenantId: account.tenantId, businessId: account.businessId, role: account.role,
+        })
+        return NextResponse.json({ token, user: { ...account, businessCode: business.code, accessCodeHash: undefined } })
+      }
     }
-
-    return NextResponse.json(
-      { error: "The name, business, role, or employee code is incorrect." },
-      { status: 401 },
-    )
+    return NextResponse.json({ error: "The supplied employee credentials are incorrect." }, { status: 401 })
   } catch (error) {
-    console.warn("Employee custom-token login failed", error)
-    if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: "Complete all employee login fields." }, { status: 400 })
-    }
-    const message = error instanceof Error ? error.message : ""
-    if (message.includes("Failed to determine service account") || message.includes("signBlob")) {
-      return NextResponse.json(
-        { error: "Employee login signing is not configured on the backend." },
-        { status: 503 },
-      )
-    }
-    return NextResponse.json(
-      { error: "Employee login service is temporarily unavailable." },
-      { status: 503 },
-    )
+    if (error instanceof z.ZodError) return NextResponse.json({ error: "Complete all employee login fields." }, { status: 400 })
+    console.warn("Employee custom-token login failed", error instanceof Error ? error.message : error)
+    return NextResponse.json({ error: "Employee login service is unavailable." }, { status: 503 })
   }
 }

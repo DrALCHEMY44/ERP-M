@@ -17,16 +17,8 @@ import type { Role } from '@/lib/types';
 // Side-effect import: ensures Firebase initializeApp() has been called
 // before any Data Connect SDK queries execute in this server-side context.
 import '@/lib/firebase';
-import {
-  listProductsByBusinessQuery,
-  listTransactionsByBusinessQuery,
-  listCustomersByBusinessQuery,
-  listSuppliersByBusinessQuery,
-  listEmployeesByBusinessQuery,
-  listTasksByBusinessQuery,
-  listActivityLogsByBusinessQuery,
-  listDocumentsByBusinessQuery,
-} from '@/lib/data-service';
+import { adminDataConnect } from '@/lib/server/firebase-token';
+import { listOperationalProducts, listOperationalTransactions } from '@/lib/server/operational-data';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -211,6 +203,8 @@ export async function fetchTenantContext(
   }
 
   const vars = { tenantId, businessId };
+  const dc = adminDataConnect();
+  const query = (name: string): Promise<any> => dc.executeQuery(name, vars);
 
   // Fire all authorized queries in parallel for performance
   const [
@@ -223,16 +217,16 @@ export async function fetchTenantContext(
     logsResult,
     docsResult,
   ] = await Promise.allSettled([
-    canAccess(role, 'products') ? listProductsByBusinessQuery(vars) : null,
+    canAccess(role, 'products') ? listOperationalProducts(tenantId, businessId).then((products) => ({ data: { products } })) : null,
     canAccess(role, 'transactions') || canAccess(role, 'financials')
-      ? listTransactionsByBusinessQuery(vars)
+      ? listOperationalTransactions(tenantId, businessId).then((transactions) => ({ data: { transactions } }))
       : null,
-    canAccess(role, 'customers') ? listCustomersByBusinessQuery(vars) : null,
-    canAccess(role, 'suppliers') ? listSuppliersByBusinessQuery(vars) : null,
-    canAccess(role, 'employees') ? listEmployeesByBusinessQuery(vars) : null,
-    canAccess(role, 'tasks') ? listTasksByBusinessQuery(vars) : null,
-    canAccess(role, 'activityLogs') ? listActivityLogsByBusinessQuery(vars) : null,
-    canAccess(role, 'documents') ? listDocumentsByBusinessQuery(vars) : null,
+    canAccess(role, 'customers') ? query('listCustomersByBusiness') : null,
+    canAccess(role, 'suppliers') ? query('listSuppliersByBusiness') : null,
+    canAccess(role, 'employees') ? query('listEmployeesByBusiness') : null,
+    canAccess(role, 'tasks') ? query('listTasksByBusiness') : null,
+    canAccess(role, 'activityLogs') ? query('listActivityLogsByBusiness') : null,
+    canAccess(role, 'documents') ? query('listDocumentsByBusiness') : null,
   ]);
 
   // --- Products & Inventory ---
@@ -240,7 +234,7 @@ export async function fetchTenantContext(
     const products = extractResult(productsResult)?.data?.products ?? [];
     const showCost = canAccess(role, 'financials') || canAccess(role, 'transactions');
 
-    context.products = products.map((p) => ({
+    const visibleProducts = products.map((p: any) => ({
       id: p.id,
       name: p.name,
       category: p.category ?? null,
@@ -250,11 +244,12 @@ export async function fetchTenantContext(
       lowStockLevel: p.lowStockLevel ?? null,
       isLowStock: p.lowStockLevel != null && p.quantity <= p.lowStockLevel,
     }));
+    context.products = visibleProducts;
 
     if (canAccess(role, 'inventory')) {
-      const lowStockCount = context.products.filter((p) => p.isLowStock).length;
+      const lowStockCount = visibleProducts.filter((p: any) => p.isLowStock).length;
       const totalStockValue = products.reduce(
-        (sum, p) => sum + fcfa(p.sellingPrice) * p.quantity,
+        (sum: number, p: any) => sum + fcfa(p.sellingPrice) * p.quantity,
         0,
       );
       context.inventory = {
@@ -270,7 +265,7 @@ export async function fetchTenantContext(
     const transactions = extractResult(transactionsResult)?.data?.transactions ?? [];
 
     if (canAccess(role, 'transactions')) {
-      context.transactions = transactions.map((t) => ({
+      context.transactions = transactions.map((t: any) => ({
         id: t.id,
         type: t.type,
         amount: fcfa(t.amount),
@@ -281,10 +276,10 @@ export async function fetchTenantContext(
     }
 
     if (canAccess(role, 'financials')) {
-      const sales = transactions.filter((t) => t.type === 'SALE');
-      const expenses = transactions.filter((t) => t.type === 'EXPENSE');
-      const totalSales = sales.reduce((s, t) => s + fcfa(t.amount), 0);
-      const totalExpenses = expenses.reduce((s, t) => s + fcfa(t.amount), 0);
+      const sales = transactions.filter((t: any) => t.type === 'SALE');
+      const expenses = transactions.filter((t: any) => t.type === 'EXPENSE');
+      const totalSales = sales.reduce((s: number, t: any) => s + fcfa(t.amount), 0);
+      const totalExpenses = expenses.reduce((s: number, t: any) => s + fcfa(t.amount), 0);
 
       context.financials = {
         totalSales,
@@ -300,7 +295,7 @@ export async function fetchTenantContext(
   // --- Customers ---
   if (canAccess(role, 'customers')) {
     const customers = extractResult(customersResult)?.data?.customers ?? [];
-    context.customers = customers.map((c) => ({
+    context.customers = customers.map((c: any) => ({
       id: c.id,
       name: c.customerName,
       phone: c.phoneNumber ?? null,
@@ -313,7 +308,7 @@ export async function fetchTenantContext(
   // --- Suppliers ---
   if (canAccess(role, 'suppliers')) {
     const suppliers = extractResult(suppliersResult)?.data?.suppliers ?? [];
-    context.suppliers = suppliers.map((s) => ({
+    context.suppliers = suppliers.map((s: any) => ({
       id: s.id,
       name: s.supplierName,
       phone: s.phoneNumber ?? null,
@@ -326,7 +321,7 @@ export async function fetchTenantContext(
     const employees = extractResult(employeesResult)?.data?.employees ?? [];
     const showSalary = canAccess(role, 'salaries');
 
-    context.employees = employees.map((e) => ({
+    context.employees = employees.map((e: any) => ({
       id: e.id,
       fullName: e.fullName,
       position: e.position,
@@ -339,7 +334,7 @@ export async function fetchTenantContext(
   // --- Tasks ---
   if (canAccess(role, 'tasks')) {
     const tasks = extractResult(tasksResult)?.data?.tasks ?? [];
-    context.tasks = tasks.map((t) => ({
+    context.tasks = tasks.map((t: any) => ({
       id: t.id,
       title: t.title,
       status: t.status,
@@ -353,7 +348,7 @@ export async function fetchTenantContext(
   if (canAccess(role, 'activityLogs')) {
     const logs = extractResult(logsResult)?.data?.activityLogs ?? [];
     // Limit to most recent 50 to avoid bloating the prompt
-    context.activityLogs = logs.slice(0, 50).map((l) => ({
+    context.activityLogs = logs.slice(0, 50).map((l: any) => ({
       userName: l.userName,
       actionType: l.actionType,
       module: l.module,
@@ -365,7 +360,7 @@ export async function fetchTenantContext(
   // --- Documents ---
   if (canAccess(role, 'documents')) {
     const docs = extractResult(docsResult)?.data?.documents ?? [];
-    context.documents = docs.map((d) => ({
+    context.documents = docs.map((d: any) => ({
       title: d.title,
       documentType: d.documentType,
       uploadedBy: d.uploadedBy,

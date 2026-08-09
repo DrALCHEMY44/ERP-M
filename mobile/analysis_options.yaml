@@ -9,6 +9,12 @@
 # packages, and plugins designed to encourage good coding practices.
 include: package:flutter_lints/flutter.yaml
 
+analyzer:
+  # Firebase Data Connect SDK output is regenerated from backend GraphQL and
+  # is not first-party Dart source. Keep all application code analyzed.
+  exclude:
+    - lib/generated/**
+
 linter:
   # The lint rules applied to this project can be customized in the
   # section below to disable rules from the `package:flutter_lints/flutter.yaml`

@@ -12,7 +12,7 @@ For each operation, there is a wrapper hook that can be used to call the operati
 
 Here are all of the hooks that get generated:
 ```ts
-import { useCreateTenant, useUpdateTenant, useDeleteTenant, useCreateUser, useUpdateUser, useDeleteUser, useCreateBusiness, useUpdateBusiness, useDeleteBusiness, useProvisionEmployeeUser } from '@dataconnect/generated/react';
+import { useCreateTenant, useUpdateTenant, useDeleteTenant, useCreateUser, useUpdateUser, useDeleteUser, useClearLegacyAccessCode, useCreateBusiness, useUpdateBusiness, useDeleteBusiness } from '@dataconnect/generated/react';
 // The types of these hooks are available in react/index.d.ts
 
 const { data, isPending, isSuccess, isError, error } = useCreateTenant(createTenantVars);
@@ -27,13 +27,13 @@ const { data, isPending, isSuccess, isError, error } = useUpdateUser(updateUserV
 
 const { data, isPending, isSuccess, isError, error } = useDeleteUser(deleteUserVars);
 
+const { data, isPending, isSuccess, isError, error } = useClearLegacyAccessCode(clearLegacyAccessCodeVars);
+
 const { data, isPending, isSuccess, isError, error } = useCreateBusiness(createBusinessVars);
 
 const { data, isPending, isSuccess, isError, error } = useUpdateBusiness(updateBusinessVars);
 
 const { data, isPending, isSuccess, isError, error } = useDeleteBusiness(deleteBusinessVars);
-
-const { data, isPending, isSuccess, isError, error } = useProvisionEmployeeUser(provisionEmployeeUserVars);
 
 ```
 
@@ -72,7 +72,7 @@ If a user is not using a supported framework, they can use the generated SDK dir
 Here's an example of how to use it with the first 5 operations:
 
 ```js
-import { createTenant, updateTenant, deleteTenant, createUser, updateUser, deleteUser, createBusiness, updateBusiness, deleteBusiness, provisionEmployeeUser } from '@dataconnect/generated';
+import { createTenant, updateTenant, deleteTenant, createUser, updateUser, deleteUser, clearLegacyAccessCode, createBusiness, updateBusiness, deleteBusiness } from '@dataconnect/generated';
 
 
 // Operation CreateTenant:  For variables, look at type CreateTenantVars in ../index.d.ts
@@ -93,6 +93,9 @@ const { data } = await UpdateUser(dataConnect, updateUserVars);
 // Operation DeleteUser:  For variables, look at type DeleteUserVars in ../index.d.ts
 const { data } = await DeleteUser(dataConnect, deleteUserVars);
 
+// Operation ClearLegacyAccessCode:  For variables, look at type ClearLegacyAccessCodeVars in ../index.d.ts
+const { data } = await ClearLegacyAccessCode(dataConnect, clearLegacyAccessCodeVars);
+
 // Operation CreateBusiness:  For variables, look at type CreateBusinessVars in ../index.d.ts
 const { data } = await CreateBusiness(dataConnect, createBusinessVars);
 
@@ -101,9 +104,6 @@ const { data } = await UpdateBusiness(dataConnect, updateBusinessVars);
 
 // Operation DeleteBusiness:  For variables, look at type DeleteBusinessVars in ../index.d.ts
 const { data } = await DeleteBusiness(dataConnect, deleteBusinessVars);
-
-// Operation ProvisionEmployeeUser:  For variables, look at type ProvisionEmployeeUserVars in ../index.d.ts
-const { data } = await ProvisionEmployeeUser(dataConnect, provisionEmployeeUserVars);
 
 
 ```

@@ -33,7 +33,7 @@ export function useDataConnect<T = any, V = any>({
     if (authLoading || skip) return;
 
     // If no user is signed in, stop loading and bail out.
-    // All Data Connect operations use @auth(level: USER) which requires authentication.
+    // Secure wrappers call authenticated server routes; generated operations are NO_ACCESS to clients.
     if (!user) {
       setLoading(false);
       return;

@@ -19,6 +19,7 @@ You can also follow the instructions from the [Data Connect documentation](https
 - [**Queries**](#queries)
   - [*ListTenants*](#listtenants)
   - [*ListUsers*](#listusers)
+  - [*ListLegacyAccessCodes*](#listlegacyaccesscodes)
   - [*ListBusinesses*](#listbusinesses)
   - [*getUserByEmail*](#getuserbyemail)
   - [*getBusinessById*](#getbusinessbyid)
@@ -40,6 +41,7 @@ You can also follow the instructions from the [Data Connect documentation](https
   - [*listActivityLogsByBusiness*](#listactivitylogsbybusiness)
   - [*getUserById*](#getuserbyid)
   - [*listNotifications*](#listnotifications)
+  - [*ListPendingMirrorOutbox*](#listpendingmirroroutbox)
 - [**Mutations**](#mutations)
   - [*CreateTenant*](#createtenant)
   - [*UpdateTenant*](#updatetenant)
@@ -47,6 +49,7 @@ You can also follow the instructions from the [Data Connect documentation](https
   - [*CreateUser*](#createuser)
   - [*UpdateUser*](#updateuser)
   - [*DeleteUser*](#deleteuser)
+  - [*ClearLegacyAccessCode*](#clearlegacyaccesscode)
   - [*CreateBusiness*](#createbusiness)
   - [*UpdateBusiness*](#updatebusiness)
   - [*DeleteBusiness*](#deletebusiness)
@@ -74,8 +77,6 @@ You can also follow the instructions from the [Data Connect documentation](https
   - [*UpdateDocument*](#updatedocument)
   - [*DeleteDocument*](#deletedocument)
   - [*CreateActivityLog*](#createactivitylog)
-  - [*UpdateActivityLog*](#updateactivitylog)
-  - [*DeleteActivityLog*](#deleteactivitylog)
   - [*CreateAiQuery*](#createaiquery)
   - [*UpdateAiQuery*](#updateaiquery)
   - [*DeleteAiQuery*](#deleteaiquery)
@@ -85,6 +86,8 @@ You can also follow the instructions from the [Data Connect documentation](https
   - [*CreateTask*](#createtask)
   - [*UpdateTask*](#updatetask)
   - [*DeleteTask*](#deletetask)
+  - [*CreateMirrorOutbox*](#createmirroroutbox)
+  - [*UpdateMirrorOutbox*](#updatemirroroutbox)
 
 # TanStack Query Firebase & TanStack React Query
 This SDK provides [React](https://react.dev/) hooks generated specific to your application, for the operations found in the connector `example`. These hooks are generated using [TanStack Query Firebase](https://react-query-firebase.invertase.dev/) by our partners at Invertase, a library built on top of [TanStack React Query v5](https://tanstack.com/query/v5/docs/framework/react/overview).
@@ -309,6 +312,78 @@ export default function ListUsersComponent() {
   const dataConnect = getDataConnect(connectorConfig);
   const options = { staleTime: 5 * 1000 };
   const query = useListUsers(dataConnect, options);
+
+  // Then, you can render your component dynamically based on the status of the Query.
+  if (query.isPending) {
+    return <div>Loading...</div>;
+  }
+
+  if (query.isError) {
+    return <div>Error: {query.error.message}</div>;
+  }
+
+  // If the Query is successful, you can access the data returned using the `UseQueryResult.data` field.
+  if (query.isSuccess) {
+    console.log(query.data.users);
+  }
+  return <div>Query execution {query.isSuccess ? 'successful' : 'failed'}!</div>;
+}
+```
+
+## ListLegacyAccessCodes
+You can execute the `ListLegacyAccessCodes` Query using the following Query hook function, which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts):
+
+```javascript
+useListLegacyAccessCodes(dc: DataConnect, options?: useDataConnectQueryOptions<ListLegacyAccessCodesData>): UseDataConnectQueryResult<ListLegacyAccessCodesData, undefined>;
+```
+You can also pass in a `DataConnect` instance to the Query hook function.
+```javascript
+useListLegacyAccessCodes(options?: useDataConnectQueryOptions<ListLegacyAccessCodesData>): UseDataConnectQueryResult<ListLegacyAccessCodesData, undefined>;
+```
+
+### Variables
+The `ListLegacyAccessCodes` Query has no variables.
+### Return Type
+Recall that calling the `ListLegacyAccessCodes` Query hook function returns a `UseQueryResult` object. This object holds the state of your Query, including whether the Query is loading, has completed, or has succeeded/failed, and any data returned by the Query, among other things.
+
+To check the status of a Query, use the `UseQueryResult.status` field. You can also check for pending / success / error status using the `UseQueryResult.isPending`, `UseQueryResult.isSuccess`, and `UseQueryResult.isError` fields.
+
+To access the data returned by a Query, use the `UseQueryResult.data` field. The data for the `ListLegacyAccessCodes` Query is of type `ListLegacyAccessCodesData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+```javascript
+export interface ListLegacyAccessCodesData {
+  users: ({
+    id: string;
+    accessCode?: string | null;
+  } & User_Key)[];
+}
+```
+
+To learn more about the `UseQueryResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useQuery).
+
+### Using `ListLegacyAccessCodes`'s Query hook function
+
+```javascript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig } from '@dataconnect/generated';
+import { useListLegacyAccessCodes } from '@dataconnect/generated/react'
+
+export default function ListLegacyAccessCodesComponent() {
+  // You don't have to do anything to "execute" the Query.
+  // Call the Query hook function to get a `UseQueryResult` object which holds the state of your Query.
+  const query = useListLegacyAccessCodes();
+
+  // You can also pass in a `DataConnect` instance to the Query hook function.
+  const dataConnect = getDataConnect(connectorConfig);
+  const query = useListLegacyAccessCodes(dataConnect);
+
+  // You can also pass in a `useDataConnectQueryOptions` object to the Query hook function.
+  const options = { staleTime: 5 * 1000 };
+  const query = useListLegacyAccessCodes(options);
+
+  // You can also pass both a `DataConnect` instance and a `useDataConnectQueryOptions` object.
+  const dataConnect = getDataConnect(connectorConfig);
+  const options = { staleTime: 5 * 1000 };
+  const query = useListLegacyAccessCodes(dataConnect, options);
 
   // Then, you can render your component dynamically based on the status of the Query.
   if (query.isPending) {
@@ -784,7 +859,7 @@ The `verifyEmployeeAccess` Query requires an argument of type `VerifyEmployeeAcc
 export interface VerifyEmployeeAccessVariables {
   fullName: string;
   role: string;
-  accessCode: string;
+  accessCodeHash: string;
   tenantId: string;
   businessId: string;
 }
@@ -822,7 +897,7 @@ export default function VerifyEmployeeAccessComponent() {
   const verifyEmployeeAccessVars: VerifyEmployeeAccessVariables = {
     fullName: ..., 
     role: ..., 
-    accessCode: ..., 
+    accessCodeHash: ..., 
     tenantId: ..., 
     businessId: ..., 
   };
@@ -831,7 +906,7 @@ export default function VerifyEmployeeAccessComponent() {
   // Call the Query hook function to get a `UseQueryResult` object which holds the state of your Query.
   const query = useVerifyEmployeeAccess(verifyEmployeeAccessVars);
   // Variables can be defined inline as well.
-  const query = useVerifyEmployeeAccess({ fullName: ..., role: ..., accessCode: ..., tenantId: ..., businessId: ..., });
+  const query = useVerifyEmployeeAccess({ fullName: ..., role: ..., accessCodeHash: ..., tenantId: ..., businessId: ..., });
 
   // You can also pass in a `DataConnect` instance to the Query hook function.
   const dataConnect = getDataConnect(connectorConfig);
@@ -882,7 +957,7 @@ export interface VerifyUserLoginVariables {
   email: string;
   fullName: string;
   role: string;
-  accessCode: string;
+  accessCodeHash: string;
   tenantId: string;
   businessId: string;
 }
@@ -921,7 +996,7 @@ export default function VerifyUserLoginComponent() {
     email: ..., 
     fullName: ..., 
     role: ..., 
-    accessCode: ..., 
+    accessCodeHash: ..., 
     tenantId: ..., 
     businessId: ..., 
   };
@@ -930,7 +1005,7 @@ export default function VerifyUserLoginComponent() {
   // Call the Query hook function to get a `UseQueryResult` object which holds the state of your Query.
   const query = useVerifyUserLogin(verifyUserLoginVars);
   // Variables can be defined inline as well.
-  const query = useVerifyUserLogin({ email: ..., fullName: ..., role: ..., accessCode: ..., tenantId: ..., businessId: ..., });
+  const query = useVerifyUserLogin({ email: ..., fullName: ..., role: ..., accessCodeHash: ..., tenantId: ..., businessId: ..., });
 
   // You can also pass in a `DataConnect` instance to the Query hook function.
   const dataConnect = getDataConnect(connectorConfig);
@@ -1193,6 +1268,7 @@ export interface ListUsersByBusinessData {
     tenantId: string;
     businessId: string;
     fullName?: string | null;
+    accessCodeHash?: string | null;
   } & User_Key)[];
 }
 ```
@@ -2307,6 +2383,88 @@ export default function ListNotificationsComponent() {
 }
 ```
 
+## ListPendingMirrorOutbox
+You can execute the `ListPendingMirrorOutbox` Query using the following Query hook function, which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts):
+
+```javascript
+useListPendingMirrorOutbox(dc: DataConnect, options?: useDataConnectQueryOptions<ListPendingMirrorOutboxData>): UseDataConnectQueryResult<ListPendingMirrorOutboxData, undefined>;
+```
+You can also pass in a `DataConnect` instance to the Query hook function.
+```javascript
+useListPendingMirrorOutbox(options?: useDataConnectQueryOptions<ListPendingMirrorOutboxData>): UseDataConnectQueryResult<ListPendingMirrorOutboxData, undefined>;
+```
+
+### Variables
+The `ListPendingMirrorOutbox` Query has no variables.
+### Return Type
+Recall that calling the `ListPendingMirrorOutbox` Query hook function returns a `UseQueryResult` object. This object holds the state of your Query, including whether the Query is loading, has completed, or has succeeded/failed, and any data returned by the Query, among other things.
+
+To check the status of a Query, use the `UseQueryResult.status` field. You can also check for pending / success / error status using the `UseQueryResult.isPending`, `UseQueryResult.isSuccess`, and `UseQueryResult.isError` fields.
+
+To access the data returned by a Query, use the `UseQueryResult.data` field. The data for the `ListPendingMirrorOutbox` Query is of type `ListPendingMirrorOutboxData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+```javascript
+export interface ListPendingMirrorOutboxData {
+  mirrorOutboxes: ({
+    id: string;
+    tenantId: string;
+    businessId: string;
+    entityType: string;
+    operation: string;
+    recordId: string;
+    payload: unknown;
+    status: string;
+    attempts: number;
+    nextAttemptAt: TimestampString;
+    lastError?: string | null;
+    createdAt: TimestampString;
+  } & MirrorOutbox_Key)[];
+}
+```
+
+To learn more about the `UseQueryResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useQuery).
+
+### Using `ListPendingMirrorOutbox`'s Query hook function
+
+```javascript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig } from '@dataconnect/generated';
+import { useListPendingMirrorOutbox } from '@dataconnect/generated/react'
+
+export default function ListPendingMirrorOutboxComponent() {
+  // You don't have to do anything to "execute" the Query.
+  // Call the Query hook function to get a `UseQueryResult` object which holds the state of your Query.
+  const query = useListPendingMirrorOutbox();
+
+  // You can also pass in a `DataConnect` instance to the Query hook function.
+  const dataConnect = getDataConnect(connectorConfig);
+  const query = useListPendingMirrorOutbox(dataConnect);
+
+  // You can also pass in a `useDataConnectQueryOptions` object to the Query hook function.
+  const options = { staleTime: 5 * 1000 };
+  const query = useListPendingMirrorOutbox(options);
+
+  // You can also pass both a `DataConnect` instance and a `useDataConnectQueryOptions` object.
+  const dataConnect = getDataConnect(connectorConfig);
+  const options = { staleTime: 5 * 1000 };
+  const query = useListPendingMirrorOutbox(dataConnect, options);
+
+  // Then, you can render your component dynamically based on the status of the Query.
+  if (query.isPending) {
+    return <div>Loading...</div>;
+  }
+
+  if (query.isError) {
+    return <div>Error: {query.error.message}</div>;
+  }
+
+  // If the Query is successful, you can access the data returned using the `UseQueryResult.data` field.
+  if (query.isSuccess) {
+    console.log(query.data.mirrorOutboxes);
+  }
+  return <div>Query execution {query.isSuccess ? 'successful' : 'failed'}!</div>;
+}
+```
+
 # Mutations
 
 The React generated SDK provides Mutations hook functions that call and return [`useDataConnectMutation`](https://react-query-firebase.invertase.dev/react/data-connect/mutations) hooks from TanStack Query Firebase.
@@ -2659,6 +2817,7 @@ The `CreateUser` Mutation requires an argument of type `CreateUserVariables`, wh
 
 ```javascript
 export interface CreateUserVariables {
+  id: string;
   tenantId: string;
   businessId: string;
   email: string;
@@ -2666,7 +2825,7 @@ export interface CreateUserVariables {
   fullName?: string | null;
   department?: string | null;
   phoneNumber?: string | null;
-  accessCode?: string | null;
+  accessCodeHash?: string | null;
 }
 ```
 ### Return Type
@@ -2716,6 +2875,7 @@ export default function CreateUserComponent() {
   // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
   // The `useCreateUser` Mutation requires an argument of type `CreateUserVariables`:
   const createUserVars: CreateUserVariables = {
+    id: ..., 
     tenantId: ..., 
     businessId: ..., 
     email: ..., 
@@ -2723,11 +2883,11 @@ export default function CreateUserComponent() {
     fullName: ..., // optional
     department: ..., // optional
     phoneNumber: ..., // optional
-    accessCode: ..., // optional
+    accessCodeHash: ..., // optional
   };
   mutation.mutate(createUserVars);
   // Variables can be defined inline as well.
-  mutation.mutate({ tenantId: ..., businessId: ..., email: ..., role: ..., fullName: ..., department: ..., phoneNumber: ..., accessCode: ..., });
+  mutation.mutate({ id: ..., tenantId: ..., businessId: ..., email: ..., role: ..., fullName: ..., department: ..., phoneNumber: ..., accessCodeHash: ..., });
 
   // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
   const options = {
@@ -2775,7 +2935,7 @@ export interface UpdateUserVariables {
   fullName?: string | null;
   department?: string | null;
   phoneNumber?: string | null;
-  accessCode?: string | null;
+  accessCodeHash?: string | null;
 }
 ```
 ### Return Type
@@ -2833,11 +2993,11 @@ export default function UpdateUserComponent() {
     fullName: ..., // optional
     department: ..., // optional
     phoneNumber: ..., // optional
-    accessCode: ..., // optional
+    accessCodeHash: ..., // optional
   };
   mutation.mutate(updateUserVars);
   // Variables can be defined inline as well.
-  mutation.mutate({ id: ..., tenantId: ..., businessId: ..., email: ..., role: ..., fullName: ..., department: ..., phoneNumber: ..., accessCode: ..., });
+  mutation.mutate({ id: ..., tenantId: ..., businessId: ..., email: ..., role: ..., fullName: ..., department: ..., phoneNumber: ..., accessCodeHash: ..., });
 
   // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
   const options = {
@@ -2951,6 +3111,100 @@ export default function DeleteUserComponent() {
   // If the Mutation is successful, you can access the data returned using the `UseMutationResult.data` field.
   if (mutation.isSuccess) {
     console.log(mutation.data.user_delete);
+  }
+  return <div>Mutation execution {mutation.isSuccess ? 'successful' : 'failed'}!</div>;
+}
+```
+
+## ClearLegacyAccessCode
+You can execute the `ClearLegacyAccessCode` Mutation using the `UseMutationResult` object returned by the following Mutation hook function (which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts)):
+```javascript
+useClearLegacyAccessCode(options?: useDataConnectMutationOptions<ClearLegacyAccessCodeData, FirebaseError, ClearLegacyAccessCodeVariables>): UseDataConnectMutationResult<ClearLegacyAccessCodeData, ClearLegacyAccessCodeVariables>;
+```
+You can also pass in a `DataConnect` instance to the Mutation hook function.
+```javascript
+useClearLegacyAccessCode(dc: DataConnect, options?: useDataConnectMutationOptions<ClearLegacyAccessCodeData, FirebaseError, ClearLegacyAccessCodeVariables>): UseDataConnectMutationResult<ClearLegacyAccessCodeData, ClearLegacyAccessCodeVariables>;
+```
+
+### Variables
+The `ClearLegacyAccessCode` Mutation requires an argument of type `ClearLegacyAccessCodeVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+
+```javascript
+export interface ClearLegacyAccessCodeVariables {
+  id: string;
+}
+```
+### Return Type
+Recall that calling the `ClearLegacyAccessCode` Mutation hook function returns a `UseMutationResult` object. This object holds the state of your Mutation, including whether the Mutation is loading, has completed, or has succeeded/failed, among other things.
+
+To check the status of a Mutation, use the `UseMutationResult.status` field. You can also check for pending / success / error status using the `UseMutationResult.isPending`, `UseMutationResult.isSuccess`, and `UseMutationResult.isError` fields.
+
+To execute the Mutation, call `UseMutationResult.mutate()`. This function executes the Mutation, but does not return the data from the Mutation.
+
+To access the data returned by a Mutation, use the `UseMutationResult.data` field. The data for the `ClearLegacyAccessCode` Mutation is of type `ClearLegacyAccessCodeData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+```javascript
+export interface ClearLegacyAccessCodeData {
+  user_update?: User_Key | null;
+}
+```
+
+To learn more about the `UseMutationResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useMutation).
+
+### Using `ClearLegacyAccessCode`'s Mutation hook function
+
+```javascript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, ClearLegacyAccessCodeVariables } from '@dataconnect/generated';
+import { useClearLegacyAccessCode } from '@dataconnect/generated/react'
+
+export default function ClearLegacyAccessCodeComponent() {
+  // Call the Mutation hook function to get a `UseMutationResult` object which holds the state of your Mutation.
+  const mutation = useClearLegacyAccessCode();
+
+  // You can also pass in a `DataConnect` instance to the Mutation hook function.
+  const dataConnect = getDataConnect(connectorConfig);
+  const mutation = useClearLegacyAccessCode(dataConnect);
+
+  // You can also pass in a `useDataConnectMutationOptions` object to the Mutation hook function.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useClearLegacyAccessCode(options);
+
+  // You can also pass both a `DataConnect` instance and a `useDataConnectMutationOptions` object.
+  const dataConnect = getDataConnect(connectorConfig);
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useClearLegacyAccessCode(dataConnect, options);
+
+  // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
+  // The `useClearLegacyAccessCode` Mutation requires an argument of type `ClearLegacyAccessCodeVariables`:
+  const clearLegacyAccessCodeVars: ClearLegacyAccessCodeVariables = {
+    id: ..., 
+  };
+  mutation.mutate(clearLegacyAccessCodeVars);
+  // Variables can be defined inline as well.
+  mutation.mutate({ id: ..., });
+
+  // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  mutation.mutate(clearLegacyAccessCodeVars, options);
+
+  // Then, you can render your component dynamically based on the status of the Mutation.
+  if (mutation.isPending) {
+    return <div>Loading...</div>;
+  }
+
+  if (mutation.isError) {
+    return <div>Error: {mutation.error.message}</div>;
+  }
+
+  // If the Mutation is successful, you can access the data returned using the `UseMutationResult.data` field.
+  if (mutation.isSuccess) {
+    console.log(mutation.data.user_update);
   }
   return <div>Mutation execution {mutation.isSuccess ? 'successful' : 'failed'}!</div>;
 }
@@ -3282,7 +3536,7 @@ export interface ProvisionEmployeeUserVariables {
   fullName: string;
   department?: string | null;
   phoneNumber?: string | null;
-  accessCode: string;
+  accessCodeHash: string;
 }
 ```
 ### Return Type
@@ -3339,11 +3593,11 @@ export default function ProvisionEmployeeUserComponent() {
     fullName: ..., 
     department: ..., // optional
     phoneNumber: ..., // optional
-    accessCode: ..., 
+    accessCodeHash: ..., 
   };
   mutation.mutate(provisionEmployeeUserVars);
   // Variables can be defined inline as well.
-  mutation.mutate({ tenantId: ..., businessId: ..., email: ..., role: ..., fullName: ..., department: ..., phoneNumber: ..., accessCode: ..., });
+  mutation.mutate({ tenantId: ..., businessId: ..., email: ..., role: ..., fullName: ..., department: ..., phoneNumber: ..., accessCodeHash: ..., });
 
   // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
   const options = {
@@ -3385,7 +3639,6 @@ The `CompleteAssignedTask` Mutation requires an argument of type `CompleteAssign
 export interface CompleteAssignedTaskVariables {
   taskId: string;
   userId: string;
-  accessCode: string;
 }
 ```
 ### Return Type
@@ -3437,11 +3690,10 @@ export default function CompleteAssignedTaskComponent() {
   const completeAssignedTaskVars: CompleteAssignedTaskVariables = {
     taskId: ..., 
     userId: ..., 
-    accessCode: ..., 
   };
   mutation.mutate(completeAssignedTaskVars);
   // Variables can be defined inline as well.
-  mutation.mutate({ taskId: ..., userId: ..., accessCode: ..., });
+  mutation.mutate({ taskId: ..., userId: ..., });
 
   // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
   const options = {
@@ -5740,210 +5992,6 @@ export default function CreateActivityLogComponent() {
 }
 ```
 
-## UpdateActivityLog
-You can execute the `UpdateActivityLog` Mutation using the `UseMutationResult` object returned by the following Mutation hook function (which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts)):
-```javascript
-useUpdateActivityLog(options?: useDataConnectMutationOptions<UpdateActivityLogData, FirebaseError, UpdateActivityLogVariables>): UseDataConnectMutationResult<UpdateActivityLogData, UpdateActivityLogVariables>;
-```
-You can also pass in a `DataConnect` instance to the Mutation hook function.
-```javascript
-useUpdateActivityLog(dc: DataConnect, options?: useDataConnectMutationOptions<UpdateActivityLogData, FirebaseError, UpdateActivityLogVariables>): UseDataConnectMutationResult<UpdateActivityLogData, UpdateActivityLogVariables>;
-```
-
-### Variables
-The `UpdateActivityLog` Mutation requires an argument of type `UpdateActivityLogVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
-
-```javascript
-export interface UpdateActivityLogVariables {
-  id: string;
-  tenantId?: string | null;
-  businessId?: string | null;
-  userId?: string | null;
-  userName?: string | null;
-  actionType?: string | null;
-  module?: string | null;
-  description?: string | null;
-  recordId?: string | null;
-}
-```
-### Return Type
-Recall that calling the `UpdateActivityLog` Mutation hook function returns a `UseMutationResult` object. This object holds the state of your Mutation, including whether the Mutation is loading, has completed, or has succeeded/failed, among other things.
-
-To check the status of a Mutation, use the `UseMutationResult.status` field. You can also check for pending / success / error status using the `UseMutationResult.isPending`, `UseMutationResult.isSuccess`, and `UseMutationResult.isError` fields.
-
-To execute the Mutation, call `UseMutationResult.mutate()`. This function executes the Mutation, but does not return the data from the Mutation.
-
-To access the data returned by a Mutation, use the `UseMutationResult.data` field. The data for the `UpdateActivityLog` Mutation is of type `UpdateActivityLogData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
-```javascript
-export interface UpdateActivityLogData {
-  activityLog_update?: ActivityLog_Key | null;
-}
-```
-
-To learn more about the `UseMutationResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useMutation).
-
-### Using `UpdateActivityLog`'s Mutation hook function
-
-```javascript
-import { getDataConnect } from 'firebase/data-connect';
-import { connectorConfig, UpdateActivityLogVariables } from '@dataconnect/generated';
-import { useUpdateActivityLog } from '@dataconnect/generated/react'
-
-export default function UpdateActivityLogComponent() {
-  // Call the Mutation hook function to get a `UseMutationResult` object which holds the state of your Mutation.
-  const mutation = useUpdateActivityLog();
-
-  // You can also pass in a `DataConnect` instance to the Mutation hook function.
-  const dataConnect = getDataConnect(connectorConfig);
-  const mutation = useUpdateActivityLog(dataConnect);
-
-  // You can also pass in a `useDataConnectMutationOptions` object to the Mutation hook function.
-  const options = {
-    onSuccess: () => { console.log('Mutation succeeded!'); }
-  };
-  const mutation = useUpdateActivityLog(options);
-
-  // You can also pass both a `DataConnect` instance and a `useDataConnectMutationOptions` object.
-  const dataConnect = getDataConnect(connectorConfig);
-  const options = {
-    onSuccess: () => { console.log('Mutation succeeded!'); }
-  };
-  const mutation = useUpdateActivityLog(dataConnect, options);
-
-  // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
-  // The `useUpdateActivityLog` Mutation requires an argument of type `UpdateActivityLogVariables`:
-  const updateActivityLogVars: UpdateActivityLogVariables = {
-    id: ..., 
-    tenantId: ..., // optional
-    businessId: ..., // optional
-    userId: ..., // optional
-    userName: ..., // optional
-    actionType: ..., // optional
-    module: ..., // optional
-    description: ..., // optional
-    recordId: ..., // optional
-  };
-  mutation.mutate(updateActivityLogVars);
-  // Variables can be defined inline as well.
-  mutation.mutate({ id: ..., tenantId: ..., businessId: ..., userId: ..., userName: ..., actionType: ..., module: ..., description: ..., recordId: ..., });
-
-  // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
-  const options = {
-    onSuccess: () => { console.log('Mutation succeeded!'); }
-  };
-  mutation.mutate(updateActivityLogVars, options);
-
-  // Then, you can render your component dynamically based on the status of the Mutation.
-  if (mutation.isPending) {
-    return <div>Loading...</div>;
-  }
-
-  if (mutation.isError) {
-    return <div>Error: {mutation.error.message}</div>;
-  }
-
-  // If the Mutation is successful, you can access the data returned using the `UseMutationResult.data` field.
-  if (mutation.isSuccess) {
-    console.log(mutation.data.activityLog_update);
-  }
-  return <div>Mutation execution {mutation.isSuccess ? 'successful' : 'failed'}!</div>;
-}
-```
-
-## DeleteActivityLog
-You can execute the `DeleteActivityLog` Mutation using the `UseMutationResult` object returned by the following Mutation hook function (which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts)):
-```javascript
-useDeleteActivityLog(options?: useDataConnectMutationOptions<DeleteActivityLogData, FirebaseError, DeleteActivityLogVariables>): UseDataConnectMutationResult<DeleteActivityLogData, DeleteActivityLogVariables>;
-```
-You can also pass in a `DataConnect` instance to the Mutation hook function.
-```javascript
-useDeleteActivityLog(dc: DataConnect, options?: useDataConnectMutationOptions<DeleteActivityLogData, FirebaseError, DeleteActivityLogVariables>): UseDataConnectMutationResult<DeleteActivityLogData, DeleteActivityLogVariables>;
-```
-
-### Variables
-The `DeleteActivityLog` Mutation requires an argument of type `DeleteActivityLogVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
-
-```javascript
-export interface DeleteActivityLogVariables {
-  id: string;
-}
-```
-### Return Type
-Recall that calling the `DeleteActivityLog` Mutation hook function returns a `UseMutationResult` object. This object holds the state of your Mutation, including whether the Mutation is loading, has completed, or has succeeded/failed, among other things.
-
-To check the status of a Mutation, use the `UseMutationResult.status` field. You can also check for pending / success / error status using the `UseMutationResult.isPending`, `UseMutationResult.isSuccess`, and `UseMutationResult.isError` fields.
-
-To execute the Mutation, call `UseMutationResult.mutate()`. This function executes the Mutation, but does not return the data from the Mutation.
-
-To access the data returned by a Mutation, use the `UseMutationResult.data` field. The data for the `DeleteActivityLog` Mutation is of type `DeleteActivityLogData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
-```javascript
-export interface DeleteActivityLogData {
-  activityLog_delete?: ActivityLog_Key | null;
-}
-```
-
-To learn more about the `UseMutationResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useMutation).
-
-### Using `DeleteActivityLog`'s Mutation hook function
-
-```javascript
-import { getDataConnect } from 'firebase/data-connect';
-import { connectorConfig, DeleteActivityLogVariables } from '@dataconnect/generated';
-import { useDeleteActivityLog } from '@dataconnect/generated/react'
-
-export default function DeleteActivityLogComponent() {
-  // Call the Mutation hook function to get a `UseMutationResult` object which holds the state of your Mutation.
-  const mutation = useDeleteActivityLog();
-
-  // You can also pass in a `DataConnect` instance to the Mutation hook function.
-  const dataConnect = getDataConnect(connectorConfig);
-  const mutation = useDeleteActivityLog(dataConnect);
-
-  // You can also pass in a `useDataConnectMutationOptions` object to the Mutation hook function.
-  const options = {
-    onSuccess: () => { console.log('Mutation succeeded!'); }
-  };
-  const mutation = useDeleteActivityLog(options);
-
-  // You can also pass both a `DataConnect` instance and a `useDataConnectMutationOptions` object.
-  const dataConnect = getDataConnect(connectorConfig);
-  const options = {
-    onSuccess: () => { console.log('Mutation succeeded!'); }
-  };
-  const mutation = useDeleteActivityLog(dataConnect, options);
-
-  // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
-  // The `useDeleteActivityLog` Mutation requires an argument of type `DeleteActivityLogVariables`:
-  const deleteActivityLogVars: DeleteActivityLogVariables = {
-    id: ..., 
-  };
-  mutation.mutate(deleteActivityLogVars);
-  // Variables can be defined inline as well.
-  mutation.mutate({ id: ..., });
-
-  // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
-  const options = {
-    onSuccess: () => { console.log('Mutation succeeded!'); }
-  };
-  mutation.mutate(deleteActivityLogVars, options);
-
-  // Then, you can render your component dynamically based on the status of the Mutation.
-  if (mutation.isPending) {
-    return <div>Loading...</div>;
-  }
-
-  if (mutation.isError) {
-    return <div>Error: {mutation.error.message}</div>;
-  }
-
-  // If the Mutation is successful, you can access the data returned using the `UseMutationResult.data` field.
-  if (mutation.isSuccess) {
-    console.log(mutation.data.activityLog_delete);
-  }
-  return <div>Mutation execution {mutation.isSuccess ? 'successful' : 'failed'}!</div>;
-}
-```
-
 ## CreateAiQuery
 You can execute the `CreateAiQuery` Mutation using the `UseMutationResult` object returned by the following Mutation hook function (which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts)):
 ```javascript
@@ -6849,6 +6897,214 @@ export default function DeleteTaskComponent() {
   // If the Mutation is successful, you can access the data returned using the `UseMutationResult.data` field.
   if (mutation.isSuccess) {
     console.log(mutation.data.task_delete);
+  }
+  return <div>Mutation execution {mutation.isSuccess ? 'successful' : 'failed'}!</div>;
+}
+```
+
+## CreateMirrorOutbox
+You can execute the `CreateMirrorOutbox` Mutation using the `UseMutationResult` object returned by the following Mutation hook function (which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts)):
+```javascript
+useCreateMirrorOutbox(options?: useDataConnectMutationOptions<CreateMirrorOutboxData, FirebaseError, CreateMirrorOutboxVariables>): UseDataConnectMutationResult<CreateMirrorOutboxData, CreateMirrorOutboxVariables>;
+```
+You can also pass in a `DataConnect` instance to the Mutation hook function.
+```javascript
+useCreateMirrorOutbox(dc: DataConnect, options?: useDataConnectMutationOptions<CreateMirrorOutboxData, FirebaseError, CreateMirrorOutboxVariables>): UseDataConnectMutationResult<CreateMirrorOutboxData, CreateMirrorOutboxVariables>;
+```
+
+### Variables
+The `CreateMirrorOutbox` Mutation requires an argument of type `CreateMirrorOutboxVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+
+```javascript
+export interface CreateMirrorOutboxVariables {
+  tenantId: string;
+  businessId: string;
+  entityType: string;
+  operation: string;
+  recordId: string;
+  payload: unknown;
+}
+```
+### Return Type
+Recall that calling the `CreateMirrorOutbox` Mutation hook function returns a `UseMutationResult` object. This object holds the state of your Mutation, including whether the Mutation is loading, has completed, or has succeeded/failed, among other things.
+
+To check the status of a Mutation, use the `UseMutationResult.status` field. You can also check for pending / success / error status using the `UseMutationResult.isPending`, `UseMutationResult.isSuccess`, and `UseMutationResult.isError` fields.
+
+To execute the Mutation, call `UseMutationResult.mutate()`. This function executes the Mutation, but does not return the data from the Mutation.
+
+To access the data returned by a Mutation, use the `UseMutationResult.data` field. The data for the `CreateMirrorOutbox` Mutation is of type `CreateMirrorOutboxData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+```javascript
+export interface CreateMirrorOutboxData {
+  mirrorOutbox_insert: MirrorOutbox_Key;
+}
+```
+
+To learn more about the `UseMutationResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useMutation).
+
+### Using `CreateMirrorOutbox`'s Mutation hook function
+
+```javascript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, CreateMirrorOutboxVariables } from '@dataconnect/generated';
+import { useCreateMirrorOutbox } from '@dataconnect/generated/react'
+
+export default function CreateMirrorOutboxComponent() {
+  // Call the Mutation hook function to get a `UseMutationResult` object which holds the state of your Mutation.
+  const mutation = useCreateMirrorOutbox();
+
+  // You can also pass in a `DataConnect` instance to the Mutation hook function.
+  const dataConnect = getDataConnect(connectorConfig);
+  const mutation = useCreateMirrorOutbox(dataConnect);
+
+  // You can also pass in a `useDataConnectMutationOptions` object to the Mutation hook function.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useCreateMirrorOutbox(options);
+
+  // You can also pass both a `DataConnect` instance and a `useDataConnectMutationOptions` object.
+  const dataConnect = getDataConnect(connectorConfig);
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useCreateMirrorOutbox(dataConnect, options);
+
+  // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
+  // The `useCreateMirrorOutbox` Mutation requires an argument of type `CreateMirrorOutboxVariables`:
+  const createMirrorOutboxVars: CreateMirrorOutboxVariables = {
+    tenantId: ..., 
+    businessId: ..., 
+    entityType: ..., 
+    operation: ..., 
+    recordId: ..., 
+    payload: ..., 
+  };
+  mutation.mutate(createMirrorOutboxVars);
+  // Variables can be defined inline as well.
+  mutation.mutate({ tenantId: ..., businessId: ..., entityType: ..., operation: ..., recordId: ..., payload: ..., });
+
+  // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  mutation.mutate(createMirrorOutboxVars, options);
+
+  // Then, you can render your component dynamically based on the status of the Mutation.
+  if (mutation.isPending) {
+    return <div>Loading...</div>;
+  }
+
+  if (mutation.isError) {
+    return <div>Error: {mutation.error.message}</div>;
+  }
+
+  // If the Mutation is successful, you can access the data returned using the `UseMutationResult.data` field.
+  if (mutation.isSuccess) {
+    console.log(mutation.data.mirrorOutbox_insert);
+  }
+  return <div>Mutation execution {mutation.isSuccess ? 'successful' : 'failed'}!</div>;
+}
+```
+
+## UpdateMirrorOutbox
+You can execute the `UpdateMirrorOutbox` Mutation using the `UseMutationResult` object returned by the following Mutation hook function (which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts)):
+```javascript
+useUpdateMirrorOutbox(options?: useDataConnectMutationOptions<UpdateMirrorOutboxData, FirebaseError, UpdateMirrorOutboxVariables>): UseDataConnectMutationResult<UpdateMirrorOutboxData, UpdateMirrorOutboxVariables>;
+```
+You can also pass in a `DataConnect` instance to the Mutation hook function.
+```javascript
+useUpdateMirrorOutbox(dc: DataConnect, options?: useDataConnectMutationOptions<UpdateMirrorOutboxData, FirebaseError, UpdateMirrorOutboxVariables>): UseDataConnectMutationResult<UpdateMirrorOutboxData, UpdateMirrorOutboxVariables>;
+```
+
+### Variables
+The `UpdateMirrorOutbox` Mutation requires an argument of type `UpdateMirrorOutboxVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+
+```javascript
+export interface UpdateMirrorOutboxVariables {
+  id: string;
+  status: string;
+  attempts: number;
+  nextAttemptAt: TimestampString;
+  lastError?: string | null;
+  deliveredAt?: TimestampString | null;
+}
+```
+### Return Type
+Recall that calling the `UpdateMirrorOutbox` Mutation hook function returns a `UseMutationResult` object. This object holds the state of your Mutation, including whether the Mutation is loading, has completed, or has succeeded/failed, among other things.
+
+To check the status of a Mutation, use the `UseMutationResult.status` field. You can also check for pending / success / error status using the `UseMutationResult.isPending`, `UseMutationResult.isSuccess`, and `UseMutationResult.isError` fields.
+
+To execute the Mutation, call `UseMutationResult.mutate()`. This function executes the Mutation, but does not return the data from the Mutation.
+
+To access the data returned by a Mutation, use the `UseMutationResult.data` field. The data for the `UpdateMirrorOutbox` Mutation is of type `UpdateMirrorOutboxData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+```javascript
+export interface UpdateMirrorOutboxData {
+  mirrorOutbox_update?: MirrorOutbox_Key | null;
+}
+```
+
+To learn more about the `UseMutationResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useMutation).
+
+### Using `UpdateMirrorOutbox`'s Mutation hook function
+
+```javascript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, UpdateMirrorOutboxVariables } from '@dataconnect/generated';
+import { useUpdateMirrorOutbox } from '@dataconnect/generated/react'
+
+export default function UpdateMirrorOutboxComponent() {
+  // Call the Mutation hook function to get a `UseMutationResult` object which holds the state of your Mutation.
+  const mutation = useUpdateMirrorOutbox();
+
+  // You can also pass in a `DataConnect` instance to the Mutation hook function.
+  const dataConnect = getDataConnect(connectorConfig);
+  const mutation = useUpdateMirrorOutbox(dataConnect);
+
+  // You can also pass in a `useDataConnectMutationOptions` object to the Mutation hook function.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useUpdateMirrorOutbox(options);
+
+  // You can also pass both a `DataConnect` instance and a `useDataConnectMutationOptions` object.
+  const dataConnect = getDataConnect(connectorConfig);
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useUpdateMirrorOutbox(dataConnect, options);
+
+  // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
+  // The `useUpdateMirrorOutbox` Mutation requires an argument of type `UpdateMirrorOutboxVariables`:
+  const updateMirrorOutboxVars: UpdateMirrorOutboxVariables = {
+    id: ..., 
+    status: ..., 
+    attempts: ..., 
+    nextAttemptAt: ..., 
+    lastError: ..., // optional
+    deliveredAt: ..., // optional
+  };
+  mutation.mutate(updateMirrorOutboxVars);
+  // Variables can be defined inline as well.
+  mutation.mutate({ id: ..., status: ..., attempts: ..., nextAttemptAt: ..., lastError: ..., deliveredAt: ..., });
+
+  // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  mutation.mutate(updateMirrorOutboxVars, options);
+
+  // Then, you can render your component dynamically based on the status of the Mutation.
+  if (mutation.isPending) {
+    return <div>Loading...</div>;
+  }
+
+  if (mutation.isError) {
+    return <div>Error: {mutation.error.message}</div>;
+  }
+
+  // If the Mutation is successful, you can access the data returned using the `UseMutationResult.data` field.
+  if (mutation.isSuccess) {
+    console.log(mutation.data.mirrorOutbox_update);
   }
   return <div>Mutation execution {mutation.isSuccess ? 'successful' : 'failed'}!</div>;
 }

@@ -16,38 +16,18 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { z } from 'zod';
 import { buildSystemMessage } from '@/ai/system-prompt';
 import { fetchTenantContext } from '@/ai/ai-context';
-import { createAiQuery } from '@dataconnect/generated';
-import { mirrorRecord } from '@/lib/server/neon';
-import { authorizeRequest } from '@/lib/server/firebase-token';
+import { adminDataConnect, authorizeRequest } from '@/lib/server/firebase-token';
+import { requirePermission } from '@/lib/server/authorization';
+import { consumeRateLimit } from '@/lib/server/rate-limit';
 import { searchDocuments } from '@/lib/server/document-intelligence';
 import { FREE_MODEL_PIPELINE } from '@/lib/server/openrouter';
+import { QueryRequestSchema } from '@/lib/server/ai-request';
 
 // ---------------------------------------------------------------------------
 // Request Validation Schema
 // ---------------------------------------------------------------------------
-
-const QueryRequestSchema = z.object({
-  queryText: z
-    .string()
-    .min(1, 'Query text is required')
-    .max(2000, 'Query text must be under 2000 characters'),
-  tenantId: z.string().min(1, 'Tenant ID is required'),
-  businessId: z.string().min(1, 'Business ID is required'),
-  userId: z.string().min(1, 'User ID is required'),
-  role: z.enum([
-    'Platform Super Admin',
-    'Business Owner',
-    'Manager',
-    'Accountant',
-    'HR Officer',
-    'Staff',
-    'Viewer',
-  ]),
-  userName: z.string().optional().default('Unknown User'),
-});
 
 // ---------------------------------------------------------------------------
 // Resilient LLM Fallback Pipeline Configuration
@@ -102,7 +82,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { queryText, tenantId, businessId, userId, role } = validation.data;
+    const { queryText } = validation.data;
     let authorized;
     try {
       authorized = await authorizeRequest(request);
@@ -113,12 +93,11 @@ export async function POST(request: NextRequest) {
         { status: 401 },
       );
     }
-    // `userId` is the SQL Connect profile ID while `authorized.uid` is the
-    // Firebase Auth ID. Company scope is resolved server-side from the verified
-    // Firebase identity, so those two different ID namespaces must not be compared.
-    if (authorized.tenantId !== tenantId || authorized.businessId !== businessId) {
-      return NextResponse.json({ error: 'Cross-company AI access denied.' }, { status: 403 });
+    requirePermission(authorized, 'ai:use');
+    if (!await consumeRateLimit({ request, bucket: `ai:${authorized.uid}`, limit: 20, windowSeconds: 60 })) {
+      return NextResponse.json({ error: 'AI request limit reached. Try again shortly.' }, { status: 429 });
     }
+    const { tenantId, businessId, uid: userId, role } = authorized;
 
     console.log(
       `[AI Query] Processing query for tenant=${tenantId} business=${businessId} role=${role}`,
@@ -185,6 +164,7 @@ export async function POST(request: NextRequest) {
             max_tokens: 1500,
             top_p: 0.9,
           }),
+          signal: AbortSignal.timeout(30_000),
         });
 
         // Handle error status codes (429, 400, 500, etc.) by logging and attempting next fallback
@@ -236,20 +216,19 @@ export async function POST(request: NextRequest) {
     // 6. Log query to AiQuery table in Data Connect (Non-blocking)
     // ------------------------------------------------------------------
     try {
-      const aiLog = await createAiQuery({
+      const aiLog = await adminDataConnect().executeMutation<{ aiQuery_insert: { id: string } }, Record<string, unknown>>('CreateAiQuery', {
         tenantId,
         businessId,
         userId,
         queryText,
         response: aiResponseText.substring(0, 5000), // Cap response size
       });
-      if (process.env.DUAL_DATABASE_WRITE === 'true') {
-        await mirrorRecord({
-          entity: 'ai_query',
-          operation: 'upsert',
-          recordId: aiLog.data.aiQuery_insert.id,
+      await adminDataConnect().executeMutation('CreateMirrorOutbox', {
           tenantId,
           businessId,
+          entityType: 'ai_query',
+          operation: 'upsert',
+          recordId: aiLog.data.aiQuery_insert.id,
           payload: {
             id: aiLog.data.aiQuery_insert.id,
             tenantId,
@@ -259,8 +238,7 @@ export async function POST(request: NextRequest) {
             response: aiResponseText.substring(0, 5000),
             timestamp: new Date().toISOString(),
           },
-        });
-      }
+      });
     } catch (logError) {
       // Non-fatal: log the error but still return the AI response to user
       console.error('[AI Query] Failed to log AI query to database:', logError);

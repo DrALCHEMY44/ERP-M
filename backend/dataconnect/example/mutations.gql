@@ -9,7 +9,7 @@ mutation CreateTenant(
   $logoUrl: String
   $subscriptionTier: String
   $status: String
-) @auth(level: USER, insecureReason: "Multi-tenant ERP: tenant isolation enforced at the application layer") {
+) @auth(level: NO_ACCESS) {
   tenant_insert(data: {
     name: $name
     businessSector: $businessSector
@@ -33,7 +33,7 @@ mutation UpdateTenant(
   $logoUrl: String
   $subscriptionTier: String
   $status: String
-) @auth(level: USER, insecureReason: "Multi-tenant ERP: tenant isolation enforced at the application layer") {
+) @auth(level: NO_ACCESS) {
   tenant_update(id: $id, data: {
     name: $name
     businessSector: $businessSector
@@ -46,13 +46,14 @@ mutation UpdateTenant(
   })
 }
 
-mutation DeleteTenant($id: String!) @auth(level: USER, insecureReason: "Multi-tenant ERP: tenant isolation enforced at the application layer") {
+mutation DeleteTenant($id: String!) @auth(level: NO_ACCESS) {
   tenant_delete(id: $id)
 }
 
 # --- User ---
 
 mutation CreateUser(
+  $id: String!
   $tenantId: String!
   $businessId: String!
   $email: String!
@@ -60,9 +61,10 @@ mutation CreateUser(
   $fullName: String
   $department: String
   $phoneNumber: String
-  $accessCode: String
-) @auth(level: USER, insecureReason: "Multi-tenant ERP: tenant isolation enforced at the application layer") {
+  $accessCodeHash: String
+) @auth(level: NO_ACCESS) {
   user_insert(data: {
+    id: $id
     tenantId: $tenantId
     businessId: $businessId
     email: $email
@@ -71,7 +73,7 @@ mutation CreateUser(
     department: $department
     phoneNumber: $phoneNumber
     createdAt_expr: "request.time"
-    accessCode: $accessCode
+    accessCodeHash: $accessCodeHash
   })
 }
 
@@ -84,8 +86,8 @@ mutation UpdateUser(
   $fullName: String
   $department: String
   $phoneNumber: String
-  $accessCode: String
-) @auth(level: USER, insecureReason: "Multi-tenant ERP: tenant isolation enforced at the application layer") {
+  $accessCodeHash: String
+) @auth(level: NO_ACCESS) {
   user_update(id: $id, data: {
     tenantId: $tenantId
     businessId: $businessId
@@ -94,12 +96,16 @@ mutation UpdateUser(
     fullName: $fullName
     department: $department
     phoneNumber: $phoneNumber
-    accessCode: $accessCode
+    accessCodeHash: $accessCodeHash
   })
 }
 
-mutation DeleteUser($id: String!) @auth(level: USER, insecureReason: "Multi-tenant ERP: tenant isolation enforced at the application layer") {
+mutation DeleteUser($id: String!) @auth(level: NO_ACCESS) {
   user_delete(id: $id)
+}
+
+mutation ClearLegacyAccessCode($id: String!) @auth(level: NO_ACCESS) {
+  user_update(id: $id, data: { accessCode: null })
 }
 
 # --- Business ---
@@ -111,7 +117,7 @@ mutation CreateBusiness(
   $businessType: String
   $region: String
   $code: String!
-) @auth(level: USER, insecureReason: "Multi-tenant ERP: tenant isolation enforced at the application layer") {
+) @auth(level: NO_ACCESS) {
   business_insert(data: {
     tenantId: $tenantId
     name: $name
@@ -131,7 +137,7 @@ mutation UpdateBusiness(
   $businessType: String
   $region: String
   $code: String
-) @auth(level: USER, insecureReason: "Multi-tenant ERP: tenant isolation enforced at the application layer") {
+) @auth(level: NO_ACCESS) {
   business_update(id: $id, data: {
     tenantId: $tenantId
     name: $name
@@ -142,7 +148,7 @@ mutation UpdateBusiness(
   })
 }
 
-mutation DeleteBusiness($id: String!) @auth(level: USER, insecureReason: "Multi-tenant ERP: tenant isolation enforced at the application layer") {
+mutation DeleteBusiness($id: String!) @auth(level: NO_ACCESS) {
   business_delete(id: $id)
 }
 
@@ -156,8 +162,8 @@ mutation ProvisionEmployeeUser(
   $fullName: String!
   $department: String
   $phoneNumber: String
-  $accessCode: String!
-) @auth(level: USER) {
+  $accessCodeHash: String!
+) @auth(level: NO_ACCESS) {
   user_insert(data: {
     id_expr: "uuidV4()"
     tenantId: $tenantId
@@ -167,7 +173,7 @@ mutation ProvisionEmployeeUser(
     fullName: $fullName
     department: $department
     phoneNumber: $phoneNumber
-    accessCode: $accessCode
+    accessCodeHash: $accessCodeHash
     createdAt_expr: "request.time"
   })
 }
@@ -175,12 +181,9 @@ mutation ProvisionEmployeeUser(
 mutation CompleteAssignedTask(
   $taskId: String!
   $userId: String!
-  $accessCode: String!
-) @auth(level: PUBLIC, insecureReason: "Access code and task assignment are checked transactionally") @transaction {
+) @auth(level: NO_ACCESS) @transaction {
   query @redact {
-    user(id: $userId) @check(expr: "this != null", message: "Employee account not found") {
-      accessCode @check(expr: "this == vars.accessCode", message: "Invalid employee code")
-    }
+    user(id: $userId) @check(expr: "this != null", message: "Employee account not found") { id }
     task(id: $taskId) @check(expr: "this != null", message: "Task not found") {
       assignedTo {
         id @check(expr: "this == vars.userId", message: "Task is not assigned to this employee")
@@ -206,7 +209,7 @@ mutation CreateProduct(
   $expiryDate: Date
   $lowStockLevel: Int
   $createdBy: String!
-) @auth(level: USER, insecureReason: "Multi-tenant ERP: tenant isolation enforced at the application layer") {
+) @auth(level: NO_ACCESS) {
   product_insert(data: {
     tenantId: $tenantId
     businessId: $businessId
@@ -235,7 +238,7 @@ mutation UpdateProduct(
   $expiryDate: Date
   $lowStockLevel: Int
   $createdBy: String
-) @auth(level: USER, insecureReason: "Multi-tenant ERP: tenant isolation enforced at the application layer") {
+) @auth(level: NO_ACCESS) {
   product_update(id: $id, data: {
     tenantId: $tenantId
     businessId: $businessId
@@ -251,7 +254,7 @@ mutation UpdateProduct(
   })
 }
 
-mutation DeleteProduct($id: String!) @auth(level: USER, insecureReason: "Multi-tenant ERP: tenant isolation enforced at the application layer") {
+mutation DeleteProduct($id: String!) @auth(level: NO_ACCESS) {
   product_delete(id: $id)
 }
 
@@ -266,7 +269,7 @@ mutation CreateTransaction(
   $category: String
   $receiptUrl: String
   $recordedBy: String!
-) @auth(level: USER, insecureReason: "Multi-tenant ERP: tenant isolation enforced at the application layer") {
+) @auth(level: NO_ACCESS) {
   transaction_insert(data: {
     tenantId: $tenantId
     businessId: $businessId
@@ -290,7 +293,7 @@ mutation UpdateTransaction(
   $category: String
   $receiptUrl: String
   $recordedBy: String
-) @auth(level: USER, insecureReason: "Multi-tenant ERP: tenant isolation enforced at the application layer") {
+) @auth(level: NO_ACCESS) {
   transaction_update(id: $id, data: {
     tenantId: $tenantId
     businessId: $businessId
@@ -303,7 +306,7 @@ mutation UpdateTransaction(
   })
 }
 
-mutation DeleteTransaction($id: String!) @auth(level: USER, insecureReason: "Multi-tenant ERP: tenant isolation enforced at the application layer") {
+mutation DeleteTransaction($id: String!) @auth(level: NO_ACCESS) {
   transaction_delete(id: $id)
 }
 
@@ -315,7 +318,7 @@ mutation CreateTaskComment(
   $taskId: String!
   $userId: String!
   $content: String!
-) @auth(level: USER, insecureReason: "Multi-tenant ERP: tenant isolation enforced at the application layer") {
+) @auth(level: NO_ACCESS) {
   taskComment_insert(data: {
     tenantId: $tenantId
     businessId: $businessId
@@ -333,7 +336,7 @@ mutation UpdateTaskComment(
   $taskId: String
   $userId: String
   $content: String
-) @auth(level: USER, insecureReason: "Multi-tenant ERP: tenant isolation enforced at the application layer") {
+) @auth(level: NO_ACCESS) {
   taskComment_update(id: $id, data: {
     tenantId: $tenantId
     businessId: $businessId
@@ -343,7 +346,7 @@ mutation UpdateTaskComment(
   })
 }
 
-mutation DeleteTaskComment($id: String!) @auth(level: USER, insecureReason: "Multi-tenant ERP: tenant isolation enforced at the application layer") {
+mutation DeleteTaskComment($id: String!) @auth(level: NO_ACCESS) {
   taskComment_delete(id: $id)
 }
 
@@ -360,7 +363,7 @@ mutation CreateEmployee(
   $startDate: Date
   $status: String
   $code: String
-) @auth(level: USER, insecureReason: "Multi-tenant ERP: tenant isolation enforced at the application layer") {
+) @auth(level: NO_ACCESS) {
   employee_insert(data: {
     tenantId: $tenantId
     businessId: $businessId
@@ -387,7 +390,7 @@ mutation UpdateEmployee(
   $department: String
   $startDate: Date
   $status: String
-) @auth(level: USER, insecureReason: "Multi-tenant ERP: tenant isolation enforced at the application layer") {
+) @auth(level: NO_ACCESS) {
   employee_update(id: $id, data: {
     tenantId: $tenantId
     businessId: $businessId
@@ -401,7 +404,7 @@ mutation UpdateEmployee(
   })
 }
 
-mutation DeleteEmployee($id: String!) @auth(level: USER, insecureReason: "Multi-tenant ERP: tenant isolation enforced at the application layer") {
+mutation DeleteEmployee($id: String!) @auth(level: NO_ACCESS) {
   employee_delete(id: $id)
 }
 
@@ -416,7 +419,7 @@ mutation CreateCustomer(
   $location: String
   $totalOrders: Int
   $totalSpent: Float
-) @auth(level: USER, insecureReason: "Multi-tenant ERP: tenant isolation enforced at the application layer") {
+) @auth(level: NO_ACCESS) {
   customer_insert(data: {
     tenantId: $tenantId
     businessId: $businessId
@@ -440,7 +443,7 @@ mutation UpdateCustomer(
   $location: String
   $totalOrders: Int
   $totalSpent: Float
-) @auth(level: USER, insecureReason: "Multi-tenant ERP: tenant isolation enforced at the application layer") {
+) @auth(level: NO_ACCESS) {
   customer_update(id: $id, data: {
     tenantId: $tenantId
     businessId: $businessId
@@ -453,7 +456,7 @@ mutation UpdateCustomer(
   })
 }
 
-mutation DeleteCustomer($id: String!) @auth(level: USER, insecureReason: "Multi-tenant ERP: tenant isolation enforced at the application layer") {
+mutation DeleteCustomer($id: String!) @auth(level: NO_ACCESS) {
   customer_delete(id: $id)
 }
 
@@ -465,7 +468,7 @@ mutation CreateSupplier(
   $supplierName: String!
   $phoneNumber: String
   $email: String
-) @auth(level: USER, insecureReason: "Multi-tenant ERP: tenant isolation enforced at the application layer") {
+) @auth(level: NO_ACCESS) {
   supplier_insert(data: {
     tenantId: $tenantId
     businessId: $businessId
@@ -483,7 +486,7 @@ mutation UpdateSupplier(
   $supplierName: String
   $phoneNumber: String
   $email: String
-) @auth(level: USER, insecureReason: "Multi-tenant ERP: tenant isolation enforced at the application layer") {
+) @auth(level: NO_ACCESS) {
   supplier_update(id: $id, data: {
     tenantId: $tenantId
     businessId: $businessId
@@ -493,7 +496,7 @@ mutation UpdateSupplier(
   })
 }
 
-mutation DeleteSupplier($id: String!) @auth(level: USER, insecureReason: "Multi-tenant ERP: tenant isolation enforced at the application layer") {
+mutation DeleteSupplier($id: String!) @auth(level: NO_ACCESS) {
   supplier_delete(id: $id)
 }
 
@@ -506,7 +509,7 @@ mutation CreateDocument(
   $documentType: String!
   $fileUrl: String!
   $uploadedBy: String!
-) @auth(level: USER, insecureReason: "Multi-tenant ERP: tenant isolation enforced at the application layer") {
+) @auth(level: NO_ACCESS) {
   document_insert(data: {
     tenantId: $tenantId
     businessId: $businessId
@@ -526,7 +529,7 @@ mutation UpdateDocument(
   $documentType: String
   $fileUrl: String
   $uploadedBy: String
-) @auth(level: USER, insecureReason: "Multi-tenant ERP: tenant isolation enforced at the application layer") {
+) @auth(level: NO_ACCESS) {
   document_update(id: $id, data: {
     tenantId: $tenantId
     businessId: $businessId
@@ -537,7 +540,7 @@ mutation UpdateDocument(
   })
 }
 
-mutation DeleteDocument($id: String!) @auth(level: USER, insecureReason: "Multi-tenant ERP: tenant isolation enforced at the application layer") {
+mutation DeleteDocument($id: String!) @auth(level: NO_ACCESS) {
   document_delete(id: $id)
 }
 
@@ -552,7 +555,7 @@ mutation CreateActivityLog(
   $module: String!
   $description: String
   $recordId: String
-) @auth(level: USER, insecureReason: "Multi-tenant ERP: tenant isolation enforced at the application layer") {
+) @auth(level: NO_ACCESS) {
   activityLog_insert(data: {
     tenantId: $tenantId
     businessId: $businessId
@@ -566,33 +569,6 @@ mutation CreateActivityLog(
   })
 }
 
-mutation UpdateActivityLog(
-  $id: String!
-  $tenantId: String
-  $businessId: String
-  $userId: String
-  $userName: String
-  $actionType: String
-  $module: String
-  $description: String
-  $recordId: String
-) @auth(level: USER, insecureReason: "Multi-tenant ERP: tenant isolation enforced at the application layer") {
-  activityLog_update(id: $id, data: {
-    tenantId: $tenantId
-    businessId: $businessId
-    userId: $userId
-    userName: $userName
-    actionType: $actionType
-    module: $module
-    description: $description
-    recordId: $recordId
-  })
-}
-
-mutation DeleteActivityLog($id: String!) @auth(level: USER, insecureReason: "Multi-tenant ERP: tenant isolation enforced at the application layer") {
-  activityLog_delete(id: $id)
-}
-
 # --- AiQuery ---
 
 mutation CreateAiQuery(
@@ -601,7 +577,7 @@ mutation CreateAiQuery(
   $userId: String!
   $queryText: String!
   $response: String
-) @auth(level: PUBLIC, insecureReason: "Allowed for server-side assistant logging") {
+) @auth(level: NO_ACCESS) {
   aiQuery_insert(data: {
     tenantId: $tenantId
     businessId: $businessId
@@ -619,7 +595,7 @@ mutation UpdateAiQuery(
   $userId: String
   $queryText: String
   $response: String
-) @auth(level: USER, insecureReason: "Multi-tenant ERP: tenant isolation enforced at the application layer") {
+) @auth(level: NO_ACCESS) {
   aiQuery_update(id: $id, data: {
     tenantId: $tenantId
     businessId: $businessId
@@ -629,7 +605,7 @@ mutation UpdateAiQuery(
   })
 }
 
-mutation DeleteAiQuery($id: String!) @auth(level: USER, insecureReason: "Multi-tenant ERP: tenant isolation enforced at the application layer") {
+mutation DeleteAiQuery($id: String!) @auth(level: NO_ACCESS) {
   aiQuery_delete(id: $id)
 }
 
@@ -641,7 +617,7 @@ mutation CreateNotification(
   $userId: String!
   $message: String!
   $isRead: Boolean!
-) @auth(level: USER, insecureReason: "Multi-tenant ERP: tenant isolation enforced at the application layer") {
+) @auth(level: NO_ACCESS) {
   notification_insert(data: {
     tenantId: $tenantId
     businessId: $businessId
@@ -659,7 +635,7 @@ mutation UpdateNotification(
   $userId: String
   $message: String
   $isRead: Boolean
-) @auth(level: USER, insecureReason: "Multi-tenant ERP: tenant isolation enforced at the application layer") {
+) @auth(level: NO_ACCESS) {
   notification_update(id: $id, data: {
     tenantId: $tenantId
     businessId: $businessId
@@ -669,7 +645,7 @@ mutation UpdateNotification(
   })
 }
 
-mutation DeleteNotification($id: String!) @auth(level: USER, insecureReason: "Multi-tenant ERP: tenant isolation enforced at the application layer") {
+mutation DeleteNotification($id: String!) @auth(level: NO_ACCESS) {
   notification_delete(id: $id)
 }
 # -----------------------------------
@@ -685,7 +661,7 @@ mutation CreateTask(
   $dueDate: Timestamp!
   $assignedToId: String
   $createdBy: String!
-) @auth(level: USER, insecureReason: "Multi-tenant ERP: tenant isolation enforced at the application layer") {
+) @auth(level: NO_ACCESS) {
   task_insert(data: {
     tenantId: $tenantId
     businessId: $businessId
@@ -708,7 +684,7 @@ mutation UpdateTask(
   $priority: TaskPriority
   $dueDate: Timestamp
   $assignedToId: String
-) @auth(level: USER, insecureReason: "Multi-tenant ERP: tenant isolation enforced at the application layer") {
+) @auth(level: NO_ACCESS) {
   task_update(id: $id, data: {
     title: $title
     description: $description
@@ -720,6 +696,28 @@ mutation UpdateTask(
   })
 }
 
-mutation DeleteTask($id: String!) @auth(level: USER, insecureReason: "Multi-tenant ERP: tenant isolation enforced at the application layer") {
+mutation DeleteTask($id: String!) @auth(level: NO_ACCESS) {
   task_delete(id: $id)
+}
+
+mutation CreateMirrorOutbox(
+  $tenantId: String!, $businessId: String!, $entityType: String!,
+  $operation: String!, $recordId: String!, $payload: Any!
+) @auth(level: NO_ACCESS) {
+  mirrorOutbox_insert(data: {
+    tenantId: $tenantId, businessId: $businessId, entityType: $entityType,
+    operation: $operation, recordId: $recordId, payload: $payload,
+    status: "PENDING", attempts: 0,
+    nextAttemptAt_expr: "request.time", createdAt_expr: "request.time"
+  })
+}
+
+mutation UpdateMirrorOutbox(
+  $id: String!, $status: String!, $attempts: Int!, $nextAttemptAt: Timestamp!,
+  $lastError: String, $deliveredAt: Timestamp
+) @auth(level: NO_ACCESS) {
+  mirrorOutbox_update(id: $id, data: {
+    status: $status, attempts: $attempts, nextAttemptAt: $nextAttemptAt,
+    lastError: $lastError, deliveredAt: $deliveredAt
+  })
 }

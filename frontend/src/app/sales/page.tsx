@@ -21,11 +21,9 @@ import { useDataConnect } from "@/hooks/use-dataconnect"
 import { 
   listTransactionsByBusinessQuery,
   listProductsByBusinessQuery,
-  createTransactionMutation
 } from "@/lib/data-service"
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/hooks/use-auth"
-import { TransactionType } from "@dataconnect/generated"
 
 export default function SalesPage() {
   const { profile, user } = useAuth();
@@ -93,15 +91,23 @@ export default function SalesPage() {
       return;
     }
     try {
-      await createTransactionMutation({
-        tenantId: profile.tenantId,
-        businessId: profile.businessId,
-        type: TransactionType.SALE,
-        amount: saleData.totalAmount || 0,
-        date: saleData.saleDate || new Date().toISOString(),
-        category: 'Sale',
-        recordedBy: user.uid
-      });
+      const token = await user.getIdToken()
+      const paymentMethod = ({
+        Cash: "CASH", "Mobile Money": "MOBILE_MONEY",
+        "Bank Transfer": "BANK_TRANSFER", Credit: "CREDIT",
+      } as const)[saleData.paymentMethod || "Cash"]
+      const response = await fetch("/api/sales", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          idempotencyKey: crypto.randomUUID(),
+          customerId: saleData.customerId || undefined,
+          paymentMethod,
+          items: saleData.productsSold || [],
+        }),
+      })
+      const body = await response.json()
+      if (!response.ok) throw new Error(body.error || "Sale failed")
       toast({ title: "Sale Recorded", description: `Transaction for ${saleData.totalAmount?.toLocaleString()} FCFA recorded.` });
       refetchSales();
       refetchProducts();
@@ -163,7 +169,7 @@ export default function SalesPage() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card className="border-t-4 border-[#10b981] shadow-md bg-emerald-50/10">
           <CardHeader className="pb-2 p-4">
-            <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Today's Revenue</CardTitle>
+            <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Today&apos;s Revenue</CardTitle>
           </CardHeader>
           <CardContent className="p-4 pt-0">
             <div className="text-xl md:text-2xl font-bold text-emerald-700">{totalToday.toLocaleString()} FCFA</div>

@@ -1,68 +1,48 @@
-
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // Helper: Check if user is authenticated
-    function isSignedIn() {
+    // ===============================================================
+    // Assumed legacy data model
+    // ===============================================================
+    // users/{uid}: tenantId, businessId, email, role and fullName. This
+    // document contains PII and authorization attributes. It is read-only
+    // migration data; SQL Connect is authoritative.
+    // activity_logs, notifications, settings and all other collections are
+    // server-managed or retired. Client access is denied.
+
+    function isAuthenticated() {
       return request.auth != null;
     }
 
-    // Helper: Get user data from Firestore profile
-    function getUserData() {
-      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    function isOwner(uid) {
+      return isAuthenticated() && request.auth.uid == uid;
     }
 
-    // Helper: Check if user is Super Admin (checks database role OR future custom claim)
-    function isSuperAdmin() {
-      return request.auth.token.admin == true || 
-             getUserData().role == 'Platform Super Admin' || 
-             request.auth.token.email == 'admin@smarterp.ai';
+    function uidUnchanged(uid) {
+      return request.auth != null && request.auth.uid == uid;
     }
 
-    // Helper: Check if data belongs to user's tenant
-    function belongsToTenant(data) {
-      return data.tenantId == getUserData().tenantId;
-    }
-    
-    // Helper: Check user role from profile
-    function hasRole(roles) {
-      let user = getUserData();
-      return user.role in roles || user.role == 'Business Owner' || isSuperAdmin();
+    function uidNotModified() {
+      return request.resource.data.uid == resource.data.uid;
     }
 
-    // Global multi-tenant access check
-    match /{collection}/{docId} {
-      // Super Admin can read/write everything. Regular users are isolated by tenantId.
-      allow read, write: if isSignedIn() && (isSuperAdmin() || belongsToTenant(resource.data));
-      allow create: if isSignedIn() && (isSuperAdmin() || request.resource.data.tenantId != null);
+    function isValidLegacyUser(data) {
+      return data.keys().hasAll(['tenantId', 'businessId', 'email', 'role'])
+        && data.keys().hasOnly(['tenantId', 'businessId', 'email', 'role', 'fullName'])
+        && data.tenantId is string && data.tenantId.size() > 0 && data.tenantId.size() <= 200
+        && data.businessId is string && data.businessId.size() > 0 && data.businessId.size() <= 200
+        && data.email is string && data.email.size() > 3 && data.email.size() <= 254
+        && data.role is string && data.role in ['Platform Super Admin', 'Business Owner', 'Manager', 'Accountant', 'HR Officer', 'Staff', 'Viewer']
+        && (!('fullName' in data) || (data.fullName is string && data.fullName.size() <= 160));
     }
 
-    // Collection Specific Overrides
-
-    // Tenants: Only Super Admins can manage the platform
-    match /tenants/{tenantId} {
-      allow read: if isSignedIn() && (tenantId == getUserData().tenantId || isSuperAdmin());
-      allow write: if isSignedIn() && isSuperAdmin();
+    match /users/{uid} {
+      allow read: if isOwner(uid) && isValidLegacyUser(resource.data);
+      allow create, update, delete: if false;
     }
 
-    // Users: Users can read their own profile, Owners can read all in tenant
-    match /users/{userId} {
-      allow read: if isSignedIn() && (request.auth.uid == userId || hasRole(['Business Owner', 'Manager']) || isSuperAdmin());
-      allow write: if isSignedIn() && (request.auth.uid == userId || isSuperAdmin());
-    }
-
-    // Audit Logs: Append-only for users, Full read for Admins
-    match /activity_logs/{logId} {
-      allow create: if isSignedIn();
-      allow read: if isSignedIn() && (belongsToTenant(resource.data) || isSuperAdmin());
-      allow update, delete: if isSuperAdmin();
-    }
-    
-    // Platform Settings
-    match /settings/{setId} {
-      allow read: if isSignedIn() && (belongsToTenant(resource.data) || isSuperAdmin());
-      allow write: if isSignedIn() && (hasRole(['Business Owner']) || isSuperAdmin());
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }

@@ -35,12 +35,7 @@ import { createUserWithEmailAndPassword } from "firebase/auth"
 import { auth } from "@/lib/firebase"
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/hooks/use-auth"
-import {
-  createTenantMutation,
-  createBusinessMutation,
-  createUserMutation,
-  getUserByEmailQuery,
-} from "@/lib/data-service"
+import { getUserByEmailQuery } from "@/lib/data-service"
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -217,9 +212,6 @@ export default function RegisterPage() {
       setPipelineStage(PIPELINE_STAGES[0])
       setPipelineProgress(1)
 
-      const isAdminEmail = step1Data.email.toLowerCase() === "admin@smarterp.ai"
-      const userRole = isAdminEmail ? "Platform Super Admin" : "Business Owner"
-
       const currentAuthUser = auth.currentUser
       if (!currentAuthUser || currentAuthUser.email?.toLowerCase() !== step1Data.email.toLowerCase()) {
         try {
@@ -239,52 +231,27 @@ export default function RegisterPage() {
         }
       }
 
-      // ── Stage 2: Create Tenant ────────────
+      // ── Stages 2-4: trusted server bootstrap ────────────
       setPipelineStage(PIPELINE_STAGES[1])
       setPipelineProgress(2)
-
-      const tenantResult = await createTenantMutation({
-        name: businessName.trim(),
-        businessSector: sector,
-        location: `${city.trim()}, ${region}`,
-        ownerEmail: step1Data.email,
-        subscriptionTier: isAdminEmail ? "Enterprise" : "Basic",
+      const bootstrapUser = auth.currentUser
+      const token = await bootstrapUser?.getIdToken()
+      if (!token) throw new Error("Authentication session was not established")
+      const bootstrapResponse = await fetch("/api/bootstrap", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fullName: step1Data.fullName,
+          businessName: businessName.trim(),
+          businessSector: sector,
+          location: `${city.trim()}, ${region}`,
+          region,
+        }),
       })
-      const tenantId = tenantResult.data.tenant_insert.id
-
-      // ── Stage 3: Create Business ────────────
-      setPipelineStage(PIPELINE_STAGES[2])
-      setPipelineProgress(3)
-
-      const now = new Date()
-      const dateStr = now.toISOString().split('T')[0]
-      const normalizedName = businessName
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '_')
-        .replace(/^_+|_+$/g, '')
-      const code = `${normalizedName}_${dateStr}`
-
-      const businessResult = await createBusinessMutation({
-        tenantId: tenantId,
-        name: businessName.trim(),
-        location: `${city.trim()}, ${region}`,
-        businessType: sector,
-        region: region,
-        code: code,
-      })
-      const businessId = businessResult.data.business_insert.id
-
-      // ── Stage 4: Create User Profile ────────────
+      const bootstrapBody = await bootstrapResponse.json()
+      if (!bootstrapResponse.ok) throw new Error(bootstrapBody.error || "Company bootstrap failed")
       setPipelineStage(PIPELINE_STAGES[3])
       setPipelineProgress(4)
-
-      await createUserMutation({
-        tenantId: tenantId,
-        businessId: businessId,
-        email: step1Data.email,
-        role: userRole,
-        fullName: step1Data.fullName,
-      })
 
       // ── Stage 5: Finalize ────────────
       setPipelineStage(PIPELINE_STAGES[4])

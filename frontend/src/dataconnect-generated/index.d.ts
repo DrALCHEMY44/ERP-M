@@ -44,6 +44,14 @@ export interface Business_Key {
   __typename?: 'Business_Key';
 }
 
+export interface ClearLegacyAccessCodeData {
+  user_update?: User_Key | null;
+}
+
+export interface ClearLegacyAccessCodeVariables {
+  id: string;
+}
+
 export interface CompleteAssignedTaskData {
   task_update?: Task_Key | null;
 }
@@ -51,7 +59,6 @@ export interface CompleteAssignedTaskData {
 export interface CompleteAssignedTaskVariables {
   taskId: string;
   userId: string;
-  accessCode: string;
 }
 
 export interface CreateActivityLogData {
@@ -137,6 +144,19 @@ export interface CreateEmployeeVariables {
   startDate?: DateString | null;
   status?: string | null;
   code?: string | null;
+}
+
+export interface CreateMirrorOutboxData {
+  mirrorOutbox_insert: MirrorOutbox_Key;
+}
+
+export interface CreateMirrorOutboxVariables {
+  tenantId: string;
+  businessId: string;
+  entityType: string;
+  operation: string;
+  recordId: string;
+  payload: unknown;
 }
 
 export interface CreateNotificationData {
@@ -243,6 +263,7 @@ export interface CreateUserData {
 }
 
 export interface CreateUserVariables {
+  id: string;
   tenantId: string;
   businessId: string;
   email: string;
@@ -250,20 +271,12 @@ export interface CreateUserVariables {
   fullName?: string | null;
   department?: string | null;
   phoneNumber?: string | null;
-  accessCode?: string | null;
+  accessCodeHash?: string | null;
 }
 
 export interface Customer_Key {
   id: string;
   __typename?: 'Customer_Key';
-}
-
-export interface DeleteActivityLogData {
-  activityLog_delete?: ActivityLog_Key | null;
-}
-
-export interface DeleteActivityLogVariables {
-  id: string;
 }
 
 export interface DeleteAiQueryData {
@@ -568,6 +581,13 @@ export interface ListEmployeesByBusinessVariables {
   businessId: string;
 }
 
+export interface ListLegacyAccessCodesData {
+  users: ({
+    id: string;
+    accessCode?: string | null;
+  } & User_Key)[];
+}
+
 export interface ListNotificationsData {
   notifications: ({
     id: string;
@@ -584,6 +604,23 @@ export interface ListNotificationsVariables {
   tenantId: string;
   businessId: string;
   userId: string;
+}
+
+export interface ListPendingMirrorOutboxData {
+  mirrorOutboxes: ({
+    id: string;
+    tenantId: string;
+    businessId: string;
+    entityType: string;
+    operation: string;
+    recordId: string;
+    payload: unknown;
+    status: string;
+    attempts: number;
+    nextAttemptAt: TimestampString;
+    lastError?: string | null;
+    createdAt: TimestampString;
+  } & MirrorOutbox_Key)[];
 }
 
 export interface ListProductsByBusinessData {
@@ -748,6 +785,7 @@ export interface ListUsersByBusinessData {
     tenantId: string;
     businessId: string;
     fullName?: string | null;
+    accessCodeHash?: string | null;
   } & User_Key)[];
 }
 
@@ -760,6 +798,11 @@ export interface ListUsersData {
   users: ({
     id: string;
   } & User_Key)[];
+}
+
+export interface MirrorOutbox_Key {
+  id: string;
+  __typename?: 'MirrorOutbox_Key';
 }
 
 export interface Notification_Key {
@@ -784,7 +827,7 @@ export interface ProvisionEmployeeUserVariables {
   fullName: string;
   department?: string | null;
   phoneNumber?: string | null;
-  accessCode: string;
+  accessCodeHash: string;
 }
 
 export interface Supplier_Key {
@@ -810,22 +853,6 @@ export interface Tenant_Key {
 export interface Transaction_Key {
   id: string;
   __typename?: 'Transaction_Key';
-}
-
-export interface UpdateActivityLogData {
-  activityLog_update?: ActivityLog_Key | null;
-}
-
-export interface UpdateActivityLogVariables {
-  id: string;
-  tenantId?: string | null;
-  businessId?: string | null;
-  userId?: string | null;
-  userName?: string | null;
-  actionType?: string | null;
-  module?: string | null;
-  description?: string | null;
-  recordId?: string | null;
 }
 
 export interface UpdateAiQueryData {
@@ -900,6 +927,19 @@ export interface UpdateEmployeeVariables {
   department?: string | null;
   startDate?: DateString | null;
   status?: string | null;
+}
+
+export interface UpdateMirrorOutboxData {
+  mirrorOutbox_update?: MirrorOutbox_Key | null;
+}
+
+export interface UpdateMirrorOutboxVariables {
+  id: string;
+  status: string;
+  attempts: number;
+  nextAttemptAt: TimestampString;
+  lastError?: string | null;
+  deliveredAt?: TimestampString | null;
 }
 
 export interface UpdateNotificationData {
@@ -1018,7 +1058,7 @@ export interface UpdateUserVariables {
   fullName?: string | null;
   department?: string | null;
   phoneNumber?: string | null;
-  accessCode?: string | null;
+  accessCodeHash?: string | null;
 }
 
 export interface User_Key {
@@ -1040,7 +1080,7 @@ export interface VerifyEmployeeAccessData {
 export interface VerifyEmployeeAccessVariables {
   fullName: string;
   role: string;
-  accessCode: string;
+  accessCodeHash: string;
   tenantId: string;
   businessId: string;
 }
@@ -1060,7 +1100,7 @@ export interface VerifyUserLoginVariables {
   email: string;
   fullName: string;
   role: string;
-  accessCode: string;
+  accessCodeHash: string;
   tenantId: string;
   businessId: string;
 }
@@ -1136,6 +1176,18 @@ export const deleteUserRef: DeleteUserRef;
 
 export function deleteUser(vars: DeleteUserVariables): MutationPromise<DeleteUserData, DeleteUserVariables>;
 export function deleteUser(dc: DataConnect, vars: DeleteUserVariables): MutationPromise<DeleteUserData, DeleteUserVariables>;
+
+interface ClearLegacyAccessCodeRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: ClearLegacyAccessCodeVariables): MutationRef<ClearLegacyAccessCodeData, ClearLegacyAccessCodeVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: ClearLegacyAccessCodeVariables): MutationRef<ClearLegacyAccessCodeData, ClearLegacyAccessCodeVariables>;
+  operationName: string;
+}
+export const clearLegacyAccessCodeRef: ClearLegacyAccessCodeRef;
+
+export function clearLegacyAccessCode(vars: ClearLegacyAccessCodeVariables): MutationPromise<ClearLegacyAccessCodeData, ClearLegacyAccessCodeVariables>;
+export function clearLegacyAccessCode(dc: DataConnect, vars: ClearLegacyAccessCodeVariables): MutationPromise<ClearLegacyAccessCodeData, ClearLegacyAccessCodeVariables>;
 
 interface CreateBusinessRef {
   /* Allow users to create refs without passing in DataConnect */
@@ -1461,30 +1513,6 @@ export const createActivityLogRef: CreateActivityLogRef;
 export function createActivityLog(vars: CreateActivityLogVariables): MutationPromise<CreateActivityLogData, CreateActivityLogVariables>;
 export function createActivityLog(dc: DataConnect, vars: CreateActivityLogVariables): MutationPromise<CreateActivityLogData, CreateActivityLogVariables>;
 
-interface UpdateActivityLogRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: UpdateActivityLogVariables): MutationRef<UpdateActivityLogData, UpdateActivityLogVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: UpdateActivityLogVariables): MutationRef<UpdateActivityLogData, UpdateActivityLogVariables>;
-  operationName: string;
-}
-export const updateActivityLogRef: UpdateActivityLogRef;
-
-export function updateActivityLog(vars: UpdateActivityLogVariables): MutationPromise<UpdateActivityLogData, UpdateActivityLogVariables>;
-export function updateActivityLog(dc: DataConnect, vars: UpdateActivityLogVariables): MutationPromise<UpdateActivityLogData, UpdateActivityLogVariables>;
-
-interface DeleteActivityLogRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: DeleteActivityLogVariables): MutationRef<DeleteActivityLogData, DeleteActivityLogVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: DeleteActivityLogVariables): MutationRef<DeleteActivityLogData, DeleteActivityLogVariables>;
-  operationName: string;
-}
-export const deleteActivityLogRef: DeleteActivityLogRef;
-
-export function deleteActivityLog(vars: DeleteActivityLogVariables): MutationPromise<DeleteActivityLogData, DeleteActivityLogVariables>;
-export function deleteActivityLog(dc: DataConnect, vars: DeleteActivityLogVariables): MutationPromise<DeleteActivityLogData, DeleteActivityLogVariables>;
-
 interface CreateAiQueryRef {
   /* Allow users to create refs without passing in DataConnect */
   (vars: CreateAiQueryVariables): MutationRef<CreateAiQueryData, CreateAiQueryVariables>;
@@ -1593,6 +1621,30 @@ export const deleteTaskRef: DeleteTaskRef;
 export function deleteTask(vars: DeleteTaskVariables): MutationPromise<DeleteTaskData, DeleteTaskVariables>;
 export function deleteTask(dc: DataConnect, vars: DeleteTaskVariables): MutationPromise<DeleteTaskData, DeleteTaskVariables>;
 
+interface CreateMirrorOutboxRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: CreateMirrorOutboxVariables): MutationRef<CreateMirrorOutboxData, CreateMirrorOutboxVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: CreateMirrorOutboxVariables): MutationRef<CreateMirrorOutboxData, CreateMirrorOutboxVariables>;
+  operationName: string;
+}
+export const createMirrorOutboxRef: CreateMirrorOutboxRef;
+
+export function createMirrorOutbox(vars: CreateMirrorOutboxVariables): MutationPromise<CreateMirrorOutboxData, CreateMirrorOutboxVariables>;
+export function createMirrorOutbox(dc: DataConnect, vars: CreateMirrorOutboxVariables): MutationPromise<CreateMirrorOutboxData, CreateMirrorOutboxVariables>;
+
+interface UpdateMirrorOutboxRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: UpdateMirrorOutboxVariables): MutationRef<UpdateMirrorOutboxData, UpdateMirrorOutboxVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: UpdateMirrorOutboxVariables): MutationRef<UpdateMirrorOutboxData, UpdateMirrorOutboxVariables>;
+  operationName: string;
+}
+export const updateMirrorOutboxRef: UpdateMirrorOutboxRef;
+
+export function updateMirrorOutbox(vars: UpdateMirrorOutboxVariables): MutationPromise<UpdateMirrorOutboxData, UpdateMirrorOutboxVariables>;
+export function updateMirrorOutbox(dc: DataConnect, vars: UpdateMirrorOutboxVariables): MutationPromise<UpdateMirrorOutboxData, UpdateMirrorOutboxVariables>;
+
 interface ListTenantsRef {
   /* Allow users to create refs without passing in DataConnect */
   (): QueryRef<ListTenantsData, undefined>;
@@ -1616,6 +1668,18 @@ export const listUsersRef: ListUsersRef;
 
 export function listUsers(options?: ExecuteQueryOptions): QueryPromise<ListUsersData, undefined>;
 export function listUsers(dc: DataConnect, options?: ExecuteQueryOptions): QueryPromise<ListUsersData, undefined>;
+
+interface ListLegacyAccessCodesRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (): QueryRef<ListLegacyAccessCodesData, undefined>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect): QueryRef<ListLegacyAccessCodesData, undefined>;
+  operationName: string;
+}
+export const listLegacyAccessCodesRef: ListLegacyAccessCodesRef;
+
+export function listLegacyAccessCodes(options?: ExecuteQueryOptions): QueryPromise<ListLegacyAccessCodesData, undefined>;
+export function listLegacyAccessCodes(dc: DataConnect, options?: ExecuteQueryOptions): QueryPromise<ListLegacyAccessCodesData, undefined>;
 
 interface ListBusinessesRef {
   /* Allow users to create refs without passing in DataConnect */
@@ -1868,4 +1932,16 @@ export const listNotificationsRef: ListNotificationsRef;
 
 export function listNotifications(vars: ListNotificationsVariables, options?: ExecuteQueryOptions): QueryPromise<ListNotificationsData, ListNotificationsVariables>;
 export function listNotifications(dc: DataConnect, vars: ListNotificationsVariables, options?: ExecuteQueryOptions): QueryPromise<ListNotificationsData, ListNotificationsVariables>;
+
+interface ListPendingMirrorOutboxRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (): QueryRef<ListPendingMirrorOutboxData, undefined>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect): QueryRef<ListPendingMirrorOutboxData, undefined>;
+  operationName: string;
+}
+export const listPendingMirrorOutboxRef: ListPendingMirrorOutboxRef;
+
+export function listPendingMirrorOutbox(options?: ExecuteQueryOptions): QueryPromise<ListPendingMirrorOutboxData, undefined>;
+export function listPendingMirrorOutbox(dc: DataConnect, options?: ExecuteQueryOptions): QueryPromise<ListPendingMirrorOutboxData, undefined>;
 
