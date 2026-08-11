@@ -10,11 +10,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { useFirestore } from "@/hooks/use-firestore"
 import { Business } from "@/lib/types"
 import { useToast } from "@/hooks/use-toast"
-import { MOCK_USER } from "@/lib/mock-data"
+import { useAuth } from "@/hooks/use-auth"
 
 export default function BusinessProfilePage() {
   const { data: businesses, updateRecord, loading } = useFirestore<Business>('businesses');
   const { toast } = useToast();
+  const { profile } = useAuth();
   const [isSaving, setIsSaving] = React.useState(false);
 
   const business = businesses[0]; // Multi-tenant hook handles filtering
@@ -205,7 +206,7 @@ export default function BusinessProfilePage() {
           </CardContent>
           <CardFooter className="border-t pt-6 flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="text-[10px] text-muted-foreground font-bold uppercase">
-              Tenant ID: {MOCK_USER.tenantId} • Business ID: {MOCK_USER.businessId}
+              Tenant ID: {profile?.tenantId || "Unavailable"} • Business ID: {profile?.businessId || "Unavailable"}
             </div>
             <Button 
               className="bg-primary hover:bg-primary/90 font-bold uppercase tracking-widest text-xs h-11 px-10 shadow-lg"

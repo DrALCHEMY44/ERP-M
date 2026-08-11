@@ -1,6 +1,5 @@
 import { GetObjectCommand } from "@aws-sdk/client-s3"
 import mammoth from "mammoth"
-import * as XLSX from "xlsx"
 import { objectStorage, storageBucket } from "./object-storage"
 import { createEmbeddings, createQueryEmbedding, freeCompletion } from "./openrouter"
 import { ensureMirrorSchema } from "./neon"
@@ -65,11 +64,6 @@ async function extractText(buffer: Buffer, mimeType: string, filename: string) {
   if (mimeType === "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
     const result = await mammoth.extractRawText({ buffer })
     return { content: result.value, model: "local-mammoth" }
-  }
-  if (["application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "application/vnd.ms-excel"].includes(mimeType)) {
-    const workbook = XLSX.read(buffer, { type: "buffer" })
-    const content = workbook.SheetNames.map((name) => `# ${name}\n${XLSX.utils.sheet_to_csv(workbook.Sheets[name])}`).join("\n\n")
-    return { content, model: "local-xlsx" }
   }
   if (mimeType === "application/pdf" || mimeType.startsWith("image/")) {
     return aiExtract(buffer, mimeType, filename)

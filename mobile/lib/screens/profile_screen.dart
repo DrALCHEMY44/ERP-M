@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/theme_provider.dart';
 import '../services/auth_service.dart';
-import '../models/app_user.dart';
 import '../widgets/app_drawer.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -175,29 +174,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       style: TextStyle(fontSize: 11, color: Colors.black54),
                     ),
                     const SizedBox(height: 12),
-                    DropdownButtonFormField<AppUser>(
+                    TextFormField(
+                      initialValue: user == null
+                          ? 'No authenticated profile'
+                          : '${user.name} (${user.role.displayName})',
+                      readOnly: true,
                       decoration: const InputDecoration(
-                        labelText: 'Hot-Swap Active User Profile',
+                        labelText: 'Authenticated Profile',
                         border: OutlineInputBorder(),
-                        filled: true,
-                        fillColor: Colors.white,
                       ),
-                      value: AuthService.demoUsers.firstWhere(
-                        (u) => u.id == user?.id,
-                        orElse: () => AuthService.demoUsers.first,
-                      ),
-                      items: AuthService.demoUsers
-                          .map(
-                            (u) => DropdownMenuItem(
-                              value: u,
-                              child: Text(
-                                '${u.name} (${u.role.displayName})',
-                                style: const TextStyle(fontSize: 12),
-                              ),
-                            ),
-                          )
-                          .toList(),
-                      onChanged: null,
                     ),
                   ],
                 ),

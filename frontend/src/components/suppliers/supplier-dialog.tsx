@@ -32,7 +32,6 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Supplier } from "@/lib/types"
-import { MOCK_USER } from "@/lib/mock-data"
 
 const supplierSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -94,8 +93,6 @@ export function SupplierDialog({ supplier, open, onOpenChange, onSave }: Supplie
   const onSubmit = (values: SupplierFormValues) => {
     const payload: Partial<Supplier> = {
       ...values,
-      tenantId: MOCK_USER.tenantId,
-      businessId: MOCK_USER.businessId,
       productsSupplied: values.productsSupplied.split(",").map(s => s.trim()),
       createdAt: supplier?.createdAt || new Date().toISOString(),
     }

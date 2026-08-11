@@ -1,7 +1,7 @@
 import { applicationDefault, cert, getApps, initializeApp } from "firebase-admin/app"
 import { getDataConnect } from "firebase-admin/data-connect"
 import { neon } from "@neondatabase/serverless"
-import { reconcileBatch } from "./outbox-reconciliation.mjs"
+import { reconcileOutbox } from "./reconcile-outbox-core.mjs"
 
 for (const name of ["DATABASE_URL", "NEXT_PUBLIC_FIREBASE_PROJECT_ID"]) {
   if (!process.env[name]) throw new Error(`${name} is required`)
@@ -13,17 +13,14 @@ const app = getApps()[0] || initializeApp({
   projectId,
   credential: clientEmail && privateKey ? cert({ projectId, clientEmail, privateKey }) : applicationDefault(),
 })
-const dc = getDataConnect({ location: "us-east4", serviceId: "studio-8058744913-5a601-service", connector: "example" }, app)
+for (const name of ["FIREBASE_DATACONNECT_LOCATION", "FIREBASE_DATACONNECT_SERVICE_ID"]) {
+  if (!process.env[name]) throw new Error(`${name} is required`)
+}
+const dc = getDataConnect({
+  location: process.env.FIREBASE_DATACONNECT_LOCATION,
+  serviceId: process.env.FIREBASE_DATACONNECT_SERVICE_ID,
+  connector: process.env.FIREBASE_DATACONNECT_CONNECTOR_ID || "example",
+}, app)
 const sql = neon(process.env.DATABASE_URL)
-const result = await dc.executeQuery("ListPendingMirrorOutbox")
-const summary = await reconcileBatch(result.data.mirrorOutboxes, async (event) => {
-    // Neon is authoritative for inventory and financial ledger domains.
-    // Old transition events must never overwrite locked operational state.
-    if (["product", "transaction"].includes(event.entityType)) return
-    await sql`INSERT INTO erp_mirror_records(entity_type,record_id,tenant_id,business_id,operation,payload,firebase_updated_at,mirrored_at)
-      VALUES(${event.entityType},${event.recordId},${event.tenantId},${event.businessId},${event.operation},${JSON.stringify(event.payload)}::jsonb,NOW(),NOW())
-      ON CONFLICT(entity_type,record_id) DO UPDATE SET operation=EXCLUDED.operation,payload=EXCLUDED.payload,firebase_updated_at=NOW(),mirrored_at=NOW()`
-}, async (event, state) => {
-  await dc.executeMutation("UpdateMirrorOutbox", { id: event.id, ...state })
-})
+const summary = await reconcileOutbox({ dc, sql })
 console.log(JSON.stringify(summary))

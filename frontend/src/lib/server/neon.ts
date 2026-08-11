@@ -2,7 +2,7 @@ import { neon } from "@neondatabase/serverless"
 
 let schemaPromise: Promise<unknown> | null = null
 
-function sqlClient() {
+export function db() {
   const connectionString = process.env.DATABASE_URL
   if (!connectionString) throw new Error("DATABASE_URL is not configured")
   return neon(connectionString)
@@ -10,7 +10,7 @@ function sqlClient() {
 
 export async function ensureMirrorSchema() {
   if (!schemaPromise) {
-    const sql = sqlClient()
+    const sql = db()
     schemaPromise = sql`
       CREATE TABLE IF NOT EXISTS erp_mirror_records (
         entity_type TEXT NOT NULL,
@@ -37,7 +37,7 @@ export async function mirrorRecord(input: {
   payload: Record<string, unknown>
 }) {
   await ensureMirrorSchema()
-  const sql = sqlClient()
+  const sql = db()
   const payload = JSON.stringify(input.payload)
   await sql`
     INSERT INTO erp_mirror_records (

@@ -25,7 +25,6 @@ import {
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Customer } from "@/lib/types"
-import { MOCK_USER } from "@/lib/mock-data"
 
 const customerSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -79,8 +78,6 @@ export function CustomerDialog({ customer, open, onOpenChange, onSave }: Custome
   const onSubmit = (values: CustomerFormValues) => {
     const payload: Partial<Customer> = {
       ...values,
-      tenantId: MOCK_USER.tenantId,
-      businessId: MOCK_USER.businessId,
       createdAt: customer?.createdAt || new Date().toISOString(),
       totalOrders: customer?.totalOrders || 0,
       totalSpent: customer?.totalSpent || 0,

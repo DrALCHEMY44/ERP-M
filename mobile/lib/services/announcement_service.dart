@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart' as http;
+import 'api_config.dart';
 
 class AnnouncementItem {
   final String id,title,message,priority,createdByName;
@@ -21,7 +22,7 @@ class AnnouncementItem {
 }
 
 class AnnouncementService {
-  static const _base=String.fromEnvironment('API_BASE_URL',defaultValue:'http://10.0.2.2:9002');
+  static String get _base => ApiConfig.baseUrl;
   static Future<Map<String,String>> _headers({bool json=false}) async {
     final token=await FirebaseAuth.instance.currentUser?.getIdToken();
     if(token==null) throw Exception('Sign in again to load announcements.');

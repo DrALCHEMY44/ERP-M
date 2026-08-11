@@ -8,7 +8,7 @@
 - Intelligent Task Orchestrator: Full lifecycle task management that automatically flags overdue items and provides visual status heatmaps for departmental performance.
 - Insight-Driven AI Assistant: A read-only generative tool that uses business data to provide RAG-based summaries on sales, stock, and task performance while strictly adhering to the user's role-based permissions.
 - Append-Only Guardian Logs: An immutable audit trail system that captures every record change and login event, creating a permanent activity history stored in Firestore.
-- Financial Resource Hub: Streamlined expense tracking and document storage for receipts, invoices, and licenses using Firebase Storage, complete with automated profit/loss calculation.
+- Financial Resource Hub: Streamlined expense tracking and private S3-compatible object storage for receipts, invoices, and licenses, complete with automated profit/loss calculation.
 
 ## Style Guidelines:
 

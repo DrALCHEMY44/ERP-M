@@ -30,7 +30,6 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Product } from "@/lib/types"
-import { MOCK_USER } from "@/lib/mock-data"
 
 const productSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -100,9 +99,7 @@ export function ProductDialog({ product, open, onOpenChange, onSave }: ProductDi
   const onSubmit = (values: ProductFormValues) => {
     onSave({
       ...values,
-      tenantId: MOCK_USER.tenantId,
-      businessId: MOCK_USER.businessId,
-    } as Product)
+    })
     onOpenChange(false)
   }
 

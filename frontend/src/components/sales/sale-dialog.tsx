@@ -2,7 +2,7 @@
 "use client"
 
 import * as React from "react"
-import { useForm, useFieldArray } from "react-hook-form"
+import { useForm, useFieldArray, useWatch } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { Plus, Trash2 } from "lucide-react"
@@ -57,7 +57,7 @@ interface SaleDialogProps {
 }
 
 export function SaleDialog({ open, onOpenChange, onSave, products, productsLoading = false }: SaleDialogProps) {
-  const { user, profile } = useAuth()
+  const { profile } = useAuth()
   const form = useForm<SaleFormValues>({
     resolver: zodResolver(saleSchema),
     defaultValues: {
@@ -71,11 +71,11 @@ export function SaleDialog({ open, onOpenChange, onSave, products, productsLoadi
     name: "productsSold",
   })
 
-  const watchProducts = form.watch("productsSold")
+  const watchProducts = useWatch({ control: form.control, name: "productsSold" })
   const totalAmount = watchProducts.reduce((acc, item) => acc + (item.quantity * item.priceAtSale), 0)
 
   const onSubmit = (values: SaleFormValues) => {
-    if (!user || !profile?.tenantId || !profile.businessId) {
+    if (!profile?.tenantId || !profile.businessId) {
       form.setError("root", { message: "Your account is not connected to a company." })
       return
     }
@@ -92,9 +92,6 @@ export function SaleDialog({ open, onOpenChange, onSave, products, productsLoadi
     onSave({
       ...values,
       totalAmount,
-      recordedBy: user.uid,
-      tenantId: profile.tenantId,
-      businessId: profile.businessId,
     } as Sale)
     form.reset()
     onOpenChange(false)

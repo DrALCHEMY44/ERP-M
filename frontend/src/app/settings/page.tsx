@@ -28,7 +28,6 @@ import { useAuth } from "@/hooks/use-auth"
 import { useDataConnect } from "@/hooks/use-dataconnect"
 import { listUsersByBusinessQuery } from "@/lib/data-service"
 import { BusinessSettings, UserProfile } from "@/lib/types"
-import { MOCK_USER } from "@/lib/mock-data"
 import { useToast } from "@/hooks/use-toast"
 
 export default function SettingsPage() {

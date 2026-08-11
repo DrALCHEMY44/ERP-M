@@ -8,6 +8,7 @@ import '../providers/theme_provider.dart';
 import '../services/auth_service.dart';
 import '../models/erp_task.dart';
 import '../models/app_user.dart';
+import '../services/api_service.dart';
 
 class TaskAssignmentScreen extends StatefulWidget {
   const TaskAssignmentScreen({super.key});
@@ -25,6 +26,39 @@ class _TaskAssignmentScreenState extends State<TaskAssignmentScreen> {
   String? _selectedEmployeeName;
   TaskPriority _selectedPriority = TaskPriority.medium;
   DateTime _selectedDate = DateTime.now().add(const Duration(days: 3));
+  List<AppUser> _tenantEmployees = const [];
+  String? _employeeLoadError;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadEmployees();
+  }
+
+  Future<void> _loadEmployees() async {
+    try {
+      final result = await ApiService.request(
+        '/api/data',
+        method: 'POST',
+        body: {'operation': 'listUsersByBusiness', 'variables': {}},
+      );
+      final rows = ((result['data'] as Map<String, dynamic>)['users'] as List)
+          .cast<Map<String, dynamic>>();
+      if (!mounted) return;
+      setState(() {
+        _tenantEmployees = rows.map((row) => AppUser(
+          id: row['id'] as String,
+          name: row['fullName'] as String? ?? '',
+          email: row['email'] as String? ?? '',
+          tenantId: row['tenantId'] as String,
+          businessId: row['businessId'] as String,
+          role: UserRole.fromString(row['role'] as String),
+        )).toList();
+      });
+    } catch (error) {
+      if (mounted) setState(() => _employeeLoadError = error.toString());
+    }
+  }
 
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
@@ -48,12 +82,7 @@ class _TaskAssignmentScreenState extends State<TaskAssignmentScreen> {
     final transaction = Provider.of<TransactionProvider>(context);
     final taskProvider = Provider.of<TaskProvider>(context);
     final themeProvider = Provider.of<ThemeProvider>(context);
-    final user = AuthService.currentUser;
-
-    // Filter available assignees to only show users in the same tenant
-    final List<AppUser> tenantEmployees = AuthService.demoUsers
-        .where((u) => u.tenantId == user?.tenantId)
-        .toList();
+    final tenantEmployees = _tenantEmployees;
 
     return Scaffold(
       appBar: AppBar(
@@ -71,6 +100,13 @@ class _TaskAssignmentScreenState extends State<TaskAssignmentScreen> {
                 style: TextStyle(color: Colors.grey, fontSize: 13),
               ),
               const SizedBox(height: 24),
+              if (_employeeLoadError != null) ...[
+                Text(
+                  'Could not load the authorized employee directory: $_employeeLoadError',
+                  style: TextStyle(color: theme.colorScheme.error),
+                ),
+                const SizedBox(height: 16),
+              ],
               
               // Title
               TextFormField(

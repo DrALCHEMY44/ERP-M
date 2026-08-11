@@ -9,6 +9,7 @@ import { useState, useEffect } from 'react';
 export function useDataService<T, P extends any[]>(fetcher: (...args: P) => Promise<T>, ...params: P) {
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState(true);
+  const paramsKey = JSON.stringify(params);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -24,7 +25,9 @@ export function useDataService<T, P extends any[]>(fetcher: (...args: P) => Prom
     };
 
     fetchData();
-  }, [fetcher, ...params]);
+    // paramsKey is the deep dependency; callers commonly create object params inline.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fetcher, paramsKey]);
 
   return { data, loading };
 }

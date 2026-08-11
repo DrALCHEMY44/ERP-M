@@ -1,12 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart';
-import '../providers/core_provider.dart';
 import '../providers/inventory_provider.dart';
 import '../providers/transaction_provider.dart';
-import '../providers/task_provider.dart';
-import '../providers/theme_provider.dart';
-import '../services/auth_service.dart';
 import '../widgets/app_drawer.dart';
 
 class ReportsScreen extends StatefulWidget {
@@ -17,69 +13,11 @@ class ReportsScreen extends StatefulWidget {
 }
 
 class _ReportsScreenState extends State<ReportsScreen> {
-  bool _isGeneratingPdf = false;
-
-  void _simulatePdfGeneration() async {
-    setState(() {
-      _isGeneratingPdf = true;
-    });
-
-    final core = Provider.of<CoreProvider>(context, listen: false);
-    final inventory = Provider.of<InventoryProvider>(context, listen: false);
-    final transaction = Provider.of<TransactionProvider>(context, listen: false);
-    final taskProvider = Provider.of<TaskProvider>(context, listen: false);
-    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
-    core.logActivity('GENERATE_REPORT', 'Reports', 'Generated Cameroon SYSCOHADA financial compliance report PDF.');
-
-    await Future.delayed(const Duration(seconds: 2));
-
-    if (mounted) {
-      setState(() {
-        _isGeneratingPdf = false;
-      });
-
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Row(
-            children: [
-              Icon(Icons.picture_as_pdf, color: Colors.red),
-              SizedBox(width: 8),
-              Text('PDF Report Generated'),
-            ],
-          ),
-          content: const Text(
-            'SYSCOHADA Standard Balance Sheet & Income Statement PDF generated successfully. '
-            'File saved to local storage:\n\n/Documents/SmartERP_SYSCOHADA_Report.pdf',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Close'),
-            ),
-            FilledButton(
-              onPressed: () {
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Opening PDF viewer...'), behavior: SnackBarBehavior.floating),
-                );
-              },
-              child: const Text('Open File'),
-            ),
-          ],
-        ),
-      );
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final core = Provider.of<CoreProvider>(context);
     final inventory = Provider.of<InventoryProvider>(context);
     final transaction = Provider.of<TransactionProvider>(context);
-    final taskProvider = Provider.of<TaskProvider>(context);
-    final themeProvider = Provider.of<ThemeProvider>(context);
 
     // Calculations
     final double totalSales = transaction.sales.fold(0.0, (sum, item) => sum + item.totalAmount);
@@ -216,11 +154,9 @@ class _ReportsScreenState extends State<ReportsScreen> {
 
             // PDF Action Button
             FilledButton.icon(
-              onPressed: _isGeneratingPdf ? null : _simulatePdfGeneration,
-              icon: _isGeneratingPdf 
-                  ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                  : const Icon(Icons.picture_as_pdf),
-              label: Text(_isGeneratingPdf ? 'Generating SYSCOHADA Report...' : 'Export Compliance PDF Report'),
+              onPressed: null,
+              icon: const Icon(Icons.picture_as_pdf),
+              label: const Text('PDF export not implemented — use web CSV export'),
               style: FilledButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),

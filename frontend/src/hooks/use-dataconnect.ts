@@ -23,7 +23,8 @@ export function useDataConnect<T = any, V = any>({
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState(!skip);
   const [error, setError] = useState<Error | null>(null);
-  const { loading: authLoading, profile, user } = useAuth();
+  const { loading: authLoading, user } = useAuth();
+  const variablesKey = JSON.stringify(variables);
 
   // Derived flag: auth has finished loading but no user is signed in
   const unauthenticated = !authLoading && !user;
@@ -75,7 +76,9 @@ export function useDataConnect<T = any, V = any>({
       setLoading(false);
     }
     // We stringify variables to safely use them as a dependency
-  }, [query, skip, authLoading, user, JSON.stringify(variables)]);
+    // variablesKey provides a stable deep dependency for inline variables.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [query, skip, authLoading, user, variablesKey]);
 
   useEffect(() => {
     fetcher(false);
@@ -113,7 +116,9 @@ export function useDataConnect<T = any, V = any>({
     }, refreshInterval);
 
     return () => clearInterval(intervalId);
-  }, [query, skip, refreshInterval, unauthenticated, JSON.stringify(variables)]);
+    // variablesKey provides a stable deep dependency for inline variables.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [query, skip, refreshInterval, unauthenticated, variablesKey]);
 
   return { data: data as any, loading, error, unauthenticated, refetch: () => fetcher(true) };
 }

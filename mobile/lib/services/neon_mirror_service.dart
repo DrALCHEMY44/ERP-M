@@ -3,12 +3,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'auth_service.dart';
+import 'api_config.dart';
 
 class NeonMirrorService {
-  static const String _apiBaseUrl = String.fromEnvironment(
-    'API_BASE_URL',
-    defaultValue: 'http://10.0.2.2:9002',
-  );
+  static String get _apiBaseUrl => ApiConfig.baseUrl;
 
   static Future<void> mirror({
     required String entity,

@@ -1,9 +1,8 @@
 import { randomUUID } from "crypto"
 import { PutObjectCommand } from "@aws-sdk/client-s3"
-import { getDataConnect } from "firebase-admin/data-connect"
 import { NextResponse } from "next/server"
 import { z } from "zod"
-import { adminDataConnect, authorizeRequest, firebaseAdminApp } from "@/lib/server/firebase-token"
+import { adminDataConnect, authorizeRequest } from "@/lib/server/firebase-token"
 import { requirePermission } from "@/lib/server/authorization"
 import { objectStorage, storageBucket } from "@/lib/server/object-storage"
 import { neon } from "@neondatabase/serverless"
@@ -47,7 +46,7 @@ export async function POST(request: Request) {
     await objectStorage().send(new PutObjectCommand({ Bucket: storageBucket(), Key: key, Body: bytes, ContentType: "text/csv" }))
     const fileUrl = `/api/files?key=${encodeURIComponent(key)}`
 
-    const dc = getDataConnect({ location: "us-east4", serviceId: "studio-8058744913-5a601-service", connector: "example" }, firebaseAdminApp())
+    const dc = adminDataConnect()
     const inserted = await dc.executeMutation<{ document_insert: { id: string } }, any>("CreateDocument", {
       tenantId: profile.tenantId,
       businessId: profile.businessId,

@@ -31,7 +31,6 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Employee } from "@/lib/types"
-import { MOCK_USER } from "@/lib/mock-data"
 
 const employeeSchema = z.object({
   fullName: z.string().min(2, "Name must be at least 2 characters"),
@@ -105,11 +104,8 @@ export function EmployeeDialog({ employee, open, onOpenChange, onSave }: Employe
   const onSubmit = (values: EmployeeFormValues) => {
     onSave({
       ...values,
-      tenantId: MOCK_USER.tenantId,
-      businessId: MOCK_USER.businessId,
       employeeId: employee?.employeeId || `EMP-${Math.random().toString(36).substr(2, 6).toUpperCase()}`,
       attendance: employee?.attendance || 100,
-      createdBy: MOCK_USER.uid,
     } as Employee)
     onOpenChange(false)
   }

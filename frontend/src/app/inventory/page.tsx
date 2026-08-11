@@ -24,7 +24,6 @@ import {
   updateProductMutation,
   deleteProductMutation
 } from "@/lib/data-service"
-import { MOCK_USER } from "@/lib/mock-data"
 import { useToast } from "@/hooks/use-toast"
 import { logActivity } from "@/lib/audit-logger"
 import { createNotification } from "@/lib/notifications"

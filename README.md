@@ -34,6 +34,7 @@ core. The repository contains no Python runtime service.
 
 ```bash
 # Web application
+npm --prefix frontend ci
 npm run frontend:dev
 npm run frontend:typecheck
 npm run frontend:build
@@ -63,8 +64,9 @@ flutter test
    backfill and constraints against production data.
 4. Run `db:backfill:neon`, deploy the Next.js service, schedule
    `db:reconcile:outbox`, then deploy the generated clients.
-5. Deploy Firestore and Storage rules and verify them in a Firebase project with
-   Java 21+ before enabling clients.
+5. Deploy Firestore rules and verify them in a Firebase project with Java 21+
+   before enabling clients. Documents use private S3-compatible storage;
+   Firebase Storage is not part of the active application architecture.
 
 Required server variables are documented in `frontend/.env.example`. Never put
 Firebase Admin, Neon, S3 or OpenRouter secrets in Flutter or `NEXT_PUBLIC_*`.

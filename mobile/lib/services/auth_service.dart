@@ -4,13 +4,11 @@ import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
 import 'package:http/http.dart' as http;
 import '../models/app_user.dart';
 import 'api_service.dart';
+import 'api_config.dart';
 
 class AuthService {
   static AppUser? _currentUser;
-  static const String _apiBaseUrl = String.fromEnvironment(
-    'API_BASE_URL',
-    defaultValue: 'http://10.0.2.2:9002',
-  );
+  static String get _apiBaseUrl => ApiConfig.baseUrl;
 
   // Web app permissions mapping
   static const Map<UserRole, List<String>> rolePermissions = {
@@ -68,64 +66,6 @@ class AuthService {
     ],
   };
 
-  // Presentation fixtures only. They are never authentication credentials and
-  // cannot create a session; production navigation uses the verified profile.
-  static final List<AppUser> demoUsers = [
-    AppUser(
-      id: 'user_etoo',
-      name: 'Samuel Eto\'o',
-      email: 'admin@smarterp.ai',
-      tenantId: 'tenant_douala_001',
-      businessId: 'biz_superette_central',
-      role: UserRole.businessOwner,
-      businessCode: 'superette_de_l_avenir_2023_01_10',
-    ),
-    AppUser(
-      id: 'user_marie',
-      name: 'Marie Claire',
-      email: 'user@example.com',
-      tenantId: 'tenant_douala_001',
-      businessId: 'biz_superette_central',
-      role: UserRole.staff,
-      businessCode: 'superette_de_l_avenir_2023_01_10',
-    ),
-    AppUser(
-      id: 'user_luc',
-      name: 'Jean Luc',
-      email: 'luc@gmail.com',
-      tenantId: 'tenant_douala_001',
-      businessId: 'biz_superette_central',
-      role: UserRole.accountant,
-      businessCode: 'superette_de_l_avenir_2023_01_10',
-    ),
-    AppUser(
-      id: 'user_nathalie',
-      name: 'Nathalie Koah',
-      email: 'kali@gmail.com',
-      tenantId: 'tenant_yaounde_002',
-      businessId: 'biz_bastos_retail',
-      role: UserRole.businessOwner,
-      businessCode: 'boutique_bastos_2023_03_15',
-    ),
-    AppUser(
-      id: 'user_alain',
-      name: 'Alain Fofe',
-      email: 'ace@gmail.com',
-      tenantId: 'tenant_yaounde_002',
-      businessId: 'biz_bastos_retail',
-      role: UserRole.manager,
-      businessCode: 'boutique_bastos_2023_03_15',
-    ),
-    AppUser(
-      id: 'user_cathy',
-      name: 'Cathy Kamga',
-      email: 'kevintchinde366@gmail.com',
-      tenantId: 'tenant_douala_001',
-      businessId: 'biz_superette_central',
-      role: UserRole.viewer,
-      businessCode: 'superette_de_l_avenir_2023_01_10',
-    ),
-  ];
 
   /// Authenticates an employee against the Next.js backend REST API.
   /// Validates: [fullName], [email], [password], and [roleProfile].
@@ -197,12 +137,6 @@ class AuthService {
       role: UserRole.fromString(account['role'] as String),
     );
     return _currentUser;
-  }
-
-  static Future<AppUser?> loginWithUser(AppUser user) async {
-    throw UnsupportedError(
-      'Profile switching is disabled. Sign in with the account credentials.',
-    );
   }
 
   static AppUser? get currentUser => _currentUser;

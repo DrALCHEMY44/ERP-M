@@ -1,7 +1,6 @@
 
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from './firebase';
-import { MOCK_USER } from './mock-data';
 import { AppNotification, Role } from './types';
 
 /**
@@ -20,10 +19,10 @@ export async function createNotification(params: {
     businessId: string;
   };
 }) {
-  try {
-    const notificationData: Omit<AppNotification, 'id'> = {
-      tenantId: params.userProfile?.tenantId || MOCK_USER.tenantId,
-      businessId: params.userProfile?.businessId || MOCK_USER.businessId,
+  if (!params.userProfile) throw new Error('Authenticated tenant profile is required')
+  const notificationData: Omit<AppNotification, 'id'> = {
+      tenantId: params.userProfile.tenantId,
+      businessId: params.userProfile.businessId,
       targetUserId: params.targetUserId,
       targetRoles: params.targetRoles,
       title: params.title,
@@ -35,11 +34,8 @@ export async function createNotification(params: {
       link: params.link,
     };
 
-    await addDoc(collection(db, 'notifications'), {
-      ...notificationData,
-      serverTimestamp: serverTimestamp(),
-    });
-  } catch (error) {
-    console.error('Notification Error:', error);
-  }
+  await addDoc(collection(db, 'notifications'), {
+    ...notificationData,
+    serverTimestamp: serverTimestamp(),
+  });
 }

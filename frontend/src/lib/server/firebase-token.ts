@@ -1,12 +1,7 @@
 import { applicationDefault, cert, getApps, initializeApp } from "firebase-admin/app"
 import { getAuth, type DecodedIdToken } from "firebase-admin/auth"
 import { getDataConnect } from "firebase-admin/data-connect"
-
-const DATA_CONNECT_CONFIG = {
-  location: "us-east4",
-  serviceId: "studio-8058744913-5a601-service",
-  connector: "example",
-} as const
+import { dataConnectConfig } from "./environment"
 
 export function firebaseAdminApp() {
   if (getApps()[0]) return getApps()[0]
@@ -22,7 +17,9 @@ export function firebaseAdminApp() {
 }
 
 export function adminDataConnect() {
-  return getDataConnect(DATA_CONNECT_CONFIG, firebaseAdminApp())
+  const config = dataConnectConfig()
+  if (!config.serviceId) throw new Error("FIREBASE_DATACONNECT_SERVICE_ID is required")
+  return getDataConnect(config, firebaseAdminApp())
 }
 
 export type AuthorizedProfile = {

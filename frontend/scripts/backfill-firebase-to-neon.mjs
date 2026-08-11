@@ -6,12 +6,14 @@ import { neon } from "@neondatabase/serverless"
 if (!process.env.DATABASE_URL) throw new Error("DATABASE_URL is not configured")
 const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID
 if (!projectId) throw new Error("NEXT_PUBLIC_FIREBASE_PROJECT_ID is not configured")
+if (projectId !== process.env.EXPECTED_FIREBASE_PROJECT_ID) throw new Error("Firebase project does not match EXPECTED_FIREBASE_PROJECT_ID")
+if (process.env.DEMO_MODE_CONFIRMATION !== "SEED_SMARTERP_DEFENCE_DEMO") throw new Error("DEMO_MODE_CONFIRMATION is required")
 
 const app = getApps()[0] ?? initializeApp({ credential: applicationDefault(), projectId })
 const dc = getDataConnect({
-  location: "us-east4",
-  serviceId: "studio-8058744913-5a601-service",
-  connector: "example",
+  location: process.env.FIREBASE_DATACONNECT_LOCATION,
+  serviceId: process.env.FIREBASE_DATACONNECT_SERVICE_ID,
+  connector: process.env.FIREBASE_DATACONNECT_CONNECTOR_ID || "example",
 }, app)
 
 const exportQuery = /* GraphQL */ `

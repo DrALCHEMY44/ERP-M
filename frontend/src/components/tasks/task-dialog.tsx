@@ -32,7 +32,6 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Task, TaskPriority, TaskStatus } from "@/lib/types"
-import { MOCK_USER } from "@/lib/mock-data"
 import { ClipboardList } from "lucide-react"
 
 const taskSchema = z.object({
@@ -104,9 +103,6 @@ export function TaskDialog({ task, open, onOpenChange, onSave, users = [] }: Tas
   const onSubmit = (values: TaskFormValues) => {
     const payload: Partial<Task> = {
       ...values,
-      tenantId: MOCK_USER.tenantId,
-      businessId: MOCK_USER.businessId,
-      assignedBy: MOCK_USER.uid,
       completedAt: values.status === 'Completed' ? new Date().toISOString() : undefined,
     }
     

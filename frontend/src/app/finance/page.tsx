@@ -47,7 +47,10 @@ export default function FinancePage() {
     refreshInterval: 5000
   });
 
-  const transactions = dbTransactions?.transactions || [];
+  const transactions = React.useMemo(
+    () => dbTransactions?.transactions || [],
+    [dbTransactions?.transactions],
+  );
 
   const sales = React.useMemo(() => {
     return transactions

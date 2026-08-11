@@ -36,7 +36,7 @@ export default function LoginPage() {
         title: "Login Successful",
         description: "Welcome back to your business workspace.",
       })
-      window.location.href = "/dashboard"
+      router.replace("/dashboard")
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -58,7 +58,7 @@ export default function LoginPage() {
         title: "Google Sign-In Successful",
         description: "Successfully authenticated with Google.",
       })
-      window.location.href = "/dashboard"
+      router.replace("/dashboard")
     } catch (error: any) {
       toast({
         variant: "destructive",

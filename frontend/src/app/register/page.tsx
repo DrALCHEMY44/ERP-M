@@ -269,7 +269,7 @@ export default function RegisterPage() {
       })
 
       setTimeout(() => {
-        window.location.href = "/dashboard"
+        router.replace("/dashboard")
       }, 1800)
     } catch (error: any) {
       console.error("Registration pipeline failed:", error)
