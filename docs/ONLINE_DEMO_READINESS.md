@@ -14,7 +14,7 @@ Status as of 2026-08-11. `PASS` means verified locally; cloud-dependent claims r
 | Data Connect clean deployment | PARTIAL | all operations `NO_ACCESS` | New project ID/resources pending | Compile/deploy to empty demo project | Compile and generated SDK diff | BLOCKED |
 | Existing development Data Connect compatibility | BLOCKED | compile reports removed access-code variables, added required hash/id variables, removed audit mutations | Existing project must remain untouched | Use `@retired`/nullable transition in a separate migration branch if ever migrating it | Compile without `--force` | BLOCKED by policy |
 | Vercel full-stack deployment | PASS | `frontend/vercel.json`, deterministic build/typegen | Project/env not created | Configure Vercel with `frontend/` root | HTTPS health and workflows | PASS locally |
-| Flutter release | PARTIAL | authenticated API and release URL validation | Official stable SDK verification in progress | Complete user-local SDK verification | doctor/analyze/test; release APK only after HTTPS URL | BLOCKED |
+| Flutter release | PASS locally | Flutter 3.44.4 stable, Dart 3.12.2; `pub get` and widget test pass | 37 non-error analyzer findings; HTTPS URL not available | Retire legacy warnings and configure mobile Firebase/API URL | Repeat analyze/test; build release APK only after HTTPS URL | BLOCKED online |
 | Demo data | PARTIAL | guarded idempotent `demo:seed` script | Cloud resources/UIDs pending | Review on clean schema then run once approved | Second run produces same IDs/counts | BLOCKED online |
 
 ## Dependency exposure

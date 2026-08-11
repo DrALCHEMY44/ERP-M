@@ -8,7 +8,11 @@ Verification date: 2026-08-11.
 | Firebase CLI | PASS | `firebase-tools` 15.26.0 explicitly targeted local-only `demo-smarterp-ai-defence-local` |
 | Firestore rules parse/startup | PASS | Standard Firestore emulator loaded `backend/firestore.rules`, ran the verification command and exited 0 |
 | Firestore behavioral assertions | NOT RUN | No rules-unit-test fixture exists; startup proves syntax/loading, not all allow/deny cases |
-| Official Flutter stable | IN PROGRESS | Authorized workspace-local 3.44.4 archive; system Snap package remains untouched |
+| Official Flutter stable | PASS for Android | Flutter 3.44.4 stable, Dart 3.12.2, at `.tools/flutter-sdk`; existing Snap package untouched |
+| `flutter doctor -v` | PASS with unrelated limitation | Android SDK 36, Java 21, Chrome, devices and network pass; optional Linux-desktop tooling (`clang++`, CMake, Ninja and pkg-config) is absent |
+| `flutter pub get` | PASS | Dependencies resolved; 30 newer versions are outside current constraints |
+| `flutter analyze` | PASS with non-error findings | 37 issues: 23 unused-code warnings and 14 deprecated-API infos; no analyzer errors |
+| `flutter test` | PASS | Widget test: 1 passed, 0 failed |
 | ESLint | PASS with warnings | 0 errors, 80 warnings: 79 cosmetic and 1 maintenance/performance |
 | Production dependency audit | REVIEWED | 3 high and 6 moderate; see `DEPENDENCY_RISK.md` |
 
