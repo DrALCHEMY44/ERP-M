@@ -1,13 +1,10 @@
 "use client"
 
 import * as React from "react"
-import { 
-  TrendingUp, 
-  Wallet, 
-  FileSpreadsheet, 
+import {
+  FileSpreadsheet,
   Download,
   Calculator,
-  Gavel,
   History,
   ArrowUpRight,
   ArrowDownRight,
@@ -17,27 +14,23 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
-import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart"
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis, Legend } from "recharts"
 import { useAuth } from "@/hooks/use-auth"
-import { useDataConnect } from "@/hooks/use-dataconnect"
+import { useNeonData } from "@/hooks/use-neon-data"
 import { listTransactionsByBusinessQuery } from "@/lib/data-service"
-import { Sale, Expense } from "@/lib/types"
+import { Expense } from "@/lib/types"
+import { downloadCsv } from "@/lib/csv"
+import Link from "next/link"
+
+type FinancialSale = { totalAmount: number; saleDate: string }
 
 export default function FinancePage() {
   const { profile } = useAuth();
-  const { data: dbTransactions, loading: transactionsLoading } = useDataConnect({
+  const { data: dbTransactions, loading: transactionsLoading } = useNeonData({
     query: listTransactionsByBusinessQuery,
     variables: {
       tenantId: profile?.tenantId || "",
@@ -52,20 +45,13 @@ export default function FinancePage() {
     [dbTransactions?.transactions],
   );
 
-  const sales = React.useMemo(() => {
+  const sales = React.useMemo<FinancialSale[]>(() => {
     return transactions
       .filter((t: any) => t.type?.toUpperCase() === 'SALE')
       .map((t: any) => ({
-        id: t.id,
-        tenantId: t.tenantId,
-        businessId: t.businessId,
-        totalAmount: t.amount,
-        saleDate: t.date,
-        recordedBy: t.recordedBy,
-        createdAt: t.createdAt,
-        paymentMethod: 'Cash',
-        productsSold: []
-      })) as unknown as Sale[];
+        totalAmount: Number(t.amount),
+        saleDate: String(t.date),
+      }));
   }, [transactions]);
 
   const expenses = React.useMemo(() => {
@@ -91,7 +77,7 @@ export default function FinancePage() {
     const totalIncome = sales.reduce((acc, sale) => acc + sale.totalAmount, 0);
     const totalExpenses = expenses.reduce((acc, exp) => acc + exp.amount, 0);
     const netProfit = totalIncome - totalExpenses;
-    const cashFlow = totalIncome - totalExpenses; 
+    const cashFlow = totalIncome - totalExpenses;
 
     return { totalIncome, totalExpenses, netProfit, cashFlow };
   }, [sales, expenses]);
@@ -99,7 +85,7 @@ export default function FinancePage() {
   const chartData = React.useMemo(() => {
     const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
     const currentYear = new Date().getFullYear();
-    
+
     let cumulativeIncome = 0;
     let cumulativeExpenses = 0;
     return months.map((month, index) => {
@@ -123,21 +109,10 @@ export default function FinancePage() {
     }).slice(0, new Date().getMonth() + 1);
   }, [sales, expenses]);
 
-  const downloadCsv = React.useCallback((filename: string, rows: (string | number)[][]) => {
-    const escape = (value: string | number) => `"${String(value).replace(/"/g, '""')}"`;
-    const content = `\uFEFF${rows.map(row => row.map(escape).join(",")).join("\n")}`;
-    const url = URL.createObjectURL(new Blob([content], { type: "text/csv;charset=utf-8" }));
-    const anchor = document.createElement("a");
-    anchor.href = url;
-    anchor.download = filename;
-    anchor.click();
-    URL.revokeObjectURL(url);
-  }, []);
-
-  const exportDsf = React.useCallback(() => {
+  const exportFinanceWorksheet = React.useCallback(() => {
     const year = new Date().getFullYear();
-    downloadCsv(`DSF-${profile?.businessCode || profile?.businessId || "company"}-${year}.csv`, [
-      ["DSF - Declaration Statistique et Fiscale", year],
+    downloadCsv(`finance-review-${profile?.businessCode || profile?.businessId || "company"}-${year}.csv`, [
+      ["Finance review worksheet", year],
       ["Company", profile?.businessCode || profile?.businessId || ""],
       [],
       ["Date", "Nature", "Category", "Amount (FCFA)", "Recorded by"],
@@ -153,28 +128,34 @@ export default function FinancePage() {
       ["Total expenses", "", "", stats.totalExpenses, ""],
       ["Net result", "", "", stats.netProfit, ""],
     ]);
-  }, [downloadCsv, profile, stats, transactions]);
+  }, [profile, stats, transactions]);
 
-  const generateBalanceSheet = React.useCallback(() => {
+  const exportLedger = React.useCallback(() => {
+    const date = new Date().toISOString().slice(0, 10)
+    downloadCsv(`ledger-${profile?.businessCode || profile?.businessId || "company"}-${date}.csv`, [
+      ["Date", "Transaction ID", "Type", "Category", "Description", "Debit", "Credit", "Recorded by"],
+      ...transactions.map((transaction: any) => [transaction.date, transaction.id, transaction.type,
+        transaction.category || "Uncategorized", transaction.description || "",
+        transaction.type === "EXPENSE" ? Number(transaction.amount || 0) : 0,
+        transaction.type === "SALE" ? Number(transaction.amount || 0) : 0, transaction.recordedBy]),
+    ])
+  }, [profile, transactions])
+
+  const generateFinancialSummary = React.useCallback(() => {
     const date = new Date().toISOString().slice(0, 10);
-    const cashPosition = stats.cashFlow;
-    downloadCsv(`balance-sheet-${profile?.businessCode || profile?.businessId || "company"}-${date}.csv`, [
-      ["PROVISIONAL BALANCE SHEET", date],
+    downloadCsv(`financial-summary-${profile?.businessCode || profile?.businessId || "company"}-${date}.csv`, [
+      ["PROVISIONAL FINANCIAL POSITION SUMMARY", date],
       ["Company", profile?.businessCode || profile?.businessId || ""],
       [],
-      ["ASSETS", "Amount (FCFA)", "LIABILITIES & EQUITY", "Amount (FCFA)"],
-      ["Net cash position", Math.max(cashPosition, 0), "Accumulated net result", Math.max(stats.netProfit, 0)],
-      ["Receivable / operating position", 0, "Operating deficit", Math.max(-stats.netProfit, 0)],
-      ["TOTAL ASSETS", Math.max(cashPosition, 0), "TOTAL LIABILITIES & EQUITY", Math.max(stats.netProfit, 0)],
-      [],
-      ["Income statement summary", "Amount (FCFA)"],
+      ["Recorded operating measure", "Amount (FCFA)"],
       ["Revenue", stats.totalIncome],
       ["Expenses", stats.totalExpenses],
       ["Net result", stats.netProfit],
+      ["Net cash movement represented by these records", stats.cashFlow],
       [],
-      ["Note", "Provisional statement generated from transactions currently recorded in SmartERP. Add opening balances, bank, receivable, payable and fixed-asset accounts for a statutory balance sheet."],
+      ["Note", "This is an operational summary, not a statutory balance sheet. Add opening balances, bank, receivable, payable, inventory and fixed-asset accounts in an accounting system before filing."],
     ]);
-  }, [downloadCsv, profile, stats]);
+  }, [profile, stats]);
 
   if (salesLoading || expensesLoading) {
     return (
@@ -190,15 +171,15 @@ export default function FinancePage() {
         <div className="space-y-1">
           <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Finance & Accounting</h1>
           <div className="flex items-center gap-2">
-            <Badge variant="secondary" className="bg-blue-100 text-blue-700 font-bold uppercase tracking-tighter">SYCOHADA Compliant</Badge>
+            <Badge variant="secondary" className="bg-blue-100 text-blue-700 font-bold uppercase tracking-tighter">Operational finance exports</Badge>
           </div>
         </div>
         <div className="flex w-full flex-col items-stretch gap-2 sm:w-auto sm:flex-row sm:items-center">
-          <Button variant="outline" size="sm" className="bg-card" onClick={exportDsf} disabled={!transactions.length}>
-            <Download className="size-4 mr-2" /> Export DSF
+          <Button variant="outline" size="sm" className="bg-card" onClick={exportFinanceWorksheet} disabled={!transactions.length}>
+            <Download className="size-4 mr-2" /> Export Worksheet
           </Button>
-          <Button size="sm" className="bg-primary hover:bg-primary/90 w-full sm:w-auto font-bold uppercase text-[10px] tracking-widest shadow-lg" onClick={generateBalanceSheet}>
-            <Calculator className="size-4 mr-2" /> Generate Balance Sheet
+          <Button size="sm" className="bg-primary hover:bg-primary/90 w-full sm:w-auto font-bold uppercase text-[10px] tracking-widest shadow-lg" onClick={generateFinancialSummary}>
+            <Calculator className="size-4 mr-2" /> Financial Summary
           </Button>
         </div>
       </div>
@@ -224,8 +205,8 @@ export default function FinancePage() {
         </Card>
         <Card className="border-t-4 border-blue-500 shadow-sm bg-blue-50/10">
           <CardHeader className="pb-2 p-4">
-            <CardDescription className="text-[10px] font-bold uppercase tracking-widest">Valeur Ajoutée (VA)</CardDescription>
-            <CardTitle className="text-xl font-bold text-blue-700">{(stats.totalIncome - stats.totalExpenses > 0 ? stats.totalIncome - stats.totalExpenses : 0).toLocaleString()} FCFA</CardTitle>
+            <CardDescription className="text-[10px] font-bold uppercase tracking-widest">Recorded Transactions</CardDescription>
+            <CardTitle className="text-xl font-bold text-blue-700">{transactions.length.toLocaleString()}</CardTitle>
           </CardHeader>
         </Card>
         <Card className="border-t-4 border-primary shadow-sm bg-primary/5">
@@ -239,7 +220,7 @@ export default function FinancePage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="lg:col-span-2 shadow-sm">
           <CardHeader>
-            <CardTitle className="text-lg font-bold">Analyse de Gestion SYCOHADA</CardTitle>
+            <CardTitle className="text-lg font-bold">Cumulative Income & Expenses</CardTitle>
             <CardDescription className="text-xs uppercase font-bold tracking-tighter">Produits (Income) vs Charges (Expenses)</CardDescription>
           </CardHeader>
           <CardContent className="h-[350px] w-full">
@@ -269,24 +250,27 @@ export default function FinancePage() {
 
         <Card className="shadow-sm">
           <CardHeader>
-            <CardTitle className="text-lg font-bold">Compliance & Reports</CardTitle>
-            <CardDescription className="text-xs">Quick access to official records.</CardDescription>
+            <CardTitle className="text-lg font-bold">Exports & Audit</CardTitle>
+            <CardDescription className="text-xs">Operational exports for review and filing preparation.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="p-4 bg-muted/50 rounded-xl border-l-4 border-amber-500">
               <div className="flex items-center justify-between mb-1">
-                <p className="text-[10px] font-bold uppercase text-amber-700">Fiscal Deadline</p>
-                <Gavel className="size-4 text-amber-600" />
+                <p className="text-[10px] font-bold uppercase text-amber-700">Filing preparation</p>
+                <FileSpreadsheet className="size-4 text-amber-600" />
               </div>
-              <p className="text-lg font-bold">15th of Next Month</p>
-              <Button size="sm" className="w-full mt-3 text-xs font-bold uppercase tracking-widest" variant="secondary">Prepare Filing</Button>
+              <p className="text-xs text-muted-foreground">Export the current transaction register for professional review.</p>
+              <Button size="sm" className="w-full mt-3 text-xs font-bold uppercase tracking-widest" variant="secondary" onClick={exportFinanceWorksheet}>Export finance worksheet</Button>
             </div>
             <div className="space-y-2">
-              <Button variant="ghost" className="w-full justify-start text-[10px] font-bold uppercase tracking-widest h-10 group">
-                <FileSpreadsheet className="size-4 mr-3 text-emerald-500 group-hover:scale-110 transition-transform" /> Grand Livre (Ledger)
+              <Button asChild className="w-full justify-start text-[10px] font-bold uppercase tracking-widest h-10">
+                <Link href="/accounting"><Calculator className="size-4 mr-3" /> Open double-entry accounting</Link>
               </Button>
-              <Button variant="ghost" className="w-full justify-start text-[10px] font-bold uppercase tracking-widest h-10 group">
-                <History className="size-4 mr-3 text-amber-500 group-hover:scale-110 transition-transform" /> Accounting Audit Trail
+              <Button variant="ghost" className="w-full justify-start text-[10px] font-bold uppercase tracking-widest h-10 group" onClick={exportLedger}>
+                <FileSpreadsheet className="size-4 mr-3 text-emerald-500 group-hover:scale-110 transition-transform" /> Transaction Ledger
+              </Button>
+              <Button asChild variant="ghost" className="w-full justify-start text-[10px] font-bold uppercase tracking-widest h-10 group">
+                <Link href="/activity-logs"><History className="size-4 mr-3 text-amber-500 group-hover:scale-110 transition-transform" /> Activity Log</Link>
               </Button>
             </div>
           </CardContent>

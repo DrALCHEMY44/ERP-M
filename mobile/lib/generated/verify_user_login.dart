@@ -9,16 +9,40 @@ class VerifyUserLoginVariablesBuilder {
   String businessId;
 
   final FirebaseDataConnect _dataConnect;
-  VerifyUserLoginVariablesBuilder(this._dataConnect, {required  this.email,required  this.fullName,required  this.role,required  this.accessCodeHash,required  this.tenantId,required  this.businessId,});
-  Deserializer<VerifyUserLoginData> dataDeserializer = (dynamic json)  => VerifyUserLoginData.fromJson(jsonDecode(json));
-  Serializer<VerifyUserLoginVariables> varsSerializer = (VerifyUserLoginVariables vars) => jsonEncode(vars.toJson());
-  Future<QueryResult<VerifyUserLoginData, VerifyUserLoginVariables>> execute({QueryFetchPolicy fetchPolicy = QueryFetchPolicy.preferCache}) {
+  VerifyUserLoginVariablesBuilder(
+    this._dataConnect, {
+    required this.email,
+    required this.fullName,
+    required this.role,
+    required this.accessCodeHash,
+    required this.tenantId,
+    required this.businessId,
+  });
+  Deserializer<VerifyUserLoginData> dataDeserializer = (dynamic json) =>
+      VerifyUserLoginData.fromJson(jsonDecode(json));
+  Serializer<VerifyUserLoginVariables> varsSerializer =
+      (VerifyUserLoginVariables vars) => jsonEncode(vars.toJson());
+  Future<QueryResult<VerifyUserLoginData, VerifyUserLoginVariables>> execute({
+    QueryFetchPolicy fetchPolicy = QueryFetchPolicy.preferCache,
+  }) {
     return ref().execute(fetchPolicy: fetchPolicy);
   }
 
   QueryRef<VerifyUserLoginData, VerifyUserLoginVariables> ref() {
-    VerifyUserLoginVariables vars= VerifyUserLoginVariables(email: email,fullName: fullName,role: role,accessCodeHash: accessCodeHash,tenantId: tenantId,businessId: businessId,);
-    return _dataConnect.query("verifyUserLogin", dataDeserializer, varsSerializer, vars);
+    VerifyUserLoginVariables vars = VerifyUserLoginVariables(
+      email: email,
+      fullName: fullName,
+      role: role,
+      accessCodeHash: accessCodeHash,
+      tenantId: tenantId,
+      businessId: businessId,
+    );
+    return _dataConnect.query(
+      "verifyUserLogin",
+      dataDeserializer,
+      varsSerializer,
+      vars,
+    );
   }
 }
 
@@ -30,35 +54,42 @@ class VerifyUserLoginUsers {
   final String? fullName;
   final String tenantId;
   final String businessId;
-  VerifyUserLoginUsers.fromJson(dynamic json):
-  
-  id = nativeFromJson<String>(json['id']),
-  email = nativeFromJson<String>(json['email']),
-  role = nativeFromJson<String>(json['role']),
-  fullName = json['fullName'] == null ? null : nativeFromJson<String>(json['fullName']),
-  tenantId = nativeFromJson<String>(json['tenantId']),
-  businessId = nativeFromJson<String>(json['businessId']);
+  VerifyUserLoginUsers.fromJson(dynamic json)
+    : id = nativeFromJson<String>(json['id']),
+      email = nativeFromJson<String>(json['email']),
+      role = nativeFromJson<String>(json['role']),
+      fullName = json['fullName'] == null
+          ? null
+          : nativeFromJson<String>(json['fullName']),
+      tenantId = nativeFromJson<String>(json['tenantId']),
+      businessId = nativeFromJson<String>(json['businessId']);
   @override
   bool operator ==(Object other) {
-    if(identical(this, other)) {
+    if (identical(this, other)) {
       return true;
     }
-    if(other.runtimeType != runtimeType) {
+    if (other.runtimeType != runtimeType) {
       return false;
     }
 
     final VerifyUserLoginUsers otherTyped = other as VerifyUserLoginUsers;
-    return id == otherTyped.id && 
-    email == otherTyped.email && 
-    role == otherTyped.role && 
-    fullName == otherTyped.fullName && 
-    tenantId == otherTyped.tenantId && 
-    businessId == otherTyped.businessId;
-    
+    return id == otherTyped.id &&
+        email == otherTyped.email &&
+        role == otherTyped.role &&
+        fullName == otherTyped.fullName &&
+        tenantId == otherTyped.tenantId &&
+        businessId == otherTyped.businessId;
   }
+
   @override
-  int get hashCode => Object.hashAll([id.hashCode, email.hashCode, role.hashCode, fullName.hashCode, tenantId.hashCode, businessId.hashCode]);
-  
+  int get hashCode => Object.hashAll([
+    id.hashCode,
+    email.hashCode,
+    role.hashCode,
+    fullName.hashCode,
+    tenantId.hashCode,
+    businessId.hashCode,
+  ]);
 
   Map<String, dynamic> toJson() {
     Map<String, dynamic> json = {};
@@ -86,27 +117,25 @@ class VerifyUserLoginUsers {
 @immutable
 class VerifyUserLoginData {
   final List<VerifyUserLoginUsers> users;
-  VerifyUserLoginData.fromJson(dynamic json):
-  
-  users = (json['users'] as List<dynamic>)
-        .map((e) => VerifyUserLoginUsers.fromJson(e))
-        .toList();
+  VerifyUserLoginData.fromJson(dynamic json)
+    : users = (json['users'] as List<dynamic>)
+          .map((e) => VerifyUserLoginUsers.fromJson(e))
+          .toList();
   @override
   bool operator ==(Object other) {
-    if(identical(this, other)) {
+    if (identical(this, other)) {
       return true;
     }
-    if(other.runtimeType != runtimeType) {
+    if (other.runtimeType != runtimeType) {
       return false;
     }
 
     final VerifyUserLoginData otherTyped = other as VerifyUserLoginData;
     return users == otherTyped.users;
-    
   }
+
   @override
   int get hashCode => users.hashCode;
-  
 
   Map<String, dynamic> toJson() {
     Map<String, dynamic> json = {};
@@ -114,9 +143,7 @@ class VerifyUserLoginData {
     return json;
   }
 
-  VerifyUserLoginData({
-    required this.users,
-  });
+  VerifyUserLoginData({required this.users});
 }
 
 @immutable
@@ -127,36 +154,44 @@ class VerifyUserLoginVariables {
   final String accessCodeHash;
   final String tenantId;
   final String businessId;
-  @Deprecated('fromJson is deprecated for Variable classes as they are no longer required for deserialization.')
-  VerifyUserLoginVariables.fromJson(Map<String, dynamic> json):
-  
-  email = nativeFromJson<String>(json['email']),
-  fullName = nativeFromJson<String>(json['fullName']),
-  role = nativeFromJson<String>(json['role']),
-  accessCodeHash = nativeFromJson<String>(json['accessCodeHash']),
-  tenantId = nativeFromJson<String>(json['tenantId']),
-  businessId = nativeFromJson<String>(json['businessId']);
+  @Deprecated(
+    'fromJson is deprecated for Variable classes as they are no longer required for deserialization.',
+  )
+  VerifyUserLoginVariables.fromJson(Map<String, dynamic> json)
+    : email = nativeFromJson<String>(json['email']),
+      fullName = nativeFromJson<String>(json['fullName']),
+      role = nativeFromJson<String>(json['role']),
+      accessCodeHash = nativeFromJson<String>(json['accessCodeHash']),
+      tenantId = nativeFromJson<String>(json['tenantId']),
+      businessId = nativeFromJson<String>(json['businessId']);
   @override
   bool operator ==(Object other) {
-    if(identical(this, other)) {
+    if (identical(this, other)) {
       return true;
     }
-    if(other.runtimeType != runtimeType) {
+    if (other.runtimeType != runtimeType) {
       return false;
     }
 
-    final VerifyUserLoginVariables otherTyped = other as VerifyUserLoginVariables;
-    return email == otherTyped.email && 
-    fullName == otherTyped.fullName && 
-    role == otherTyped.role && 
-    accessCodeHash == otherTyped.accessCodeHash && 
-    tenantId == otherTyped.tenantId && 
-    businessId == otherTyped.businessId;
-    
+    final VerifyUserLoginVariables otherTyped =
+        other as VerifyUserLoginVariables;
+    return email == otherTyped.email &&
+        fullName == otherTyped.fullName &&
+        role == otherTyped.role &&
+        accessCodeHash == otherTyped.accessCodeHash &&
+        tenantId == otherTyped.tenantId &&
+        businessId == otherTyped.businessId;
   }
+
   @override
-  int get hashCode => Object.hashAll([email.hashCode, fullName.hashCode, role.hashCode, accessCodeHash.hashCode, tenantId.hashCode, businessId.hashCode]);
-  
+  int get hashCode => Object.hashAll([
+    email.hashCode,
+    fullName.hashCode,
+    role.hashCode,
+    accessCodeHash.hashCode,
+    tenantId.hashCode,
+    businessId.hashCode,
+  ]);
 
   Map<String, dynamic> toJson() {
     Map<String, dynamic> json = {};
@@ -178,4 +213,3 @@ class VerifyUserLoginVariables {
     required this.businessId,
   });
 }
-

@@ -43,7 +43,7 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
 
   void _sendMessage([String? text]) async {
     final String query = text ?? _messageController.text;
-    if (query.trim().isEmpty) return;
+    if (query.trim().isEmpty || _isReplying) return;
 
     if (text == null) {
       _messageController.clear();
@@ -58,7 +58,13 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
     // The mobile client calls the authenticated Next.js AI boundary. Provider
     // credentials and authorization context never enter the Flutter bundle.
     final core = Provider.of<CoreProvider>(context, listen: false);
-    final String response = await core.askAi(query);
+    String response;
+    try {
+      response = await core.askAi(query.trim());
+    } catch (_) {
+      response =
+          'The AI service is temporarily unavailable. Please try again shortly.';
+    }
 
     if (mounted) {
       setState(() {
@@ -218,6 +224,8 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
                 Expanded(
                   child: TextField(
                     controller: _messageController,
+                    maxLength: 2000,
+                    enabled: !_isReplying,
                     decoration: InputDecoration(
                       hintText: 'Ask AI about inventory, sales, VAT...',
                       border: OutlineInputBorder(
@@ -233,7 +241,7 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
                 ),
                 const SizedBox(width: 8),
                 IconButton.filled(
-                  onPressed: () => _sendMessage(),
+                  onPressed: _isReplying ? null : () => _sendMessage(),
                   icon: const Icon(Icons.send),
                 ),
               ],

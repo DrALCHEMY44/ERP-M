@@ -6,13 +6,13 @@ import { useForm, useFieldArray, useWatch } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { Plus, Trash2 } from "lucide-react"
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogDescription, 
-  DialogFooter, 
-  DialogHeader, 
-  DialogTitle 
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import {
@@ -32,7 +32,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { useAuth } from "@/hooks/use-auth"
-import { Product, Sale } from "@/lib/types"
+import { Customer, Product, Sale } from "@/lib/types"
 
 const saleItemSchema = z.object({
   productId: z.string().min(1, "Product is required"),
@@ -53,14 +53,25 @@ interface SaleDialogProps {
   onOpenChange: (open: boolean) => void
   onSave: (sale: Partial<Sale>) => void
   products: Product[]
+  customers: Customer[]
   productsLoading?: boolean
+  customersLoading?: boolean
 }
 
-export function SaleDialog({ open, onOpenChange, onSave, products, productsLoading = false }: SaleDialogProps) {
+export function SaleDialog({
+  open,
+  onOpenChange,
+  onSave,
+  products,
+  customers,
+  productsLoading = false,
+  customersLoading = false,
+}: SaleDialogProps) {
   const { profile } = useAuth()
   const form = useForm<SaleFormValues>({
     resolver: zodResolver(saleSchema),
     defaultValues: {
+      customerId: "",
       paymentMethod: "Cash",
       productsSold: [{ productId: "", quantity: 1, priceAtSale: 0 }],
     },
@@ -133,19 +144,44 @@ export function SaleDialog({ open, onOpenChange, onSave, products, productsLoadi
                   </FormItem>
                 )}
               />
-              <FormItem>
-                <FormLabel>Customer (Optional)</FormLabel>
-                <Input placeholder="Search customer name..." />
-              </FormItem>
+              <FormField
+                control={form.control}
+                name="customerId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Customer (Optional)</FormLabel>
+                    <Select
+                      value={field.value || "__walk_in__"}
+                      onValueChange={(value) => field.onChange(value === "__walk_in__" ? "" : value)}
+                      disabled={customersLoading}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select customer" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="__walk_in__">Walk-in customer</SelectItem>
+                        {customers.map((customer) => (
+                          <SelectItem key={customer.id} value={customer.id!}>
+                            {customer.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
 
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <h4 className="text-sm font-semibold">Products</h4>
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  size="sm" 
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
                   onClick={() => append({ productId: "", quantity: 1, priceAtSale: 0 })}
                 >
                   <Plus className="size-4 mr-1" /> Add Item
@@ -160,14 +196,14 @@ export function SaleDialog({ open, onOpenChange, onSave, products, productsLoadi
                       name={`productsSold.${index}.productId`}
                       render={({ field }) => (
                         <FormItem>
-                          <Select 
+                          <Select
                             onValueChange={(val) => {
                               field.onChange(val)
                               const prod = products.find(p => p.id === val)
                               if (prod) {
                                 form.setValue(`productsSold.${index}.priceAtSale`, prod.sellingPrice)
                               }
-                            }} 
+                            }}
                             defaultValue={field.value}
                           >
                             <FormControl>
@@ -220,11 +256,12 @@ export function SaleDialog({ open, onOpenChange, onSave, products, productsLoadi
                     />
                   </div>
                   <div className="col-span-1">
-                    <Button 
-                      type="button" 
-                      variant="ghost" 
-                      size="icon" 
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
                       onClick={() => remove(index)}
+                      aria-label={`Remove sale item ${index + 1}`}
                       className="text-destructive"
                     >
                       <Trash2 className="size-4" />

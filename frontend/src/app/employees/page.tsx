@@ -8,23 +8,28 @@ import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { useDataConnect } from "@/hooks/use-dataconnect"
-import { listEmployeesByBusinessQuery, createEmployeeMutation, updateEmployeeMutation, deleteEmployeeMutation, provisionEmployeeUserMutation, updateUserMutation, getUserByEmailQuery } from "@/lib/data-service"
+import { useNeonData } from "@/hooks/use-neon-data"
+import {
+  createEmployeeWithAccessMutation,
+  deleteEmployeeWithAccessMutation,
+  listEmployeesByBusinessQuery,
+  updateEmployeeWithAccessMutation,
+} from "@/lib/data-service"
 import { useAuth } from "@/hooks/use-auth"
 import { Employee } from "@/lib/types"
 import { useToast } from "@/hooks/use-toast"
 import { EmployeeDialog } from "@/components/employees/employee-dialog"
 
 export default function EmployeesPage() {
-  const { user, profile } = useAuth();
-  const { data: employeesData, loading, unauthenticated, refetch } = useDataConnect({ 
-    query: listEmployeesByBusinessQuery, 
+  const { profile } = useAuth();
+  const { data: employeesData, loading, unauthenticated, refetch } = useNeonData({
+    query: listEmployeesByBusinessQuery,
     variables: { tenantId: profile?.tenantId || "", businessId: profile?.businessId || "" },
     skip: !profile || !profile.tenantId || !profile.businessId,
     refreshInterval: 5000
   });
   const { toast } = useToast();
-  
+
   const employees = React.useMemo(() => {
     const sqlList = employeesData?.employees || [];
     return sqlList.map((emp: any) => ({
@@ -36,19 +41,21 @@ export default function EmployeesPage() {
       role: emp.role,
       salary: emp.salary,
       department: emp.department,
+      email: emp.email || '',
+      contact: emp.contact || '',
       startDate: emp.startDate,
       status: emp.status,
       createdAt: emp.createdAt,
-      code: emp.code,
       employmentStatus: emp.status || 'Active',
-      salaryPaymentStatus: 'Paid', // Default placeholder since it's missing from schema
+      attendance: Number(emp.attendance || 0),
+      salaryPaymentStatus: emp.salaryPaymentStatus || 'Pending',
     })) as unknown as Employee[];
   }, [employeesData]);
   const [isDialogOpen, setIsDialogOpen] = React.useState(false)
   const [selectedEmployee, setSelectedEmployee] = React.useState<Employee | null>(null)
   const [searchQuery, setSearchQuery] = React.useState("")
 
-  const filteredEmployees = employees.filter(emp => 
+  const filteredEmployees = employees.filter(emp =>
     emp.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
     emp.position.toLowerCase().includes(searchQuery.toLowerCase()) ||
     emp.department.toLowerCase().includes(searchQuery.toLowerCase())
@@ -56,6 +63,9 @@ export default function EmployeesPage() {
 
   const activeCount = employees.filter(e => e.employmentStatus === 'Active').length;
   const pendingPayrollCount = employees.filter(e => e.salaryPaymentStatus !== 'Paid').length;
+  const averageAttendance = employees.length
+    ? Math.round(employees.reduce((sum, employee) => sum + Number(employee.attendance || 0), 0) / employees.length)
+    : 0;
 
   const handleEdit = (employee: Employee) => {
     setSelectedEmployee(employee)
@@ -77,53 +87,31 @@ export default function EmployeesPage() {
       return;
     }
     try {
-      // Map UI Roles to Database / System Roles
-      let userRole = "Staff";
-      if (employeeData.role === "Administrator") {
-        userRole = "Business Owner";
-      } else if (employeeData.role === "Manager") {
-        userRole = "Manager";
-      }
+      const userRole = employeeData.role === "Manager" ? "Manager" : "Staff";
+      const email = employeeData.email?.trim().toLowerCase() || "";
 
       if (selectedEmployee?.id) {
-        await updateEmployeeMutation({
+        await updateEmployeeWithAccessMutation({
           id: selectedEmployee.id,
           fullName: employeeData.fullName,
           position: employeeData.position,
           role: employeeData.role,
           department: employeeData.department,
           salary: employeeData.salary,
+          email,
+          contact: employeeData.contact,
+          startDate: employeeData.startDate,
+          status: employeeData.employmentStatus,
+          attendance: employeeData.attendance,
+          salaryPaymentStatus: employeeData.salaryPaymentStatus,
+          userRole,
         });
-
-        // Sync corresponding user record in SQL database
-        if (employeeData.email) {
-          try {
-            const userRes = await getUserByEmailQuery({ email: employeeData.email.trim().toLowerCase() });
-            const userToUpdate = userRes.data.users[0];
-            if (userToUpdate) {
-              await updateUserMutation({
-                id: userToUpdate.id,
-                fullName: employeeData.fullName,
-                role: userRole,
-                department: employeeData.department,
-                phoneNumber: employeeData.contact,
-              });
-            }
-          } catch (userErr) {
-            console.error("Failed to sync updated user profile for employee:", userErr);
-          }
-        }
 
         toast({ title: "Employee Updated", description: `${employeeData.fullName}'s records have been modified.` });
       } else {
-        const namePart = (employeeData.fullName || "emp")
-          .trim()
-          .toLowerCase()
-          .replace(/[^a-z0-9]+/g, '_')
-          .substring(0, 15);
-        const employeeCode = `EMP-${namePart.substring(0, 6).toUpperCase()}-${crypto.randomUUID().substring(0, 8).toUpperCase()}`;
+        const employeeCode = `EMP-${crypto.randomUUID().replaceAll("-", "").slice(0, 16).toUpperCase()}`;
 
-        await createEmployeeMutation({
+        await createEmployeeWithAccessMutation({
           tenantId: profile.tenantId,
           businessId: profile.businessId,
           fullName: employeeData.fullName || "",
@@ -131,27 +119,15 @@ export default function EmployeesPage() {
           role: employeeData.role,
           department: employeeData.department,
           salary: employeeData.salary,
-          code: employeeCode,
+          email,
+          contact: employeeData.contact,
+          startDate: employeeData.startDate,
+          status: employeeData.employmentStatus,
+          attendance: employeeData.attendance,
+          salaryPaymentStatus: employeeData.salaryPaymentStatus,
+          accessCode: employeeCode,
+          userRole,
         });
-
-        // Create user record in SQL database so they can log in
-        if (employeeData.email) {
-          try {
-            await provisionEmployeeUserMutation({
-              tenantId: profile.tenantId,
-              businessId: profile.businessId,
-              email: employeeData.email.trim().toLowerCase(),
-              role: userRole,
-              fullName: employeeData.fullName || "",
-              department: employeeData.department || "",
-              phoneNumber: employeeData.contact || "",
-              accessCode: employeeCode,
-            });
-          } catch (userErr) {
-            console.error("Failed to create user login profile for employee:", userErr);
-            throw userErr;
-          }
-        }
 
         toast({
           title: "Employee access created",
@@ -159,21 +135,29 @@ export default function EmployeesPage() {
           duration: 12000,
         });
       }
-      refetch();
+      await refetch();
     } catch (e) {
       console.error(e);
-      toast({ variant: "destructive", title: "Error", description: "Could not save employee data." });
+      toast({
+        variant: "destructive",
+        title: "Employee Not Saved",
+        description: e instanceof Error ? e.message : "Could not save employee data.",
+      });
     }
   }
 
-  const handleDelete = async (id: string) => {
-    if (confirm("Permanently delete this employee's records? This action is immutable.")) {
+  const handleDelete = async (employee: Employee) => {
+    if (confirm("Permanently delete this employee's records? This action cannot be undone.")) {
       try {
-        await deleteEmployeeMutation({ id });
-        toast({ title: "Employee Removed", description: "Record deleted from secure cloud storage." });
-        refetch();
-      } catch (e) {
-        toast({ variant: "destructive", title: "Error", description: "Failed to delete record." });
+        await deleteEmployeeWithAccessMutation({ id: employee.id });
+        toast({ title: "Employee Removed", description: "Employee record and workspace login revoked." });
+        await refetch();
+      } catch (error) {
+        toast({
+          variant: "destructive",
+          title: "Employee Not Removed",
+          description: error instanceof Error ? error.message : "Failed to delete record.",
+        });
       }
     }
   }
@@ -192,11 +176,11 @@ export default function EmployeesPage() {
             <p className="text-sm text-muted-foreground">
               Please sign in to view employee records. All operations require an authenticated session.
             </p>
-            <Link href="/login">
-              <Button className="bg-primary hover:bg-primary/90 text-white font-bold uppercase text-xs tracking-widest">
+            <Button asChild className="bg-primary hover:bg-primary/90 text-white font-bold uppercase text-xs tracking-widest">
+              <Link href="/login">
                 <LogIn className="size-4 mr-2" /> Sign In
-              </Button>
-            </Link>
+              </Link>
+            </Button>
           </CardContent>
         </Card>
       </div>
@@ -216,7 +200,7 @@ export default function EmployeesPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="space-y-1">
           <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Human Resources</h1>
-          <p className="text-sm text-muted-foreground">Manage your team, positions, and payroll (SYCOHADA Compliant).</p>
+          <p className="text-sm text-muted-foreground">Manage your team, positions, attendance, and payroll records.</p>
         </div>
         <Button onClick={handleAddNew} className="bg-primary hover:bg-primary/90 text-white font-bold uppercase text-xs tracking-widest shadow-lg">
           <Plus className="size-4 mr-2" /> Add Employee
@@ -239,7 +223,7 @@ export default function EmployeesPage() {
           </CardHeader>
           <CardContent className="p-4 pt-0">
             <div className="text-2xl font-bold text-emerald-700">{pendingPayrollCount === 0 ? "Fully Paid" : `${pendingPayrollCount} Pending`}</div>
-            <p className="text-[9px] text-muted-foreground mt-1 uppercase font-bold tracking-tighter">Cycle: {new Date().toLocaleString('default', { month: 'long', year: 'numeric' })}</p>
+            <p className="text-[9px] text-muted-foreground mt-1 uppercase font-bold tracking-tighter">Recorded payment status</p>
           </CardContent>
         </Card>
         <Card className="border-t-4 border-amber-500 shadow-md bg-amber-50/10">
@@ -247,8 +231,8 @@ export default function EmployeesPage() {
             <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Average Attendance</CardTitle>
           </CardHeader>
           <CardContent className="p-4 pt-0">
-            <div className="text-2xl font-bold text-amber-600">92%</div>
-            <p className="text-[9px] text-muted-foreground mt-1 uppercase font-bold tracking-tighter">Last 30 Days Oversight</p>
+            <div className="text-2xl font-bold text-amber-600">{averageAttendance}%</div>
+            <p className="text-[9px] text-muted-foreground mt-1 uppercase font-bold tracking-tighter">Recorded attendance average</p>
           </CardContent>
         </Card>
       </div>
@@ -257,9 +241,9 @@ export default function EmployeesPage() {
         <div className="flex items-center gap-4 mb-6">
           <div className="relative flex-1 max-w-sm">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-            <Input 
-              placeholder="Search by name, position or dept..." 
-              className="pl-9 bg-muted/20" 
+            <Input
+              placeholder="Search by name, position or dept..."
+              className="pl-9 bg-muted/20"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -286,11 +270,6 @@ export default function EmployeesPage() {
                           {emp.role}
                         </Badge>
                       )}
-                      {emp.code && (
-                        <span className="text-[9px] font-mono text-muted-foreground bg-muted/60 px-1.5 py-0.5 rounded tracking-tighter uppercase font-semibold">
-                          {emp.code}
-                        </span>
-                      )}
                     </div>
                   </div>
                   <div className="space-y-1 mb-4">
@@ -304,18 +283,18 @@ export default function EmployeesPage() {
                   </div>
                   <div className="pt-4 border-t flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <Button size="icon" variant="ghost" className="h-8 w-8 rounded-full bg-muted/50 text-muted-foreground hover:text-primary">
-                        <Phone className="size-3.5" />
-                      </Button>
-                      <Button size="icon" variant="ghost" className="h-8 w-8 rounded-full bg-muted/50 text-muted-foreground hover:text-primary">
-                        <Mail className="size-3.5" />
-                      </Button>
+                      {emp.contact && <Button asChild size="icon" variant="ghost" className="h-8 w-8 rounded-full bg-muted/50 text-muted-foreground hover:text-primary"><a href={`tel:${emp.contact}`} aria-label={`Call ${emp.fullName}`}><Phone className="size-3.5" /></a></Button>}
+                      {emp.email && <Button asChild size="icon" variant="ghost" className="h-8 w-8 rounded-full bg-muted/50 text-muted-foreground hover:text-primary"><a href={`mailto:${emp.email}`} aria-label={`Email ${emp.fullName}`}><Mail className="size-3.5" /></a></Button>}
                     </div>
                     <div className="flex items-center gap-1">
-                      <Button variant="outline" size="sm" onClick={() => handleEdit(emp)} className="text-[10px] font-bold uppercase tracking-widest h-8 px-3">Edit</Button>
-                      <Button variant="ghost" size="icon" onClick={() => handleDelete(emp.id!)} className="h-8 w-8 text-destructive hover:bg-destructive/10">
-                        <Trash2 className="size-3.5" />
-                      </Button>
+                      {(profile?.role === "Business Owner" || emp.role !== "Manager") && (
+                        <>
+                          <Button variant="outline" size="sm" onClick={() => handleEdit(emp)} className="text-[10px] font-bold uppercase tracking-widest h-8 px-3">Edit</Button>
+                          <Button variant="ghost" size="icon" onClick={() => handleDelete(emp)} className="h-8 w-8 text-destructive hover:bg-destructive/10" aria-label={`Delete ${emp.fullName}`}>
+                            <Trash2 className="size-3.5" />
+                          </Button>
+                        </>
+                      )}
                     </div>
                   </div>
                 </CardContent>
@@ -333,11 +312,12 @@ export default function EmployeesPage() {
         </div>
       </div>
 
-      <EmployeeDialog 
+      <EmployeeDialog
         employee={selectedEmployee}
         open={isDialogOpen}
         onOpenChange={setIsDialogOpen}
         onSave={handleSave}
+        allowManagerRole={profile?.role === "Business Owner"}
       />
     </div>
   )

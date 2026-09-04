@@ -6,16 +6,33 @@ class ListNotificationsVariablesBuilder {
   String userId;
 
   final FirebaseDataConnect _dataConnect;
-  ListNotificationsVariablesBuilder(this._dataConnect, {required  this.tenantId,required  this.businessId,required  this.userId,});
-  Deserializer<ListNotificationsData> dataDeserializer = (dynamic json)  => ListNotificationsData.fromJson(jsonDecode(json));
-  Serializer<ListNotificationsVariables> varsSerializer = (ListNotificationsVariables vars) => jsonEncode(vars.toJson());
-  Future<QueryResult<ListNotificationsData, ListNotificationsVariables>> execute({QueryFetchPolicy fetchPolicy = QueryFetchPolicy.preferCache}) {
+  ListNotificationsVariablesBuilder(
+    this._dataConnect, {
+    required this.tenantId,
+    required this.businessId,
+    required this.userId,
+  });
+  Deserializer<ListNotificationsData> dataDeserializer = (dynamic json) =>
+      ListNotificationsData.fromJson(jsonDecode(json));
+  Serializer<ListNotificationsVariables> varsSerializer =
+      (ListNotificationsVariables vars) => jsonEncode(vars.toJson());
+  Future<QueryResult<ListNotificationsData, ListNotificationsVariables>>
+  execute({QueryFetchPolicy fetchPolicy = QueryFetchPolicy.preferCache}) {
     return ref().execute(fetchPolicy: fetchPolicy);
   }
 
   QueryRef<ListNotificationsData, ListNotificationsVariables> ref() {
-    ListNotificationsVariables vars= ListNotificationsVariables(tenantId: tenantId,businessId: businessId,userId: userId,);
-    return _dataConnect.query("listNotifications", dataDeserializer, varsSerializer, vars);
+    ListNotificationsVariables vars = ListNotificationsVariables(
+      tenantId: tenantId,
+      businessId: businessId,
+      userId: userId,
+    );
+    return _dataConnect.query(
+      "listNotifications",
+      dataDeserializer,
+      varsSerializer,
+      vars,
+    );
   }
 }
 
@@ -28,37 +45,44 @@ class ListNotificationsNotifications {
   final String message;
   final bool isRead;
   final Timestamp createdAt;
-  ListNotificationsNotifications.fromJson(dynamic json):
-  
-  id = nativeFromJson<String>(json['id']),
-  tenantId = nativeFromJson<String>(json['tenantId']),
-  businessId = nativeFromJson<String>(json['businessId']),
-  userId = nativeFromJson<String>(json['userId']),
-  message = nativeFromJson<String>(json['message']),
-  isRead = nativeFromJson<bool>(json['isRead']),
-  createdAt = Timestamp.fromJson(json['createdAt']);
+  ListNotificationsNotifications.fromJson(dynamic json)
+    : id = nativeFromJson<String>(json['id']),
+      tenantId = nativeFromJson<String>(json['tenantId']),
+      businessId = nativeFromJson<String>(json['businessId']),
+      userId = nativeFromJson<String>(json['userId']),
+      message = nativeFromJson<String>(json['message']),
+      isRead = nativeFromJson<bool>(json['isRead']),
+      createdAt = Timestamp.fromJson(json['createdAt']);
   @override
   bool operator ==(Object other) {
-    if(identical(this, other)) {
+    if (identical(this, other)) {
       return true;
     }
-    if(other.runtimeType != runtimeType) {
+    if (other.runtimeType != runtimeType) {
       return false;
     }
 
-    final ListNotificationsNotifications otherTyped = other as ListNotificationsNotifications;
-    return id == otherTyped.id && 
-    tenantId == otherTyped.tenantId && 
-    businessId == otherTyped.businessId && 
-    userId == otherTyped.userId && 
-    message == otherTyped.message && 
-    isRead == otherTyped.isRead && 
-    createdAt == otherTyped.createdAt;
-    
+    final ListNotificationsNotifications otherTyped =
+        other as ListNotificationsNotifications;
+    return id == otherTyped.id &&
+        tenantId == otherTyped.tenantId &&
+        businessId == otherTyped.businessId &&
+        userId == otherTyped.userId &&
+        message == otherTyped.message &&
+        isRead == otherTyped.isRead &&
+        createdAt == otherTyped.createdAt;
   }
+
   @override
-  int get hashCode => Object.hashAll([id.hashCode, tenantId.hashCode, businessId.hashCode, userId.hashCode, message.hashCode, isRead.hashCode, createdAt.hashCode]);
-  
+  int get hashCode => Object.hashAll([
+    id.hashCode,
+    tenantId.hashCode,
+    businessId.hashCode,
+    userId.hashCode,
+    message.hashCode,
+    isRead.hashCode,
+    createdAt.hashCode,
+  ]);
 
   Map<String, dynamic> toJson() {
     Map<String, dynamic> json = {};
@@ -86,27 +110,25 @@ class ListNotificationsNotifications {
 @immutable
 class ListNotificationsData {
   final List<ListNotificationsNotifications> notifications;
-  ListNotificationsData.fromJson(dynamic json):
-  
-  notifications = (json['notifications'] as List<dynamic>)
-        .map((e) => ListNotificationsNotifications.fromJson(e))
-        .toList();
+  ListNotificationsData.fromJson(dynamic json)
+    : notifications = (json['notifications'] as List<dynamic>)
+          .map((e) => ListNotificationsNotifications.fromJson(e))
+          .toList();
   @override
   bool operator ==(Object other) {
-    if(identical(this, other)) {
+    if (identical(this, other)) {
       return true;
     }
-    if(other.runtimeType != runtimeType) {
+    if (other.runtimeType != runtimeType) {
       return false;
     }
 
     final ListNotificationsData otherTyped = other as ListNotificationsData;
     return notifications == otherTyped.notifications;
-    
   }
+
   @override
   int get hashCode => notifications.hashCode;
-  
 
   Map<String, dynamic> toJson() {
     Map<String, dynamic> json = {};
@@ -114,9 +136,7 @@ class ListNotificationsData {
     return json;
   }
 
-  ListNotificationsData({
-    required this.notifications,
-  });
+  ListNotificationsData({required this.notifications});
 }
 
 @immutable
@@ -124,30 +144,32 @@ class ListNotificationsVariables {
   final String tenantId;
   final String businessId;
   final String userId;
-  @Deprecated('fromJson is deprecated for Variable classes as they are no longer required for deserialization.')
-  ListNotificationsVariables.fromJson(Map<String, dynamic> json):
-  
-  tenantId = nativeFromJson<String>(json['tenantId']),
-  businessId = nativeFromJson<String>(json['businessId']),
-  userId = nativeFromJson<String>(json['userId']);
+  @Deprecated(
+    'fromJson is deprecated for Variable classes as they are no longer required for deserialization.',
+  )
+  ListNotificationsVariables.fromJson(Map<String, dynamic> json)
+    : tenantId = nativeFromJson<String>(json['tenantId']),
+      businessId = nativeFromJson<String>(json['businessId']),
+      userId = nativeFromJson<String>(json['userId']);
   @override
   bool operator ==(Object other) {
-    if(identical(this, other)) {
+    if (identical(this, other)) {
       return true;
     }
-    if(other.runtimeType != runtimeType) {
+    if (other.runtimeType != runtimeType) {
       return false;
     }
 
-    final ListNotificationsVariables otherTyped = other as ListNotificationsVariables;
-    return tenantId == otherTyped.tenantId && 
-    businessId == otherTyped.businessId && 
-    userId == otherTyped.userId;
-    
+    final ListNotificationsVariables otherTyped =
+        other as ListNotificationsVariables;
+    return tenantId == otherTyped.tenantId &&
+        businessId == otherTyped.businessId &&
+        userId == otherTyped.userId;
   }
+
   @override
-  int get hashCode => Object.hashAll([tenantId.hashCode, businessId.hashCode, userId.hashCode]);
-  
+  int get hashCode =>
+      Object.hashAll([tenantId.hashCode, businessId.hashCode, userId.hashCode]);
 
   Map<String, dynamic> toJson() {
     Map<String, dynamic> json = {};
@@ -163,4 +185,3 @@ class ListNotificationsVariables {
     required this.userId,
   });
 }
-

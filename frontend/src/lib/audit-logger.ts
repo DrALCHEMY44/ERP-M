@@ -1,8 +1,6 @@
 
-import { auth } from './firebase';
-
 /**
- * Automatically records system activities to the SQL Connect database.
+ * Automatically records system activities in Neon through the trusted API.
  */
 export async function logActivity(params: {
   actionType: string;
@@ -20,11 +18,9 @@ export async function logActivity(params: {
   };
 }) {
   try {
-    const token = await auth.currentUser?.getIdToken();
-    if (!token) throw new Error('Authentication required');
     const response = await fetch('/api/audit', {
       method: 'POST',
-      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
       actionType: params.actionType,
       module: params.module,

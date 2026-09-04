@@ -20,12 +20,17 @@ import 'screens/activity_logs_screen.dart';
 import 'screens/notifications_screen.dart';
 import 'screens/profile_screen.dart';
 import 'screens/business_module_screen.dart';
-import 'services/database_service.dart';
+import 'screens/enterprise_module_screen.dart';
+import 'screens/session_gate.dart';
+import 'screens/platform_admin_screen.dart';
+import 'screens/business_profile_screen.dart';
+import 'screens/settings_screen.dart';
+import 'screens/documents_screen.dart';
+import 'screens/finance_screen.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await DatabaseService.initFirebase();
   runApp(
     MultiProvider(
       providers: [
@@ -51,9 +56,9 @@ class SmartERPApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'SmartERP Mobile',
-      
+
       themeMode: themeMode,
-      
+
       theme: ThemeData(
         useMaterial3: true,
         brightness: Brightness.light,
@@ -106,7 +111,7 @@ class SmartERPApp extends StatelessWidget {
           ),
         ),
       ),
-      
+
       darkTheme: ThemeData(
         useMaterial3: true,
         brightness: Brightness.dark,
@@ -143,9 +148,9 @@ class SmartERPApp extends StatelessWidget {
           ),
         ),
       ),
-      
-      initialRoute: '/welcome',
-      
+
+      home: const SessionGate(),
+
       routes: {
         '/welcome': (context) => const WelcomeScreen(),
         '/login': (context) => const LoginScreen(),
@@ -161,13 +166,24 @@ class SmartERPApp extends StatelessWidget {
         '/activity-logs': (context) => const ActivityLogsScreen(),
         '/notifications': (context) => const NotificationsScreen(),
         '/profile': (context) => const ProfileScreen(),
-        '/business-profile': (context) => const ProfileScreen(),
-        '/finance': (context) => const ReportsScreen(),
-        '/employees': (context) => const BusinessModuleScreen(module: BusinessModule.employees),
-        '/customers': (context) => const BusinessModuleScreen(module: BusinessModule.customers),
-        '/suppliers': (context) => const BusinessModuleScreen(module: BusinessModule.suppliers),
-        '/documents': (context) => const BusinessModuleScreen(module: BusinessModule.documents),
-        '/settings': (context) => const BusinessModuleScreen(module: BusinessModule.settings),
+        '/business-profile': (context) => const BusinessProfileScreen(),
+        '/finance': (context) => const FinanceScreen(),
+        '/employees': (context) =>
+            const BusinessModuleScreen(module: BusinessModule.employees),
+        '/hr': (context) =>
+            const EnterpriseModuleScreen(module: EnterpriseModule.hr),
+        '/payroll': (context) =>
+            const EnterpriseModuleScreen(module: EnterpriseModule.payroll),
+        '/accounting': (context) =>
+            const EnterpriseModuleScreen(module: EnterpriseModule.accounting),
+        '/customers': (context) =>
+            const BusinessModuleScreen(module: BusinessModule.customers),
+        '/suppliers': (context) =>
+            const BusinessModuleScreen(module: BusinessModule.suppliers),
+        '/documents': (context) => const DocumentsScreen(),
+        '/settings': (context) => const SettingsScreen(),
+        '/admin/dashboard': (context) => const PlatformAdminScreen(),
+        '/admin/users': (context) => const PlatformAdminScreen(initialTab: 2),
       },
     );
   }

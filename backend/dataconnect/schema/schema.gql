@@ -51,9 +51,27 @@ type Business @table(key: "id") {
   name: String!
   location: String!
   businessType: String
+  entityType: String
+  city: String
   region: String
+  phone: String
+  email: String
+  taxId: String
+  description: String
+  logoUrl: String
   createdAt: Timestamp!
   code: String!
+}
+
+type BusinessSetting @table(key: "businessId") {
+  businessId: String!
+  tenantId: String!
+  currency: String!
+  timezone: String!
+  fiscalYearStart: String!
+  taxRate: Float! @col(dataType: "numeric(7,4)")
+  lowStockThreshold: Int!
+  updatedAt: Timestamp!
 }
 
 type Product @table(key: "id") {
@@ -67,6 +85,7 @@ type Product @table(key: "id") {
   sellingPrice: Float! @col(dataType: "numeric(19,2)")
   expiryDate: Date
   lowStockLevel: Int
+  status: String
   createdBy: String!
   createdAt: Timestamp!
   updatedAt: Timestamp
@@ -80,6 +99,7 @@ type Transaction @table(key: "id") {
   amount: Float! @col(dataType: "numeric(19,2)")
   date: Timestamp!
   category: String
+  description: String
   receiptUrl: String
   recordedBy: String!
   createdAt: Timestamp!
@@ -119,8 +139,12 @@ type Employee @table(key: "id") {
   role: String
   salary: Float @col(dataType: "numeric(19,2)")
   department: String
+  email: String
+  contact: String
   startDate: Date
   status: String
+  attendance: Float
+  salaryPaymentStatus: String
   createdAt: Timestamp!
   code: String
 }
@@ -135,6 +159,7 @@ type Customer @table(key: "id") {
   location: String
   totalOrders: Int
   totalSpent: Float @col(dataType: "numeric(19,2)")
+  notes: String
   createdAt: Timestamp!
 }
 
@@ -145,6 +170,10 @@ type Supplier @table(key: "id") {
   supplierName: String!
   phoneNumber: String
   email: String
+  location: String
+  productsSupplied: String
+  paymentStatus: String
+  notes: String
   createdAt: Timestamp!
 }
 
@@ -155,6 +184,7 @@ type Document @table(key: "id") {
   title: String!
   documentType: String!
   fileUrl: String!
+  description: String
   uploadedBy: String!
   uploadedAt: Timestamp!
 }

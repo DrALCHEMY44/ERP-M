@@ -2,20 +2,27 @@ import { randomUUID } from "crypto"
 import { PutObjectCommand } from "@aws-sdk/client-s3"
 import { NextResponse } from "next/server"
 import { z } from "zod"
-import { adminDataConnect, authorizeRequest } from "@/lib/server/firebase-token"
-import { requirePermission } from "@/lib/server/authorization"
+import { adminDatabase, authorizeRequest } from "@/lib/server/auth"
+import { hasPermission, requirePermission, type Permission } from "@/lib/server/authorization"
+import { db } from "@/lib/server/neon"
 import { objectStorage, storageBucket } from "@/lib/server/object-storage"
-import { neon } from "@neondatabase/serverless"
 import { processStoredDocument } from "@/lib/server/document-intelligence"
+import { serializeCsv } from "@/lib/csv"
 
 export const runtime = "nodejs"
 const schema = z.object({ reportType: z.enum(["sales", "expenses", "inventory", "tasks"]) })
 
 function csv(rows: Record<string, unknown>[]) {
-  if (!rows.length) return "No records\n"
+  if (!rows.length) return serializeCsv([["No records"]])
   const headers = Object.keys(rows[0])
-  const escape = (value: unknown) => `"${String(value ?? "").replace(/"/g, '""')}"`
-  return [headers.map(escape).join(","), ...rows.map(row => headers.map(key => escape(row[key])).join(","))].join("\n")
+  return serializeCsv([headers, ...rows.map((row) => headers.map((key) => row[key]))])
+}
+
+const reportPermissions: Record<z.infer<typeof schema>["reportType"], Permission> = {
+  sales: "sales:read",
+  expenses: "expenses:read",
+  inventory: "inventory:read",
+  tasks: "tasks:read",
 }
 
 export async function POST(request: Request) {
@@ -23,8 +30,10 @@ export async function POST(request: Request) {
     const profile = await authorizeRequest(request)
     requirePermission(profile, "reports:read")
     const { reportType } = schema.parse(await request.json())
-    if (!process.env.DATABASE_URL) throw new Error("DATABASE_URL is not configured")
-    const sql = neon(process.env.DATABASE_URL)
+    if (!hasPermission(profile, reportPermissions[reportType])) {
+      return NextResponse.json({ error: "This role cannot export the requested report data." }, { status: 403 })
+    }
+    const sql = db()
     let rows: Record<string, unknown>[] = []
     if (reportType === "sales" || reportType === "expenses") {
       const type = reportType === "sales" ? "SALE" : "EXPENSE"
@@ -34,7 +43,7 @@ export async function POST(request: Request) {
       rows = await sql`SELECT id,name,category,quantity,cost_price,selling_price,low_stock_level FROM products
         WHERE tenant_id=${profile.tenantId} AND business_id=${profile.businessId} ORDER BY name`
     } else {
-      const tasks = await adminDataConnect().executeQuery<{ tasks: Record<string, unknown>[] }, Record<string, unknown>>("listTasksByBusiness", {
+      const tasks = await adminDatabase().executeQuery<{ tasks: Record<string, unknown>[] }, Record<string, unknown>>("listTasksByBusiness", {
         tenantId: profile.tenantId, businessId: profile.businessId,
       })
       rows = tasks.data.tasks
@@ -46,8 +55,8 @@ export async function POST(request: Request) {
     await objectStorage().send(new PutObjectCommand({ Bucket: storageBucket(), Key: key, Body: bytes, ContentType: "text/csv" }))
     const fileUrl = `/api/files?key=${encodeURIComponent(key)}`
 
-    const dc = adminDataConnect()
-    const inserted = await dc.executeMutation<{ document_insert: { id: string } }, any>("CreateDocument", {
+    const database = adminDatabase()
+    const inserted = await database.executeMutation<{ document_insert: { id: string } }, any>("CreateDocument", {
       tenantId: profile.tenantId,
       businessId: profile.businessId,
       title: filename,
@@ -56,15 +65,14 @@ export async function POST(request: Request) {
       uploadedBy: profile.uid,
     })
     const documentId = inserted.data.document_insert.id
-    await dc.executeMutation("CreateMirrorOutbox", {
-      entityType: "document", operation: "upsert", recordId: documentId,
-      tenantId: profile.tenantId, businessId: profile.businessId,
-      payload: { id: documentId, tenantId: profile.tenantId, businessId: profile.businessId, title: filename, documentType: "Report", fileUrl, uploadedBy: profile.uid, uploadedAt: new Date().toISOString() },
+    await processStoredDocument({ documentId, tenantId: profile.tenantId, businessId: profile.businessId, objectKey: key, filename }).catch((error) => {
+      console.warn("Report created, but document intelligence indexing failed", error instanceof Error ? error.message : error)
     })
-    await processStoredDocument({ documentId, tenantId: profile.tenantId, businessId: profile.businessId, objectKey: key, filename })
     return NextResponse.json({ documentId, fileUrl, filename, records: rows.length })
   } catch (error) {
     console.error("Report generation failed", error)
-    return NextResponse.json({ error: error instanceof Error ? error.message : "Report generation failed" }, { status: 500 })
+    const message = error instanceof Error ? error.message : "Report generation failed"
+    const status = message.startsWith("Forbidden") ? 403 : message.includes("authentication") ? 401 : 500
+    return NextResponse.json({ error: message }, { status })
   }
 }

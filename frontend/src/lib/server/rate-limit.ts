@@ -1,14 +1,13 @@
 import { createHmac } from "crypto"
-import { neon } from "@neondatabase/serverless"
+import { db } from "./neon"
 
 export async function consumeRateLimit(input: { request: Request; bucket: string; limit: number; windowSeconds: number }) {
-  const connection = process.env.DATABASE_URL
   const secret = process.env.RATE_LIMIT_SECRET
-  if (!connection || !secret) throw new Error("Durable rate limiting is not configured")
+  if (!secret) throw new Error("Durable rate limiting is not configured")
   const address = input.request.headers.get("x-forwarded-for")?.split(",")[0]?.trim()
     || input.request.headers.get("x-real-ip") || "unknown"
   const subject = createHmac("sha256", secret).update(address).digest("hex")
-  const sql = neon(connection)
+  const sql = db()
   const rows = await sql`INSERT INTO request_rate_limits(bucket,subject_hash,window_started_at,request_count)
     VALUES(${input.bucket},${subject},NOW(),1)
     ON CONFLICT(bucket,subject_hash) DO UPDATE SET

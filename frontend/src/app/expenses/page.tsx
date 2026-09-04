@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Plus, Search, Download, Receipt, Calendar, Loader2, Trash2, LogIn } from "lucide-react"
+import { Plus, Search, Loader2, Trash2, LogIn } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import {
@@ -16,9 +16,8 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ExpenseDialog } from "@/components/expenses/expense-dialog"
 import { Expense } from "@/lib/types"
-import { useDataConnect } from "@/hooks/use-dataconnect"
+import { useNeonData } from "@/hooks/use-neon-data"
 import { listTransactionsByTypeQuery, createTransactionMutation, deleteTransactionMutation } from "@/lib/data-service"
-import { TransactionType } from "@/dataconnect-generated"
 import { useToast } from "@/hooks/use-toast"
 import { useTranslation } from "@/components/language-provider"
 import { useAuth } from "@/hooks/use-auth"
@@ -26,17 +25,17 @@ import { useAuth } from "@/hooks/use-auth"
 export default function ExpensesPage() {
   const { t } = useTranslation();
   const { profile, user } = useAuth();
-  const { data: transactionsData, loading, unauthenticated, refetch } = useDataConnect({ 
-    query: listTransactionsByTypeQuery, 
-    variables: { 
-      tenantId: profile?.tenantId || "", 
-      businessId: profile?.businessId || "", 
-      type: TransactionType.EXPENSE 
+  const { data: transactionsData, loading, unauthenticated, refetch } = useNeonData({
+    query: listTransactionsByTypeQuery,
+    variables: {
+      tenantId: profile?.tenantId || "",
+      businessId: profile?.businessId || "",
+      type: "EXPENSE"
     },
     skip: !profile || !profile.tenantId || !profile.businessId,
     refreshInterval: 5000
   });
-  
+
   const expenses = React.useMemo(() => (transactionsData?.transactions || []).map((transaction: any) => ({
     ...transaction,
     description: transaction.description || transaction.category || "Business expense",
@@ -45,12 +44,22 @@ export default function ExpensesPage() {
   const [isDialogOpen, setIsDialogOpen] = React.useState(false)
   const [searchQuery, setSearchQuery] = React.useState("")
 
-  const totalThisMonth = expenses.reduce((acc, exp) => {
-    const isCurrentMonth = new Date(exp.date).getMonth() === new Date().getMonth();
-    return isCurrentMonth ? acc + exp.amount : acc;
-  }, 0)
+  const monthlyExpenses = expenses.filter((expense) => {
+    const date = new Date(expense.date)
+    const now = new Date()
+    return date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear()
+  })
+  const totalThisMonth = monthlyExpenses.reduce((sum, expense) => sum + expense.amount, 0)
+  const topCategory = React.useMemo(() => {
+    const totals = new Map<string, number>()
+    for (const expense of monthlyExpenses) {
+      const category = expense.category || "Uncategorized"
+      totals.set(category, (totals.get(category) || 0) + expense.amount)
+    }
+    return [...totals.entries()].sort((left, right) => right[1] - left[1])[0]
+  }, [monthlyExpenses])
 
-  const filteredExpenses = expenses.filter(exp => 
+  const filteredExpenses = expenses.filter(exp =>
     (exp.description || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
     (exp.category || "").toLowerCase().includes(searchQuery.toLowerCase())
   ).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
@@ -70,10 +79,11 @@ export default function ExpensesPage() {
       await createTransactionMutation({
         tenantId: profile.tenantId,
         businessId: profile.businessId,
-        type: TransactionType.EXPENSE,
+        type: "EXPENSE",
         amount: expenseData.amount || 0,
         date: selectedDate.toISOString(),
         category: expenseData.category || 'Other',
+        description: expenseData.description || '',
         receiptUrl: expenseData.receiptUrl || null,
         recordedBy: user.uid
       });
@@ -92,7 +102,7 @@ export default function ExpensesPage() {
         await deleteTransactionMutation({ id });
         await refetch();
         toast({ title: "Deleted", description: "Expense removed." });
-      } catch (e) {
+      } catch {
         toast({ variant: "destructive", title: "Error", description: "Could not delete expense." });
       }
     }
@@ -112,11 +122,11 @@ export default function ExpensesPage() {
             <p className="text-sm text-muted-foreground">
               Please sign in to view your expense records. All operations require an authenticated session.
             </p>
-            <Link href="/login">
-              <Button className="bg-primary hover:bg-primary/90 text-white font-bold uppercase text-xs tracking-widest">
+            <Button asChild className="bg-primary hover:bg-primary/90 text-white font-bold uppercase text-xs tracking-widest">
+              <Link href="/login">
                 <LogIn className="size-4 mr-2" /> Sign In
-              </Button>
-            </Link>
+              </Link>
+            </Button>
           </CardContent>
         </Card>
       </div>
@@ -160,17 +170,17 @@ export default function ExpensesPage() {
             <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Top Category</CardTitle>
           </CardHeader>
           <CardContent className="p-4 pt-0">
-            <div className="text-xl md:text-2xl font-bold text-blue-700">Operational Costs</div>
-            <p className="text-[10px] text-muted-foreground mt-1 uppercase font-bold tracking-tighter">Fixed Asset & Utilities</p>
+            <div className="text-xl md:text-2xl font-bold text-blue-700">{topCategory?.[0] || "No expenses"}</div>
+            <p className="text-[10px] text-muted-foreground mt-1 uppercase font-bold tracking-tighter">{topCategory ? `${topCategory[1].toLocaleString()} FCFA this month` : "No category totals yet"}</p>
           </CardContent>
         </Card>
         <Card className="border-t-4 border-[#10b981] shadow-md bg-emerald-50/10">
           <CardHeader className="pb-2 p-4">
-            <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Tax Readiness</CardTitle>
+            <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Records This Month</CardTitle>
           </CardHeader>
           <CardContent className="p-4 pt-0">
-            <div className="text-xl md:text-2xl font-bold text-emerald-700">SYCOHADA Ready</div>
-            <p className="text-[10px] text-muted-foreground mt-1 uppercase font-bold tracking-tighter">Auditable Record Logs</p>
+            <div className="text-xl md:text-2xl font-bold text-emerald-700">{monthlyExpenses.length}</div>
+            <p className="text-[10px] text-muted-foreground mt-1 uppercase font-bold tracking-tighter">Tenant-scoped expense records</p>
           </CardContent>
         </Card>
       </div>
@@ -179,7 +189,7 @@ export default function ExpensesPage() {
         <div className="p-4 border-b">
            <div className="relative max-w-sm">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-            <input 
+            <input
               placeholder={t('expenses.searchPlaceholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -227,7 +237,7 @@ export default function ExpensesPage() {
         </div>
       </div>
 
-      <ExpenseDialog 
+      <ExpenseDialog
         open={isDialogOpen}
         onOpenChange={setIsDialogOpen}
         onSave={handleSave}

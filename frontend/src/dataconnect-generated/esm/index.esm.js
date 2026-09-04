@@ -28,6 +28,18 @@ export const dataConnectSettings = {
     cacheProvider: makeMemoryCacheProvider()
   }
 };
+export const bootstrapWorkspaceRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'BootstrapWorkspace', inputVars);
+}
+bootstrapWorkspaceRef.operationName = 'BootstrapWorkspace';
+
+export function bootstrapWorkspace(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(bootstrapWorkspaceRef(dcInstance, inputVars));
+}
+
 export const createTenantRef = (dcOrVars, vars) => {
   const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
   dcInstance._useGeneratedSdk();
@@ -134,6 +146,18 @@ updateBusinessRef.operationName = 'UpdateBusiness';
 export function updateBusiness(dcOrVars, vars) {
   const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
   return executeMutation(updateBusinessRef(dcInstance, inputVars));
+}
+
+export const upsertBusinessSettingsRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'UpsertBusinessSettings', inputVars);
+}
+upsertBusinessSettingsRef.operationName = 'UpsertBusinessSettings';
+
+export function upsertBusinessSettings(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(upsertBusinessSettingsRef(dcInstance, inputVars));
 }
 
 export const deleteBusinessRef = (dcOrVars, vars) => {
@@ -278,6 +302,42 @@ deleteTaskCommentRef.operationName = 'DeleteTaskComment';
 export function deleteTaskComment(dcOrVars, vars) {
   const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
   return executeMutation(deleteTaskCommentRef(dcInstance, inputVars));
+}
+
+export const createEmployeeWithAccessRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'CreateEmployeeWithAccess', inputVars);
+}
+createEmployeeWithAccessRef.operationName = 'CreateEmployeeWithAccess';
+
+export function createEmployeeWithAccess(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(createEmployeeWithAccessRef(dcInstance, inputVars));
+}
+
+export const updateEmployeeWithAccessRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'UpdateEmployeeWithAccess', inputVars);
+}
+updateEmployeeWithAccessRef.operationName = 'UpdateEmployeeWithAccess';
+
+export function updateEmployeeWithAccess(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(updateEmployeeWithAccessRef(dcInstance, inputVars));
+}
+
+export const deleteEmployeeWithAccessRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'DeleteEmployeeWithAccess', inputVars);
+}
+deleteEmployeeWithAccessRef.operationName = 'DeleteEmployeeWithAccess';
+
+export function deleteEmployeeWithAccess(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(deleteEmployeeWithAccessRef(dcInstance, inputVars));
 }
 
 export const createEmployeeRef = (dcOrVars, vars) => {
@@ -576,7 +636,7 @@ export const listTenantsRef = (dc) => {
 listTenantsRef.operationName = 'ListTenants';
 
 export function listTenants(dcOrOptions, options) {
-  
+
   const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrOptions, options, undefined,false, false);
   return executeQuery(listTenantsRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
@@ -589,7 +649,7 @@ export const listUsersRef = (dc) => {
 listUsersRef.operationName = 'ListUsers';
 
 export function listUsers(dcOrOptions, options) {
-  
+
   const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrOptions, options, undefined,false, false);
   return executeQuery(listUsersRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
@@ -602,7 +662,7 @@ export const listLegacyAccessCodesRef = (dc) => {
 listLegacyAccessCodesRef.operationName = 'ListLegacyAccessCodes';
 
 export function listLegacyAccessCodes(dcOrOptions, options) {
-  
+
   const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrOptions, options, undefined,false, false);
   return executeQuery(listLegacyAccessCodesRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
@@ -615,7 +675,7 @@ export const listBusinessesRef = (dcOrVars, vars) => {
 listBusinessesRef.operationName = 'ListBusinesses';
 
 export function listBusinesses(dcOrVars, varsOrOptions, options) {
-  
+
   const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
   return executeQuery(listBusinessesRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
@@ -628,7 +688,7 @@ export const getUserByEmailRef = (dcOrVars, vars) => {
 getUserByEmailRef.operationName = 'getUserByEmail';
 
 export function getUserByEmail(dcOrVars, varsOrOptions, options) {
-  
+
   const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
   return executeQuery(getUserByEmailRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
@@ -641,9 +701,22 @@ export const getBusinessByIdRef = (dcOrVars, vars) => {
 getBusinessByIdRef.operationName = 'getBusinessById';
 
 export function getBusinessById(dcOrVars, varsOrOptions, options) {
-  
+
   const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
   return executeQuery(getBusinessByIdRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+
+export const getBusinessSettingsRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return queryRef(dcInstance, 'getBusinessSettings', inputVars);
+}
+getBusinessSettingsRef.operationName = 'getBusinessSettings';
+
+export function getBusinessSettings(dcOrVars, varsOrOptions, options) {
+
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(getBusinessSettingsRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
 
 export const getBusinessByCodeRef = (dcOrVars, vars) => {
@@ -654,7 +727,7 @@ export const getBusinessByCodeRef = (dcOrVars, vars) => {
 getBusinessByCodeRef.operationName = 'getBusinessByCode';
 
 export function getBusinessByCode(dcOrVars, varsOrOptions, options) {
-  
+
   const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
   return executeQuery(getBusinessByCodeRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
@@ -667,7 +740,7 @@ export const getBusinessesByNameRef = (dcOrVars, vars) => {
 getBusinessesByNameRef.operationName = 'getBusinessesByName';
 
 export function getBusinessesByName(dcOrVars, varsOrOptions, options) {
-  
+
   const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
   return executeQuery(getBusinessesByNameRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
@@ -680,7 +753,7 @@ export const verifyEmployeeAccessRef = (dcOrVars, vars) => {
 verifyEmployeeAccessRef.operationName = 'verifyEmployeeAccess';
 
 export function verifyEmployeeAccess(dcOrVars, varsOrOptions, options) {
-  
+
   const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
   return executeQuery(verifyEmployeeAccessRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
@@ -693,7 +766,7 @@ export const verifyUserLoginRef = (dcOrVars, vars) => {
 verifyUserLoginRef.operationName = 'verifyUserLogin';
 
 export function verifyUserLogin(dcOrVars, varsOrOptions, options) {
-  
+
   const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
   return executeQuery(verifyUserLoginRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
@@ -706,7 +779,7 @@ export const listProductsByBusinessRef = (dcOrVars, vars) => {
 listProductsByBusinessRef.operationName = 'listProductsByBusiness';
 
 export function listProductsByBusiness(dcOrVars, varsOrOptions, options) {
-  
+
   const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
   return executeQuery(listProductsByBusinessRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
@@ -719,9 +792,48 @@ export const listCustomersByBusinessRef = (dcOrVars, vars) => {
 listCustomersByBusinessRef.operationName = 'listCustomersByBusiness';
 
 export function listCustomersByBusiness(dcOrVars, varsOrOptions, options) {
-  
+
   const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
   return executeQuery(listCustomersByBusinessRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+
+export const getCustomerForCompanyRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return queryRef(dcInstance, 'getCustomerForCompany', inputVars);
+}
+getCustomerForCompanyRef.operationName = 'getCustomerForCompany';
+
+export function getCustomerForCompany(dcOrVars, varsOrOptions, options) {
+
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(getCustomerForCompanyRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+
+export const listSaleCustomersByBusinessRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return queryRef(dcInstance, 'listSaleCustomersByBusiness', inputVars);
+}
+listSaleCustomersByBusinessRef.operationName = 'listSaleCustomersByBusiness';
+
+export function listSaleCustomersByBusiness(dcOrVars, varsOrOptions, options) {
+
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(listSaleCustomersByBusinessRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+
+export const listTaskAssigneesByBusinessRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return queryRef(dcInstance, 'listTaskAssigneesByBusiness', inputVars);
+}
+listTaskAssigneesByBusinessRef.operationName = 'listTaskAssigneesByBusiness';
+
+export function listTaskAssigneesByBusiness(dcOrVars, varsOrOptions, options) {
+
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(listTaskAssigneesByBusinessRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
 
 export const listUsersByBusinessRef = (dcOrVars, vars) => {
@@ -732,7 +844,7 @@ export const listUsersByBusinessRef = (dcOrVars, vars) => {
 listUsersByBusinessRef.operationName = 'listUsersByBusiness';
 
 export function listUsersByBusiness(dcOrVars, varsOrOptions, options) {
-  
+
   const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
   return executeQuery(listUsersByBusinessRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
@@ -745,7 +857,7 @@ export const listSuppliersByBusinessRef = (dcOrVars, vars) => {
 listSuppliersByBusinessRef.operationName = 'listSuppliersByBusiness';
 
 export function listSuppliersByBusiness(dcOrVars, varsOrOptions, options) {
-  
+
   const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
   return executeQuery(listSuppliersByBusinessRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
@@ -758,7 +870,7 @@ export const listTasksByBusinessRef = (dcOrVars, vars) => {
 listTasksByBusinessRef.operationName = 'listTasksByBusiness';
 
 export function listTasksByBusiness(dcOrVars, varsOrOptions, options) {
-  
+
   const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
   return executeQuery(listTasksByBusinessRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
@@ -771,7 +883,7 @@ export const listTasksAssignedToUserRef = (dcOrVars, vars) => {
 listTasksAssignedToUserRef.operationName = 'listTasksAssignedToUser';
 
 export function listTasksAssignedToUser(dcOrVars, varsOrOptions, options) {
-  
+
   const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
   return executeQuery(listTasksAssignedToUserRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
@@ -784,7 +896,7 @@ export const listTransactionsByBusinessRef = (dcOrVars, vars) => {
 listTransactionsByBusinessRef.operationName = 'listTransactionsByBusiness';
 
 export function listTransactionsByBusiness(dcOrVars, varsOrOptions, options) {
-  
+
   const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
   return executeQuery(listTransactionsByBusinessRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
@@ -797,7 +909,7 @@ export const listTransactionsByTypeRef = (dcOrVars, vars) => {
 listTransactionsByTypeRef.operationName = 'listTransactionsByType';
 
 export function listTransactionsByType(dcOrVars, varsOrOptions, options) {
-  
+
   const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
   return executeQuery(listTransactionsByTypeRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
@@ -810,7 +922,7 @@ export const listEmployeesByBusinessRef = (dcOrVars, vars) => {
 listEmployeesByBusinessRef.operationName = 'listEmployeesByBusiness';
 
 export function listEmployeesByBusiness(dcOrVars, varsOrOptions, options) {
-  
+
   const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
   return executeQuery(listEmployeesByBusinessRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
@@ -823,7 +935,7 @@ export const listDocumentsByBusinessRef = (dcOrVars, vars) => {
 listDocumentsByBusinessRef.operationName = 'listDocumentsByBusiness';
 
 export function listDocumentsByBusiness(dcOrVars, varsOrOptions, options) {
-  
+
   const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
   return executeQuery(listDocumentsByBusinessRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
@@ -836,7 +948,7 @@ export const listActivityLogsByUserRef = (dcOrVars, vars) => {
 listActivityLogsByUserRef.operationName = 'listActivityLogsByUser';
 
 export function listActivityLogsByUser(dcOrVars, varsOrOptions, options) {
-  
+
   const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
   return executeQuery(listActivityLogsByUserRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
@@ -849,7 +961,7 @@ export const listActivityLogsByBusinessRef = (dcOrVars, vars) => {
 listActivityLogsByBusinessRef.operationName = 'listActivityLogsByBusiness';
 
 export function listActivityLogsByBusiness(dcOrVars, varsOrOptions, options) {
-  
+
   const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
   return executeQuery(listActivityLogsByBusinessRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
@@ -862,7 +974,7 @@ export const getUserByIdRef = (dcOrVars, vars) => {
 getUserByIdRef.operationName = 'getUserById';
 
 export function getUserById(dcOrVars, varsOrOptions, options) {
-  
+
   const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
   return executeQuery(getUserByIdRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
@@ -875,7 +987,7 @@ export const listNotificationsRef = (dcOrVars, vars) => {
 listNotificationsRef.operationName = 'listNotifications';
 
 export function listNotifications(dcOrVars, varsOrOptions, options) {
-  
+
   const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
   return executeQuery(listNotificationsRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
@@ -888,7 +1000,7 @@ export const listPendingMirrorOutboxRef = (dc) => {
 listPendingMirrorOutboxRef.operationName = 'ListPendingMirrorOutbox';
 
 export function listPendingMirrorOutbox(dcOrOptions, options) {
-  
+
   const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrOptions, options, undefined,false, false);
   return executeQuery(listPendingMirrorOutboxRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }

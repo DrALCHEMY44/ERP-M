@@ -108,13 +108,13 @@ export function DocumentDialog({ open, onOpenChange, onSave }: DocumentDialogPro
     }
 
     setIsUploading(true)
+    let uploadedFileUrl: string | null = null
     try {
       const formData = new FormData()
       formData.append("file", selectedFile)
       const uploadResponse = await fetch("/api/files", {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${await user.getIdToken()}`,
           "X-Tenant-Id": profile.tenantId,
           "X-Business-Id": profile.businessId,
         },
@@ -122,9 +122,10 @@ export function DocumentDialog({ open, onOpenChange, onSave }: DocumentDialogPro
       })
       if (!uploadResponse.ok) {
         const body = await uploadResponse.json().catch(() => null)
-        throw new Error(body?.error || "Neon Object Storage upload failed")
+        throw new Error(body?.error || "Object storage upload failed")
       }
       const { fileUrl } = await uploadResponse.json()
+      uploadedFileUrl = fileUrl
 
       const sizeInMB = selectedFile.size / (1024 * 1024)
       const fileSizeStr = sizeInMB < 0.1 ? `${(selectedFile.size / 1024).toFixed(1)} KB` : `${sizeInMB.toFixed(1)} MB`
@@ -140,24 +141,34 @@ export function DocumentDialog({ open, onOpenChange, onSave }: DocumentDialogPro
         fileSize: fileSizeStr
       } as BusinessDocument)
 
-      if (documentId) {
-        const processingResponse = await fetch("/api/documents/process", {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${await user.getIdToken()}`,
-            "Content-Type": "application/json",
-            "X-Tenant-Id": profile.tenantId,
-            "X-Business-Id": profile.businessId,
-          },
-          body: JSON.stringify({ documentId, fileUrl, filename: selectedFile.name }),
-        })
-        if (!processingResponse.ok) {
-          console.warn("The file was saved, but document intelligence processing failed")
-        }
+      if (!documentId) throw new Error("Document record could not be created")
+      const processingResponse = await fetch("/api/documents/process", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Tenant-Id": profile.tenantId,
+          "X-Business-Id": profile.businessId,
+        },
+        body: JSON.stringify({ documentId, fileUrl, filename: selectedFile.name }),
+      })
+      if (!processingResponse.ok) {
+        console.warn("The file was saved, but document intelligence processing failed")
       }
       
       onOpenChange(false)
     } catch (error) {
+      if (uploadedFileUrl?.startsWith("/api/files?")) {
+        const key = new URL(uploadedFileUrl, window.location.origin).searchParams.get("key")
+        if (key) {
+          await fetch(`/api/files?key=${encodeURIComponent(key)}`, {
+            method: "DELETE",
+            headers: {
+              "X-Tenant-Id": profile.tenantId,
+              "X-Business-Id": profile.businessId,
+            },
+          }).catch((cleanupError) => console.warn("Orphaned upload cleanup failed", cleanupError))
+        }
+      }
       console.warn("Upload could not be completed:", error)
       form.setError("root", { message: error instanceof Error ? error.message : "Failed to upload document. Please try again." })
     } finally {

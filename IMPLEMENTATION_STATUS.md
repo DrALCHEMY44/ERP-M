@@ -1,53 +1,119 @@
-# SmartERP AI implementation status
+# SmartERP implementation status
 
-This file compares the academic report with the source code after the August
-2026 remediation. It is an engineering status record, not a silent rewrite of
-the report.
+Last verified: 4 September 2026
 
-| Academic claim | Previous implementation status | Remediation performed | Evidence | Remaining limitation |
-|---|---|---|---|---|
-| Authentication is separated from authorization | Firebase sign-in existed, but client identifiers and public operations bypassed the intended boundary | Verified Firebase tokens, server profile lookup, centralized permission matrix and authenticated REST boundary | `frontend/src/lib/server/firebase-token.ts`, `authorization.ts`, `tests/authorization.test.ts` | MFA and independent penetration testing remain deployment work |
-| Enterprise records are tenant-isolated | Most queries accepted browser-supplied company IDs | Server overwrites scope and actor fields; scoped updates/deletes verify ownership or use scoped SQL predicates | `frontend/src/app/api/data/route.ts`, `operational-data.ts` | Production integration tests require isolated Firebase/Neon test projects |
-| Typed SQL Connect operations support web and mobile | Sensitive operations were public and clients called them directly | All connector operations are `NO_ACCESS`; generated SDKs were regenerated; clients call authenticated routes | `backend/dataconnect/example`, generated SDK timestamps, authorization tests | Direct generated SDK calls retained by unfinished screens must be migrated before those screens are enabled |
-| Relational integrity protects business records | Float money, weak relationships and client-side stock decrement | Fixed-decimal migration, scoped keys/FKs/checks, sale lines, movements, idempotency and row locking | `frontend/migrations/004_security_transactional_integrity.sql`, `sales.ts`, `sales-transaction.test.ts` | Migration was not applied to production because that needs an approved backup/data window |
-| Web and mobile sales update inventory consistently | Web/mobile created transactions and changed stock separately | Both call `/api/sales`; one Neon transaction locks products, creates ledger/audit/outbox records and rolls back as a unit | web sales page, mobile transaction provider, concurrency/rollback tests | Neon backfill must complete before cutover |
-| PostgreSQL is the shared relational core | Firebase SQL Connect and Neon roles were ambiguous and mirroring was best-effort | Domain authority is explicit: Data Connect for company/reference domains; Neon for locked inventory/finance domains; durable retry outbox for raw mirror | README, `reconcile-outbox.mjs`, `outbox-recovery.test.ts` | Cross-database writes cannot be globally atomic; reconciliation must be monitored |
-| OpenRouter AI is controlled and role-aware | AI accepted client role/company fields; mobile returned simulations | Server ignores spoofed fields, derives RBAC context, rate-limits durably, times out providers; mobile calls the same API | AI route, `ai-request.ts`, mobile core provider, security tests | Model quality and load benchmarking remain research gaps |
-| Document AI treats evidence safely | Structured output and retrieved text were weakly validated | Strict schema parsing, untrusted-content delimiters, prompt-injection instruction, tenant predicates and common PII redaction | `document-intelligence.ts`, `security-primitives.test.ts` | Redaction is heuristic; legal retention approval and broader PII detection remain necessary |
-| Audit records are traceable | Client code could create/update/delete audit records | Update/delete operations removed; trusted routes derive audit actor and append records | connector mutations, `/api/audit`, authorization test | Cross-store audit delivery needs operational alerting |
-| Employee codes are secure | Plaintext codes and a universal demo password were present | Scrypt hashes with random salts, durable rate limits, custom Firebase tokens, transitional hash-and-clear backfill | `secret-hash.ts`, employee-token route, backfill script, tests | Run the credentialed backfill before final plaintext-column removal |
-| Firestore enforces isolation | Rules allowed unsafe legacy patterns | Rules v2 default-deny; only a user may read their own strictly shaped legacy profile; all client writes denied | `backend/firestore.rules`, `backend/firebase.json`; CLI 15.26.0 emulator startup passed with workspace-local Temurin 21.0.12 | Behavioral emulator assertions still require dedicated fixtures; startup verification proves rules parsing/loading |
-| Flutter is a real cross-client implementation | AI and authentication had local/demo fallbacks and duplicated provider code | Authenticated REST service, real AI endpoint, atomic sale endpoint, no seeded password or successful fallback, refreshed widget test | Flutter 3.44.4 stable doctor, dependency resolution and widget test pass | Analyzer reports 37 first-party warnings/info (23 unused-code, 14 deprecated API); release APK awaits the verified HTTPS URL |
-| The implementation uses Python AI services | No deployed Python service existed in the repository | Documentation now states the implemented Next.js/TypeScript service layer | README and Next.js API routes | The report should be amended explicitly if submitted again |
-| Technical verification covers failure boundaries | Tests were sparse and stale | Added security, role spoofing, tenant scope, hashing, malformed AI output, PII, sale concurrency/rollback and outbox recovery tests | `frontend/tests`, mobile widget test | Live provider timeout/cross-project tests require dedicated credentials and controlled fixtures |
+## Release assessment
 
-## Data retention and privacy assumptions
+The repository is locally release-ready: web, API, Neon schema, Neon Auth
+integration, and Flutter checks pass. Firebase Data Connect and Firebase Auth
+have been removed from the deployed runtime. The production Neon schema has
+migrations `001`–`015`. On 3 September 2026, the configured Neon branch received
+an explicitly confirmed factory data reset: all 41 SmartERP application tables
+are empty, while schemas, constraints and `system_migrations` remain intact.
+The configured private object-storage bucket was also cleared and verified at
+zero current objects, stored versions and delete markers.
+Final deployment secrets, production smoke tests, first-owner registration and
+Android signing inputs remain launch operations; `/api/health` must report
+`ready`.
 
-- AI prompts and responses are currently retained in Data Connect for audit.
-  A deployment must select and implement a legal retention period (recommended
-  prototype default: 30 days) before real personal data is processed.
-- Extracted document text and chunks remain until the source document is
-  deleted by an authorized retention job. Object storage must remain private.
-- The current email/phone redaction is best-effort and does not constitute a
-  complete DLP system. Users must not submit special-category or unnecessary PII.
-- OpenRouter receives only role-filtered context and relevant, redacted evidence;
-  provider terms, region and retention settings still require institutional review.
+Do not deploy new Data Connect resources to `studio-8058744913-5a601`. It may be
+used as the read-only migration source until its data is verified in Neon.
+Firebase Auth users must remain available only through the rollback window.
+They are not used by the new web/API or Flutter runtime.
 
-## Firestore rules audit
+## Functional modules
 
-```json
-{
-  "overall_score": 92,
-  "rating": "Strong prototype default-deny posture",
-  "critical_issues": [],
-  "warnings": [
-    "Legacy profile reads still expose the authenticated user's own role and company identifiers",
-    "Rules could not be emulator-compiled locally because Firebase CLI requires Java 21"
-  ],
-  "model_assumptions": [
-    "users/{uid} is migration-only and server-managed",
-    "Data Connect and Neon are authoritative; Firestore client writes are retired"
-  ],
-  "devils_advocate": "A stolen valid Firebase session can read that user's legacy profile; revoke sessions and remove the legacy collection after migration. No submitted document field can grant broader access because every write is denied."
-}
-```
+| Module | Production implementation | Status |
+|---|---|---|
+| Authentication and authorization | Neon Auth cookies/bearer sessions, stable ERP profile links, centralized RBAC, trusted tenant scope, Neon-backed employee sessions | Code complete; database is empty and requires first-owner registration |
+| Business profile | Neon-backed contact, entity, tax, description, settings, and private logo storage | Complete |
+| Settings | Persisted currency, timezone, fiscal year, tax rate, low-stock threshold, theme and language | Complete |
+| Inventory | Neon-authoritative CRUD, persisted status/expiry, low-stock alerts, activity logs and transactional stock movements | Complete |
+| Sales | Atomic row-locked sale transaction, idempotency, line items, payment method, inventory decrement, scoped customer validation, audit/outbox, real web/mobile history and receipts | Complete |
+| Expenses and finance | Neon-authoritative expenses with descriptions/receipts, immutable void-and-reverse handling, real aggregates, DSF and operational CSV exports | Complete |
+| Customers | Neon contact records with committed order/spend summaries, scoped sale validation and historical-sale deletion protection | Complete |
+| Suppliers | Persisted location, products, balance status and notes with derived payment summaries | Complete |
+| Employees and HR | Atomic employee/login lifecycle, hashed one-time access codes, daily attendance with working time, leave requests/decisions, and immutable employment history | Complete |
+| Payroll | Configurable earnings, deductions, progressive tax/social calculations, snapshotted pay runs, owner approval, accounting posting, payment and payroll register | Complete; production posting locked until settings are professionally reviewed and confirmed |
+| Accounting | Double-entry chart, immutable journals/reversals, trial balance, management income statement/balance sheet, fiscal close, receivables, payables, bank accounts and reconciliation | Complete; opening balances and SYSCOHADA mapping require accountant sign-off |
+| Tasks | Tenant-scoped assignments, validated assignees, role-aware management, assigned-staff completion and authorized overdue notification | Complete |
+| Documents | Private object storage, managed-URL validation, failed-upload rollback, authenticated view/download/delete, AI processing and invoice-to-expense flow | Complete |
+| Announcements and notifications | Neon-backed announcements, per-user reads, targeted roles/users, inventory/task event publication | Complete |
+| Reports | Real tenant-scoped sales, inventory, finance, customer and task aggregates; safe CSV and stored generated reports | Complete |
+| AI assistant | Server-only OpenRouter fallback pipeline, authenticated scoped history, minimized/pseudonymized context, assigned-task isolation, provider data-collection denial, durable rate limiting, dashboard cache/local fallback and scheduled retention | Complete; free models are development/low-volume capacity and a production provider plan is still recommended |
+| Platform administration | Real tenant/user/plan metrics, workspace lifecycle and notes, invitation lifecycle/session revocation, plan editing, invoices, support cases and platform announcements; fabricated trend indicators removed | Complete |
+| Flutter client | Restored Neon sessions and authoritative RBAC; web-aligned inventory/barcode units, cart sales, expenses, customers, suppliers, employee access, tasks, documents, reports, business settings, HR, payroll, full accounting operations and SaaS administration | Complete; signed bundle inputs required |
+
+## Data and security posture
+
+- Neon is authoritative for every relational domain, including identity
+  profiles, businesses, settings, tasks, employees, customers, suppliers,
+  documents, products, sales, expenses, audit data and search indexes.
+- Customer order/spend totals are derived from committed Neon sales rather than
+  editable counters.
+- The Next.js API verifies Neon sessions, permissions, target ownership and
+  tenant scope; clients have no direct Neon credentials.
+- PostgreSQL rejects cross-tenant company references through 22 composite
+  foreign-key guards; the post-reset verifier reports zero orphan records.
+- Migration `011` adds company-scoped HR, payroll, journal, open-item and bank
+  records. Posted journals cannot be edited or deleted, unbalanced journals
+  cannot post, and closed fiscal periods reject later postings.
+- Migration `012` adds governed AI query purposes and a scoped conversation
+  index. Daily maintenance enforces AI history retention without exposing query
+  content to the cron response.
+- Firebase and Firestore are absent from the deployed runtime; their retained
+  configuration and generated files are migration history only.
+- Object storage is private; file reads and writes require document permissions.
+- CSV exports escape formulas as well as delimiters to prevent spreadsheet
+  injection.
+- Android release builds cannot use debug signing, cleartext traffic, or a
+  missing HTTPS API URL.
+
+## Verification evidence
+
+| Check | Result |
+|---|---|
+| Next.js 16.3.3 production build | Passed in supported Webpack mode; Neon Auth route and reset page included |
+| TypeScript strict check | Passed |
+| ESLint | Passed with zero warnings/errors |
+| Node security/integrity tests | 12/12 test files passed, including login/session recovery, tenant, barcode inventory, customer, employee, transaction/sale, task, payroll/accounting, SaaS control plane and security contracts |
+| Neon runtime migration | Neon applied `001`–`015`; identity/session security, tenant guards, HR/payroll/accounting, AI governance, SaaS administration and barcode-unit schema are present without rewriting existing IDs |
+| Read-only Neon verifier | PostgreSQL 18.6 reachable through pooled host; 51/51 tables, vector, Neon Auth, auth link and 22/22 tenant guards present; every checked orphan count is zero |
+| Rollback-only accounting database test | Balanced journal posted, unbalanced journal rejected, posted journal mutation rejected, and all verification rows rolled back |
+| Neon factory reset | 41 application tables and 102 rows cleared; zero application rows remain; migration history preserved; Neon Auth contains zero users |
+| Object-storage reset | The final 50,127-byte test object and its stored version were deleted; zero objects remain |
+| Flutter analyzer | Passed with zero issues |
+| Flutter widget tests | Previously passed; current rerun was blocked because this execution sandbox cannot bind the local test runner socket |
+| Automated release coverage | Playwright public/security checks, guarded authenticated read-only production smoke coverage, Flutter navigation/RBAC tests and GitHub CI are present |
+| Optimized server smoke test | Neon Auth proxy returned 200; unauthenticated profile and sales returned 401 |
+| Security headers | CSP, HSTS, frame denial, MIME, referrer, permissions and cross-origin policies present |
+| Unauthenticated protected API test | `/api/sales` returned 401 |
+| Production environment validator | Correctly blocked placeholders/missing secrets |
+| Production dependency audit | `npm audit --omit=dev` found 0 vulnerabilities; Firebase packages are migration-only dev dependencies |
+| AI provider smoke test | Current fallback pipeline completed successfully through `minimax/minimax-m3:free` with provider data collection denied |
+| AI tenant/RBAC smoke test | Before the factory reset, live Staff context contained only products, inventory and the assigned task; direct identity/contact keys were absent and all context queries succeeded |
+
+## Remaining launch gates
+
+1. Promote the locally validated Neon/Auth variables to the deployment service,
+   then configure Neon Auth trusted origins, production email, and Google OAuth.
+2. Configure private S3-compatible storage, backups, and every remaining value
+   in `frontend/.env.example`; all three operational secrets must be independent.
+3. Register the first Business Owner and new isolated workspace, then verify the
+   Neon Auth identity is linked to the new ERP profile.
+4. Have a qualified accountant confirm payroll settings, opening balances and
+   the company-specific SYSCOHADA chart/presentation. Production payroll posting
+   remains locked while its settings are `DRAFT`.
+5. Deploy the web/API service and require `/api/health` to return `ready` before
+   DNS cutover.
+6. Decide the final Android package identity and release process. Gradle and
+   Android-emulator tests are intentionally absent from CI at the owner's request.
+   A normal Flutter Android package build uses Gradle internally.
+7. Approve privacy/retention policy, restore test, monitoring ownership,
+   incident response and a dedicated production smoke-test tenant.
+8. For sustained production AI traffic, configure an OpenRouter budget/guardrail
+   and at least one SLA-backed model; keep the free fallback list for graceful
+   degradation rather than treating free quotas as guaranteed capacity.
+
+The complete audit is in `docs/FIREBASE_TO_NEON_MIGRATION.md`; exact commands
+and rollback gates are in `DEPLOYMENT.md`.

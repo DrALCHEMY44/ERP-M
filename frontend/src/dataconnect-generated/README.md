@@ -16,12 +16,16 @@ This README will guide you through the process of using the generated JavaScript
   - [*ListBusinesses*](#listbusinesses)
   - [*getUserByEmail*](#getuserbyemail)
   - [*getBusinessById*](#getbusinessbyid)
+  - [*getBusinessSettings*](#getbusinesssettings)
   - [*getBusinessByCode*](#getbusinessbycode)
   - [*getBusinessesByName*](#getbusinessesbyname)
   - [*verifyEmployeeAccess*](#verifyemployeeaccess)
   - [*verifyUserLogin*](#verifyuserlogin)
   - [*listProductsByBusiness*](#listproductsbybusiness)
   - [*listCustomersByBusiness*](#listcustomersbybusiness)
+  - [*getCustomerForCompany*](#getcustomerforcompany)
+  - [*listSaleCustomersByBusiness*](#listsalecustomersbybusiness)
+  - [*listTaskAssigneesByBusiness*](#listtaskassigneesbybusiness)
   - [*listUsersByBusiness*](#listusersbybusiness)
   - [*listSuppliersByBusiness*](#listsuppliersbybusiness)
   - [*listTasksByBusiness*](#listtasksbybusiness)
@@ -36,6 +40,7 @@ This README will guide you through the process of using the generated JavaScript
   - [*listNotifications*](#listnotifications)
   - [*ListPendingMirrorOutbox*](#listpendingmirroroutbox)
 - [**Mutations**](#mutations)
+  - [*BootstrapWorkspace*](#bootstrapworkspace)
   - [*CreateTenant*](#createtenant)
   - [*UpdateTenant*](#updatetenant)
   - [*DeleteTenant*](#deletetenant)
@@ -45,6 +50,7 @@ This README will guide you through the process of using the generated JavaScript
   - [*ClearLegacyAccessCode*](#clearlegacyaccesscode)
   - [*CreateBusiness*](#createbusiness)
   - [*UpdateBusiness*](#updatebusiness)
+  - [*UpsertBusinessSettings*](#upsertbusinesssettings)
   - [*DeleteBusiness*](#deletebusiness)
   - [*ProvisionEmployeeUser*](#provisionemployeeuser)
   - [*CompleteAssignedTask*](#completeassignedtask)
@@ -57,6 +63,9 @@ This README will guide you through the process of using the generated JavaScript
   - [*CreateTaskComment*](#createtaskcomment)
   - [*UpdateTaskComment*](#updatetaskcomment)
   - [*DeleteTaskComment*](#deletetaskcomment)
+  - [*CreateEmployeeWithAccess*](#createemployeewithaccess)
+  - [*UpdateEmployeeWithAccess*](#updateemployeewithaccess)
+  - [*DeleteEmployeeWithAccess*](#deleteemployeewithaccess)
   - [*CreateEmployee*](#createemployee)
   - [*UpdateEmployee*](#updateemployee)
   - [*DeleteEmployee*](#deleteemployee)
@@ -474,7 +483,7 @@ import { connectorConfig, listBusinesses, ListBusinessesVariables } from '@datac
 
 // The `ListBusinesses` query requires an argument of type `ListBusinessesVariables`:
 const listBusinessesVars: ListBusinessesVariables = {
-  tenantId: ..., 
+  tenantId: ...,
 };
 
 // Call the `listBusinesses()` function to execute the query.
@@ -504,7 +513,7 @@ import { connectorConfig, listBusinessesRef, ListBusinessesVariables } from '@da
 
 // The `ListBusinesses` query requires an argument of type `ListBusinessesVariables`:
 const listBusinessesVars: ListBusinessesVariables = {
-  tenantId: ..., 
+  tenantId: ...,
 };
 
 // Call the `listBusinessesRef()` function to get a reference to the query.
@@ -593,7 +602,7 @@ import { connectorConfig, getUserByEmail, GetUserByEmailVariables } from '@datac
 
 // The `getUserByEmail` query requires an argument of type `GetUserByEmailVariables`:
 const getUserByEmailVars: GetUserByEmailVariables = {
-  email: ..., 
+  email: ...,
 };
 
 // Call the `getUserByEmail()` function to execute the query.
@@ -623,7 +632,7 @@ import { connectorConfig, getUserByEmailRef, GetUserByEmailVariables } from '@da
 
 // The `getUserByEmail` query requires an argument of type `GetUserByEmailVariables`:
 const getUserByEmailVars: GetUserByEmailVariables = {
-  email: ..., 
+  email: ...,
 };
 
 // Call the `getUserByEmailRef()` function to get a reference to the query.
@@ -695,6 +704,16 @@ export interface GetBusinessByIdData {
     id: string;
     tenantId: string;
     name: string;
+    location: string;
+    businessType?: string | null;
+    entityType?: string | null;
+    city?: string | null;
+    region?: string | null;
+    phone?: string | null;
+    email?: string | null;
+    taxId?: string | null;
+    description?: string | null;
+    logoUrl?: string | null;
     createdAt: TimestampString;
     code: string;
   } & Business_Key;
@@ -708,7 +727,7 @@ import { connectorConfig, getBusinessById, GetBusinessByIdVariables } from '@dat
 
 // The `getBusinessById` query requires an argument of type `GetBusinessByIdVariables`:
 const getBusinessByIdVars: GetBusinessByIdVariables = {
-  id: ..., 
+  id: ...,
 };
 
 // Call the `getBusinessById()` function to execute the query.
@@ -738,7 +757,7 @@ import { connectorConfig, getBusinessByIdRef, GetBusinessByIdVariables } from '@
 
 // The `getBusinessById` query requires an argument of type `GetBusinessByIdVariables`:
 const getBusinessByIdVars: GetBusinessByIdVariables = {
-  id: ..., 
+  id: ...,
 };
 
 // Call the `getBusinessByIdRef()` function to get a reference to the query.
@@ -760,6 +779,127 @@ console.log(data.business);
 executeQuery(ref).then((response) => {
   const data = response.data;
   console.log(data.business);
+});
+```
+
+## getBusinessSettings
+You can execute the `getBusinessSettings` query using the following action shortcut function, or by calling `executeQuery()` after calling the following `QueryRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
+```typescript
+getBusinessSettings(vars: GetBusinessSettingsVariables, options?: ExecuteQueryOptions): QueryPromise<GetBusinessSettingsData, GetBusinessSettingsVariables>;
+
+interface GetBusinessSettingsRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: GetBusinessSettingsVariables): QueryRef<GetBusinessSettingsData, GetBusinessSettingsVariables>;
+}
+export const getBusinessSettingsRef: GetBusinessSettingsRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `QueryRef` function.
+```typescript
+getBusinessSettings(dc: DataConnect, vars: GetBusinessSettingsVariables, options?: ExecuteQueryOptions): QueryPromise<GetBusinessSettingsData, GetBusinessSettingsVariables>;
+
+interface GetBusinessSettingsRef {
+  ...
+  (dc: DataConnect, vars: GetBusinessSettingsVariables): QueryRef<GetBusinessSettingsData, GetBusinessSettingsVariables>;
+}
+export const getBusinessSettingsRef: GetBusinessSettingsRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the getBusinessSettingsRef:
+```typescript
+const name = getBusinessSettingsRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `getBusinessSettings` query requires an argument of type `GetBusinessSettingsVariables`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface GetBusinessSettingsVariables {
+  tenantId: string;
+  businessId: string;
+}
+```
+### Return Type
+Recall that executing the `getBusinessSettings` query returns a `QueryPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `GetBusinessSettingsData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface GetBusinessSettingsData {
+  businessSettings: ({
+    businessId: string;
+    tenantId: string;
+    currency: string;
+    timezone: string;
+    fiscalYearStart: string;
+    taxRate: number;
+    lowStockThreshold: number;
+    updatedAt: TimestampString;
+  } & BusinessSetting_Key)[];
+}
+```
+### Using `getBusinessSettings`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, getBusinessSettings, GetBusinessSettingsVariables } from '@dataconnect/generated';
+
+// The `getBusinessSettings` query requires an argument of type `GetBusinessSettingsVariables`:
+const getBusinessSettingsVars: GetBusinessSettingsVariables = {
+  tenantId: ...,
+  businessId: ...,
+};
+
+// Call the `getBusinessSettings()` function to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await getBusinessSettings(getBusinessSettingsVars);
+// Variables can be defined inline as well.
+const { data } = await getBusinessSettings({ tenantId: ..., businessId: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await getBusinessSettings(dataConnect, getBusinessSettingsVars);
+
+console.log(data.businessSettings);
+
+// Or, you can use the `Promise` API.
+getBusinessSettings(getBusinessSettingsVars).then((response) => {
+  const data = response.data;
+  console.log(data.businessSettings);
+});
+```
+
+### Using `getBusinessSettings`'s `QueryRef` function
+
+```typescript
+import { getDataConnect, executeQuery } from 'firebase/data-connect';
+import { connectorConfig, getBusinessSettingsRef, GetBusinessSettingsVariables } from '@dataconnect/generated';
+
+// The `getBusinessSettings` query requires an argument of type `GetBusinessSettingsVariables`:
+const getBusinessSettingsVars: GetBusinessSettingsVariables = {
+  tenantId: ...,
+  businessId: ...,
+};
+
+// Call the `getBusinessSettingsRef()` function to get a reference to the query.
+const ref = getBusinessSettingsRef(getBusinessSettingsVars);
+// Variables can be defined inline as well.
+const ref = getBusinessSettingsRef({ tenantId: ..., businessId: ..., });
+
+// You can also pass in a `DataConnect` instance to the `QueryRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = getBusinessSettingsRef(dataConnect, getBusinessSettingsVars);
+
+// Call `executeQuery()` on the reference to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeQuery(ref);
+
+console.log(data.businessSettings);
+
+// Or, you can use the `Promise` API.
+executeQuery(ref).then((response) => {
+  const data = response.data;
+  console.log(data.businessSettings);
 });
 ```
 
@@ -821,7 +961,7 @@ import { connectorConfig, getBusinessByCode, GetBusinessByCodeVariables } from '
 
 // The `getBusinessByCode` query requires an argument of type `GetBusinessByCodeVariables`:
 const getBusinessByCodeVars: GetBusinessByCodeVariables = {
-  code: ..., 
+  code: ...,
 };
 
 // Call the `getBusinessByCode()` function to execute the query.
@@ -851,7 +991,7 @@ import { connectorConfig, getBusinessByCodeRef, GetBusinessByCodeVariables } fro
 
 // The `getBusinessByCode` query requires an argument of type `GetBusinessByCodeVariables`:
 const getBusinessByCodeVars: GetBusinessByCodeVariables = {
-  code: ..., 
+  code: ...,
 };
 
 // Call the `getBusinessByCodeRef()` function to get a reference to the query.
@@ -935,7 +1075,7 @@ import { connectorConfig, getBusinessesByName, GetBusinessesByNameVariables } fr
 
 // The `getBusinessesByName` query requires an argument of type `GetBusinessesByNameVariables`:
 const getBusinessesByNameVars: GetBusinessesByNameVariables = {
-  name: ..., 
+  name: ...,
 };
 
 // Call the `getBusinessesByName()` function to execute the query.
@@ -965,7 +1105,7 @@ import { connectorConfig, getBusinessesByNameRef, GetBusinessesByNameVariables }
 
 // The `getBusinessesByName` query requires an argument of type `GetBusinessesByNameVariables`:
 const getBusinessesByNameVars: GetBusinessesByNameVariables = {
-  name: ..., 
+  name: ...,
 };
 
 // Call the `getBusinessesByNameRef()` function to get a reference to the query.
@@ -1055,11 +1195,11 @@ import { connectorConfig, verifyEmployeeAccess, VerifyEmployeeAccessVariables } 
 
 // The `verifyEmployeeAccess` query requires an argument of type `VerifyEmployeeAccessVariables`:
 const verifyEmployeeAccessVars: VerifyEmployeeAccessVariables = {
-  fullName: ..., 
-  role: ..., 
-  accessCodeHash: ..., 
-  tenantId: ..., 
-  businessId: ..., 
+  fullName: ...,
+  role: ...,
+  accessCodeHash: ...,
+  tenantId: ...,
+  businessId: ...,
 };
 
 // Call the `verifyEmployeeAccess()` function to execute the query.
@@ -1089,11 +1229,11 @@ import { connectorConfig, verifyEmployeeAccessRef, VerifyEmployeeAccessVariables
 
 // The `verifyEmployeeAccess` query requires an argument of type `VerifyEmployeeAccessVariables`:
 const verifyEmployeeAccessVars: VerifyEmployeeAccessVariables = {
-  fullName: ..., 
-  role: ..., 
-  accessCodeHash: ..., 
-  tenantId: ..., 
-  businessId: ..., 
+  fullName: ...,
+  role: ...,
+  accessCodeHash: ...,
+  tenantId: ...,
+  businessId: ...,
 };
 
 // Call the `verifyEmployeeAccessRef()` function to get a reference to the query.
@@ -1184,12 +1324,12 @@ import { connectorConfig, verifyUserLogin, VerifyUserLoginVariables } from '@dat
 
 // The `verifyUserLogin` query requires an argument of type `VerifyUserLoginVariables`:
 const verifyUserLoginVars: VerifyUserLoginVariables = {
-  email: ..., 
-  fullName: ..., 
-  role: ..., 
-  accessCodeHash: ..., 
-  tenantId: ..., 
-  businessId: ..., 
+  email: ...,
+  fullName: ...,
+  role: ...,
+  accessCodeHash: ...,
+  tenantId: ...,
+  businessId: ...,
 };
 
 // Call the `verifyUserLogin()` function to execute the query.
@@ -1219,12 +1359,12 @@ import { connectorConfig, verifyUserLoginRef, VerifyUserLoginVariables } from '@
 
 // The `verifyUserLogin` query requires an argument of type `VerifyUserLoginVariables`:
 const verifyUserLoginVars: VerifyUserLoginVariables = {
-  email: ..., 
-  fullName: ..., 
-  role: ..., 
-  accessCodeHash: ..., 
-  tenantId: ..., 
-  businessId: ..., 
+  email: ...,
+  fullName: ...,
+  role: ...,
+  accessCodeHash: ...,
+  tenantId: ...,
+  businessId: ...,
 };
 
 // Call the `verifyUserLoginRef()` function to get a reference to the query.
@@ -1302,6 +1442,7 @@ export interface ListProductsByBusinessData {
     sellingPrice: number;
     expiryDate?: DateString | null;
     lowStockLevel?: number | null;
+    status?: string | null;
     createdBy: string;
     createdAt: TimestampString;
     updatedAt?: TimestampString | null;
@@ -1318,8 +1459,8 @@ import { connectorConfig, listProductsByBusiness, ListProductsByBusinessVariable
 
 // The `listProductsByBusiness` query requires an argument of type `ListProductsByBusinessVariables`:
 const listProductsByBusinessVars: ListProductsByBusinessVariables = {
-  tenantId: ..., 
-  businessId: ..., 
+  tenantId: ...,
+  businessId: ...,
 };
 
 // Call the `listProductsByBusiness()` function to execute the query.
@@ -1349,8 +1490,8 @@ import { connectorConfig, listProductsByBusinessRef, ListProductsByBusinessVaria
 
 // The `listProductsByBusiness` query requires an argument of type `ListProductsByBusinessVariables`:
 const listProductsByBusinessVars: ListProductsByBusinessVariables = {
-  tenantId: ..., 
-  businessId: ..., 
+  tenantId: ...,
+  businessId: ...,
 };
 
 // Call the `listProductsByBusinessRef()` function to get a reference to the query.
@@ -1427,6 +1568,7 @@ export interface ListCustomersByBusinessData {
     location?: string | null;
     totalOrders?: number | null;
     totalSpent?: number | null;
+    notes?: string | null;
     createdAt: TimestampString;
     tenantId: string;
     businessId: string;
@@ -1441,8 +1583,8 @@ import { connectorConfig, listCustomersByBusiness, ListCustomersByBusinessVariab
 
 // The `listCustomersByBusiness` query requires an argument of type `ListCustomersByBusinessVariables`:
 const listCustomersByBusinessVars: ListCustomersByBusinessVariables = {
-  tenantId: ..., 
-  businessId: ..., 
+  tenantId: ...,
+  businessId: ...,
 };
 
 // Call the `listCustomersByBusiness()` function to execute the query.
@@ -1472,8 +1614,8 @@ import { connectorConfig, listCustomersByBusinessRef, ListCustomersByBusinessVar
 
 // The `listCustomersByBusiness` query requires an argument of type `ListCustomersByBusinessVariables`:
 const listCustomersByBusinessVars: ListCustomersByBusinessVariables = {
-  tenantId: ..., 
-  businessId: ..., 
+  tenantId: ...,
+  businessId: ...,
 };
 
 // Call the `listCustomersByBusinessRef()` function to get a reference to the query.
@@ -1495,6 +1637,360 @@ console.log(data.customers);
 executeQuery(ref).then((response) => {
   const data = response.data;
   console.log(data.customers);
+});
+```
+
+## getCustomerForCompany
+You can execute the `getCustomerForCompany` query using the following action shortcut function, or by calling `executeQuery()` after calling the following `QueryRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
+```typescript
+getCustomerForCompany(vars: GetCustomerForCompanyVariables, options?: ExecuteQueryOptions): QueryPromise<GetCustomerForCompanyData, GetCustomerForCompanyVariables>;
+
+interface GetCustomerForCompanyRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: GetCustomerForCompanyVariables): QueryRef<GetCustomerForCompanyData, GetCustomerForCompanyVariables>;
+}
+export const getCustomerForCompanyRef: GetCustomerForCompanyRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `QueryRef` function.
+```typescript
+getCustomerForCompany(dc: DataConnect, vars: GetCustomerForCompanyVariables, options?: ExecuteQueryOptions): QueryPromise<GetCustomerForCompanyData, GetCustomerForCompanyVariables>;
+
+interface GetCustomerForCompanyRef {
+  ...
+  (dc: DataConnect, vars: GetCustomerForCompanyVariables): QueryRef<GetCustomerForCompanyData, GetCustomerForCompanyVariables>;
+}
+export const getCustomerForCompanyRef: GetCustomerForCompanyRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the getCustomerForCompanyRef:
+```typescript
+const name = getCustomerForCompanyRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `getCustomerForCompany` query requires an argument of type `GetCustomerForCompanyVariables`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface GetCustomerForCompanyVariables {
+  id: string;
+  tenantId: string;
+  businessId: string;
+}
+```
+### Return Type
+Recall that executing the `getCustomerForCompany` query returns a `QueryPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `GetCustomerForCompanyData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface GetCustomerForCompanyData {
+  customer?: {
+    id: string;
+  } & Customer_Key;
+}
+```
+### Using `getCustomerForCompany`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, getCustomerForCompany, GetCustomerForCompanyVariables } from '@dataconnect/generated';
+
+// The `getCustomerForCompany` query requires an argument of type `GetCustomerForCompanyVariables`:
+const getCustomerForCompanyVars: GetCustomerForCompanyVariables = {
+  id: ...,
+  tenantId: ...,
+  businessId: ...,
+};
+
+// Call the `getCustomerForCompany()` function to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await getCustomerForCompany(getCustomerForCompanyVars);
+// Variables can be defined inline as well.
+const { data } = await getCustomerForCompany({ id: ..., tenantId: ..., businessId: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await getCustomerForCompany(dataConnect, getCustomerForCompanyVars);
+
+console.log(data.customer);
+
+// Or, you can use the `Promise` API.
+getCustomerForCompany(getCustomerForCompanyVars).then((response) => {
+  const data = response.data;
+  console.log(data.customer);
+});
+```
+
+### Using `getCustomerForCompany`'s `QueryRef` function
+
+```typescript
+import { getDataConnect, executeQuery } from 'firebase/data-connect';
+import { connectorConfig, getCustomerForCompanyRef, GetCustomerForCompanyVariables } from '@dataconnect/generated';
+
+// The `getCustomerForCompany` query requires an argument of type `GetCustomerForCompanyVariables`:
+const getCustomerForCompanyVars: GetCustomerForCompanyVariables = {
+  id: ...,
+  tenantId: ...,
+  businessId: ...,
+};
+
+// Call the `getCustomerForCompanyRef()` function to get a reference to the query.
+const ref = getCustomerForCompanyRef(getCustomerForCompanyVars);
+// Variables can be defined inline as well.
+const ref = getCustomerForCompanyRef({ id: ..., tenantId: ..., businessId: ..., });
+
+// You can also pass in a `DataConnect` instance to the `QueryRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = getCustomerForCompanyRef(dataConnect, getCustomerForCompanyVars);
+
+// Call `executeQuery()` on the reference to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeQuery(ref);
+
+console.log(data.customer);
+
+// Or, you can use the `Promise` API.
+executeQuery(ref).then((response) => {
+  const data = response.data;
+  console.log(data.customer);
+});
+```
+
+## listSaleCustomersByBusiness
+You can execute the `listSaleCustomersByBusiness` query using the following action shortcut function, or by calling `executeQuery()` after calling the following `QueryRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
+```typescript
+listSaleCustomersByBusiness(vars: ListSaleCustomersByBusinessVariables, options?: ExecuteQueryOptions): QueryPromise<ListSaleCustomersByBusinessData, ListSaleCustomersByBusinessVariables>;
+
+interface ListSaleCustomersByBusinessRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: ListSaleCustomersByBusinessVariables): QueryRef<ListSaleCustomersByBusinessData, ListSaleCustomersByBusinessVariables>;
+}
+export const listSaleCustomersByBusinessRef: ListSaleCustomersByBusinessRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `QueryRef` function.
+```typescript
+listSaleCustomersByBusiness(dc: DataConnect, vars: ListSaleCustomersByBusinessVariables, options?: ExecuteQueryOptions): QueryPromise<ListSaleCustomersByBusinessData, ListSaleCustomersByBusinessVariables>;
+
+interface ListSaleCustomersByBusinessRef {
+  ...
+  (dc: DataConnect, vars: ListSaleCustomersByBusinessVariables): QueryRef<ListSaleCustomersByBusinessData, ListSaleCustomersByBusinessVariables>;
+}
+export const listSaleCustomersByBusinessRef: ListSaleCustomersByBusinessRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the listSaleCustomersByBusinessRef:
+```typescript
+const name = listSaleCustomersByBusinessRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `listSaleCustomersByBusiness` query requires an argument of type `ListSaleCustomersByBusinessVariables`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface ListSaleCustomersByBusinessVariables {
+  tenantId: string;
+  businessId: string;
+}
+```
+### Return Type
+Recall that executing the `listSaleCustomersByBusiness` query returns a `QueryPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `ListSaleCustomersByBusinessData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface ListSaleCustomersByBusinessData {
+  customers: ({
+    id: string;
+    customerName: string;
+    tenantId: string;
+    businessId: string;
+  } & Customer_Key)[];
+}
+```
+### Using `listSaleCustomersByBusiness`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, listSaleCustomersByBusiness, ListSaleCustomersByBusinessVariables } from '@dataconnect/generated';
+
+// The `listSaleCustomersByBusiness` query requires an argument of type `ListSaleCustomersByBusinessVariables`:
+const listSaleCustomersByBusinessVars: ListSaleCustomersByBusinessVariables = {
+  tenantId: ...,
+  businessId: ...,
+};
+
+// Call the `listSaleCustomersByBusiness()` function to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await listSaleCustomersByBusiness(listSaleCustomersByBusinessVars);
+// Variables can be defined inline as well.
+const { data } = await listSaleCustomersByBusiness({ tenantId: ..., businessId: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await listSaleCustomersByBusiness(dataConnect, listSaleCustomersByBusinessVars);
+
+console.log(data.customers);
+
+// Or, you can use the `Promise` API.
+listSaleCustomersByBusiness(listSaleCustomersByBusinessVars).then((response) => {
+  const data = response.data;
+  console.log(data.customers);
+});
+```
+
+### Using `listSaleCustomersByBusiness`'s `QueryRef` function
+
+```typescript
+import { getDataConnect, executeQuery } from 'firebase/data-connect';
+import { connectorConfig, listSaleCustomersByBusinessRef, ListSaleCustomersByBusinessVariables } from '@dataconnect/generated';
+
+// The `listSaleCustomersByBusiness` query requires an argument of type `ListSaleCustomersByBusinessVariables`:
+const listSaleCustomersByBusinessVars: ListSaleCustomersByBusinessVariables = {
+  tenantId: ...,
+  businessId: ...,
+};
+
+// Call the `listSaleCustomersByBusinessRef()` function to get a reference to the query.
+const ref = listSaleCustomersByBusinessRef(listSaleCustomersByBusinessVars);
+// Variables can be defined inline as well.
+const ref = listSaleCustomersByBusinessRef({ tenantId: ..., businessId: ..., });
+
+// You can also pass in a `DataConnect` instance to the `QueryRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = listSaleCustomersByBusinessRef(dataConnect, listSaleCustomersByBusinessVars);
+
+// Call `executeQuery()` on the reference to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeQuery(ref);
+
+console.log(data.customers);
+
+// Or, you can use the `Promise` API.
+executeQuery(ref).then((response) => {
+  const data = response.data;
+  console.log(data.customers);
+});
+```
+
+## listTaskAssigneesByBusiness
+You can execute the `listTaskAssigneesByBusiness` query using the following action shortcut function, or by calling `executeQuery()` after calling the following `QueryRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
+```typescript
+listTaskAssigneesByBusiness(vars: ListTaskAssigneesByBusinessVariables, options?: ExecuteQueryOptions): QueryPromise<ListTaskAssigneesByBusinessData, ListTaskAssigneesByBusinessVariables>;
+
+interface ListTaskAssigneesByBusinessRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: ListTaskAssigneesByBusinessVariables): QueryRef<ListTaskAssigneesByBusinessData, ListTaskAssigneesByBusinessVariables>;
+}
+export const listTaskAssigneesByBusinessRef: ListTaskAssigneesByBusinessRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `QueryRef` function.
+```typescript
+listTaskAssigneesByBusiness(dc: DataConnect, vars: ListTaskAssigneesByBusinessVariables, options?: ExecuteQueryOptions): QueryPromise<ListTaskAssigneesByBusinessData, ListTaskAssigneesByBusinessVariables>;
+
+interface ListTaskAssigneesByBusinessRef {
+  ...
+  (dc: DataConnect, vars: ListTaskAssigneesByBusinessVariables): QueryRef<ListTaskAssigneesByBusinessData, ListTaskAssigneesByBusinessVariables>;
+}
+export const listTaskAssigneesByBusinessRef: ListTaskAssigneesByBusinessRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the listTaskAssigneesByBusinessRef:
+```typescript
+const name = listTaskAssigneesByBusinessRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `listTaskAssigneesByBusiness` query requires an argument of type `ListTaskAssigneesByBusinessVariables`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface ListTaskAssigneesByBusinessVariables {
+  tenantId: string;
+  businessId: string;
+}
+```
+### Return Type
+Recall that executing the `listTaskAssigneesByBusiness` query returns a `QueryPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `ListTaskAssigneesByBusinessData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface ListTaskAssigneesByBusinessData {
+  users: ({
+    id: string;
+    email: string;
+    role: string;
+    fullName?: string | null;
+    department?: string | null;
+    tenantId: string;
+    businessId: string;
+  } & User_Key)[];
+}
+```
+### Using `listTaskAssigneesByBusiness`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, listTaskAssigneesByBusiness, ListTaskAssigneesByBusinessVariables } from '@dataconnect/generated';
+
+// The `listTaskAssigneesByBusiness` query requires an argument of type `ListTaskAssigneesByBusinessVariables`:
+const listTaskAssigneesByBusinessVars: ListTaskAssigneesByBusinessVariables = {
+  tenantId: ...,
+  businessId: ...,
+};
+
+// Call the `listTaskAssigneesByBusiness()` function to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await listTaskAssigneesByBusiness(listTaskAssigneesByBusinessVars);
+// Variables can be defined inline as well.
+const { data } = await listTaskAssigneesByBusiness({ tenantId: ..., businessId: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await listTaskAssigneesByBusiness(dataConnect, listTaskAssigneesByBusinessVars);
+
+console.log(data.users);
+
+// Or, you can use the `Promise` API.
+listTaskAssigneesByBusiness(listTaskAssigneesByBusinessVars).then((response) => {
+  const data = response.data;
+  console.log(data.users);
+});
+```
+
+### Using `listTaskAssigneesByBusiness`'s `QueryRef` function
+
+```typescript
+import { getDataConnect, executeQuery } from 'firebase/data-connect';
+import { connectorConfig, listTaskAssigneesByBusinessRef, ListTaskAssigneesByBusinessVariables } from '@dataconnect/generated';
+
+// The `listTaskAssigneesByBusiness` query requires an argument of type `ListTaskAssigneesByBusinessVariables`:
+const listTaskAssigneesByBusinessVars: ListTaskAssigneesByBusinessVariables = {
+  tenantId: ...,
+  businessId: ...,
+};
+
+// Call the `listTaskAssigneesByBusinessRef()` function to get a reference to the query.
+const ref = listTaskAssigneesByBusinessRef(listTaskAssigneesByBusinessVars);
+// Variables can be defined inline as well.
+const ref = listTaskAssigneesByBusinessRef({ tenantId: ..., businessId: ..., });
+
+// You can also pass in a `DataConnect` instance to the `QueryRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = listTaskAssigneesByBusinessRef(dataConnect, listTaskAssigneesByBusinessVars);
+
+// Call `executeQuery()` on the reference to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeQuery(ref);
+
+console.log(data.users);
+
+// Or, you can use the `Promise` API.
+executeQuery(ref).then((response) => {
+  const data = response.data;
+  console.log(data.users);
 });
 ```
 
@@ -1564,8 +2060,8 @@ import { connectorConfig, listUsersByBusiness, ListUsersByBusinessVariables } fr
 
 // The `listUsersByBusiness` query requires an argument of type `ListUsersByBusinessVariables`:
 const listUsersByBusinessVars: ListUsersByBusinessVariables = {
-  tenantId: ..., 
-  businessId: ..., 
+  tenantId: ...,
+  businessId: ...,
 };
 
 // Call the `listUsersByBusiness()` function to execute the query.
@@ -1595,8 +2091,8 @@ import { connectorConfig, listUsersByBusinessRef, ListUsersByBusinessVariables }
 
 // The `listUsersByBusiness` query requires an argument of type `ListUsersByBusinessVariables`:
 const listUsersByBusinessVars: ListUsersByBusinessVariables = {
-  tenantId: ..., 
-  businessId: ..., 
+  tenantId: ...,
+  businessId: ...,
 };
 
 // Call the `listUsersByBusinessRef()` function to get a reference to the query.
@@ -1670,6 +2166,10 @@ export interface ListSuppliersByBusinessData {
     supplierName: string;
     phoneNumber?: string | null;
     email?: string | null;
+    location?: string | null;
+    productsSupplied?: string | null;
+    paymentStatus?: string | null;
+    notes?: string | null;
     createdAt: TimestampString;
     tenantId: string;
     businessId: string;
@@ -1684,8 +2184,8 @@ import { connectorConfig, listSuppliersByBusiness, ListSuppliersByBusinessVariab
 
 // The `listSuppliersByBusiness` query requires an argument of type `ListSuppliersByBusinessVariables`:
 const listSuppliersByBusinessVars: ListSuppliersByBusinessVariables = {
-  tenantId: ..., 
-  businessId: ..., 
+  tenantId: ...,
+  businessId: ...,
 };
 
 // Call the `listSuppliersByBusiness()` function to execute the query.
@@ -1715,8 +2215,8 @@ import { connectorConfig, listSuppliersByBusinessRef, ListSuppliersByBusinessVar
 
 // The `listSuppliersByBusiness` query requires an argument of type `ListSuppliersByBusinessVariables`:
 const listSuppliersByBusinessVars: ListSuppliersByBusinessVariables = {
-  tenantId: ..., 
-  businessId: ..., 
+  tenantId: ...,
+  businessId: ...,
 };
 
 // Call the `listSuppliersByBusinessRef()` function to get a reference to the query.
@@ -1797,6 +2297,7 @@ export interface ListTasksByBusinessData {
       email: string;
       role: string;
       fullName?: string | null;
+      department?: string | null;
     } & User_Key;
     createdBy: string;
     createdAt: TimestampString;
@@ -1814,8 +2315,8 @@ import { connectorConfig, listTasksByBusiness, ListTasksByBusinessVariables } fr
 
 // The `listTasksByBusiness` query requires an argument of type `ListTasksByBusinessVariables`:
 const listTasksByBusinessVars: ListTasksByBusinessVariables = {
-  tenantId: ..., 
-  businessId: ..., 
+  tenantId: ...,
+  businessId: ...,
 };
 
 // Call the `listTasksByBusiness()` function to execute the query.
@@ -1845,8 +2346,8 @@ import { connectorConfig, listTasksByBusinessRef, ListTasksByBusinessVariables }
 
 // The `listTasksByBusiness` query requires an argument of type `ListTasksByBusinessVariables`:
 const listTasksByBusinessVars: ListTasksByBusinessVariables = {
-  tenantId: ..., 
-  businessId: ..., 
+  tenantId: ...,
+  businessId: ...,
 };
 
 // Call the `listTasksByBusinessRef()` function to get a reference to the query.
@@ -1928,6 +2429,7 @@ export interface ListTasksAssignedToUserData {
       email: string;
       role: string;
       fullName?: string | null;
+      department?: string | null;
     } & User_Key;
     createdBy: string;
     createdAt: TimestampString;
@@ -1945,9 +2447,9 @@ import { connectorConfig, listTasksAssignedToUser, ListTasksAssignedToUserVariab
 
 // The `listTasksAssignedToUser` query requires an argument of type `ListTasksAssignedToUserVariables`:
 const listTasksAssignedToUserVars: ListTasksAssignedToUserVariables = {
-  tenantId: ..., 
-  businessId: ..., 
-  userId: ..., 
+  tenantId: ...,
+  businessId: ...,
+  userId: ...,
 };
 
 // Call the `listTasksAssignedToUser()` function to execute the query.
@@ -1977,9 +2479,9 @@ import { connectorConfig, listTasksAssignedToUserRef, ListTasksAssignedToUserVar
 
 // The `listTasksAssignedToUser` query requires an argument of type `ListTasksAssignedToUserVariables`:
 const listTasksAssignedToUserVars: ListTasksAssignedToUserVariables = {
-  tenantId: ..., 
-  businessId: ..., 
-  userId: ..., 
+  tenantId: ...,
+  businessId: ...,
+  userId: ...,
 };
 
 // Call the `listTasksAssignedToUserRef()` function to get a reference to the query.
@@ -2054,6 +2556,7 @@ export interface ListTransactionsByBusinessData {
     amount: number;
     date: TimestampString;
     category?: string | null;
+    description?: string | null;
     receiptUrl?: string | null;
     recordedBy: string;
     createdAt: TimestampString;
@@ -2070,8 +2573,8 @@ import { connectorConfig, listTransactionsByBusiness, ListTransactionsByBusiness
 
 // The `listTransactionsByBusiness` query requires an argument of type `ListTransactionsByBusinessVariables`:
 const listTransactionsByBusinessVars: ListTransactionsByBusinessVariables = {
-  tenantId: ..., 
-  businessId: ..., 
+  tenantId: ...,
+  businessId: ...,
 };
 
 // Call the `listTransactionsByBusiness()` function to execute the query.
@@ -2101,8 +2604,8 @@ import { connectorConfig, listTransactionsByBusinessRef, ListTransactionsByBusin
 
 // The `listTransactionsByBusiness` query requires an argument of type `ListTransactionsByBusinessVariables`:
 const listTransactionsByBusinessVars: ListTransactionsByBusinessVariables = {
-  tenantId: ..., 
-  businessId: ..., 
+  tenantId: ...,
+  businessId: ...,
 };
 
 // Call the `listTransactionsByBusinessRef()` function to get a reference to the query.
@@ -2178,6 +2681,7 @@ export interface ListTransactionsByTypeData {
     amount: number;
     date: TimestampString;
     category?: string | null;
+    description?: string | null;
     receiptUrl?: string | null;
     recordedBy: string;
     createdAt: TimestampString;
@@ -2194,9 +2698,9 @@ import { connectorConfig, listTransactionsByType, ListTransactionsByTypeVariable
 
 // The `listTransactionsByType` query requires an argument of type `ListTransactionsByTypeVariables`:
 const listTransactionsByTypeVars: ListTransactionsByTypeVariables = {
-  tenantId: ..., 
-  businessId: ..., 
-  type: ..., 
+  tenantId: ...,
+  businessId: ...,
+  type: ...,
 };
 
 // Call the `listTransactionsByType()` function to execute the query.
@@ -2226,9 +2730,9 @@ import { connectorConfig, listTransactionsByTypeRef, ListTransactionsByTypeVaria
 
 // The `listTransactionsByType` query requires an argument of type `ListTransactionsByTypeVariables`:
 const listTransactionsByTypeVars: ListTransactionsByTypeVariables = {
-  tenantId: ..., 
-  businessId: ..., 
-  type: ..., 
+  tenantId: ...,
+  businessId: ...,
+  type: ...,
 };
 
 // Call the `listTransactionsByTypeRef()` function to get a reference to the query.
@@ -2304,12 +2808,15 @@ export interface ListEmployeesByBusinessData {
     role?: string | null;
     salary?: number | null;
     department?: string | null;
+    email?: string | null;
+    contact?: string | null;
     startDate?: DateString | null;
     status?: string | null;
+    attendance?: number | null;
+    salaryPaymentStatus?: string | null;
     createdAt: TimestampString;
     tenantId: string;
     businessId: string;
-    code?: string | null;
   } & Employee_Key)[];
 }
 ```
@@ -2321,8 +2828,8 @@ import { connectorConfig, listEmployeesByBusiness, ListEmployeesByBusinessVariab
 
 // The `listEmployeesByBusiness` query requires an argument of type `ListEmployeesByBusinessVariables`:
 const listEmployeesByBusinessVars: ListEmployeesByBusinessVariables = {
-  tenantId: ..., 
-  businessId: ..., 
+  tenantId: ...,
+  businessId: ...,
 };
 
 // Call the `listEmployeesByBusiness()` function to execute the query.
@@ -2352,8 +2859,8 @@ import { connectorConfig, listEmployeesByBusinessRef, ListEmployeesByBusinessVar
 
 // The `listEmployeesByBusiness` query requires an argument of type `ListEmployeesByBusinessVariables`:
 const listEmployeesByBusinessVars: ListEmployeesByBusinessVariables = {
-  tenantId: ..., 
-  businessId: ..., 
+  tenantId: ...,
+  businessId: ...,
 };
 
 // Call the `listEmployeesByBusinessRef()` function to get a reference to the query.
@@ -2427,6 +2934,7 @@ export interface ListDocumentsByBusinessData {
     title: string;
     documentType: string;
     fileUrl: string;
+    description?: string | null;
     uploadedBy: string;
     uploadedAt: TimestampString;
     tenantId: string;
@@ -2442,8 +2950,8 @@ import { connectorConfig, listDocumentsByBusiness, ListDocumentsByBusinessVariab
 
 // The `listDocumentsByBusiness` query requires an argument of type `ListDocumentsByBusinessVariables`:
 const listDocumentsByBusinessVars: ListDocumentsByBusinessVariables = {
-  tenantId: ..., 
-  businessId: ..., 
+  tenantId: ...,
+  businessId: ...,
 };
 
 // Call the `listDocumentsByBusiness()` function to execute the query.
@@ -2473,8 +2981,8 @@ import { connectorConfig, listDocumentsByBusinessRef, ListDocumentsByBusinessVar
 
 // The `listDocumentsByBusiness` query requires an argument of type `ListDocumentsByBusinessVariables`:
 const listDocumentsByBusinessVars: ListDocumentsByBusinessVariables = {
-  tenantId: ..., 
-  businessId: ..., 
+  tenantId: ...,
+  businessId: ...,
 };
 
 // Call the `listDocumentsByBusinessRef()` function to get a reference to the query.
@@ -2566,9 +3074,9 @@ import { connectorConfig, listActivityLogsByUser, ListActivityLogsByUserVariable
 
 // The `listActivityLogsByUser` query requires an argument of type `ListActivityLogsByUserVariables`:
 const listActivityLogsByUserVars: ListActivityLogsByUserVariables = {
-  tenantId: ..., 
-  businessId: ..., 
-  userId: ..., 
+  tenantId: ...,
+  businessId: ...,
+  userId: ...,
 };
 
 // Call the `listActivityLogsByUser()` function to execute the query.
@@ -2598,9 +3106,9 @@ import { connectorConfig, listActivityLogsByUserRef, ListActivityLogsByUserVaria
 
 // The `listActivityLogsByUser` query requires an argument of type `ListActivityLogsByUserVariables`:
 const listActivityLogsByUserVars: ListActivityLogsByUserVariables = {
-  tenantId: ..., 
-  businessId: ..., 
-  userId: ..., 
+  tenantId: ...,
+  businessId: ...,
+  userId: ...,
 };
 
 // Call the `listActivityLogsByUserRef()` function to get a reference to the query.
@@ -2691,8 +3199,8 @@ import { connectorConfig, listActivityLogsByBusiness, ListActivityLogsByBusiness
 
 // The `listActivityLogsByBusiness` query requires an argument of type `ListActivityLogsByBusinessVariables`:
 const listActivityLogsByBusinessVars: ListActivityLogsByBusinessVariables = {
-  tenantId: ..., 
-  businessId: ..., 
+  tenantId: ...,
+  businessId: ...,
 };
 
 // Call the `listActivityLogsByBusiness()` function to execute the query.
@@ -2722,8 +3230,8 @@ import { connectorConfig, listActivityLogsByBusinessRef, ListActivityLogsByBusin
 
 // The `listActivityLogsByBusiness` query requires an argument of type `ListActivityLogsByBusinessVariables`:
 const listActivityLogsByBusinessVars: ListActivityLogsByBusinessVariables = {
-  tenantId: ..., 
-  businessId: ..., 
+  tenantId: ...,
+  businessId: ...,
 };
 
 // Call the `listActivityLogsByBusinessRef()` function to get a reference to the query.
@@ -2812,7 +3320,7 @@ import { connectorConfig, getUserById, GetUserByIdVariables } from '@dataconnect
 
 // The `getUserById` query requires an argument of type `GetUserByIdVariables`:
 const getUserByIdVars: GetUserByIdVariables = {
-  id: ..., 
+  id: ...,
 };
 
 // Call the `getUserById()` function to execute the query.
@@ -2842,7 +3350,7 @@ import { connectorConfig, getUserByIdRef, GetUserByIdVariables } from '@dataconn
 
 // The `getUserById` query requires an argument of type `GetUserByIdVariables`:
 const getUserByIdVars: GetUserByIdVariables = {
-  id: ..., 
+  id: ...,
 };
 
 // Call the `getUserByIdRef()` function to get a reference to the query.
@@ -2931,9 +3439,9 @@ import { connectorConfig, listNotifications, ListNotificationsVariables } from '
 
 // The `listNotifications` query requires an argument of type `ListNotificationsVariables`:
 const listNotificationsVars: ListNotificationsVariables = {
-  tenantId: ..., 
-  businessId: ..., 
-  userId: ..., 
+  tenantId: ...,
+  businessId: ...,
+  userId: ...,
 };
 
 // Call the `listNotifications()` function to execute the query.
@@ -2963,9 +3471,9 @@ import { connectorConfig, listNotificationsRef, ListNotificationsVariables } fro
 
 // The `listNotifications` query requires an argument of type `ListNotificationsVariables`:
 const listNotificationsVars: ListNotificationsVariables = {
-  tenantId: ..., 
-  businessId: ..., 
-  userId: ..., 
+  tenantId: ...,
+  businessId: ...,
+  userId: ...,
 };
 
 // Call the `listNotificationsRef()` function to get a reference to the query.
@@ -3109,6 +3617,157 @@ The following is true for both the action shortcut function and the `MutationRef
 
 Below are examples of how to use the `example` connector's generated functions to execute each mutation. You can also follow the examples from the [Data Connect documentation](https://firebase.google.com/docs/data-connect/web-sdk#using-mutations).
 
+## BootstrapWorkspace
+You can execute the `BootstrapWorkspace` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
+```typescript
+bootstrapWorkspace(vars: BootstrapWorkspaceVariables): MutationPromise<BootstrapWorkspaceData, BootstrapWorkspaceVariables>;
+
+interface BootstrapWorkspaceRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: BootstrapWorkspaceVariables): MutationRef<BootstrapWorkspaceData, BootstrapWorkspaceVariables>;
+}
+export const bootstrapWorkspaceRef: BootstrapWorkspaceRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+bootstrapWorkspace(dc: DataConnect, vars: BootstrapWorkspaceVariables): MutationPromise<BootstrapWorkspaceData, BootstrapWorkspaceVariables>;
+
+interface BootstrapWorkspaceRef {
+  ...
+  (dc: DataConnect, vars: BootstrapWorkspaceVariables): MutationRef<BootstrapWorkspaceData, BootstrapWorkspaceVariables>;
+}
+export const bootstrapWorkspaceRef: BootstrapWorkspaceRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the bootstrapWorkspaceRef:
+```typescript
+const name = bootstrapWorkspaceRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `BootstrapWorkspace` mutation requires an argument of type `BootstrapWorkspaceVariables`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface BootstrapWorkspaceVariables {
+  tenantId: string;
+  businessId: string;
+  userId: string;
+  name: string;
+  businessSector: string;
+  location: string;
+  region: string;
+  ownerEmail: string;
+  fullName: string;
+  code: string;
+}
+```
+### Return Type
+Recall that executing the `BootstrapWorkspace` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `BootstrapWorkspaceData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface BootstrapWorkspaceData {
+  tenant_insert: Tenant_Key;
+  business_insert: Business_Key;
+  businessSetting_insert: BusinessSetting_Key;
+  user_insert: User_Key;
+}
+```
+### Using `BootstrapWorkspace`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, bootstrapWorkspace, BootstrapWorkspaceVariables } from '@dataconnect/generated';
+
+// The `BootstrapWorkspace` mutation requires an argument of type `BootstrapWorkspaceVariables`:
+const bootstrapWorkspaceVars: BootstrapWorkspaceVariables = {
+  tenantId: ...,
+  businessId: ...,
+  userId: ...,
+  name: ...,
+  businessSector: ...,
+  location: ...,
+  region: ...,
+  ownerEmail: ...,
+  fullName: ...,
+  code: ...,
+};
+
+// Call the `bootstrapWorkspace()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await bootstrapWorkspace(bootstrapWorkspaceVars);
+// Variables can be defined inline as well.
+const { data } = await bootstrapWorkspace({ tenantId: ..., businessId: ..., userId: ..., name: ..., businessSector: ..., location: ..., region: ..., ownerEmail: ..., fullName: ..., code: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await bootstrapWorkspace(dataConnect, bootstrapWorkspaceVars);
+
+console.log(data.tenant_insert);
+console.log(data.business_insert);
+console.log(data.businessSetting_insert);
+console.log(data.user_insert);
+
+// Or, you can use the `Promise` API.
+bootstrapWorkspace(bootstrapWorkspaceVars).then((response) => {
+  const data = response.data;
+  console.log(data.tenant_insert);
+  console.log(data.business_insert);
+  console.log(data.businessSetting_insert);
+  console.log(data.user_insert);
+});
+```
+
+### Using `BootstrapWorkspace`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, bootstrapWorkspaceRef, BootstrapWorkspaceVariables } from '@dataconnect/generated';
+
+// The `BootstrapWorkspace` mutation requires an argument of type `BootstrapWorkspaceVariables`:
+const bootstrapWorkspaceVars: BootstrapWorkspaceVariables = {
+  tenantId: ...,
+  businessId: ...,
+  userId: ...,
+  name: ...,
+  businessSector: ...,
+  location: ...,
+  region: ...,
+  ownerEmail: ...,
+  fullName: ...,
+  code: ...,
+};
+
+// Call the `bootstrapWorkspaceRef()` function to get a reference to the mutation.
+const ref = bootstrapWorkspaceRef(bootstrapWorkspaceVars);
+// Variables can be defined inline as well.
+const ref = bootstrapWorkspaceRef({ tenantId: ..., businessId: ..., userId: ..., name: ..., businessSector: ..., location: ..., region: ..., ownerEmail: ..., fullName: ..., code: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = bootstrapWorkspaceRef(dataConnect, bootstrapWorkspaceVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.tenant_insert);
+console.log(data.business_insert);
+console.log(data.businessSetting_insert);
+console.log(data.user_insert);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.tenant_insert);
+  console.log(data.business_insert);
+  console.log(data.businessSetting_insert);
+  console.log(data.user_insert);
+});
+```
+
 ## CreateTenant
 You can execute the `CreateTenant` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
 ```typescript
@@ -3170,10 +3829,10 @@ import { connectorConfig, createTenant, CreateTenantVariables } from '@dataconne
 
 // The `CreateTenant` mutation requires an argument of type `CreateTenantVariables`:
 const createTenantVars: CreateTenantVariables = {
-  name: ..., 
-  businessSector: ..., 
-  location: ..., 
-  ownerEmail: ..., 
+  name: ...,
+  businessSector: ...,
+  location: ...,
+  ownerEmail: ...,
   taxId: ..., // optional
   logoUrl: ..., // optional
   subscriptionTier: ..., // optional
@@ -3207,10 +3866,10 @@ import { connectorConfig, createTenantRef, CreateTenantVariables } from '@dataco
 
 // The `CreateTenant` mutation requires an argument of type `CreateTenantVariables`:
 const createTenantVars: CreateTenantVariables = {
-  name: ..., 
-  businessSector: ..., 
-  location: ..., 
-  ownerEmail: ..., 
+  name: ...,
+  businessSector: ...,
+  location: ...,
+  ownerEmail: ...,
   taxId: ..., // optional
   logoUrl: ..., // optional
   subscriptionTier: ..., // optional
@@ -3301,7 +3960,7 @@ import { connectorConfig, updateTenant, UpdateTenantVariables } from '@dataconne
 
 // The `UpdateTenant` mutation requires an argument of type `UpdateTenantVariables`:
 const updateTenantVars: UpdateTenantVariables = {
-  id: ..., 
+  id: ...,
   name: ..., // optional
   businessSector: ..., // optional
   location: ..., // optional
@@ -3339,7 +3998,7 @@ import { connectorConfig, updateTenantRef, UpdateTenantVariables } from '@dataco
 
 // The `UpdateTenant` mutation requires an argument of type `UpdateTenantVariables`:
 const updateTenantVars: UpdateTenantVariables = {
-  id: ..., 
+  id: ...,
   name: ..., // optional
   businessSector: ..., // optional
   location: ..., // optional
@@ -3426,7 +4085,7 @@ import { connectorConfig, deleteTenant, DeleteTenantVariables } from '@dataconne
 
 // The `DeleteTenant` mutation requires an argument of type `DeleteTenantVariables`:
 const deleteTenantVars: DeleteTenantVariables = {
-  id: ..., 
+  id: ...,
 };
 
 // Call the `deleteTenant()` function to execute the mutation.
@@ -3456,7 +4115,7 @@ import { connectorConfig, deleteTenantRef, DeleteTenantVariables } from '@dataco
 
 // The `DeleteTenant` mutation requires an argument of type `DeleteTenantVariables`:
 const deleteTenantVars: DeleteTenantVariables = {
-  id: ..., 
+  id: ...,
 };
 
 // Call the `deleteTenantRef()` function to get a reference to the mutation.
@@ -3543,11 +4202,11 @@ import { connectorConfig, createUser, CreateUserVariables } from '@dataconnect/g
 
 // The `CreateUser` mutation requires an argument of type `CreateUserVariables`:
 const createUserVars: CreateUserVariables = {
-  id: ..., 
-  tenantId: ..., 
-  businessId: ..., 
-  email: ..., 
-  role: ..., 
+  id: ...,
+  tenantId: ...,
+  businessId: ...,
+  email: ...,
+  role: ...,
   fullName: ..., // optional
   department: ..., // optional
   phoneNumber: ..., // optional
@@ -3581,11 +4240,11 @@ import { connectorConfig, createUserRef, CreateUserVariables } from '@dataconnec
 
 // The `CreateUser` mutation requires an argument of type `CreateUserVariables`:
 const createUserVars: CreateUserVariables = {
-  id: ..., 
-  tenantId: ..., 
-  businessId: ..., 
-  email: ..., 
-  role: ..., 
+  id: ...,
+  tenantId: ...,
+  businessId: ...,
+  email: ...,
+  role: ...,
   fullName: ..., // optional
   department: ..., // optional
   phoneNumber: ..., // optional
@@ -3676,7 +4335,7 @@ import { connectorConfig, updateUser, UpdateUserVariables } from '@dataconnect/g
 
 // The `UpdateUser` mutation requires an argument of type `UpdateUserVariables`:
 const updateUserVars: UpdateUserVariables = {
-  id: ..., 
+  id: ...,
   tenantId: ..., // optional
   businessId: ..., // optional
   email: ..., // optional
@@ -3714,7 +4373,7 @@ import { connectorConfig, updateUserRef, UpdateUserVariables } from '@dataconnec
 
 // The `UpdateUser` mutation requires an argument of type `UpdateUserVariables`:
 const updateUserVars: UpdateUserVariables = {
-  id: ..., 
+  id: ...,
   tenantId: ..., // optional
   businessId: ..., // optional
   email: ..., // optional
@@ -3801,7 +4460,7 @@ import { connectorConfig, deleteUser, DeleteUserVariables } from '@dataconnect/g
 
 // The `DeleteUser` mutation requires an argument of type `DeleteUserVariables`:
 const deleteUserVars: DeleteUserVariables = {
-  id: ..., 
+  id: ...,
 };
 
 // Call the `deleteUser()` function to execute the mutation.
@@ -3831,7 +4490,7 @@ import { connectorConfig, deleteUserRef, DeleteUserVariables } from '@dataconnec
 
 // The `DeleteUser` mutation requires an argument of type `DeleteUserVariables`:
 const deleteUserVars: DeleteUserVariables = {
-  id: ..., 
+  id: ...,
 };
 
 // Call the `deleteUserRef()` function to get a reference to the mutation.
@@ -3910,7 +4569,7 @@ import { connectorConfig, clearLegacyAccessCode, ClearLegacyAccessCodeVariables 
 
 // The `ClearLegacyAccessCode` mutation requires an argument of type `ClearLegacyAccessCodeVariables`:
 const clearLegacyAccessCodeVars: ClearLegacyAccessCodeVariables = {
-  id: ..., 
+  id: ...,
 };
 
 // Call the `clearLegacyAccessCode()` function to execute the mutation.
@@ -3940,7 +4599,7 @@ import { connectorConfig, clearLegacyAccessCodeRef, ClearLegacyAccessCodeVariabl
 
 // The `ClearLegacyAccessCode` mutation requires an argument of type `ClearLegacyAccessCodeVariables`:
 const clearLegacyAccessCodeVars: ClearLegacyAccessCodeVariables = {
-  id: ..., 
+  id: ...,
 };
 
 // Call the `clearLegacyAccessCodeRef()` function to get a reference to the mutation.
@@ -4024,12 +4683,12 @@ import { connectorConfig, createBusiness, CreateBusinessVariables } from '@datac
 
 // The `CreateBusiness` mutation requires an argument of type `CreateBusinessVariables`:
 const createBusinessVars: CreateBusinessVariables = {
-  tenantId: ..., 
-  name: ..., 
-  location: ..., 
+  tenantId: ...,
+  name: ...,
+  location: ...,
   businessType: ..., // optional
   region: ..., // optional
-  code: ..., 
+  code: ...,
 };
 
 // Call the `createBusiness()` function to execute the mutation.
@@ -4059,12 +4718,12 @@ import { connectorConfig, createBusinessRef, CreateBusinessVariables } from '@da
 
 // The `CreateBusiness` mutation requires an argument of type `CreateBusinessVariables`:
 const createBusinessVars: CreateBusinessVariables = {
-  tenantId: ..., 
-  name: ..., 
-  location: ..., 
+  tenantId: ...,
+  name: ...,
+  location: ...,
   businessType: ..., // optional
   region: ..., // optional
-  code: ..., 
+  code: ...,
 };
 
 // Call the `createBusinessRef()` function to get a reference to the mutation.
@@ -4128,7 +4787,14 @@ export interface UpdateBusinessVariables {
   name?: string | null;
   location?: string | null;
   businessType?: string | null;
+  entityType?: string | null;
+  city?: string | null;
   region?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  taxId?: string | null;
+  description?: string | null;
+  logoUrl?: string | null;
   code?: string | null;
 }
 ```
@@ -4149,12 +4815,19 @@ import { connectorConfig, updateBusiness, UpdateBusinessVariables } from '@datac
 
 // The `UpdateBusiness` mutation requires an argument of type `UpdateBusinessVariables`:
 const updateBusinessVars: UpdateBusinessVariables = {
-  id: ..., 
+  id: ...,
   tenantId: ..., // optional
   name: ..., // optional
   location: ..., // optional
   businessType: ..., // optional
+  entityType: ..., // optional
+  city: ..., // optional
   region: ..., // optional
+  phone: ..., // optional
+  email: ..., // optional
+  taxId: ..., // optional
+  description: ..., // optional
+  logoUrl: ..., // optional
   code: ..., // optional
 };
 
@@ -4162,7 +4835,7 @@ const updateBusinessVars: UpdateBusinessVariables = {
 // You can use the `await` keyword to wait for the promise to resolve.
 const { data } = await updateBusiness(updateBusinessVars);
 // Variables can be defined inline as well.
-const { data } = await updateBusiness({ id: ..., tenantId: ..., name: ..., location: ..., businessType: ..., region: ..., code: ..., });
+const { data } = await updateBusiness({ id: ..., tenantId: ..., name: ..., location: ..., businessType: ..., entityType: ..., city: ..., region: ..., phone: ..., email: ..., taxId: ..., description: ..., logoUrl: ..., code: ..., });
 
 // You can also pass in a `DataConnect` instance to the action shortcut function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -4185,19 +4858,26 @@ import { connectorConfig, updateBusinessRef, UpdateBusinessVariables } from '@da
 
 // The `UpdateBusiness` mutation requires an argument of type `UpdateBusinessVariables`:
 const updateBusinessVars: UpdateBusinessVariables = {
-  id: ..., 
+  id: ...,
   tenantId: ..., // optional
   name: ..., // optional
   location: ..., // optional
   businessType: ..., // optional
+  entityType: ..., // optional
+  city: ..., // optional
   region: ..., // optional
+  phone: ..., // optional
+  email: ..., // optional
+  taxId: ..., // optional
+  description: ..., // optional
+  logoUrl: ..., // optional
   code: ..., // optional
 };
 
 // Call the `updateBusinessRef()` function to get a reference to the mutation.
 const ref = updateBusinessRef(updateBusinessVars);
 // Variables can be defined inline as well.
-const ref = updateBusinessRef({ id: ..., tenantId: ..., name: ..., location: ..., businessType: ..., region: ..., code: ..., });
+const ref = updateBusinessRef({ id: ..., tenantId: ..., name: ..., location: ..., businessType: ..., entityType: ..., city: ..., region: ..., phone: ..., email: ..., taxId: ..., description: ..., logoUrl: ..., code: ..., });
 
 // You can also pass in a `DataConnect` instance to the `MutationRef` function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -4213,6 +4893,133 @@ console.log(data.business_update);
 executeMutation(ref).then((response) => {
   const data = response.data;
   console.log(data.business_update);
+});
+```
+
+## UpsertBusinessSettings
+You can execute the `UpsertBusinessSettings` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
+```typescript
+upsertBusinessSettings(vars: UpsertBusinessSettingsVariables): MutationPromise<UpsertBusinessSettingsData, UpsertBusinessSettingsVariables>;
+
+interface UpsertBusinessSettingsRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: UpsertBusinessSettingsVariables): MutationRef<UpsertBusinessSettingsData, UpsertBusinessSettingsVariables>;
+}
+export const upsertBusinessSettingsRef: UpsertBusinessSettingsRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+upsertBusinessSettings(dc: DataConnect, vars: UpsertBusinessSettingsVariables): MutationPromise<UpsertBusinessSettingsData, UpsertBusinessSettingsVariables>;
+
+interface UpsertBusinessSettingsRef {
+  ...
+  (dc: DataConnect, vars: UpsertBusinessSettingsVariables): MutationRef<UpsertBusinessSettingsData, UpsertBusinessSettingsVariables>;
+}
+export const upsertBusinessSettingsRef: UpsertBusinessSettingsRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the upsertBusinessSettingsRef:
+```typescript
+const name = upsertBusinessSettingsRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `UpsertBusinessSettings` mutation requires an argument of type `UpsertBusinessSettingsVariables`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface UpsertBusinessSettingsVariables {
+  tenantId: string;
+  businessId: string;
+  currency: string;
+  timezone: string;
+  fiscalYearStart: string;
+  taxRate: number;
+  lowStockThreshold: number;
+}
+```
+### Return Type
+Recall that executing the `UpsertBusinessSettings` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `UpsertBusinessSettingsData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface UpsertBusinessSettingsData {
+  businessSetting_upsert: BusinessSetting_Key;
+}
+```
+### Using `UpsertBusinessSettings`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, upsertBusinessSettings, UpsertBusinessSettingsVariables } from '@dataconnect/generated';
+
+// The `UpsertBusinessSettings` mutation requires an argument of type `UpsertBusinessSettingsVariables`:
+const upsertBusinessSettingsVars: UpsertBusinessSettingsVariables = {
+  tenantId: ...,
+  businessId: ...,
+  currency: ...,
+  timezone: ...,
+  fiscalYearStart: ...,
+  taxRate: ...,
+  lowStockThreshold: ...,
+};
+
+// Call the `upsertBusinessSettings()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await upsertBusinessSettings(upsertBusinessSettingsVars);
+// Variables can be defined inline as well.
+const { data } = await upsertBusinessSettings({ tenantId: ..., businessId: ..., currency: ..., timezone: ..., fiscalYearStart: ..., taxRate: ..., lowStockThreshold: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await upsertBusinessSettings(dataConnect, upsertBusinessSettingsVars);
+
+console.log(data.businessSetting_upsert);
+
+// Or, you can use the `Promise` API.
+upsertBusinessSettings(upsertBusinessSettingsVars).then((response) => {
+  const data = response.data;
+  console.log(data.businessSetting_upsert);
+});
+```
+
+### Using `UpsertBusinessSettings`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, upsertBusinessSettingsRef, UpsertBusinessSettingsVariables } from '@dataconnect/generated';
+
+// The `UpsertBusinessSettings` mutation requires an argument of type `UpsertBusinessSettingsVariables`:
+const upsertBusinessSettingsVars: UpsertBusinessSettingsVariables = {
+  tenantId: ...,
+  businessId: ...,
+  currency: ...,
+  timezone: ...,
+  fiscalYearStart: ...,
+  taxRate: ...,
+  lowStockThreshold: ...,
+};
+
+// Call the `upsertBusinessSettingsRef()` function to get a reference to the mutation.
+const ref = upsertBusinessSettingsRef(upsertBusinessSettingsVars);
+// Variables can be defined inline as well.
+const ref = upsertBusinessSettingsRef({ tenantId: ..., businessId: ..., currency: ..., timezone: ..., fiscalYearStart: ..., taxRate: ..., lowStockThreshold: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = upsertBusinessSettingsRef(dataConnect, upsertBusinessSettingsVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.businessSetting_upsert);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.businessSetting_upsert);
 });
 ```
 
@@ -4270,7 +5077,7 @@ import { connectorConfig, deleteBusiness, DeleteBusinessVariables } from '@datac
 
 // The `DeleteBusiness` mutation requires an argument of type `DeleteBusinessVariables`:
 const deleteBusinessVars: DeleteBusinessVariables = {
-  id: ..., 
+  id: ...,
 };
 
 // Call the `deleteBusiness()` function to execute the mutation.
@@ -4300,7 +5107,7 @@ import { connectorConfig, deleteBusinessRef, DeleteBusinessVariables } from '@da
 
 // The `DeleteBusiness` mutation requires an argument of type `DeleteBusinessVariables`:
 const deleteBusinessVars: DeleteBusinessVariables = {
-  id: ..., 
+  id: ...,
 };
 
 // Call the `deleteBusinessRef()` function to get a reference to the mutation.
@@ -4386,14 +5193,14 @@ import { connectorConfig, provisionEmployeeUser, ProvisionEmployeeUserVariables 
 
 // The `ProvisionEmployeeUser` mutation requires an argument of type `ProvisionEmployeeUserVariables`:
 const provisionEmployeeUserVars: ProvisionEmployeeUserVariables = {
-  tenantId: ..., 
-  businessId: ..., 
-  email: ..., 
-  role: ..., 
-  fullName: ..., 
+  tenantId: ...,
+  businessId: ...,
+  email: ...,
+  role: ...,
+  fullName: ...,
   department: ..., // optional
   phoneNumber: ..., // optional
-  accessCodeHash: ..., 
+  accessCodeHash: ...,
 };
 
 // Call the `provisionEmployeeUser()` function to execute the mutation.
@@ -4423,14 +5230,14 @@ import { connectorConfig, provisionEmployeeUserRef, ProvisionEmployeeUserVariabl
 
 // The `ProvisionEmployeeUser` mutation requires an argument of type `ProvisionEmployeeUserVariables`:
 const provisionEmployeeUserVars: ProvisionEmployeeUserVariables = {
-  tenantId: ..., 
-  businessId: ..., 
-  email: ..., 
-  role: ..., 
-  fullName: ..., 
+  tenantId: ...,
+  businessId: ...,
+  email: ...,
+  role: ...,
+  fullName: ...,
   department: ..., // optional
   phoneNumber: ..., // optional
-  accessCodeHash: ..., 
+  accessCodeHash: ...,
 };
 
 // Call the `provisionEmployeeUserRef()` function to get a reference to the mutation.
@@ -4491,6 +5298,8 @@ The `CompleteAssignedTask` mutation requires an argument of type `CompleteAssign
 export interface CompleteAssignedTaskVariables {
   taskId: string;
   userId: string;
+  tenantId: string;
+  businessId: string;
 }
 ```
 ### Return Type
@@ -4510,15 +5319,17 @@ import { connectorConfig, completeAssignedTask, CompleteAssignedTaskVariables } 
 
 // The `CompleteAssignedTask` mutation requires an argument of type `CompleteAssignedTaskVariables`:
 const completeAssignedTaskVars: CompleteAssignedTaskVariables = {
-  taskId: ..., 
-  userId: ..., 
+  taskId: ...,
+  userId: ...,
+  tenantId: ...,
+  businessId: ...,
 };
 
 // Call the `completeAssignedTask()` function to execute the mutation.
 // You can use the `await` keyword to wait for the promise to resolve.
 const { data } = await completeAssignedTask(completeAssignedTaskVars);
 // Variables can be defined inline as well.
-const { data } = await completeAssignedTask({ taskId: ..., userId: ..., });
+const { data } = await completeAssignedTask({ taskId: ..., userId: ..., tenantId: ..., businessId: ..., });
 
 // You can also pass in a `DataConnect` instance to the action shortcut function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -4541,14 +5352,16 @@ import { connectorConfig, completeAssignedTaskRef, CompleteAssignedTaskVariables
 
 // The `CompleteAssignedTask` mutation requires an argument of type `CompleteAssignedTaskVariables`:
 const completeAssignedTaskVars: CompleteAssignedTaskVariables = {
-  taskId: ..., 
-  userId: ..., 
+  taskId: ...,
+  userId: ...,
+  tenantId: ...,
+  businessId: ...,
 };
 
 // Call the `completeAssignedTaskRef()` function to get a reference to the mutation.
 const ref = completeAssignedTaskRef(completeAssignedTaskVars);
 // Variables can be defined inline as well.
-const ref = completeAssignedTaskRef({ taskId: ..., userId: ..., });
+const ref = completeAssignedTaskRef({ taskId: ..., userId: ..., tenantId: ..., businessId: ..., });
 
 // You can also pass in a `DataConnect` instance to the `MutationRef` function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -4610,6 +5423,7 @@ export interface CreateProductVariables {
   sellingPrice: number;
   expiryDate?: DateString | null;
   lowStockLevel?: number | null;
+  status?: string | null;
   createdBy: string;
 }
 ```
@@ -4630,23 +5444,24 @@ import { connectorConfig, createProduct, CreateProductVariables } from '@datacon
 
 // The `CreateProduct` mutation requires an argument of type `CreateProductVariables`:
 const createProductVars: CreateProductVariables = {
-  tenantId: ..., 
-  businessId: ..., 
-  name: ..., 
+  tenantId: ...,
+  businessId: ...,
+  name: ...,
   category: ..., // optional
-  quantity: ..., 
+  quantity: ...,
   costPrice: ..., // optional
-  sellingPrice: ..., 
+  sellingPrice: ...,
   expiryDate: ..., // optional
   lowStockLevel: ..., // optional
-  createdBy: ..., 
+  status: ..., // optional
+  createdBy: ...,
 };
 
 // Call the `createProduct()` function to execute the mutation.
 // You can use the `await` keyword to wait for the promise to resolve.
 const { data } = await createProduct(createProductVars);
 // Variables can be defined inline as well.
-const { data } = await createProduct({ tenantId: ..., businessId: ..., name: ..., category: ..., quantity: ..., costPrice: ..., sellingPrice: ..., expiryDate: ..., lowStockLevel: ..., createdBy: ..., });
+const { data } = await createProduct({ tenantId: ..., businessId: ..., name: ..., category: ..., quantity: ..., costPrice: ..., sellingPrice: ..., expiryDate: ..., lowStockLevel: ..., status: ..., createdBy: ..., });
 
 // You can also pass in a `DataConnect` instance to the action shortcut function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -4669,22 +5484,23 @@ import { connectorConfig, createProductRef, CreateProductVariables } from '@data
 
 // The `CreateProduct` mutation requires an argument of type `CreateProductVariables`:
 const createProductVars: CreateProductVariables = {
-  tenantId: ..., 
-  businessId: ..., 
-  name: ..., 
+  tenantId: ...,
+  businessId: ...,
+  name: ...,
   category: ..., // optional
-  quantity: ..., 
+  quantity: ...,
   costPrice: ..., // optional
-  sellingPrice: ..., 
+  sellingPrice: ...,
   expiryDate: ..., // optional
   lowStockLevel: ..., // optional
-  createdBy: ..., 
+  status: ..., // optional
+  createdBy: ...,
 };
 
 // Call the `createProductRef()` function to get a reference to the mutation.
 const ref = createProductRef(createProductVars);
 // Variables can be defined inline as well.
-const ref = createProductRef({ tenantId: ..., businessId: ..., name: ..., category: ..., quantity: ..., costPrice: ..., sellingPrice: ..., expiryDate: ..., lowStockLevel: ..., createdBy: ..., });
+const ref = createProductRef({ tenantId: ..., businessId: ..., name: ..., category: ..., quantity: ..., costPrice: ..., sellingPrice: ..., expiryDate: ..., lowStockLevel: ..., status: ..., createdBy: ..., });
 
 // You can also pass in a `DataConnect` instance to the `MutationRef` function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -4747,6 +5563,7 @@ export interface UpdateProductVariables {
   sellingPrice?: number | null;
   expiryDate?: DateString | null;
   lowStockLevel?: number | null;
+  status?: string | null;
   createdBy?: string | null;
 }
 ```
@@ -4767,7 +5584,7 @@ import { connectorConfig, updateProduct, UpdateProductVariables } from '@datacon
 
 // The `UpdateProduct` mutation requires an argument of type `UpdateProductVariables`:
 const updateProductVars: UpdateProductVariables = {
-  id: ..., 
+  id: ...,
   tenantId: ..., // optional
   businessId: ..., // optional
   name: ..., // optional
@@ -4777,6 +5594,7 @@ const updateProductVars: UpdateProductVariables = {
   sellingPrice: ..., // optional
   expiryDate: ..., // optional
   lowStockLevel: ..., // optional
+  status: ..., // optional
   createdBy: ..., // optional
 };
 
@@ -4784,7 +5602,7 @@ const updateProductVars: UpdateProductVariables = {
 // You can use the `await` keyword to wait for the promise to resolve.
 const { data } = await updateProduct(updateProductVars);
 // Variables can be defined inline as well.
-const { data } = await updateProduct({ id: ..., tenantId: ..., businessId: ..., name: ..., category: ..., quantity: ..., costPrice: ..., sellingPrice: ..., expiryDate: ..., lowStockLevel: ..., createdBy: ..., });
+const { data } = await updateProduct({ id: ..., tenantId: ..., businessId: ..., name: ..., category: ..., quantity: ..., costPrice: ..., sellingPrice: ..., expiryDate: ..., lowStockLevel: ..., status: ..., createdBy: ..., });
 
 // You can also pass in a `DataConnect` instance to the action shortcut function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -4807,7 +5625,7 @@ import { connectorConfig, updateProductRef, UpdateProductVariables } from '@data
 
 // The `UpdateProduct` mutation requires an argument of type `UpdateProductVariables`:
 const updateProductVars: UpdateProductVariables = {
-  id: ..., 
+  id: ...,
   tenantId: ..., // optional
   businessId: ..., // optional
   name: ..., // optional
@@ -4817,13 +5635,14 @@ const updateProductVars: UpdateProductVariables = {
   sellingPrice: ..., // optional
   expiryDate: ..., // optional
   lowStockLevel: ..., // optional
+  status: ..., // optional
   createdBy: ..., // optional
 };
 
 // Call the `updateProductRef()` function to get a reference to the mutation.
 const ref = updateProductRef(updateProductVars);
 // Variables can be defined inline as well.
-const ref = updateProductRef({ id: ..., tenantId: ..., businessId: ..., name: ..., category: ..., quantity: ..., costPrice: ..., sellingPrice: ..., expiryDate: ..., lowStockLevel: ..., createdBy: ..., });
+const ref = updateProductRef({ id: ..., tenantId: ..., businessId: ..., name: ..., category: ..., quantity: ..., costPrice: ..., sellingPrice: ..., expiryDate: ..., lowStockLevel: ..., status: ..., createdBy: ..., });
 
 // You can also pass in a `DataConnect` instance to the `MutationRef` function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -4896,7 +5715,7 @@ import { connectorConfig, deleteProduct, DeleteProductVariables } from '@datacon
 
 // The `DeleteProduct` mutation requires an argument of type `DeleteProductVariables`:
 const deleteProductVars: DeleteProductVariables = {
-  id: ..., 
+  id: ...,
 };
 
 // Call the `deleteProduct()` function to execute the mutation.
@@ -4926,7 +5745,7 @@ import { connectorConfig, deleteProductRef, DeleteProductVariables } from '@data
 
 // The `DeleteProduct` mutation requires an argument of type `DeleteProductVariables`:
 const deleteProductVars: DeleteProductVariables = {
-  id: ..., 
+  id: ...,
 };
 
 // Call the `deleteProductRef()` function to get a reference to the mutation.
@@ -4991,6 +5810,7 @@ export interface CreateTransactionVariables {
   amount: number;
   date: TimestampString;
   category?: string | null;
+  description?: string | null;
   receiptUrl?: string | null;
   recordedBy: string;
 }
@@ -5012,21 +5832,22 @@ import { connectorConfig, createTransaction, CreateTransactionVariables } from '
 
 // The `CreateTransaction` mutation requires an argument of type `CreateTransactionVariables`:
 const createTransactionVars: CreateTransactionVariables = {
-  tenantId: ..., 
-  businessId: ..., 
-  type: ..., 
-  amount: ..., 
-  date: ..., 
+  tenantId: ...,
+  businessId: ...,
+  type: ...,
+  amount: ...,
+  date: ...,
   category: ..., // optional
+  description: ..., // optional
   receiptUrl: ..., // optional
-  recordedBy: ..., 
+  recordedBy: ...,
 };
 
 // Call the `createTransaction()` function to execute the mutation.
 // You can use the `await` keyword to wait for the promise to resolve.
 const { data } = await createTransaction(createTransactionVars);
 // Variables can be defined inline as well.
-const { data } = await createTransaction({ tenantId: ..., businessId: ..., type: ..., amount: ..., date: ..., category: ..., receiptUrl: ..., recordedBy: ..., });
+const { data } = await createTransaction({ tenantId: ..., businessId: ..., type: ..., amount: ..., date: ..., category: ..., description: ..., receiptUrl: ..., recordedBy: ..., });
 
 // You can also pass in a `DataConnect` instance to the action shortcut function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -5049,20 +5870,21 @@ import { connectorConfig, createTransactionRef, CreateTransactionVariables } fro
 
 // The `CreateTransaction` mutation requires an argument of type `CreateTransactionVariables`:
 const createTransactionVars: CreateTransactionVariables = {
-  tenantId: ..., 
-  businessId: ..., 
-  type: ..., 
-  amount: ..., 
-  date: ..., 
+  tenantId: ...,
+  businessId: ...,
+  type: ...,
+  amount: ...,
+  date: ...,
   category: ..., // optional
+  description: ..., // optional
   receiptUrl: ..., // optional
-  recordedBy: ..., 
+  recordedBy: ...,
 };
 
 // Call the `createTransactionRef()` function to get a reference to the mutation.
 const ref = createTransactionRef(createTransactionVars);
 // Variables can be defined inline as well.
-const ref = createTransactionRef({ tenantId: ..., businessId: ..., type: ..., amount: ..., date: ..., category: ..., receiptUrl: ..., recordedBy: ..., });
+const ref = createTransactionRef({ tenantId: ..., businessId: ..., type: ..., amount: ..., date: ..., category: ..., description: ..., receiptUrl: ..., recordedBy: ..., });
 
 // You can also pass in a `DataConnect` instance to the `MutationRef` function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -5122,6 +5944,7 @@ export interface UpdateTransactionVariables {
   amount?: number | null;
   date?: TimestampString | null;
   category?: string | null;
+  description?: string | null;
   receiptUrl?: string | null;
   recordedBy?: string | null;
 }
@@ -5143,13 +5966,14 @@ import { connectorConfig, updateTransaction, UpdateTransactionVariables } from '
 
 // The `UpdateTransaction` mutation requires an argument of type `UpdateTransactionVariables`:
 const updateTransactionVars: UpdateTransactionVariables = {
-  id: ..., 
+  id: ...,
   tenantId: ..., // optional
   businessId: ..., // optional
   type: ..., // optional
   amount: ..., // optional
   date: ..., // optional
   category: ..., // optional
+  description: ..., // optional
   receiptUrl: ..., // optional
   recordedBy: ..., // optional
 };
@@ -5158,7 +5982,7 @@ const updateTransactionVars: UpdateTransactionVariables = {
 // You can use the `await` keyword to wait for the promise to resolve.
 const { data } = await updateTransaction(updateTransactionVars);
 // Variables can be defined inline as well.
-const { data } = await updateTransaction({ id: ..., tenantId: ..., businessId: ..., type: ..., amount: ..., date: ..., category: ..., receiptUrl: ..., recordedBy: ..., });
+const { data } = await updateTransaction({ id: ..., tenantId: ..., businessId: ..., type: ..., amount: ..., date: ..., category: ..., description: ..., receiptUrl: ..., recordedBy: ..., });
 
 // You can also pass in a `DataConnect` instance to the action shortcut function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -5181,13 +6005,14 @@ import { connectorConfig, updateTransactionRef, UpdateTransactionVariables } fro
 
 // The `UpdateTransaction` mutation requires an argument of type `UpdateTransactionVariables`:
 const updateTransactionVars: UpdateTransactionVariables = {
-  id: ..., 
+  id: ...,
   tenantId: ..., // optional
   businessId: ..., // optional
   type: ..., // optional
   amount: ..., // optional
   date: ..., // optional
   category: ..., // optional
+  description: ..., // optional
   receiptUrl: ..., // optional
   recordedBy: ..., // optional
 };
@@ -5195,7 +6020,7 @@ const updateTransactionVars: UpdateTransactionVariables = {
 // Call the `updateTransactionRef()` function to get a reference to the mutation.
 const ref = updateTransactionRef(updateTransactionVars);
 // Variables can be defined inline as well.
-const ref = updateTransactionRef({ id: ..., tenantId: ..., businessId: ..., type: ..., amount: ..., date: ..., category: ..., receiptUrl: ..., recordedBy: ..., });
+const ref = updateTransactionRef({ id: ..., tenantId: ..., businessId: ..., type: ..., amount: ..., date: ..., category: ..., description: ..., receiptUrl: ..., recordedBy: ..., });
 
 // You can also pass in a `DataConnect` instance to the `MutationRef` function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -5268,7 +6093,7 @@ import { connectorConfig, deleteTransaction, DeleteTransactionVariables } from '
 
 // The `DeleteTransaction` mutation requires an argument of type `DeleteTransactionVariables`:
 const deleteTransactionVars: DeleteTransactionVariables = {
-  id: ..., 
+  id: ...,
 };
 
 // Call the `deleteTransaction()` function to execute the mutation.
@@ -5298,7 +6123,7 @@ import { connectorConfig, deleteTransactionRef, DeleteTransactionVariables } fro
 
 // The `DeleteTransaction` mutation requires an argument of type `DeleteTransactionVariables`:
 const deleteTransactionVars: DeleteTransactionVariables = {
-  id: ..., 
+  id: ...,
 };
 
 // Call the `deleteTransactionRef()` function to get a reference to the mutation.
@@ -5381,11 +6206,11 @@ import { connectorConfig, createTaskComment, CreateTaskCommentVariables } from '
 
 // The `CreateTaskComment` mutation requires an argument of type `CreateTaskCommentVariables`:
 const createTaskCommentVars: CreateTaskCommentVariables = {
-  tenantId: ..., 
-  businessId: ..., 
-  taskId: ..., 
-  userId: ..., 
-  content: ..., 
+  tenantId: ...,
+  businessId: ...,
+  taskId: ...,
+  userId: ...,
+  content: ...,
 };
 
 // Call the `createTaskComment()` function to execute the mutation.
@@ -5415,11 +6240,11 @@ import { connectorConfig, createTaskCommentRef, CreateTaskCommentVariables } fro
 
 // The `CreateTaskComment` mutation requires an argument of type `CreateTaskCommentVariables`:
 const createTaskCommentVars: CreateTaskCommentVariables = {
-  tenantId: ..., 
-  businessId: ..., 
-  taskId: ..., 
-  userId: ..., 
-  content: ..., 
+  tenantId: ...,
+  businessId: ...,
+  taskId: ...,
+  userId: ...,
+  content: ...,
 };
 
 // Call the `createTaskCommentRef()` function to get a reference to the mutation.
@@ -5503,7 +6328,7 @@ import { connectorConfig, updateTaskComment, UpdateTaskCommentVariables } from '
 
 // The `UpdateTaskComment` mutation requires an argument of type `UpdateTaskCommentVariables`:
 const updateTaskCommentVars: UpdateTaskCommentVariables = {
-  id: ..., 
+  id: ...,
   tenantId: ..., // optional
   businessId: ..., // optional
   taskId: ..., // optional
@@ -5538,7 +6363,7 @@ import { connectorConfig, updateTaskCommentRef, UpdateTaskCommentVariables } fro
 
 // The `UpdateTaskComment` mutation requires an argument of type `UpdateTaskCommentVariables`:
 const updateTaskCommentVars: UpdateTaskCommentVariables = {
-  id: ..., 
+  id: ...,
   tenantId: ..., // optional
   businessId: ..., // optional
   taskId: ..., // optional
@@ -5622,7 +6447,7 @@ import { connectorConfig, deleteTaskComment, DeleteTaskCommentVariables } from '
 
 // The `DeleteTaskComment` mutation requires an argument of type `DeleteTaskCommentVariables`:
 const deleteTaskCommentVars: DeleteTaskCommentVariables = {
-  id: ..., 
+  id: ...,
 };
 
 // Call the `deleteTaskComment()` function to execute the mutation.
@@ -5652,7 +6477,7 @@ import { connectorConfig, deleteTaskCommentRef, DeleteTaskCommentVariables } fro
 
 // The `DeleteTaskComment` mutation requires an argument of type `DeleteTaskCommentVariables`:
 const deleteTaskCommentVars: DeleteTaskCommentVariables = {
-  id: ..., 
+  id: ...,
 };
 
 // Call the `deleteTaskCommentRef()` function to get a reference to the mutation.
@@ -5674,6 +6499,444 @@ console.log(data.taskComment_delete);
 executeMutation(ref).then((response) => {
   const data = response.data;
   console.log(data.taskComment_delete);
+});
+```
+
+## CreateEmployeeWithAccess
+You can execute the `CreateEmployeeWithAccess` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
+```typescript
+createEmployeeWithAccess(vars: CreateEmployeeWithAccessVariables): MutationPromise<CreateEmployeeWithAccessData, CreateEmployeeWithAccessVariables>;
+
+interface CreateEmployeeWithAccessRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: CreateEmployeeWithAccessVariables): MutationRef<CreateEmployeeWithAccessData, CreateEmployeeWithAccessVariables>;
+}
+export const createEmployeeWithAccessRef: CreateEmployeeWithAccessRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+createEmployeeWithAccess(dc: DataConnect, vars: CreateEmployeeWithAccessVariables): MutationPromise<CreateEmployeeWithAccessData, CreateEmployeeWithAccessVariables>;
+
+interface CreateEmployeeWithAccessRef {
+  ...
+  (dc: DataConnect, vars: CreateEmployeeWithAccessVariables): MutationRef<CreateEmployeeWithAccessData, CreateEmployeeWithAccessVariables>;
+}
+export const createEmployeeWithAccessRef: CreateEmployeeWithAccessRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the createEmployeeWithAccessRef:
+```typescript
+const name = createEmployeeWithAccessRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `CreateEmployeeWithAccess` mutation requires an argument of type `CreateEmployeeWithAccessVariables`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface CreateEmployeeWithAccessVariables {
+  tenantId: string;
+  businessId: string;
+  fullName: string;
+  position: string;
+  role?: string | null;
+  userRole: string;
+  salary?: number | null;
+  department?: string | null;
+  email: string;
+  contact?: string | null;
+  startDate?: DateString | null;
+  status?: string | null;
+  attendance?: number | null;
+  salaryPaymentStatus?: string | null;
+  accessCodeHash: string;
+}
+```
+### Return Type
+Recall that executing the `CreateEmployeeWithAccess` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `CreateEmployeeWithAccessData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface CreateEmployeeWithAccessData {
+  employee_insert: Employee_Key;
+  user_insert: User_Key;
+}
+```
+### Using `CreateEmployeeWithAccess`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, createEmployeeWithAccess, CreateEmployeeWithAccessVariables } from '@dataconnect/generated';
+
+// The `CreateEmployeeWithAccess` mutation requires an argument of type `CreateEmployeeWithAccessVariables`:
+const createEmployeeWithAccessVars: CreateEmployeeWithAccessVariables = {
+  tenantId: ...,
+  businessId: ...,
+  fullName: ...,
+  position: ...,
+  role: ..., // optional
+  userRole: ...,
+  salary: ..., // optional
+  department: ..., // optional
+  email: ...,
+  contact: ..., // optional
+  startDate: ..., // optional
+  status: ..., // optional
+  attendance: ..., // optional
+  salaryPaymentStatus: ..., // optional
+  accessCodeHash: ...,
+};
+
+// Call the `createEmployeeWithAccess()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await createEmployeeWithAccess(createEmployeeWithAccessVars);
+// Variables can be defined inline as well.
+const { data } = await createEmployeeWithAccess({ tenantId: ..., businessId: ..., fullName: ..., position: ..., role: ..., userRole: ..., salary: ..., department: ..., email: ..., contact: ..., startDate: ..., status: ..., attendance: ..., salaryPaymentStatus: ..., accessCodeHash: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await createEmployeeWithAccess(dataConnect, createEmployeeWithAccessVars);
+
+console.log(data.employee_insert);
+console.log(data.user_insert);
+
+// Or, you can use the `Promise` API.
+createEmployeeWithAccess(createEmployeeWithAccessVars).then((response) => {
+  const data = response.data;
+  console.log(data.employee_insert);
+  console.log(data.user_insert);
+});
+```
+
+### Using `CreateEmployeeWithAccess`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, createEmployeeWithAccessRef, CreateEmployeeWithAccessVariables } from '@dataconnect/generated';
+
+// The `CreateEmployeeWithAccess` mutation requires an argument of type `CreateEmployeeWithAccessVariables`:
+const createEmployeeWithAccessVars: CreateEmployeeWithAccessVariables = {
+  tenantId: ...,
+  businessId: ...,
+  fullName: ...,
+  position: ...,
+  role: ..., // optional
+  userRole: ...,
+  salary: ..., // optional
+  department: ..., // optional
+  email: ...,
+  contact: ..., // optional
+  startDate: ..., // optional
+  status: ..., // optional
+  attendance: ..., // optional
+  salaryPaymentStatus: ..., // optional
+  accessCodeHash: ...,
+};
+
+// Call the `createEmployeeWithAccessRef()` function to get a reference to the mutation.
+const ref = createEmployeeWithAccessRef(createEmployeeWithAccessVars);
+// Variables can be defined inline as well.
+const ref = createEmployeeWithAccessRef({ tenantId: ..., businessId: ..., fullName: ..., position: ..., role: ..., userRole: ..., salary: ..., department: ..., email: ..., contact: ..., startDate: ..., status: ..., attendance: ..., salaryPaymentStatus: ..., accessCodeHash: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = createEmployeeWithAccessRef(dataConnect, createEmployeeWithAccessVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.employee_insert);
+console.log(data.user_insert);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.employee_insert);
+  console.log(data.user_insert);
+});
+```
+
+## UpdateEmployeeWithAccess
+You can execute the `UpdateEmployeeWithAccess` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
+```typescript
+updateEmployeeWithAccess(vars: UpdateEmployeeWithAccessVariables): MutationPromise<UpdateEmployeeWithAccessData, UpdateEmployeeWithAccessVariables>;
+
+interface UpdateEmployeeWithAccessRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: UpdateEmployeeWithAccessVariables): MutationRef<UpdateEmployeeWithAccessData, UpdateEmployeeWithAccessVariables>;
+}
+export const updateEmployeeWithAccessRef: UpdateEmployeeWithAccessRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+updateEmployeeWithAccess(dc: DataConnect, vars: UpdateEmployeeWithAccessVariables): MutationPromise<UpdateEmployeeWithAccessData, UpdateEmployeeWithAccessVariables>;
+
+interface UpdateEmployeeWithAccessRef {
+  ...
+  (dc: DataConnect, vars: UpdateEmployeeWithAccessVariables): MutationRef<UpdateEmployeeWithAccessData, UpdateEmployeeWithAccessVariables>;
+}
+export const updateEmployeeWithAccessRef: UpdateEmployeeWithAccessRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the updateEmployeeWithAccessRef:
+```typescript
+const name = updateEmployeeWithAccessRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `UpdateEmployeeWithAccess` mutation requires an argument of type `UpdateEmployeeWithAccessVariables`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface UpdateEmployeeWithAccessVariables {
+  id: string;
+  tenantId: string;
+  businessId: string;
+  currentEmail: string;
+  fullName: string;
+  position: string;
+  role?: string | null;
+  userRole: string;
+  salary?: number | null;
+  department?: string | null;
+  email: string;
+  contact?: string | null;
+  startDate?: DateString | null;
+  status?: string | null;
+  attendance?: number | null;
+  salaryPaymentStatus?: string | null;
+}
+```
+### Return Type
+Recall that executing the `UpdateEmployeeWithAccess` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `UpdateEmployeeWithAccessData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface UpdateEmployeeWithAccessData {
+  employee_update?: Employee_Key | null;
+  user_updateMany: number;
+}
+```
+### Using `UpdateEmployeeWithAccess`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, updateEmployeeWithAccess, UpdateEmployeeWithAccessVariables } from '@dataconnect/generated';
+
+// The `UpdateEmployeeWithAccess` mutation requires an argument of type `UpdateEmployeeWithAccessVariables`:
+const updateEmployeeWithAccessVars: UpdateEmployeeWithAccessVariables = {
+  id: ...,
+  tenantId: ...,
+  businessId: ...,
+  currentEmail: ...,
+  fullName: ...,
+  position: ...,
+  role: ..., // optional
+  userRole: ...,
+  salary: ..., // optional
+  department: ..., // optional
+  email: ...,
+  contact: ..., // optional
+  startDate: ..., // optional
+  status: ..., // optional
+  attendance: ..., // optional
+  salaryPaymentStatus: ..., // optional
+};
+
+// Call the `updateEmployeeWithAccess()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await updateEmployeeWithAccess(updateEmployeeWithAccessVars);
+// Variables can be defined inline as well.
+const { data } = await updateEmployeeWithAccess({ id: ..., tenantId: ..., businessId: ..., currentEmail: ..., fullName: ..., position: ..., role: ..., userRole: ..., salary: ..., department: ..., email: ..., contact: ..., startDate: ..., status: ..., attendance: ..., salaryPaymentStatus: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await updateEmployeeWithAccess(dataConnect, updateEmployeeWithAccessVars);
+
+console.log(data.employee_update);
+console.log(data.user_updateMany);
+
+// Or, you can use the `Promise` API.
+updateEmployeeWithAccess(updateEmployeeWithAccessVars).then((response) => {
+  const data = response.data;
+  console.log(data.employee_update);
+  console.log(data.user_updateMany);
+});
+```
+
+### Using `UpdateEmployeeWithAccess`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, updateEmployeeWithAccessRef, UpdateEmployeeWithAccessVariables } from '@dataconnect/generated';
+
+// The `UpdateEmployeeWithAccess` mutation requires an argument of type `UpdateEmployeeWithAccessVariables`:
+const updateEmployeeWithAccessVars: UpdateEmployeeWithAccessVariables = {
+  id: ...,
+  tenantId: ...,
+  businessId: ...,
+  currentEmail: ...,
+  fullName: ...,
+  position: ...,
+  role: ..., // optional
+  userRole: ...,
+  salary: ..., // optional
+  department: ..., // optional
+  email: ...,
+  contact: ..., // optional
+  startDate: ..., // optional
+  status: ..., // optional
+  attendance: ..., // optional
+  salaryPaymentStatus: ..., // optional
+};
+
+// Call the `updateEmployeeWithAccessRef()` function to get a reference to the mutation.
+const ref = updateEmployeeWithAccessRef(updateEmployeeWithAccessVars);
+// Variables can be defined inline as well.
+const ref = updateEmployeeWithAccessRef({ id: ..., tenantId: ..., businessId: ..., currentEmail: ..., fullName: ..., position: ..., role: ..., userRole: ..., salary: ..., department: ..., email: ..., contact: ..., startDate: ..., status: ..., attendance: ..., salaryPaymentStatus: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = updateEmployeeWithAccessRef(dataConnect, updateEmployeeWithAccessVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.employee_update);
+console.log(data.user_updateMany);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.employee_update);
+  console.log(data.user_updateMany);
+});
+```
+
+## DeleteEmployeeWithAccess
+You can execute the `DeleteEmployeeWithAccess` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
+```typescript
+deleteEmployeeWithAccess(vars: DeleteEmployeeWithAccessVariables): MutationPromise<DeleteEmployeeWithAccessData, DeleteEmployeeWithAccessVariables>;
+
+interface DeleteEmployeeWithAccessRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: DeleteEmployeeWithAccessVariables): MutationRef<DeleteEmployeeWithAccessData, DeleteEmployeeWithAccessVariables>;
+}
+export const deleteEmployeeWithAccessRef: DeleteEmployeeWithAccessRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+deleteEmployeeWithAccess(dc: DataConnect, vars: DeleteEmployeeWithAccessVariables): MutationPromise<DeleteEmployeeWithAccessData, DeleteEmployeeWithAccessVariables>;
+
+interface DeleteEmployeeWithAccessRef {
+  ...
+  (dc: DataConnect, vars: DeleteEmployeeWithAccessVariables): MutationRef<DeleteEmployeeWithAccessData, DeleteEmployeeWithAccessVariables>;
+}
+export const deleteEmployeeWithAccessRef: DeleteEmployeeWithAccessRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the deleteEmployeeWithAccessRef:
+```typescript
+const name = deleteEmployeeWithAccessRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `DeleteEmployeeWithAccess` mutation requires an argument of type `DeleteEmployeeWithAccessVariables`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface DeleteEmployeeWithAccessVariables {
+  id: string;
+  tenantId: string;
+  businessId: string;
+  currentEmail: string;
+}
+```
+### Return Type
+Recall that executing the `DeleteEmployeeWithAccess` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `DeleteEmployeeWithAccessData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface DeleteEmployeeWithAccessData {
+  employee_delete?: Employee_Key | null;
+  user_deleteMany: number;
+}
+```
+### Using `DeleteEmployeeWithAccess`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, deleteEmployeeWithAccess, DeleteEmployeeWithAccessVariables } from '@dataconnect/generated';
+
+// The `DeleteEmployeeWithAccess` mutation requires an argument of type `DeleteEmployeeWithAccessVariables`:
+const deleteEmployeeWithAccessVars: DeleteEmployeeWithAccessVariables = {
+  id: ...,
+  tenantId: ...,
+  businessId: ...,
+  currentEmail: ...,
+};
+
+// Call the `deleteEmployeeWithAccess()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await deleteEmployeeWithAccess(deleteEmployeeWithAccessVars);
+// Variables can be defined inline as well.
+const { data } = await deleteEmployeeWithAccess({ id: ..., tenantId: ..., businessId: ..., currentEmail: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await deleteEmployeeWithAccess(dataConnect, deleteEmployeeWithAccessVars);
+
+console.log(data.employee_delete);
+console.log(data.user_deleteMany);
+
+// Or, you can use the `Promise` API.
+deleteEmployeeWithAccess(deleteEmployeeWithAccessVars).then((response) => {
+  const data = response.data;
+  console.log(data.employee_delete);
+  console.log(data.user_deleteMany);
+});
+```
+
+### Using `DeleteEmployeeWithAccess`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, deleteEmployeeWithAccessRef, DeleteEmployeeWithAccessVariables } from '@dataconnect/generated';
+
+// The `DeleteEmployeeWithAccess` mutation requires an argument of type `DeleteEmployeeWithAccessVariables`:
+const deleteEmployeeWithAccessVars: DeleteEmployeeWithAccessVariables = {
+  id: ...,
+  tenantId: ...,
+  businessId: ...,
+  currentEmail: ...,
+};
+
+// Call the `deleteEmployeeWithAccessRef()` function to get a reference to the mutation.
+const ref = deleteEmployeeWithAccessRef(deleteEmployeeWithAccessVars);
+// Variables can be defined inline as well.
+const ref = deleteEmployeeWithAccessRef({ id: ..., tenantId: ..., businessId: ..., currentEmail: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = deleteEmployeeWithAccessRef(dataConnect, deleteEmployeeWithAccessVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.employee_delete);
+console.log(data.user_deleteMany);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.employee_delete);
+  console.log(data.user_deleteMany);
 });
 ```
 
@@ -5718,8 +6981,12 @@ export interface CreateEmployeeVariables {
   role?: string | null;
   salary?: number | null;
   department?: string | null;
+  email?: string | null;
+  contact?: string | null;
   startDate?: DateString | null;
   status?: string | null;
+  attendance?: number | null;
+  salaryPaymentStatus?: string | null;
   code?: string | null;
 }
 ```
@@ -5740,15 +7007,19 @@ import { connectorConfig, createEmployee, CreateEmployeeVariables } from '@datac
 
 // The `CreateEmployee` mutation requires an argument of type `CreateEmployeeVariables`:
 const createEmployeeVars: CreateEmployeeVariables = {
-  tenantId: ..., 
-  businessId: ..., 
-  fullName: ..., 
-  position: ..., 
+  tenantId: ...,
+  businessId: ...,
+  fullName: ...,
+  position: ...,
   role: ..., // optional
   salary: ..., // optional
   department: ..., // optional
+  email: ..., // optional
+  contact: ..., // optional
   startDate: ..., // optional
   status: ..., // optional
+  attendance: ..., // optional
+  salaryPaymentStatus: ..., // optional
   code: ..., // optional
 };
 
@@ -5756,7 +7027,7 @@ const createEmployeeVars: CreateEmployeeVariables = {
 // You can use the `await` keyword to wait for the promise to resolve.
 const { data } = await createEmployee(createEmployeeVars);
 // Variables can be defined inline as well.
-const { data } = await createEmployee({ tenantId: ..., businessId: ..., fullName: ..., position: ..., role: ..., salary: ..., department: ..., startDate: ..., status: ..., code: ..., });
+const { data } = await createEmployee({ tenantId: ..., businessId: ..., fullName: ..., position: ..., role: ..., salary: ..., department: ..., email: ..., contact: ..., startDate: ..., status: ..., attendance: ..., salaryPaymentStatus: ..., code: ..., });
 
 // You can also pass in a `DataConnect` instance to the action shortcut function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -5779,22 +7050,26 @@ import { connectorConfig, createEmployeeRef, CreateEmployeeVariables } from '@da
 
 // The `CreateEmployee` mutation requires an argument of type `CreateEmployeeVariables`:
 const createEmployeeVars: CreateEmployeeVariables = {
-  tenantId: ..., 
-  businessId: ..., 
-  fullName: ..., 
-  position: ..., 
+  tenantId: ...,
+  businessId: ...,
+  fullName: ...,
+  position: ...,
   role: ..., // optional
   salary: ..., // optional
   department: ..., // optional
+  email: ..., // optional
+  contact: ..., // optional
   startDate: ..., // optional
   status: ..., // optional
+  attendance: ..., // optional
+  salaryPaymentStatus: ..., // optional
   code: ..., // optional
 };
 
 // Call the `createEmployeeRef()` function to get a reference to the mutation.
 const ref = createEmployeeRef(createEmployeeVars);
 // Variables can be defined inline as well.
-const ref = createEmployeeRef({ tenantId: ..., businessId: ..., fullName: ..., position: ..., role: ..., salary: ..., department: ..., startDate: ..., status: ..., code: ..., });
+const ref = createEmployeeRef({ tenantId: ..., businessId: ..., fullName: ..., position: ..., role: ..., salary: ..., department: ..., email: ..., contact: ..., startDate: ..., status: ..., attendance: ..., salaryPaymentStatus: ..., code: ..., });
 
 // You can also pass in a `DataConnect` instance to the `MutationRef` function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -5855,8 +7130,12 @@ export interface UpdateEmployeeVariables {
   role?: string | null;
   salary?: number | null;
   department?: string | null;
+  email?: string | null;
+  contact?: string | null;
   startDate?: DateString | null;
   status?: string | null;
+  attendance?: number | null;
+  salaryPaymentStatus?: string | null;
 }
 ```
 ### Return Type
@@ -5876,7 +7155,7 @@ import { connectorConfig, updateEmployee, UpdateEmployeeVariables } from '@datac
 
 // The `UpdateEmployee` mutation requires an argument of type `UpdateEmployeeVariables`:
 const updateEmployeeVars: UpdateEmployeeVariables = {
-  id: ..., 
+  id: ...,
   tenantId: ..., // optional
   businessId: ..., // optional
   fullName: ..., // optional
@@ -5884,15 +7163,19 @@ const updateEmployeeVars: UpdateEmployeeVariables = {
   role: ..., // optional
   salary: ..., // optional
   department: ..., // optional
+  email: ..., // optional
+  contact: ..., // optional
   startDate: ..., // optional
   status: ..., // optional
+  attendance: ..., // optional
+  salaryPaymentStatus: ..., // optional
 };
 
 // Call the `updateEmployee()` function to execute the mutation.
 // You can use the `await` keyword to wait for the promise to resolve.
 const { data } = await updateEmployee(updateEmployeeVars);
 // Variables can be defined inline as well.
-const { data } = await updateEmployee({ id: ..., tenantId: ..., businessId: ..., fullName: ..., position: ..., role: ..., salary: ..., department: ..., startDate: ..., status: ..., });
+const { data } = await updateEmployee({ id: ..., tenantId: ..., businessId: ..., fullName: ..., position: ..., role: ..., salary: ..., department: ..., email: ..., contact: ..., startDate: ..., status: ..., attendance: ..., salaryPaymentStatus: ..., });
 
 // You can also pass in a `DataConnect` instance to the action shortcut function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -5915,7 +7198,7 @@ import { connectorConfig, updateEmployeeRef, UpdateEmployeeVariables } from '@da
 
 // The `UpdateEmployee` mutation requires an argument of type `UpdateEmployeeVariables`:
 const updateEmployeeVars: UpdateEmployeeVariables = {
-  id: ..., 
+  id: ...,
   tenantId: ..., // optional
   businessId: ..., // optional
   fullName: ..., // optional
@@ -5923,14 +7206,18 @@ const updateEmployeeVars: UpdateEmployeeVariables = {
   role: ..., // optional
   salary: ..., // optional
   department: ..., // optional
+  email: ..., // optional
+  contact: ..., // optional
   startDate: ..., // optional
   status: ..., // optional
+  attendance: ..., // optional
+  salaryPaymentStatus: ..., // optional
 };
 
 // Call the `updateEmployeeRef()` function to get a reference to the mutation.
 const ref = updateEmployeeRef(updateEmployeeVars);
 // Variables can be defined inline as well.
-const ref = updateEmployeeRef({ id: ..., tenantId: ..., businessId: ..., fullName: ..., position: ..., role: ..., salary: ..., department: ..., startDate: ..., status: ..., });
+const ref = updateEmployeeRef({ id: ..., tenantId: ..., businessId: ..., fullName: ..., position: ..., role: ..., salary: ..., department: ..., email: ..., contact: ..., startDate: ..., status: ..., attendance: ..., salaryPaymentStatus: ..., });
 
 // You can also pass in a `DataConnect` instance to the `MutationRef` function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -6003,7 +7290,7 @@ import { connectorConfig, deleteEmployee, DeleteEmployeeVariables } from '@datac
 
 // The `DeleteEmployee` mutation requires an argument of type `DeleteEmployeeVariables`:
 const deleteEmployeeVars: DeleteEmployeeVariables = {
-  id: ..., 
+  id: ...,
 };
 
 // Call the `deleteEmployee()` function to execute the mutation.
@@ -6033,7 +7320,7 @@ import { connectorConfig, deleteEmployeeRef, DeleteEmployeeVariables } from '@da
 
 // The `DeleteEmployee` mutation requires an argument of type `DeleteEmployeeVariables`:
 const deleteEmployeeVars: DeleteEmployeeVariables = {
-  id: ..., 
+  id: ...,
 };
 
 // Call the `deleteEmployeeRef()` function to get a reference to the mutation.
@@ -6098,8 +7385,7 @@ export interface CreateCustomerVariables {
   phoneNumber?: string | null;
   email?: string | null;
   location?: string | null;
-  totalOrders?: number | null;
-  totalSpent?: number | null;
+  notes?: string | null;
 }
 ```
 ### Return Type
@@ -6119,21 +7405,20 @@ import { connectorConfig, createCustomer, CreateCustomerVariables } from '@datac
 
 // The `CreateCustomer` mutation requires an argument of type `CreateCustomerVariables`:
 const createCustomerVars: CreateCustomerVariables = {
-  tenantId: ..., 
-  businessId: ..., 
-  customerName: ..., 
+  tenantId: ...,
+  businessId: ...,
+  customerName: ...,
   phoneNumber: ..., // optional
   email: ..., // optional
   location: ..., // optional
-  totalOrders: ..., // optional
-  totalSpent: ..., // optional
+  notes: ..., // optional
 };
 
 // Call the `createCustomer()` function to execute the mutation.
 // You can use the `await` keyword to wait for the promise to resolve.
 const { data } = await createCustomer(createCustomerVars);
 // Variables can be defined inline as well.
-const { data } = await createCustomer({ tenantId: ..., businessId: ..., customerName: ..., phoneNumber: ..., email: ..., location: ..., totalOrders: ..., totalSpent: ..., });
+const { data } = await createCustomer({ tenantId: ..., businessId: ..., customerName: ..., phoneNumber: ..., email: ..., location: ..., notes: ..., });
 
 // You can also pass in a `DataConnect` instance to the action shortcut function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -6156,20 +7441,19 @@ import { connectorConfig, createCustomerRef, CreateCustomerVariables } from '@da
 
 // The `CreateCustomer` mutation requires an argument of type `CreateCustomerVariables`:
 const createCustomerVars: CreateCustomerVariables = {
-  tenantId: ..., 
-  businessId: ..., 
-  customerName: ..., 
+  tenantId: ...,
+  businessId: ...,
+  customerName: ...,
   phoneNumber: ..., // optional
   email: ..., // optional
   location: ..., // optional
-  totalOrders: ..., // optional
-  totalSpent: ..., // optional
+  notes: ..., // optional
 };
 
 // Call the `createCustomerRef()` function to get a reference to the mutation.
 const ref = createCustomerRef(createCustomerVars);
 // Variables can be defined inline as well.
-const ref = createCustomerRef({ tenantId: ..., businessId: ..., customerName: ..., phoneNumber: ..., email: ..., location: ..., totalOrders: ..., totalSpent: ..., });
+const ref = createCustomerRef({ tenantId: ..., businessId: ..., customerName: ..., phoneNumber: ..., email: ..., location: ..., notes: ..., });
 
 // You can also pass in a `DataConnect` instance to the `MutationRef` function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -6229,8 +7513,7 @@ export interface UpdateCustomerVariables {
   phoneNumber?: string | null;
   email?: string | null;
   location?: string | null;
-  totalOrders?: number | null;
-  totalSpent?: number | null;
+  notes?: string | null;
 }
 ```
 ### Return Type
@@ -6250,22 +7533,21 @@ import { connectorConfig, updateCustomer, UpdateCustomerVariables } from '@datac
 
 // The `UpdateCustomer` mutation requires an argument of type `UpdateCustomerVariables`:
 const updateCustomerVars: UpdateCustomerVariables = {
-  id: ..., 
+  id: ...,
   tenantId: ..., // optional
   businessId: ..., // optional
   customerName: ..., // optional
   phoneNumber: ..., // optional
   email: ..., // optional
   location: ..., // optional
-  totalOrders: ..., // optional
-  totalSpent: ..., // optional
+  notes: ..., // optional
 };
 
 // Call the `updateCustomer()` function to execute the mutation.
 // You can use the `await` keyword to wait for the promise to resolve.
 const { data } = await updateCustomer(updateCustomerVars);
 // Variables can be defined inline as well.
-const { data } = await updateCustomer({ id: ..., tenantId: ..., businessId: ..., customerName: ..., phoneNumber: ..., email: ..., location: ..., totalOrders: ..., totalSpent: ..., });
+const { data } = await updateCustomer({ id: ..., tenantId: ..., businessId: ..., customerName: ..., phoneNumber: ..., email: ..., location: ..., notes: ..., });
 
 // You can also pass in a `DataConnect` instance to the action shortcut function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -6288,21 +7570,20 @@ import { connectorConfig, updateCustomerRef, UpdateCustomerVariables } from '@da
 
 // The `UpdateCustomer` mutation requires an argument of type `UpdateCustomerVariables`:
 const updateCustomerVars: UpdateCustomerVariables = {
-  id: ..., 
+  id: ...,
   tenantId: ..., // optional
   businessId: ..., // optional
   customerName: ..., // optional
   phoneNumber: ..., // optional
   email: ..., // optional
   location: ..., // optional
-  totalOrders: ..., // optional
-  totalSpent: ..., // optional
+  notes: ..., // optional
 };
 
 // Call the `updateCustomerRef()` function to get a reference to the mutation.
 const ref = updateCustomerRef(updateCustomerVars);
 // Variables can be defined inline as well.
-const ref = updateCustomerRef({ id: ..., tenantId: ..., businessId: ..., customerName: ..., phoneNumber: ..., email: ..., location: ..., totalOrders: ..., totalSpent: ..., });
+const ref = updateCustomerRef({ id: ..., tenantId: ..., businessId: ..., customerName: ..., phoneNumber: ..., email: ..., location: ..., notes: ..., });
 
 // You can also pass in a `DataConnect` instance to the `MutationRef` function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -6375,7 +7656,7 @@ import { connectorConfig, deleteCustomer, DeleteCustomerVariables } from '@datac
 
 // The `DeleteCustomer` mutation requires an argument of type `DeleteCustomerVariables`:
 const deleteCustomerVars: DeleteCustomerVariables = {
-  id: ..., 
+  id: ...,
 };
 
 // Call the `deleteCustomer()` function to execute the mutation.
@@ -6405,7 +7686,7 @@ import { connectorConfig, deleteCustomerRef, DeleteCustomerVariables } from '@da
 
 // The `DeleteCustomer` mutation requires an argument of type `DeleteCustomerVariables`:
 const deleteCustomerVars: DeleteCustomerVariables = {
-  id: ..., 
+  id: ...,
 };
 
 // Call the `deleteCustomerRef()` function to get a reference to the mutation.
@@ -6469,6 +7750,10 @@ export interface CreateSupplierVariables {
   supplierName: string;
   phoneNumber?: string | null;
   email?: string | null;
+  location?: string | null;
+  productsSupplied?: string | null;
+  paymentStatus?: string | null;
+  notes?: string | null;
 }
 ```
 ### Return Type
@@ -6488,18 +7773,22 @@ import { connectorConfig, createSupplier, CreateSupplierVariables } from '@datac
 
 // The `CreateSupplier` mutation requires an argument of type `CreateSupplierVariables`:
 const createSupplierVars: CreateSupplierVariables = {
-  tenantId: ..., 
-  businessId: ..., 
-  supplierName: ..., 
+  tenantId: ...,
+  businessId: ...,
+  supplierName: ...,
   phoneNumber: ..., // optional
   email: ..., // optional
+  location: ..., // optional
+  productsSupplied: ..., // optional
+  paymentStatus: ..., // optional
+  notes: ..., // optional
 };
 
 // Call the `createSupplier()` function to execute the mutation.
 // You can use the `await` keyword to wait for the promise to resolve.
 const { data } = await createSupplier(createSupplierVars);
 // Variables can be defined inline as well.
-const { data } = await createSupplier({ tenantId: ..., businessId: ..., supplierName: ..., phoneNumber: ..., email: ..., });
+const { data } = await createSupplier({ tenantId: ..., businessId: ..., supplierName: ..., phoneNumber: ..., email: ..., location: ..., productsSupplied: ..., paymentStatus: ..., notes: ..., });
 
 // You can also pass in a `DataConnect` instance to the action shortcut function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -6522,17 +7811,21 @@ import { connectorConfig, createSupplierRef, CreateSupplierVariables } from '@da
 
 // The `CreateSupplier` mutation requires an argument of type `CreateSupplierVariables`:
 const createSupplierVars: CreateSupplierVariables = {
-  tenantId: ..., 
-  businessId: ..., 
-  supplierName: ..., 
+  tenantId: ...,
+  businessId: ...,
+  supplierName: ...,
   phoneNumber: ..., // optional
   email: ..., // optional
+  location: ..., // optional
+  productsSupplied: ..., // optional
+  paymentStatus: ..., // optional
+  notes: ..., // optional
 };
 
 // Call the `createSupplierRef()` function to get a reference to the mutation.
 const ref = createSupplierRef(createSupplierVars);
 // Variables can be defined inline as well.
-const ref = createSupplierRef({ tenantId: ..., businessId: ..., supplierName: ..., phoneNumber: ..., email: ..., });
+const ref = createSupplierRef({ tenantId: ..., businessId: ..., supplierName: ..., phoneNumber: ..., email: ..., location: ..., productsSupplied: ..., paymentStatus: ..., notes: ..., });
 
 // You can also pass in a `DataConnect` instance to the `MutationRef` function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -6591,6 +7884,10 @@ export interface UpdateSupplierVariables {
   supplierName?: string | null;
   phoneNumber?: string | null;
   email?: string | null;
+  location?: string | null;
+  productsSupplied?: string | null;
+  paymentStatus?: string | null;
+  notes?: string | null;
 }
 ```
 ### Return Type
@@ -6610,19 +7907,23 @@ import { connectorConfig, updateSupplier, UpdateSupplierVariables } from '@datac
 
 // The `UpdateSupplier` mutation requires an argument of type `UpdateSupplierVariables`:
 const updateSupplierVars: UpdateSupplierVariables = {
-  id: ..., 
+  id: ...,
   tenantId: ..., // optional
   businessId: ..., // optional
   supplierName: ..., // optional
   phoneNumber: ..., // optional
   email: ..., // optional
+  location: ..., // optional
+  productsSupplied: ..., // optional
+  paymentStatus: ..., // optional
+  notes: ..., // optional
 };
 
 // Call the `updateSupplier()` function to execute the mutation.
 // You can use the `await` keyword to wait for the promise to resolve.
 const { data } = await updateSupplier(updateSupplierVars);
 // Variables can be defined inline as well.
-const { data } = await updateSupplier({ id: ..., tenantId: ..., businessId: ..., supplierName: ..., phoneNumber: ..., email: ..., });
+const { data } = await updateSupplier({ id: ..., tenantId: ..., businessId: ..., supplierName: ..., phoneNumber: ..., email: ..., location: ..., productsSupplied: ..., paymentStatus: ..., notes: ..., });
 
 // You can also pass in a `DataConnect` instance to the action shortcut function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -6645,18 +7946,22 @@ import { connectorConfig, updateSupplierRef, UpdateSupplierVariables } from '@da
 
 // The `UpdateSupplier` mutation requires an argument of type `UpdateSupplierVariables`:
 const updateSupplierVars: UpdateSupplierVariables = {
-  id: ..., 
+  id: ...,
   tenantId: ..., // optional
   businessId: ..., // optional
   supplierName: ..., // optional
   phoneNumber: ..., // optional
   email: ..., // optional
+  location: ..., // optional
+  productsSupplied: ..., // optional
+  paymentStatus: ..., // optional
+  notes: ..., // optional
 };
 
 // Call the `updateSupplierRef()` function to get a reference to the mutation.
 const ref = updateSupplierRef(updateSupplierVars);
 // Variables can be defined inline as well.
-const ref = updateSupplierRef({ id: ..., tenantId: ..., businessId: ..., supplierName: ..., phoneNumber: ..., email: ..., });
+const ref = updateSupplierRef({ id: ..., tenantId: ..., businessId: ..., supplierName: ..., phoneNumber: ..., email: ..., location: ..., productsSupplied: ..., paymentStatus: ..., notes: ..., });
 
 // You can also pass in a `DataConnect` instance to the `MutationRef` function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -6729,7 +8034,7 @@ import { connectorConfig, deleteSupplier, DeleteSupplierVariables } from '@datac
 
 // The `DeleteSupplier` mutation requires an argument of type `DeleteSupplierVariables`:
 const deleteSupplierVars: DeleteSupplierVariables = {
-  id: ..., 
+  id: ...,
 };
 
 // Call the `deleteSupplier()` function to execute the mutation.
@@ -6759,7 +8064,7 @@ import { connectorConfig, deleteSupplierRef, DeleteSupplierVariables } from '@da
 
 // The `DeleteSupplier` mutation requires an argument of type `DeleteSupplierVariables`:
 const deleteSupplierVars: DeleteSupplierVariables = {
-  id: ..., 
+  id: ...,
 };
 
 // Call the `deleteSupplierRef()` function to get a reference to the mutation.
@@ -6823,6 +8128,7 @@ export interface CreateDocumentVariables {
   title: string;
   documentType: string;
   fileUrl: string;
+  description?: string | null;
   uploadedBy: string;
 }
 ```
@@ -6843,19 +8149,20 @@ import { connectorConfig, createDocument, CreateDocumentVariables } from '@datac
 
 // The `CreateDocument` mutation requires an argument of type `CreateDocumentVariables`:
 const createDocumentVars: CreateDocumentVariables = {
-  tenantId: ..., 
-  businessId: ..., 
-  title: ..., 
-  documentType: ..., 
-  fileUrl: ..., 
-  uploadedBy: ..., 
+  tenantId: ...,
+  businessId: ...,
+  title: ...,
+  documentType: ...,
+  fileUrl: ...,
+  description: ..., // optional
+  uploadedBy: ...,
 };
 
 // Call the `createDocument()` function to execute the mutation.
 // You can use the `await` keyword to wait for the promise to resolve.
 const { data } = await createDocument(createDocumentVars);
 // Variables can be defined inline as well.
-const { data } = await createDocument({ tenantId: ..., businessId: ..., title: ..., documentType: ..., fileUrl: ..., uploadedBy: ..., });
+const { data } = await createDocument({ tenantId: ..., businessId: ..., title: ..., documentType: ..., fileUrl: ..., description: ..., uploadedBy: ..., });
 
 // You can also pass in a `DataConnect` instance to the action shortcut function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -6878,18 +8185,19 @@ import { connectorConfig, createDocumentRef, CreateDocumentVariables } from '@da
 
 // The `CreateDocument` mutation requires an argument of type `CreateDocumentVariables`:
 const createDocumentVars: CreateDocumentVariables = {
-  tenantId: ..., 
-  businessId: ..., 
-  title: ..., 
-  documentType: ..., 
-  fileUrl: ..., 
-  uploadedBy: ..., 
+  tenantId: ...,
+  businessId: ...,
+  title: ...,
+  documentType: ...,
+  fileUrl: ...,
+  description: ..., // optional
+  uploadedBy: ...,
 };
 
 // Call the `createDocumentRef()` function to get a reference to the mutation.
 const ref = createDocumentRef(createDocumentVars);
 // Variables can be defined inline as well.
-const ref = createDocumentRef({ tenantId: ..., businessId: ..., title: ..., documentType: ..., fileUrl: ..., uploadedBy: ..., });
+const ref = createDocumentRef({ tenantId: ..., businessId: ..., title: ..., documentType: ..., fileUrl: ..., description: ..., uploadedBy: ..., });
 
 // You can also pass in a `DataConnect` instance to the `MutationRef` function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -6948,6 +8256,7 @@ export interface UpdateDocumentVariables {
   title?: string | null;
   documentType?: string | null;
   fileUrl?: string | null;
+  description?: string | null;
   uploadedBy?: string | null;
 }
 ```
@@ -6968,12 +8277,13 @@ import { connectorConfig, updateDocument, UpdateDocumentVariables } from '@datac
 
 // The `UpdateDocument` mutation requires an argument of type `UpdateDocumentVariables`:
 const updateDocumentVars: UpdateDocumentVariables = {
-  id: ..., 
+  id: ...,
   tenantId: ..., // optional
   businessId: ..., // optional
   title: ..., // optional
   documentType: ..., // optional
   fileUrl: ..., // optional
+  description: ..., // optional
   uploadedBy: ..., // optional
 };
 
@@ -6981,7 +8291,7 @@ const updateDocumentVars: UpdateDocumentVariables = {
 // You can use the `await` keyword to wait for the promise to resolve.
 const { data } = await updateDocument(updateDocumentVars);
 // Variables can be defined inline as well.
-const { data } = await updateDocument({ id: ..., tenantId: ..., businessId: ..., title: ..., documentType: ..., fileUrl: ..., uploadedBy: ..., });
+const { data } = await updateDocument({ id: ..., tenantId: ..., businessId: ..., title: ..., documentType: ..., fileUrl: ..., description: ..., uploadedBy: ..., });
 
 // You can also pass in a `DataConnect` instance to the action shortcut function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -7004,19 +8314,20 @@ import { connectorConfig, updateDocumentRef, UpdateDocumentVariables } from '@da
 
 // The `UpdateDocument` mutation requires an argument of type `UpdateDocumentVariables`:
 const updateDocumentVars: UpdateDocumentVariables = {
-  id: ..., 
+  id: ...,
   tenantId: ..., // optional
   businessId: ..., // optional
   title: ..., // optional
   documentType: ..., // optional
   fileUrl: ..., // optional
+  description: ..., // optional
   uploadedBy: ..., // optional
 };
 
 // Call the `updateDocumentRef()` function to get a reference to the mutation.
 const ref = updateDocumentRef(updateDocumentVars);
 // Variables can be defined inline as well.
-const ref = updateDocumentRef({ id: ..., tenantId: ..., businessId: ..., title: ..., documentType: ..., fileUrl: ..., uploadedBy: ..., });
+const ref = updateDocumentRef({ id: ..., tenantId: ..., businessId: ..., title: ..., documentType: ..., fileUrl: ..., description: ..., uploadedBy: ..., });
 
 // You can also pass in a `DataConnect` instance to the `MutationRef` function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -7089,7 +8400,7 @@ import { connectorConfig, deleteDocument, DeleteDocumentVariables } from '@datac
 
 // The `DeleteDocument` mutation requires an argument of type `DeleteDocumentVariables`:
 const deleteDocumentVars: DeleteDocumentVariables = {
-  id: ..., 
+  id: ...,
 };
 
 // Call the `deleteDocument()` function to execute the mutation.
@@ -7119,7 +8430,7 @@ import { connectorConfig, deleteDocumentRef, DeleteDocumentVariables } from '@da
 
 // The `DeleteDocument` mutation requires an argument of type `DeleteDocumentVariables`:
 const deleteDocumentVars: DeleteDocumentVariables = {
-  id: ..., 
+  id: ...,
 };
 
 // Call the `deleteDocumentRef()` function to get a reference to the mutation.
@@ -7205,12 +8516,12 @@ import { connectorConfig, createActivityLog, CreateActivityLogVariables } from '
 
 // The `CreateActivityLog` mutation requires an argument of type `CreateActivityLogVariables`:
 const createActivityLogVars: CreateActivityLogVariables = {
-  tenantId: ..., 
-  businessId: ..., 
-  userId: ..., 
-  userName: ..., 
-  actionType: ..., 
-  module: ..., 
+  tenantId: ...,
+  businessId: ...,
+  userId: ...,
+  userName: ...,
+  actionType: ...,
+  module: ...,
   description: ..., // optional
   recordId: ..., // optional
 };
@@ -7242,12 +8553,12 @@ import { connectorConfig, createActivityLogRef, CreateActivityLogVariables } fro
 
 // The `CreateActivityLog` mutation requires an argument of type `CreateActivityLogVariables`:
 const createActivityLogVars: CreateActivityLogVariables = {
-  tenantId: ..., 
-  businessId: ..., 
-  userId: ..., 
-  userName: ..., 
-  actionType: ..., 
-  module: ..., 
+  tenantId: ...,
+  businessId: ...,
+  userId: ...,
+  userName: ...,
+  actionType: ...,
+  module: ...,
   description: ..., // optional
   recordId: ..., // optional
 };
@@ -7332,10 +8643,10 @@ import { connectorConfig, createAiQuery, CreateAiQueryVariables } from '@datacon
 
 // The `CreateAiQuery` mutation requires an argument of type `CreateAiQueryVariables`:
 const createAiQueryVars: CreateAiQueryVariables = {
-  tenantId: ..., 
-  businessId: ..., 
-  userId: ..., 
-  queryText: ..., 
+  tenantId: ...,
+  businessId: ...,
+  userId: ...,
+  queryText: ...,
   response: ..., // optional
 };
 
@@ -7366,10 +8677,10 @@ import { connectorConfig, createAiQueryRef, CreateAiQueryVariables } from '@data
 
 // The `CreateAiQuery` mutation requires an argument of type `CreateAiQueryVariables`:
 const createAiQueryVars: CreateAiQueryVariables = {
-  tenantId: ..., 
-  businessId: ..., 
-  userId: ..., 
-  queryText: ..., 
+  tenantId: ...,
+  businessId: ...,
+  userId: ...,
+  queryText: ...,
   response: ..., // optional
 };
 
@@ -7454,7 +8765,7 @@ import { connectorConfig, updateAiQuery, UpdateAiQueryVariables } from '@datacon
 
 // The `UpdateAiQuery` mutation requires an argument of type `UpdateAiQueryVariables`:
 const updateAiQueryVars: UpdateAiQueryVariables = {
-  id: ..., 
+  id: ...,
   tenantId: ..., // optional
   businessId: ..., // optional
   userId: ..., // optional
@@ -7489,7 +8800,7 @@ import { connectorConfig, updateAiQueryRef, UpdateAiQueryVariables } from '@data
 
 // The `UpdateAiQuery` mutation requires an argument of type `UpdateAiQueryVariables`:
 const updateAiQueryVars: UpdateAiQueryVariables = {
-  id: ..., 
+  id: ...,
   tenantId: ..., // optional
   businessId: ..., // optional
   userId: ..., // optional
@@ -7573,7 +8884,7 @@ import { connectorConfig, deleteAiQuery, DeleteAiQueryVariables } from '@datacon
 
 // The `DeleteAiQuery` mutation requires an argument of type `DeleteAiQueryVariables`:
 const deleteAiQueryVars: DeleteAiQueryVariables = {
-  id: ..., 
+  id: ...,
 };
 
 // Call the `deleteAiQuery()` function to execute the mutation.
@@ -7603,7 +8914,7 @@ import { connectorConfig, deleteAiQueryRef, DeleteAiQueryVariables } from '@data
 
 // The `DeleteAiQuery` mutation requires an argument of type `DeleteAiQueryVariables`:
 const deleteAiQueryVars: DeleteAiQueryVariables = {
-  id: ..., 
+  id: ...,
 };
 
 // Call the `deleteAiQueryRef()` function to get a reference to the mutation.
@@ -7686,11 +8997,11 @@ import { connectorConfig, createNotification, CreateNotificationVariables } from
 
 // The `CreateNotification` mutation requires an argument of type `CreateNotificationVariables`:
 const createNotificationVars: CreateNotificationVariables = {
-  tenantId: ..., 
-  businessId: ..., 
-  userId: ..., 
-  message: ..., 
-  isRead: ..., 
+  tenantId: ...,
+  businessId: ...,
+  userId: ...,
+  message: ...,
+  isRead: ...,
 };
 
 // Call the `createNotification()` function to execute the mutation.
@@ -7720,11 +9031,11 @@ import { connectorConfig, createNotificationRef, CreateNotificationVariables } f
 
 // The `CreateNotification` mutation requires an argument of type `CreateNotificationVariables`:
 const createNotificationVars: CreateNotificationVariables = {
-  tenantId: ..., 
-  businessId: ..., 
-  userId: ..., 
-  message: ..., 
-  isRead: ..., 
+  tenantId: ...,
+  businessId: ...,
+  userId: ...,
+  message: ...,
+  isRead: ...,
 };
 
 // Call the `createNotificationRef()` function to get a reference to the mutation.
@@ -7808,7 +9119,7 @@ import { connectorConfig, updateNotification, UpdateNotificationVariables } from
 
 // The `UpdateNotification` mutation requires an argument of type `UpdateNotificationVariables`:
 const updateNotificationVars: UpdateNotificationVariables = {
-  id: ..., 
+  id: ...,
   tenantId: ..., // optional
   businessId: ..., // optional
   userId: ..., // optional
@@ -7843,7 +9154,7 @@ import { connectorConfig, updateNotificationRef, UpdateNotificationVariables } f
 
 // The `UpdateNotification` mutation requires an argument of type `UpdateNotificationVariables`:
 const updateNotificationVars: UpdateNotificationVariables = {
-  id: ..., 
+  id: ...,
   tenantId: ..., // optional
   businessId: ..., // optional
   userId: ..., // optional
@@ -7927,7 +9238,7 @@ import { connectorConfig, deleteNotification, DeleteNotificationVariables } from
 
 // The `DeleteNotification` mutation requires an argument of type `DeleteNotificationVariables`:
 const deleteNotificationVars: DeleteNotificationVariables = {
-  id: ..., 
+  id: ...,
 };
 
 // Call the `deleteNotification()` function to execute the mutation.
@@ -7957,7 +9268,7 @@ import { connectorConfig, deleteNotificationRef, DeleteNotificationVariables } f
 
 // The `DeleteNotification` mutation requires an argument of type `DeleteNotificationVariables`:
 const deleteNotificationVars: DeleteNotificationVariables = {
-  id: ..., 
+  id: ...,
 };
 
 // Call the `deleteNotificationRef()` function to get a reference to the mutation.
@@ -8044,15 +9355,15 @@ import { connectorConfig, createTask, CreateTaskVariables } from '@dataconnect/g
 
 // The `CreateTask` mutation requires an argument of type `CreateTaskVariables`:
 const createTaskVars: CreateTaskVariables = {
-  tenantId: ..., 
-  businessId: ..., 
-  title: ..., 
+  tenantId: ...,
+  businessId: ...,
+  title: ...,
   description: ..., // optional
-  status: ..., 
+  status: ...,
   priority: ..., // optional
-  dueDate: ..., 
+  dueDate: ...,
   assignedToId: ..., // optional
-  createdBy: ..., 
+  createdBy: ...,
 };
 
 // Call the `createTask()` function to execute the mutation.
@@ -8082,15 +9393,15 @@ import { connectorConfig, createTaskRef, CreateTaskVariables } from '@dataconnec
 
 // The `CreateTask` mutation requires an argument of type `CreateTaskVariables`:
 const createTaskVars: CreateTaskVariables = {
-  tenantId: ..., 
-  businessId: ..., 
-  title: ..., 
+  tenantId: ...,
+  businessId: ...,
+  title: ...,
   description: ..., // optional
-  status: ..., 
+  status: ...,
   priority: ..., // optional
-  dueDate: ..., 
+  dueDate: ...,
   assignedToId: ..., // optional
-  createdBy: ..., 
+  createdBy: ...,
 };
 
 // Call the `createTaskRef()` function to get a reference to the mutation.
@@ -8175,7 +9486,7 @@ import { connectorConfig, updateTask, UpdateTaskVariables } from '@dataconnect/g
 
 // The `UpdateTask` mutation requires an argument of type `UpdateTaskVariables`:
 const updateTaskVars: UpdateTaskVariables = {
-  id: ..., 
+  id: ...,
   title: ..., // optional
   description: ..., // optional
   status: ..., // optional
@@ -8211,7 +9522,7 @@ import { connectorConfig, updateTaskRef, UpdateTaskVariables } from '@dataconnec
 
 // The `UpdateTask` mutation requires an argument of type `UpdateTaskVariables`:
 const updateTaskVars: UpdateTaskVariables = {
-  id: ..., 
+  id: ...,
   title: ..., // optional
   description: ..., // optional
   status: ..., // optional
@@ -8296,7 +9607,7 @@ import { connectorConfig, deleteTask, DeleteTaskVariables } from '@dataconnect/g
 
 // The `DeleteTask` mutation requires an argument of type `DeleteTaskVariables`:
 const deleteTaskVars: DeleteTaskVariables = {
-  id: ..., 
+  id: ...,
 };
 
 // Call the `deleteTask()` function to execute the mutation.
@@ -8326,7 +9637,7 @@ import { connectorConfig, deleteTaskRef, DeleteTaskVariables } from '@dataconnec
 
 // The `DeleteTask` mutation requires an argument of type `DeleteTaskVariables`:
 const deleteTaskVars: DeleteTaskVariables = {
-  id: ..., 
+  id: ...,
 };
 
 // Call the `deleteTaskRef()` function to get a reference to the mutation.
@@ -8410,12 +9721,12 @@ import { connectorConfig, createMirrorOutbox, CreateMirrorOutboxVariables } from
 
 // The `CreateMirrorOutbox` mutation requires an argument of type `CreateMirrorOutboxVariables`:
 const createMirrorOutboxVars: CreateMirrorOutboxVariables = {
-  tenantId: ..., 
-  businessId: ..., 
-  entityType: ..., 
-  operation: ..., 
-  recordId: ..., 
-  payload: ..., 
+  tenantId: ...,
+  businessId: ...,
+  entityType: ...,
+  operation: ...,
+  recordId: ...,
+  payload: ...,
 };
 
 // Call the `createMirrorOutbox()` function to execute the mutation.
@@ -8445,12 +9756,12 @@ import { connectorConfig, createMirrorOutboxRef, CreateMirrorOutboxVariables } f
 
 // The `CreateMirrorOutbox` mutation requires an argument of type `CreateMirrorOutboxVariables`:
 const createMirrorOutboxVars: CreateMirrorOutboxVariables = {
-  tenantId: ..., 
-  businessId: ..., 
-  entityType: ..., 
-  operation: ..., 
-  recordId: ..., 
-  payload: ..., 
+  tenantId: ...,
+  businessId: ...,
+  entityType: ...,
+  operation: ...,
+  recordId: ...,
+  payload: ...,
 };
 
 // Call the `createMirrorOutboxRef()` function to get a reference to the mutation.
@@ -8534,10 +9845,10 @@ import { connectorConfig, updateMirrorOutbox, UpdateMirrorOutboxVariables } from
 
 // The `UpdateMirrorOutbox` mutation requires an argument of type `UpdateMirrorOutboxVariables`:
 const updateMirrorOutboxVars: UpdateMirrorOutboxVariables = {
-  id: ..., 
-  status: ..., 
-  attempts: ..., 
-  nextAttemptAt: ..., 
+  id: ...,
+  status: ...,
+  attempts: ...,
+  nextAttemptAt: ...,
   lastError: ..., // optional
   deliveredAt: ..., // optional
 };
@@ -8569,10 +9880,10 @@ import { connectorConfig, updateMirrorOutboxRef, UpdateMirrorOutboxVariables } f
 
 // The `UpdateMirrorOutbox` mutation requires an argument of type `UpdateMirrorOutboxVariables`:
 const updateMirrorOutboxVars: UpdateMirrorOutboxVariables = {
-  id: ..., 
-  status: ..., 
-  attempts: ..., 
-  nextAttemptAt: ..., 
+  id: ...,
+  status: ...,
+  attempts: ...,
+  nextAttemptAt: ...,
   lastError: ..., // optional
   deliveredAt: ..., // optional
 };

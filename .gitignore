@@ -12,6 +12,8 @@
 
 # testing
 /coverage
+**/playwright-report/
+**/test-results/
 
 # next.js
 /.next/
@@ -48,6 +50,9 @@ next-env.d.ts
 # firebase
 firebase-debug.log
 firestore-debug.log
+# Firebase Auth exports contain password hashes and salts.
+**/accounts*.json
+**/firebase-auth-export*.json
 
 # Dependencies
 node_modules/

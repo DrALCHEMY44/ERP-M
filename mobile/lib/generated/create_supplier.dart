@@ -4,53 +4,110 @@ class CreateSupplierVariablesBuilder {
   String tenantId;
   String businessId;
   String supplierName;
-  Optional<String> _phoneNumber = Optional.optional(nativeFromJson, nativeToJson);
+  Optional<String> _phoneNumber = Optional.optional(
+    nativeFromJson,
+    nativeToJson,
+  );
   Optional<String> _email = Optional.optional(nativeFromJson, nativeToJson);
+  Optional<String> _location = Optional.optional(nativeFromJson, nativeToJson);
+  Optional<String> _productsSupplied = Optional.optional(
+    nativeFromJson,
+    nativeToJson,
+  );
+  Optional<String> _paymentStatus = Optional.optional(
+    nativeFromJson,
+    nativeToJson,
+  );
+  Optional<String> _notes = Optional.optional(nativeFromJson, nativeToJson);
 
-  final FirebaseDataConnect _dataConnect;  CreateSupplierVariablesBuilder phoneNumber(String? t) {
-   _phoneNumber.value = t;
-   return this;
+  final FirebaseDataConnect _dataConnect;
+  CreateSupplierVariablesBuilder phoneNumber(String? t) {
+    _phoneNumber.value = t;
+    return this;
   }
+
   CreateSupplierVariablesBuilder email(String? t) {
-   _email.value = t;
-   return this;
+    _email.value = t;
+    return this;
   }
 
-  CreateSupplierVariablesBuilder(this._dataConnect, {required  this.tenantId,required  this.businessId,required  this.supplierName,});
-  Deserializer<CreateSupplierData> dataDeserializer = (dynamic json)  => CreateSupplierData.fromJson(jsonDecode(json));
-  Serializer<CreateSupplierVariables> varsSerializer = (CreateSupplierVariables vars) => jsonEncode(vars.toJson());
-  Future<OperationResult<CreateSupplierData, CreateSupplierVariables>> execute() {
+  CreateSupplierVariablesBuilder location(String? t) {
+    _location.value = t;
+    return this;
+  }
+
+  CreateSupplierVariablesBuilder productsSupplied(String? t) {
+    _productsSupplied.value = t;
+    return this;
+  }
+
+  CreateSupplierVariablesBuilder paymentStatus(String? t) {
+    _paymentStatus.value = t;
+    return this;
+  }
+
+  CreateSupplierVariablesBuilder notes(String? t) {
+    _notes.value = t;
+    return this;
+  }
+
+  CreateSupplierVariablesBuilder(
+    this._dataConnect, {
+    required this.tenantId,
+    required this.businessId,
+    required this.supplierName,
+  });
+  Deserializer<CreateSupplierData> dataDeserializer = (dynamic json) =>
+      CreateSupplierData.fromJson(jsonDecode(json));
+  Serializer<CreateSupplierVariables> varsSerializer =
+      (CreateSupplierVariables vars) => jsonEncode(vars.toJson());
+  Future<OperationResult<CreateSupplierData, CreateSupplierVariables>>
+  execute() {
     return ref().execute();
   }
 
   MutationRef<CreateSupplierData, CreateSupplierVariables> ref() {
-    CreateSupplierVariables vars= CreateSupplierVariables(tenantId: tenantId,businessId: businessId,supplierName: supplierName,phoneNumber: _phoneNumber,email: _email,);
-    return _dataConnect.mutation("CreateSupplier", dataDeserializer, varsSerializer, vars);
+    CreateSupplierVariables vars = CreateSupplierVariables(
+      tenantId: tenantId,
+      businessId: businessId,
+      supplierName: supplierName,
+      phoneNumber: _phoneNumber,
+      email: _email,
+      location: _location,
+      productsSupplied: _productsSupplied,
+      paymentStatus: _paymentStatus,
+      notes: _notes,
+    );
+    return _dataConnect.mutation(
+      "CreateSupplier",
+      dataDeserializer,
+      varsSerializer,
+      vars,
+    );
   }
 }
 
 @immutable
 class CreateSupplierSupplierInsert {
   final String id;
-  CreateSupplierSupplierInsert.fromJson(dynamic json):
-  
-  id = nativeFromJson<String>(json['id']);
+  CreateSupplierSupplierInsert.fromJson(dynamic json)
+    : id = nativeFromJson<String>(json['id']);
   @override
   bool operator ==(Object other) {
-    if(identical(this, other)) {
+    if (identical(this, other)) {
       return true;
     }
-    if(other.runtimeType != runtimeType) {
+    if (other.runtimeType != runtimeType) {
       return false;
     }
 
-    final CreateSupplierSupplierInsert otherTyped = other as CreateSupplierSupplierInsert;
+    final CreateSupplierSupplierInsert otherTyped =
+        other as CreateSupplierSupplierInsert;
     return id == otherTyped.id;
-    
   }
+
   @override
   int get hashCode => id.hashCode;
-  
 
   Map<String, dynamic> toJson() {
     Map<String, dynamic> json = {};
@@ -58,33 +115,31 @@ class CreateSupplierSupplierInsert {
     return json;
   }
 
-  CreateSupplierSupplierInsert({
-    required this.id,
-  });
+  CreateSupplierSupplierInsert({required this.id});
 }
 
 @immutable
 class CreateSupplierData {
   final CreateSupplierSupplierInsert supplier_insert;
-  CreateSupplierData.fromJson(dynamic json):
-  
-  supplier_insert = CreateSupplierSupplierInsert.fromJson(json['supplier_insert']);
+  CreateSupplierData.fromJson(dynamic json)
+    : supplier_insert = CreateSupplierSupplierInsert.fromJson(
+        json['supplier_insert'],
+      );
   @override
   bool operator ==(Object other) {
-    if(identical(this, other)) {
+    if (identical(this, other)) {
       return true;
     }
-    if(other.runtimeType != runtimeType) {
+    if (other.runtimeType != runtimeType) {
       return false;
     }
 
     final CreateSupplierData otherTyped = other as CreateSupplierData;
     return supplier_insert == otherTyped.supplier_insert;
-    
   }
+
   @override
   int get hashCode => supplier_insert.hashCode;
-  
 
   Map<String, dynamic> toJson() {
     Map<String, dynamic> json = {};
@@ -92,9 +147,7 @@ class CreateSupplierData {
     return json;
   }
 
-  CreateSupplierData({
-    required this.supplier_insert,
-  });
+  CreateSupplierData({required this.supplier_insert});
 }
 
 @immutable
@@ -102,58 +155,105 @@ class CreateSupplierVariables {
   final String tenantId;
   final String businessId;
   final String supplierName;
-  late final Optional<String>phoneNumber;
-  late final Optional<String>email;
-  @Deprecated('fromJson is deprecated for Variable classes as they are no longer required for deserialization.')
-  CreateSupplierVariables.fromJson(Map<String, dynamic> json):
-  
-  tenantId = nativeFromJson<String>(json['tenantId']),
-  businessId = nativeFromJson<String>(json['businessId']),
-  supplierName = nativeFromJson<String>(json['supplierName']) {
-  
-  
-  
-  
-  
+  late final Optional<String> phoneNumber;
+  late final Optional<String> email;
+  late final Optional<String> location;
+  late final Optional<String> productsSupplied;
+  late final Optional<String> paymentStatus;
+  late final Optional<String> notes;
+  @Deprecated(
+    'fromJson is deprecated for Variable classes as they are no longer required for deserialization.',
+  )
+  CreateSupplierVariables.fromJson(Map<String, dynamic> json)
+    : tenantId = nativeFromJson<String>(json['tenantId']),
+      businessId = nativeFromJson<String>(json['businessId']),
+      supplierName = nativeFromJson<String>(json['supplierName']) {
     phoneNumber = Optional.optional(nativeFromJson, nativeToJson);
-    phoneNumber.value = json['phoneNumber'] == null ? null : nativeFromJson<String>(json['phoneNumber']);
-  
-  
+    phoneNumber.value = json['phoneNumber'] == null
+        ? null
+        : nativeFromJson<String>(json['phoneNumber']);
+
     email = Optional.optional(nativeFromJson, nativeToJson);
-    email.value = json['email'] == null ? null : nativeFromJson<String>(json['email']);
-  
+    email.value = json['email'] == null
+        ? null
+        : nativeFromJson<String>(json['email']);
+
+    location = Optional.optional(nativeFromJson, nativeToJson);
+    location.value = json['location'] == null
+        ? null
+        : nativeFromJson<String>(json['location']);
+
+    productsSupplied = Optional.optional(nativeFromJson, nativeToJson);
+    productsSupplied.value = json['productsSupplied'] == null
+        ? null
+        : nativeFromJson<String>(json['productsSupplied']);
+
+    paymentStatus = Optional.optional(nativeFromJson, nativeToJson);
+    paymentStatus.value = json['paymentStatus'] == null
+        ? null
+        : nativeFromJson<String>(json['paymentStatus']);
+
+    notes = Optional.optional(nativeFromJson, nativeToJson);
+    notes.value = json['notes'] == null
+        ? null
+        : nativeFromJson<String>(json['notes']);
   }
   @override
   bool operator ==(Object other) {
-    if(identical(this, other)) {
+    if (identical(this, other)) {
       return true;
     }
-    if(other.runtimeType != runtimeType) {
+    if (other.runtimeType != runtimeType) {
       return false;
     }
 
     final CreateSupplierVariables otherTyped = other as CreateSupplierVariables;
-    return tenantId == otherTyped.tenantId && 
-    businessId == otherTyped.businessId && 
-    supplierName == otherTyped.supplierName && 
-    phoneNumber == otherTyped.phoneNumber && 
-    email == otherTyped.email;
-    
+    return tenantId == otherTyped.tenantId &&
+        businessId == otherTyped.businessId &&
+        supplierName == otherTyped.supplierName &&
+        phoneNumber == otherTyped.phoneNumber &&
+        email == otherTyped.email &&
+        location == otherTyped.location &&
+        productsSupplied == otherTyped.productsSupplied &&
+        paymentStatus == otherTyped.paymentStatus &&
+        notes == otherTyped.notes;
   }
+
   @override
-  int get hashCode => Object.hashAll([tenantId.hashCode, businessId.hashCode, supplierName.hashCode, phoneNumber.hashCode, email.hashCode]);
-  
+  int get hashCode => Object.hashAll([
+    tenantId.hashCode,
+    businessId.hashCode,
+    supplierName.hashCode,
+    phoneNumber.hashCode,
+    email.hashCode,
+    location.hashCode,
+    productsSupplied.hashCode,
+    paymentStatus.hashCode,
+    notes.hashCode,
+  ]);
 
   Map<String, dynamic> toJson() {
     Map<String, dynamic> json = {};
     json['tenantId'] = nativeToJson<String>(tenantId);
     json['businessId'] = nativeToJson<String>(businessId);
     json['supplierName'] = nativeToJson<String>(supplierName);
-    if(phoneNumber.state == OptionalState.set) {
+    if (phoneNumber.state == OptionalState.set) {
       json['phoneNumber'] = phoneNumber.toJson();
     }
-    if(email.state == OptionalState.set) {
+    if (email.state == OptionalState.set) {
       json['email'] = email.toJson();
+    }
+    if (location.state == OptionalState.set) {
+      json['location'] = location.toJson();
+    }
+    if (productsSupplied.state == OptionalState.set) {
+      json['productsSupplied'] = productsSupplied.toJson();
+    }
+    if (paymentStatus.state == OptionalState.set) {
+      json['paymentStatus'] = paymentStatus.toJson();
+    }
+    if (notes.state == OptionalState.set) {
+      json['notes'] = notes.toJson();
     }
     return json;
   }
@@ -164,6 +264,9 @@ class CreateSupplierVariables {
     required this.supplierName,
     required this.phoneNumber,
     required this.email,
+    required this.location,
+    required this.productsSupplied,
+    required this.paymentStatus,
+    required this.notes,
   });
 }
-

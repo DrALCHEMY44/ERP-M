@@ -1,5 +1,8 @@
 # Online demo readiness
 
+> Historical checkpoint from 11 August 2026. It is superseded by
+> `IMPLEMENTATION_STATUS.md` and the Neon-only `DEPLOYMENT.md` runbook.
+
 Status as of 2026-08-11. `PASS` means verified locally; cloud-dependent claims remain `BLOCKED` until tested against the new HTTPS deployment.
 
 | Requirement | Current status | Evidence | Blocking issue | Required correction | Verification method | Final status |

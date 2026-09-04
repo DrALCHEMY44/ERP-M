@@ -8,16 +8,37 @@ class VerifyEmployeeAccessVariablesBuilder {
   String businessId;
 
   final FirebaseDataConnect _dataConnect;
-  VerifyEmployeeAccessVariablesBuilder(this._dataConnect, {required  this.fullName,required  this.role,required  this.accessCodeHash,required  this.tenantId,required  this.businessId,});
-  Deserializer<VerifyEmployeeAccessData> dataDeserializer = (dynamic json)  => VerifyEmployeeAccessData.fromJson(jsonDecode(json));
-  Serializer<VerifyEmployeeAccessVariables> varsSerializer = (VerifyEmployeeAccessVariables vars) => jsonEncode(vars.toJson());
-  Future<QueryResult<VerifyEmployeeAccessData, VerifyEmployeeAccessVariables>> execute({QueryFetchPolicy fetchPolicy = QueryFetchPolicy.preferCache}) {
+  VerifyEmployeeAccessVariablesBuilder(
+    this._dataConnect, {
+    required this.fullName,
+    required this.role,
+    required this.accessCodeHash,
+    required this.tenantId,
+    required this.businessId,
+  });
+  Deserializer<VerifyEmployeeAccessData> dataDeserializer = (dynamic json) =>
+      VerifyEmployeeAccessData.fromJson(jsonDecode(json));
+  Serializer<VerifyEmployeeAccessVariables> varsSerializer =
+      (VerifyEmployeeAccessVariables vars) => jsonEncode(vars.toJson());
+  Future<QueryResult<VerifyEmployeeAccessData, VerifyEmployeeAccessVariables>>
+  execute({QueryFetchPolicy fetchPolicy = QueryFetchPolicy.preferCache}) {
     return ref().execute(fetchPolicy: fetchPolicy);
   }
 
   QueryRef<VerifyEmployeeAccessData, VerifyEmployeeAccessVariables> ref() {
-    VerifyEmployeeAccessVariables vars= VerifyEmployeeAccessVariables(fullName: fullName,role: role,accessCodeHash: accessCodeHash,tenantId: tenantId,businessId: businessId,);
-    return _dataConnect.query("verifyEmployeeAccess", dataDeserializer, varsSerializer, vars);
+    VerifyEmployeeAccessVariables vars = VerifyEmployeeAccessVariables(
+      fullName: fullName,
+      role: role,
+      accessCodeHash: accessCodeHash,
+      tenantId: tenantId,
+      businessId: businessId,
+    );
+    return _dataConnect.query(
+      "verifyEmployeeAccess",
+      dataDeserializer,
+      varsSerializer,
+      vars,
+    );
   }
 }
 
@@ -29,35 +50,43 @@ class VerifyEmployeeAccessUsers {
   final String? fullName;
   final String tenantId;
   final String businessId;
-  VerifyEmployeeAccessUsers.fromJson(dynamic json):
-  
-  id = nativeFromJson<String>(json['id']),
-  email = nativeFromJson<String>(json['email']),
-  role = nativeFromJson<String>(json['role']),
-  fullName = json['fullName'] == null ? null : nativeFromJson<String>(json['fullName']),
-  tenantId = nativeFromJson<String>(json['tenantId']),
-  businessId = nativeFromJson<String>(json['businessId']);
+  VerifyEmployeeAccessUsers.fromJson(dynamic json)
+    : id = nativeFromJson<String>(json['id']),
+      email = nativeFromJson<String>(json['email']),
+      role = nativeFromJson<String>(json['role']),
+      fullName = json['fullName'] == null
+          ? null
+          : nativeFromJson<String>(json['fullName']),
+      tenantId = nativeFromJson<String>(json['tenantId']),
+      businessId = nativeFromJson<String>(json['businessId']);
   @override
   bool operator ==(Object other) {
-    if(identical(this, other)) {
+    if (identical(this, other)) {
       return true;
     }
-    if(other.runtimeType != runtimeType) {
+    if (other.runtimeType != runtimeType) {
       return false;
     }
 
-    final VerifyEmployeeAccessUsers otherTyped = other as VerifyEmployeeAccessUsers;
-    return id == otherTyped.id && 
-    email == otherTyped.email && 
-    role == otherTyped.role && 
-    fullName == otherTyped.fullName && 
-    tenantId == otherTyped.tenantId && 
-    businessId == otherTyped.businessId;
-    
+    final VerifyEmployeeAccessUsers otherTyped =
+        other as VerifyEmployeeAccessUsers;
+    return id == otherTyped.id &&
+        email == otherTyped.email &&
+        role == otherTyped.role &&
+        fullName == otherTyped.fullName &&
+        tenantId == otherTyped.tenantId &&
+        businessId == otherTyped.businessId;
   }
+
   @override
-  int get hashCode => Object.hashAll([id.hashCode, email.hashCode, role.hashCode, fullName.hashCode, tenantId.hashCode, businessId.hashCode]);
-  
+  int get hashCode => Object.hashAll([
+    id.hashCode,
+    email.hashCode,
+    role.hashCode,
+    fullName.hashCode,
+    tenantId.hashCode,
+    businessId.hashCode,
+  ]);
 
   Map<String, dynamic> toJson() {
     Map<String, dynamic> json = {};
@@ -85,27 +114,26 @@ class VerifyEmployeeAccessUsers {
 @immutable
 class VerifyEmployeeAccessData {
   final List<VerifyEmployeeAccessUsers> users;
-  VerifyEmployeeAccessData.fromJson(dynamic json):
-  
-  users = (json['users'] as List<dynamic>)
-        .map((e) => VerifyEmployeeAccessUsers.fromJson(e))
-        .toList();
+  VerifyEmployeeAccessData.fromJson(dynamic json)
+    : users = (json['users'] as List<dynamic>)
+          .map((e) => VerifyEmployeeAccessUsers.fromJson(e))
+          .toList();
   @override
   bool operator ==(Object other) {
-    if(identical(this, other)) {
+    if (identical(this, other)) {
       return true;
     }
-    if(other.runtimeType != runtimeType) {
+    if (other.runtimeType != runtimeType) {
       return false;
     }
 
-    final VerifyEmployeeAccessData otherTyped = other as VerifyEmployeeAccessData;
+    final VerifyEmployeeAccessData otherTyped =
+        other as VerifyEmployeeAccessData;
     return users == otherTyped.users;
-    
   }
+
   @override
   int get hashCode => users.hashCode;
-  
 
   Map<String, dynamic> toJson() {
     Map<String, dynamic> json = {};
@@ -113,9 +141,7 @@ class VerifyEmployeeAccessData {
     return json;
   }
 
-  VerifyEmployeeAccessData({
-    required this.users,
-  });
+  VerifyEmployeeAccessData({required this.users});
 }
 
 @immutable
@@ -125,34 +151,41 @@ class VerifyEmployeeAccessVariables {
   final String accessCodeHash;
   final String tenantId;
   final String businessId;
-  @Deprecated('fromJson is deprecated for Variable classes as they are no longer required for deserialization.')
-  VerifyEmployeeAccessVariables.fromJson(Map<String, dynamic> json):
-  
-  fullName = nativeFromJson<String>(json['fullName']),
-  role = nativeFromJson<String>(json['role']),
-  accessCodeHash = nativeFromJson<String>(json['accessCodeHash']),
-  tenantId = nativeFromJson<String>(json['tenantId']),
-  businessId = nativeFromJson<String>(json['businessId']);
+  @Deprecated(
+    'fromJson is deprecated for Variable classes as they are no longer required for deserialization.',
+  )
+  VerifyEmployeeAccessVariables.fromJson(Map<String, dynamic> json)
+    : fullName = nativeFromJson<String>(json['fullName']),
+      role = nativeFromJson<String>(json['role']),
+      accessCodeHash = nativeFromJson<String>(json['accessCodeHash']),
+      tenantId = nativeFromJson<String>(json['tenantId']),
+      businessId = nativeFromJson<String>(json['businessId']);
   @override
   bool operator ==(Object other) {
-    if(identical(this, other)) {
+    if (identical(this, other)) {
       return true;
     }
-    if(other.runtimeType != runtimeType) {
+    if (other.runtimeType != runtimeType) {
       return false;
     }
 
-    final VerifyEmployeeAccessVariables otherTyped = other as VerifyEmployeeAccessVariables;
-    return fullName == otherTyped.fullName && 
-    role == otherTyped.role && 
-    accessCodeHash == otherTyped.accessCodeHash && 
-    tenantId == otherTyped.tenantId && 
-    businessId == otherTyped.businessId;
-    
+    final VerifyEmployeeAccessVariables otherTyped =
+        other as VerifyEmployeeAccessVariables;
+    return fullName == otherTyped.fullName &&
+        role == otherTyped.role &&
+        accessCodeHash == otherTyped.accessCodeHash &&
+        tenantId == otherTyped.tenantId &&
+        businessId == otherTyped.businessId;
   }
+
   @override
-  int get hashCode => Object.hashAll([fullName.hashCode, role.hashCode, accessCodeHash.hashCode, tenantId.hashCode, businessId.hashCode]);
-  
+  int get hashCode => Object.hashAll([
+    fullName.hashCode,
+    role.hashCode,
+    accessCodeHash.hashCode,
+    tenantId.hashCode,
+    businessId.hashCode,
+  ]);
 
   Map<String, dynamic> toJson() {
     Map<String, dynamic> json = {};
@@ -172,4 +205,3 @@ class VerifyEmployeeAccessVariables {
     required this.businessId,
   });
 }
-

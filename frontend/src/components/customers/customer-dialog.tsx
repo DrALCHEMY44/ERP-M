@@ -79,8 +79,6 @@ export function CustomerDialog({ customer, open, onOpenChange, onSave }: Custome
     const payload: Partial<Customer> = {
       ...values,
       createdAt: customer?.createdAt || new Date().toISOString(),
-      totalOrders: customer?.totalOrders || 0,
-      totalSpent: customer?.totalSpent || 0,
     }
     
     // Only include ID if it exists (prevents undefined field error)

@@ -30,7 +30,7 @@ export default function AnnouncementsPage() {
     if (!user) return
     if (!silent) setLoading(true)
     try {
-      const response = await fetch("/api/announcements", { headers:{ Authorization:`Bearer ${await user.getIdToken()}` }, cache:"no-store" })
+      const response = await fetch("/api/announcements", { cache:"no-store" })
       const data = await response.json()
       if (!response.ok) throw new Error(data.error)
       setItems(data.announcements); setCanPublish(data.canPublish)
@@ -44,7 +44,7 @@ export default function AnnouncementsPage() {
     if (!user || title.trim().length<3 || message.trim().length<3) return
     setSaving(true)
     try {
-      const response=await fetch("/api/announcements",{method:"POST",headers:{Authorization:`Bearer ${await user.getIdToken()}`,"Content-Type":"application/json"},body:JSON.stringify({title,message,priority})})
+      const response=await fetch("/api/announcements",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({title,message,priority})})
       const data=await response.json(); if(!response.ok) throw new Error(data.error)
       setOpen(false); setTitle(""); setMessage(""); setPriority("NORMAL"); await load(true)
       window.dispatchEvent(new CustomEvent("smarterp:announcement")); toast({title:"Announcement published",description:"Everyone in the company can now view it."})
@@ -56,7 +56,7 @@ export default function AnnouncementsPage() {
     const previous=items
     setItems(current=>current.map(x=>x.id===item.id?{...x,is_read:true}:x))
     try{
-      const response=await fetch("/api/announcements",{method:"PATCH",headers:{Authorization:`Bearer ${await user.getIdToken()}`,"Content-Type":"application/json"},body:JSON.stringify({id:item.id})})
+      const response=await fetch("/api/announcements",{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({id:item.id})})
       if(!response.ok)throw new Error("Could not mark announcement as read")
     }catch{
       setItems(previous)

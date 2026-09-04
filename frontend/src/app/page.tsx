@@ -17,7 +17,7 @@ export default function HomePage() {
         </Link>
         <div className="flex items-center gap-2">
           <Link href="/login" className="rounded-xl px-4 py-2 text-sm font-semibold text-slate-300 transition hover:bg-white/5 hover:text-white">Sign in</Link>
-          <Link href="/register" className="rounded-xl bg-white px-4 py-2 text-sm font-bold text-slate-950 transition hover:bg-cyan-100">Start free</Link>
+          <Link href="/register" className="rounded-xl bg-white px-4 py-2 text-sm font-bold text-slate-950 transition hover:bg-cyan-100">Get started</Link>
         </div>
       </nav>
 
@@ -31,7 +31,7 @@ export default function HomePage() {
             <Link href="/register" className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-cyan-400 to-blue-500 px-6 py-3.5 font-bold text-slate-950 shadow-xl shadow-blue-500/20 transition hover:-translate-y-0.5">Create your workspace <ArrowRight className="size-4" /></Link>
             <Link href="/login" className="inline-flex items-center justify-center rounded-2xl border border-white/15 bg-white/5 px-6 py-3.5 font-bold backdrop-blur transition hover:bg-white/10">Sign in to your account</Link>
           </div>
-          <div className="mt-7 flex flex-wrap gap-x-6 gap-y-2 text-sm text-slate-400">{["Free to start", "Secure role access", "Web + mobile"].map(item => <span key={item} className="flex items-center gap-2"><Check className="size-4 text-emerald-400" />{item}</span>)}</div>
+          <div className="mt-7 flex flex-wrap gap-x-6 gap-y-2 text-sm text-slate-400">{["Fast workspace setup", "Secure role access", "Web + mobile"].map(item => <span key={item} className="flex items-center gap-2"><Check className="size-4 text-emerald-400" />{item}</span>)}</div>
         </div>
 
         <div className="relative z-10">
@@ -59,7 +59,7 @@ export default function HomePage() {
         <div className="mx-auto max-w-7xl"><div className="max-w-2xl"><p className="text-xs font-bold uppercase tracking-[.24em] text-cyan-300">Everything connected</p><h2 className="mt-3 font-headline text-3xl font-bold tracking-tight sm:text-4xl">Less busywork. Better decisions. Faster growth.</h2></div><div className="mt-12 grid gap-4 md:grid-cols-3">{features.map(({icon:Icon,title,text})=><article key={title} className="rounded-3xl border border-white/10 bg-[#0b1727] p-7 transition hover:-translate-y-1 hover:border-cyan-300/30"><span className="grid size-12 place-items-center rounded-2xl bg-gradient-to-br from-cyan-400/20 to-blue-500/20 text-cyan-300"><Icon /></span><h3 className="mt-6 text-lg font-bold">{title}</h3><p className="mt-3 leading-7 text-slate-400">{text}</p></article>)}</div></div>
       </section>
 
-      <section className="px-5 py-24 text-center lg:px-8"><ShieldCheck className="mx-auto size-10 text-emerald-400"/><h2 className="mx-auto mt-5 max-w-2xl font-headline text-3xl font-bold sm:text-4xl">Your next level of operations starts here.</h2><p className="mx-auto mt-4 max-w-xl text-slate-400">Create your secure company workspace and bring your entire operation into focus.</p><Link href="/register" className="mt-8 inline-flex items-center gap-2 rounded-2xl bg-white px-6 py-3.5 font-bold text-slate-950">Get started free <Zap className="size-4" /></Link></section>
+      <section className="px-5 py-24 text-center lg:px-8"><ShieldCheck className="mx-auto size-10 text-emerald-400"/><h2 className="mx-auto mt-5 max-w-2xl font-headline text-3xl font-bold sm:text-4xl">Your next level of operations starts here.</h2><p className="mx-auto mt-4 max-w-xl text-slate-400">Create your secure company workspace and bring your entire operation into focus.</p><Link href="/register" className="mt-8 inline-flex items-center gap-2 rounded-2xl bg-white px-6 py-3.5 font-bold text-slate-950">Get started <Zap className="size-4" /></Link></section>
     </main>
   )
 }

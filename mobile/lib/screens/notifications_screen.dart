@@ -128,15 +128,15 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       );
       await _load();
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Announcement published')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Announcement published')));
       }
     } catch (exception) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(exception.toString())),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(exception.toString())));
       }
     } finally {
       title.dispose();
@@ -149,9 +149,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     setState(() {
       items = items
           .map(
-            (entry) => entry.id == item.id
-                ? entry.copyWith(isRead: true)
-                : entry,
+            (entry) =>
+                entry.id == item.id ? entry.copyWith(isRead: true) : entry,
           )
           .toList();
     });
@@ -171,10 +170,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           style: TextStyle(fontWeight: FontWeight.w800),
         ),
         actions: [
-          IconButton(
-            onPressed: _load,
-            icon: const Icon(Icons.refresh_rounded),
-          ),
+          IconButton(onPressed: _load, icon: const Icon(Icons.refresh_rounded)),
         ],
       ),
       drawer: const AppDrawer(currentRoute: '/notifications'),
@@ -223,7 +219,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   Widget _announcementCard(AnnouncementItem item) {
     final urgent = item.priority == 'URGENT';
     final important = item.priority == 'IMPORTANT';
-    final color = urgent ? Colors.red : (important ? Colors.orange : Colors.blue);
+    final color = urgent
+        ? Colors.red
+        : (important ? Colors.orange : Colors.blue);
     return Card(
       color: item.isRead ? null : color.withValues(alpha: .06),
       margin: const EdgeInsets.only(bottom: 12),

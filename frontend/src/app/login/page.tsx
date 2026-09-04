@@ -8,8 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
-import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth"
-import { auth } from "@/lib/firebase"
+import { authClient } from "@/lib/auth/client"
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/hooks/use-auth"
 
@@ -20,6 +19,7 @@ export default function LoginPage() {
   const [rememberMe, setRememberMe] = React.useState(false)
   const [isLoading, setIsLoading] = React.useState(false)
   const [isGoogleLoading, setIsGoogleLoading] = React.useState(false)
+  const [isResettingPassword, setIsResettingPassword] = React.useState(false)
   const router = useRouter()
   const { toast } = useToast()
   const { refetchProfile } = useAuth()
@@ -27,10 +27,15 @@ export default function LoginPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!email || !password) return
-    
+
     setIsLoading(true)
     try {
-      await signInWithEmailAndPassword(auth, email, password)
+      const result = await authClient.signIn.email({
+        email: email.trim().toLowerCase(),
+        password,
+        rememberMe,
+      })
+      if (result.error) throw new Error(result.error.message)
       await refetchProfile()
       toast({
         title: "Login Successful",
@@ -50,15 +55,9 @@ export default function LoginPage() {
 
   const handleGoogleSignIn = async () => {
     setIsGoogleLoading(true)
-    const provider = new GoogleAuthProvider()
     try {
-      await signInWithPopup(auth, provider)
-      await refetchProfile()
-      toast({
-        title: "Google Sign-In Successful",
-        description: "Successfully authenticated with Google.",
-      })
-      router.replace("/dashboard")
+      const result = await authClient.signIn.social({ provider: "google", callbackURL: "/dashboard" })
+      if (result.error) throw new Error(result.error.message)
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -67,6 +66,39 @@ export default function LoginPage() {
       })
     } finally {
       setIsGoogleLoading(false)
+    }
+  }
+
+  const handlePasswordReset = async () => {
+    const normalizedEmail = email.trim()
+    if (!normalizedEmail) {
+      toast({
+        variant: "destructive",
+        title: "Email Required",
+        description: "Enter your work email before requesting a password reset.",
+      })
+      return
+    }
+
+    setIsResettingPassword(true)
+    try {
+      const result = await authClient.requestPasswordReset({
+        email: normalizedEmail.toLowerCase(),
+        redirectTo: `${window.location.origin}/reset-password`,
+      })
+      if (result.error) throw new Error(result.error.message)
+      toast({
+        title: "Reset Email Sent",
+        description: "Check your inbox for instructions to reset your password.",
+      })
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Reset Failed",
+        description: error.message || "Could not send the password reset email.",
+      })
+    } finally {
+      setIsResettingPassword(false)
     }
   }
 
@@ -116,9 +148,14 @@ export default function LoginPage() {
                 <Label htmlFor="login-password" className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
                   Password
                 </Label>
-                <Link href="#" className="text-[10px] font-bold text-blue-500 hover:text-blue-400 transition-colors">
-                  Forgot password?
-                </Link>
+                <button
+                  type="button"
+                  onClick={handlePasswordReset}
+                  disabled={isResettingPassword}
+                  className="text-[10px] font-bold text-blue-500 hover:text-blue-400 transition-colors disabled:opacity-50"
+                >
+                  {isResettingPassword ? "Sending…" : "Forgot password?"}
+                </button>
               </div>
               <div className="relative">
                 <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-slate-500" />
@@ -133,6 +170,7 @@ export default function LoginPage() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
                   className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
                 >
                   {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
@@ -142,9 +180,9 @@ export default function LoginPage() {
 
             {/* Remember Me */}
             <div className="flex items-center space-x-2 pt-1">
-              <Checkbox 
-                id="remember" 
-                checked={rememberMe} 
+              <Checkbox
+                id="remember"
+                checked={rememberMe}
                 onCheckedChange={(checked) => setRememberMe(!!checked)}
                 className="border-slate-700 bg-[#161f30] data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
               />
@@ -218,7 +256,7 @@ export default function LoginPage() {
       {/* Bottom Footer Row */}
       <div className="w-full text-center py-4 border-t border-slate-200">
         <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">
-          OHADA Compliant • Secured in Cameroon • AES-256 Encrypted
+          Tenant-isolated • Private object storage • Role-based access
         </p>
       </div>
     </div>

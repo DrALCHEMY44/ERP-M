@@ -1,5 +1,8 @@
 # Defence cloud-creation checklist
 
+> Historical Firebase/Data Connect checklist. Do not use it for the current
+> release; follow `IMPLEMENTATION_STATUS.md` and `DEPLOYMENT.md`.
+
 No step in this checklist is authorized until the final go/no-go checkpoint is approved. Never target `studio-8058744913-5a601`.
 
 ## Resources

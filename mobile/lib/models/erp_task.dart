@@ -8,12 +8,18 @@ enum TaskStatus {
 
   String get displayName {
     switch (this) {
-      case TaskStatus.pending: return 'Pending';
-      case TaskStatus.ongoing: return 'Ongoing';
-      case TaskStatus.completed: return 'Completed';
-      case TaskStatus.cancelled: return 'Cancelled';
-      case TaskStatus.late: return 'Late';
-      case TaskStatus.overdue: return 'Overdue';
+      case TaskStatus.pending:
+        return 'Pending';
+      case TaskStatus.ongoing:
+        return 'Ongoing';
+      case TaskStatus.completed:
+        return 'Completed';
+      case TaskStatus.cancelled:
+        return 'Cancelled';
+      case TaskStatus.late:
+        return 'Late';
+      case TaskStatus.overdue:
+        return 'Overdue';
     }
   }
 }
@@ -26,10 +32,14 @@ enum TaskPriority {
 
   String get displayName {
     switch (this) {
-      case TaskPriority.low: return 'Low';
-      case TaskPriority.medium: return 'Medium';
-      case TaskPriority.high: return 'High';
-      case TaskPriority.urgent: return 'Urgent';
+      case TaskPriority.low:
+        return 'Low';
+      case TaskPriority.medium:
+        return 'Medium';
+      case TaskPriority.high:
+        return 'High';
+      case TaskPriority.urgent:
+        return 'Urgent';
     }
   }
 }
@@ -63,7 +73,8 @@ class ErpTask {
     required this.dueDate,
   });
 
-  bool get isOverdue => dueDate.isBefore(DateTime.now()) && status != TaskStatus.completed;
+  bool get isOverdue =>
+      dueDate.isBefore(DateTime.now()) && status != TaskStatus.completed;
 
   ErpTask copyWith({
     String? id,

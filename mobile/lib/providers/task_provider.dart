@@ -18,6 +18,12 @@ class TaskProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  void reset() {
+    _tasks.clear();
+    _isLoading = false;
+    notifyListeners();
+  }
+
   Future<Map<String, dynamic>> _operation(
     String operation, [
     Map<String, dynamic> variables = const {},
@@ -31,11 +37,24 @@ class TaskProvider with ChangeNotifier {
 
   Future<void> loadData() async {
     if (AuthService.currentUser == null) return;
+    if (!AuthService.hasPermission('viewTasks')) {
+      _tasks.clear();
+      notifyListeners();
+      return;
+    }
     setLoading(true);
     try {
       final assignedOnly = AuthService.currentUser?.role == UserRole.staff;
-      final response = await _operation(
-        assignedOnly ? 'listTasksAssignedToUser' : 'listTasksByBusiness',
+      final response = await ApiService.request(
+        '/api/data',
+        method: 'POST',
+        body: {
+          'operation': assignedOnly
+              ? 'listTasksAssignedToUser'
+              : 'listTasksByBusiness',
+          'variables': {},
+        },
+        retryTransient: true,
       );
       final data = response['data'] as Map<String, dynamic>;
       final rows = data['tasks'] as List<dynamic>? ?? [];
@@ -78,6 +97,7 @@ class TaskProvider with ChangeNotifier {
     'COMPLETED' => TaskStatus.completed,
     'ONGOING' => TaskStatus.ongoing,
     'LATE' => TaskStatus.late,
+    'CANCELLED' => TaskStatus.cancelled,
     _ => TaskStatus.pending,
   };
 
@@ -101,7 +121,9 @@ class TaskProvider with ChangeNotifier {
       'title': title,
       'description': description,
       'status': 'PENDING',
-      'priority': priority.name.toUpperCase(),
+      'priority': priority == TaskPriority.urgent
+          ? 'HIGH'
+          : priority.name.toUpperCase(),
       'dueDate': dueDate.toUtc().toIso8601String(),
       'assignedToId': assignedToId.isEmpty ? null : assignedToId,
     });
@@ -111,6 +133,49 @@ class TaskProvider with ChangeNotifier {
       '$title was assigned to $assignedToName.',
       NotificationType.info,
     );
+    return true;
+  }
+
+  Future<bool> deleteTask(String taskId) async {
+    if (!AuthService.hasPermission('manageTasks')) return false;
+    await _operation('DeleteTask', {'id': taskId});
+    await loadData();
+    return true;
+  }
+
+  Future<bool> updateTask(
+    ErpTask task, {
+    required String title,
+    required String description,
+    required TaskPriority priority,
+    required DateTime dueDate,
+  }) async {
+    if (!AuthService.hasPermission('manageTasks')) return false;
+    await _operation('UpdateTask', {
+      'id': task.id,
+      'title': title,
+      'description': description,
+      'priority': priority == TaskPriority.urgent
+          ? 'HIGH'
+          : priority.name.toUpperCase(),
+      'dueDate': dueDate.toUtc().toIso8601String(),
+      'assignedToId': task.assignedToId.isEmpty ? null : task.assignedToId,
+    });
+    await loadData();
+    return true;
+  }
+
+  Future<bool> updateTaskStatus(String taskId, TaskStatus status) async {
+    if (!AuthService.hasPermission('manageTasks')) return false;
+    final value = switch (status) {
+      TaskStatus.completed => 'COMPLETED',
+      TaskStatus.ongoing => 'ONGOING',
+      TaskStatus.late || TaskStatus.overdue => 'LATE',
+      TaskStatus.cancelled => 'CANCELLED',
+      _ => 'PENDING',
+    };
+    await _operation('UpdateTask', {'id': taskId, 'status': value});
+    await loadData();
     return true;
   }
 

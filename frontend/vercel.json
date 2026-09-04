@@ -1,12 +1,24 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "nextjs",
+  "regions": ["iad1"],
   "buildCommand": "npm run build",
   "installCommand": "npm ci",
+  "functions": {
+    "src/app/api/ai/query/route.ts": { "maxDuration": 60 },
+    "src/app/api/documents/process/route.ts": { "maxDuration": 60 },
+    "src/app/api/reports/generate/route.ts": { "maxDuration": 60 },
+    "src/app/api/internal/reconcile-outbox/route.ts": { "maxDuration": 60 },
+    "src/app/api/internal/ai-maintenance/route.ts": { "maxDuration": 60 }
+  },
   "crons": [
     {
       "path": "/api/internal/reconcile-outbox",
       "schedule": "*/10 * * * *"
+    },
+    {
+      "path": "/api/internal/ai-maintenance",
+      "schedule": "15 2 * * *"
     }
   ]
 }

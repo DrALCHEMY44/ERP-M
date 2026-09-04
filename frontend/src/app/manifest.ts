@@ -12,14 +12,10 @@ export default function manifest(): MetadataRoute.Manifest {
     theme_color: '#2563eb',
     icons: [
       {
-        src: 'https://placehold.co/192x192/2563eb/white?text=ERP',
-        sizes: '192x192',
-        type: 'image/png',
-      },
-      {
-        src: 'https://placehold.co/512x512/2563eb/white?text=SmartERP',
-        sizes: '512x512',
-        type: 'image/png',
+        src: '/icon.svg',
+        sizes: 'any',
+        type: 'image/svg+xml',
+        purpose: 'maskable',
       },
     ],
   }

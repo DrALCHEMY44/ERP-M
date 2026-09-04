@@ -4,6 +4,7 @@ import '../models/activity_log.dart';
 import '../models/notification_model.dart';
 import '../services/api_service.dart';
 import '../services/auth_service.dart';
+import '../services/announcement_service.dart';
 
 class CoreProvider with ChangeNotifier {
   final List<ActivityLog> _activityLogs = [];
@@ -27,10 +28,79 @@ class CoreProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> loadData() async {
-    // Operational data is loaded by the domain providers through authenticated
-    // server endpoints. Local notification state is deliberately non-authoritative.
+  void reset() {
+    _activityLogs.clear();
+    _notifications.clear();
+    _isLoading = false;
     notifyListeners();
+  }
+
+  Future<void> loadData() async {
+    if (AuthService.currentUser == null) {
+      reset();
+      return;
+    }
+    setLoading(true);
+    try {
+      if (AuthService.hasPermission('viewActivityLogs')) {
+        final result = await ApiService.request(
+          '/api/data',
+          method: 'POST',
+          body: {'operation': 'listActivityLogsByBusiness', 'variables': {}},
+          retryTransient: true,
+        );
+        final rows =
+            ((result['data'] as Map<String, dynamic>)['activityLogs']
+                as List<dynamic>? ??
+            const []);
+        _activityLogs
+          ..clear()
+          ..addAll(
+            rows.map((raw) {
+              final row = raw as Map<String, dynamic>;
+              return ActivityLog(
+                id: row['id'].toString(),
+                tenantId: row['tenantId']?.toString() ?? '',
+                businessId: row['businessId']?.toString() ?? '',
+                userId: row['userId']?.toString() ?? '',
+                userName: row['userName']?.toString() ?? 'Member',
+                userRole: 'Member',
+                actionType: row['actionType']?.toString() ?? 'ACTION',
+                module: row['module']?.toString() ?? 'System',
+                description: row['description']?.toString() ?? '',
+                timestamp:
+                    DateTime.tryParse(row['timestamp']?.toString() ?? '') ??
+                    DateTime.now(),
+              );
+            }),
+          );
+      } else {
+        _activityLogs.clear();
+      }
+      final announcements = await AnnouncementService.list();
+      _notifications
+        ..clear()
+        ..addAll(
+          announcements.items.map(
+            (item) => NotificationModel(
+              id: item.id,
+              tenantId: currentTenantId,
+              businessId: AuthService.currentUser?.businessId ?? '',
+              title: item.title,
+              message: item.message,
+              type: item.priority == 'URGENT'
+                  ? NotificationType.error
+                  : item.priority == 'IMPORTANT'
+                  ? NotificationType.warning
+                  : NotificationType.info,
+              isRead: item.isRead,
+              createdAt: item.createdAt,
+            ),
+          ),
+        );
+    } finally {
+      setLoading(false);
+    }
   }
 
   Future<String> askAi(String prompt) async {
@@ -40,6 +110,7 @@ class CoreProvider with ChangeNotifier {
         '/api/ai/query',
         method: 'POST',
         body: {'queryText': prompt},
+        timeout: const Duration(seconds: 60),
       );
       return result['response'] as String? ??
           'The AI service returned no text.';
@@ -48,39 +119,21 @@ class CoreProvider with ChangeNotifier {
     }
   }
 
-  Future<void> seedNewTenant(
-    String tenantId,
-    String businessName,
-    String industry,
-  ) async {
-    await logActivity(
-      'TENANT_CREATED',
-      'System',
-      'Created $businessName ($industry).',
-    );
-  }
-
   Future<void> logActivity(
     String actionType,
     String module,
     String description,
   ) async {
-    _activityLogs.insert(
-      0,
-      ActivityLog(
-        id: 'local_${DateTime.now().microsecondsSinceEpoch}',
-        tenantId: currentTenantId,
-        businessId: AuthService.currentUser?.businessId ?? '',
-        userId: currentUserId,
-        userName: currentUserName,
-        userRole: currentUserRole,
-        actionType: actionType,
-        module: module,
-        description: description,
-        timestamp: DateTime.now(),
-      ),
+    await ApiService.request(
+      '/api/audit',
+      method: 'POST',
+      body: {
+        'actionType': actionType,
+        'module': module,
+        'description': description,
+      },
     );
-    notifyListeners();
+    if (AuthService.hasPermission('viewActivityLogs')) await loadData();
   }
 
   Future<void> triggerNotification(
@@ -88,25 +141,26 @@ class CoreProvider with ChangeNotifier {
     String message,
     NotificationType type,
   ) async {
-    _notifications.insert(
-      0,
-      NotificationModel(
-        id: 'local_${DateTime.now().microsecondsSinceEpoch}',
-        tenantId: currentTenantId,
-        businessId: AuthService.currentUser?.businessId ?? '',
-        title: title,
-        message: message,
-        type: type,
-        createdAt: DateTime.now(),
-      ),
+    await ApiService.request(
+      '/api/notifications',
+      method: 'POST',
+      body: {
+        'title': title,
+        'message': message,
+        'type': type.name,
+        'module': title.toLowerCase().contains('stock') ? 'Inventory' : 'Tasks',
+        'link': title.toLowerCase().contains('stock') ? '/inventory' : '/tasks',
+      },
     );
-    notifyListeners();
+    await loadData();
   }
 
   Future<void> markAllNotificationsAsRead() async {
-    for (var index = 0; index < _notifications.length; index++) {
-      _notifications[index] = _notifications[index].copyWith(isRead: true);
-    }
-    notifyListeners();
+    await Future.wait(
+      _notifications
+          .where((item) => !item.isRead)
+          .map((item) => AnnouncementService.markRead(item.id)),
+    );
+    await loadData();
   }
 }

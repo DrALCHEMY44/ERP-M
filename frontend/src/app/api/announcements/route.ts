@@ -1,8 +1,8 @@
 import { randomUUID } from "crypto"
 import { NextResponse } from "next/server"
 import { z } from "zod"
-import { authorizeRequest } from "@/lib/server/firebase-token"
-import { neon } from "@neondatabase/serverless"
+import { authorizeRequest } from "@/lib/server/auth"
+import { db } from "@/lib/server/neon"
 
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
@@ -13,11 +13,6 @@ const createSchema = z.object({
   expiresAt: z.string().datetime().nullable().optional(),
 })
 
-function sqlClient() {
-  if (!process.env.DATABASE_URL) throw new Error("DATABASE_URL is not configured")
-  return neon(process.env.DATABASE_URL)
-}
-
 function canPublish(role: string) {
   return ["Business Owner", "Manager", "Platform Super Admin"].includes(role)
 }
@@ -25,7 +20,7 @@ function canPublish(role: string) {
 async function withDatabaseRetry<T>(operation: () => Promise<T>): Promise<T> {
   try {
     return await operation()
-  } catch (error) {
+  } catch {
     // Neon's HTTP driver can occasionally lose a pooled connection while a
     // development server is hot-reloading. A single retry makes mutations
     // resilient without risking duplicate announcements because the id is
@@ -52,7 +47,7 @@ function errorResponse(error: unknown, fallback: string) {
 export async function GET(request: Request) {
   try {
     const profile = await authorizeRequest(request)
-    const sql = sqlClient()
+    const sql = db()
     const rows = await withDatabaseRetry(() => sql`
       SELECT a.id,a.title,a.message,a.priority,a.created_by_name,a.created_at,a.expires_at,
              (r.user_uid IS NOT NULL) AS is_read
@@ -60,6 +55,11 @@ export async function GET(request: Request) {
       LEFT JOIN announcement_reads r ON r.announcement_id=a.id AND r.user_uid=${profile.uid}
       WHERE a.tenant_id=${profile.tenantId} AND a.business_id=${profile.businessId}
         AND (a.expires_at IS NULL OR a.expires_at > NOW())
+        AND (
+          (a.target_user_uid IS NULL AND a.target_roles IS NULL)
+          OR a.target_user_uid=${profile.uid}
+          OR ${profile.role}=ANY(a.target_roles)
+        )
       ORDER BY a.created_at DESC LIMIT 100`)
     return NextResponse.json({ announcements: rows, canPublish: canPublish(profile.role) })
   } catch (error) {
@@ -74,7 +74,7 @@ export async function POST(request: Request) {
     if (!canPublish(profile.role)) return NextResponse.json({ error: "Only owners and managers can publish announcements" }, { status: 403 })
     const input = createSchema.parse(await request.json())
     const id = randomUUID()
-    const sql = sqlClient()
+    const sql = db()
     await withDatabaseRetry(() => sql`
       INSERT INTO announcements(
         id, tenant_id, business_id, title, message, priority,
@@ -97,7 +97,7 @@ export async function PATCH(request: Request) {
   try {
     const profile = await authorizeRequest(request)
     const { id } = z.object({ id: z.string().uuid() }).parse(await request.json())
-    const sql = sqlClient()
+    const sql = db()
     const allowed = await withDatabaseRetry(() => sql`SELECT id FROM announcements WHERE id=${id} AND tenant_id=${profile.tenantId} AND business_id=${profile.businessId}`)
     if (!allowed.length) return NextResponse.json({ error: "Announcement not found" }, { status: 404 })
     await withDatabaseRetry(() => sql`INSERT INTO announcement_reads(announcement_id,user_uid) VALUES(${id},${profile.uid}) ON CONFLICT DO NOTHING`)

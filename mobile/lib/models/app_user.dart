@@ -56,6 +56,7 @@ class AppUser {
   final UserRole role;
   final String? businessCode;
   final String? accessCode;
+  final List<String> permissions;
 
   AppUser({
     required this.id,
@@ -66,5 +67,6 @@ class AppUser {
     required this.role,
     this.businessCode,
     this.accessCode,
+    this.permissions = const [],
   });
 }

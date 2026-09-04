@@ -4,7 +4,7 @@ import { NextResponse } from "next/server"
 // of falling back to the former demo-password/JWT implementation.
 export async function POST() {
   return NextResponse.json(
-    { error: "This legacy login endpoint is permanently disabled. Use Firebase Authentication." },
+    { error: "This legacy login endpoint is permanently disabled. Use Neon Auth through /api/auth." },
     { status: 410 },
   )
 }

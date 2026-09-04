@@ -24,12 +24,62 @@ class _LoginScreenState extends State<LoginScreen> {
   final _businessNameController = TextEditingController();
   final _accessCodeController = TextEditingController();
 
-  String _selectedRoleProfile = 'Business Owner';
+  String _selectedRoleProfile = 'Staff';
+  bool _useEmployeeAccess = false;
   bool _isLoadingState = false;
   bool _obscurePassword = true;
 
-  final List<String> _roleOptions = ['Business Owner', 'Manager', 'Employee'];
-  bool get _usesEmployeeCode => _selectedRoleProfile != 'Business Owner';
+  final List<String> _roleOptions = ['Manager', 'Staff'];
+  bool get _usesEmployeeCode => _useEmployeeAccess;
+
+  Future<void> _forgotPassword() async {
+    final email = TextEditingController(text: _emailController.text.trim());
+    final send = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Reset password'),
+        content: TextField(
+          controller: email,
+          keyboardType: TextInputType.emailAddress,
+          decoration: const InputDecoration(labelText: 'Account email'),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: const Text('Send reset email'),
+          ),
+        ],
+      ),
+    );
+    if (send == true && email.text.contains('@')) {
+      try {
+        await AuthService.requestPasswordReset(email.text);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'If the account exists, a reset link has been sent.',
+              ),
+            ),
+          );
+        }
+      } catch (error) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(error.toString()),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    }
+    email.dispose();
+  }
 
   @override
   void dispose() {
@@ -50,7 +100,18 @@ class _LoginScreenState extends State<LoginScreen> {
     );
     final taskProvider = Provider.of<TaskProvider>(context, listen: false);
 
-    if (AuthService.currentUser?.role == UserRole.staff) {
+    if (AuthService.currentUser?.role == UserRole.platformSuperAdmin) {
+      // Platform administrators have no tenant context. Keeping tenant data
+      // from a previous login would both leak stale UI state and cause tenant
+      // API calls to fail before the SaaS control center can open.
+      core.reset();
+      inventory.reset();
+      transaction.reset();
+      taskProvider.reset();
+    } else if (AuthService.currentUser?.role == UserRole.staff) {
+      core.reset();
+      inventory.reset();
+      transaction.reset();
       await taskProvider.loadData();
     } else {
       await Future.wait([
@@ -67,6 +128,7 @@ class _LoginScreenState extends State<LoginScreen> {
       setState(() => _isLoadingState = true);
       try {
         final user = await AuthService.login(
+          useEmployeeAccess: _useEmployeeAccess,
           roleProfile: _selectedRoleProfile,
           fullName: _fullNameController.text.trim(),
           email: _emailController.text.trim(),
@@ -80,7 +142,11 @@ class _LoginScreenState extends State<LoginScreen> {
           if (!mounted) return;
           Navigator.pushReplacementNamed(
             context,
-            user.role == UserRole.staff ? '/tasks' : '/dashboard',
+            user.role == UserRole.platformSuperAdmin
+                ? '/admin/dashboard'
+                : user.role == UserRole.staff
+                ? '/tasks'
+                : '/dashboard',
           );
         }
       } catch (e) {
@@ -118,9 +184,9 @@ class _LoginScreenState extends State<LoginScreen> {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  theme.colorScheme.primary.withOpacity(0.05),
+                  theme.colorScheme.primary.withValues(alpha: 0.05),
                   theme.colorScheme.surface,
-                  theme.colorScheme.secondary.withOpacity(0.05),
+                  theme.colorScheme.secondary.withValues(alpha: 0.05),
                 ],
               ),
             ),
@@ -139,16 +205,16 @@ class _LoginScreenState extends State<LoginScreen> {
                       width: size.width > 600 ? 500 : double.infinity,
                       padding: const EdgeInsets.all(32),
                       decoration: BoxDecoration(
-                        color: theme.colorScheme.surface.withOpacity(0.7),
+                        color: theme.colorScheme.surface.withValues(alpha: 0.7),
                         borderRadius: BorderRadius.circular(32),
                         border: Border.all(
-                          color: theme.colorScheme.outlineVariant.withOpacity(
-                            0.5,
+                          color: theme.colorScheme.outlineVariant.withValues(
+                            alpha: 0.5,
                           ),
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
+                            color: Colors.black.withValues(alpha: 0.05),
                             blurRadius: 24,
                             offset: const Offset(0, 8),
                           ),
@@ -165,8 +231,8 @@ class _LoginScreenState extends State<LoginScreen> {
                               child: Container(
                                 padding: const EdgeInsets.all(16),
                                 decoration: BoxDecoration(
-                                  color: theme.colorScheme.primary.withOpacity(
-                                    0.1,
+                                  color: theme.colorScheme.primary.withValues(
+                                    alpha: 0.1,
                                   ),
                                   shape: BoxShape.circle,
                                 ),
@@ -197,41 +263,60 @@ class _LoginScreenState extends State<LoginScreen> {
 
                             const SizedBox(height: 24),
 
-                            // 1. Role Profile
-                            DropdownButtonFormField<String>(
-                              initialValue: _selectedRoleProfile,
+                            DropdownButtonFormField<bool>(
+                              initialValue: _useEmployeeAccess,
                               decoration: const InputDecoration(
-                                labelText: 'Role Profile',
-                                prefixIcon: Icon(Icons.person_outline),
+                                labelText: 'Sign-in method',
+                                prefixIcon: Icon(Icons.login_outlined),
                               ),
-                              items: _roleOptions
-                                  .map(
-                                    (role) => DropdownMenuItem(
-                                      value: role,
-                                      child: Text(role),
-                                    ),
-                                  )
-                                  .toList(),
-                              onChanged: (val) =>
-                                  setState(() => _selectedRoleProfile = val!),
-                            ),
-                            const SizedBox(height: 16),
-
-                            // 2. Registered Full Name
-                            TextFormField(
-                              controller: _fullNameController,
-                              decoration: const InputDecoration(
-                                labelText: 'Full Name',
-                                prefixIcon: Icon(Icons.badge_outlined),
+                              items: const [
+                                DropdownMenuItem(
+                                  value: false,
+                                  child: Text('Email and password'),
+                                ),
+                                DropdownMenuItem(
+                                  value: true,
+                                  child: Text('Team access code'),
+                                ),
+                              ],
+                              onChanged: (value) => setState(
+                                () => _useEmployeeAccess = value ?? false,
                               ),
-                              validator: (value) =>
-                                  value == null || value.trim().isEmpty
-                                  ? 'Please enter your registered name'
-                                  : null,
                             ),
                             const SizedBox(height: 16),
 
                             if (_usesEmployeeCode) ...[
+                              DropdownButtonFormField<String>(
+                                initialValue: _selectedRoleProfile,
+                                decoration: const InputDecoration(
+                                  labelText: 'Team role',
+                                  prefixIcon: Icon(Icons.badge_outlined),
+                                ),
+                                items: _roleOptions
+                                    .map(
+                                      (role) => DropdownMenuItem(
+                                        value: role,
+                                        child: Text(role),
+                                      ),
+                                    )
+                                    .toList(),
+                                onChanged: (value) => setState(
+                                  () => _selectedRoleProfile = value ?? 'Staff',
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              TextFormField(
+                                controller: _fullNameController,
+                                decoration: const InputDecoration(
+                                  labelText: 'Full Name',
+                                  prefixIcon: Icon(Icons.badge_outlined),
+                                ),
+                                validator: (value) =>
+                                    value == null || value.trim().isEmpty
+                                    ? 'Please enter your registered name'
+                                    : null,
+                              ),
+                              const SizedBox(height: 16),
                               TextFormField(
                                 controller: _businessNameController,
                                 textCapitalization: TextCapitalization.words,
@@ -251,9 +336,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 textCapitalization:
                                     TextCapitalization.characters,
                                 decoration: InputDecoration(
-                                  labelText: _selectedRoleProfile == 'Manager'
-                                      ? 'Manager Code'
-                                      : 'Employee Code',
+                                  labelText: 'Access Code',
                                   hintText: 'EMP-XXXXXX-XXXXXXXX',
                                   prefixIcon: const Icon(Icons.key_outlined),
                                 ),
@@ -298,6 +381,13 @@ class _LoginScreenState extends State<LoginScreen> {
                                     value == null || value.isEmpty
                                     ? 'Please enter your password'
                                     : null,
+                              ),
+                              Align(
+                                alignment: Alignment.centerRight,
+                                child: TextButton(
+                                  onPressed: _forgotPassword,
+                                  child: const Text('Forgot password?'),
+                                ),
                               ),
                             ],
                             const SizedBox(height: 32),

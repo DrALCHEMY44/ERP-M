@@ -1,3 +1,58 @@
+# --- Atomic workspace bootstrap ---
+
+mutation BootstrapWorkspace(
+  $tenantId: String!
+  $businessId: String!
+  $userId: String!
+  $name: String!
+  $businessSector: String!
+  $location: String!
+  $region: String!
+  $ownerEmail: String!
+  $fullName: String!
+  $code: String!
+) @auth(level: NO_ACCESS) @transaction {
+  tenant_insert(data: {
+    id: $tenantId
+    name: $name
+    businessSector: $businessSector
+    location: $location
+    ownerEmail: $ownerEmail
+    subscriptionTier: "Basic"
+    status: "Active"
+    createdAt_expr: "request.time"
+  })
+  business_insert(data: {
+    id: $businessId
+    tenantId: $tenantId
+    name: $name
+    location: $location
+    businessType: $businessSector
+    region: $region
+    code: $code
+    createdAt_expr: "request.time"
+  })
+  businessSetting_insert(data: {
+    businessId: $businessId
+    tenantId: $tenantId
+    currency: "FCFA"
+    timezone: "Africa/Douala"
+    fiscalYearStart: "01-01"
+    taxRate: 0
+    lowStockThreshold: 10
+    updatedAt_expr: "request.time"
+  })
+  user_insert(data: {
+    id: $userId
+    tenantId: $tenantId
+    businessId: $businessId
+    email: $ownerEmail
+    role: "Business Owner"
+    fullName: $fullName
+    createdAt_expr: "request.time"
+  })
+}
+
 # --- Tenant ---
 
 mutation CreateTenant(
@@ -135,7 +190,14 @@ mutation UpdateBusiness(
   $name: String
   $location: String
   $businessType: String
+  $entityType: String
+  $city: String
   $region: String
+  $phone: String
+  $email: String
+  $taxId: String
+  $description: String
+  $logoUrl: String
   $code: String
 ) @auth(level: NO_ACCESS) {
   business_update(id: $id, data: {
@@ -143,8 +205,36 @@ mutation UpdateBusiness(
     name: $name
     location: $location
     businessType: $businessType
+    entityType: $entityType
+    city: $city
     region: $region
+    phone: $phone
+    email: $email
+    taxId: $taxId
+    description: $description
+    logoUrl: $logoUrl
     code: $code
+  })
+}
+
+mutation UpsertBusinessSettings(
+  $tenantId: String!
+  $businessId: String!
+  $currency: String!
+  $timezone: String!
+  $fiscalYearStart: String!
+  $taxRate: Float!
+  $lowStockThreshold: Int!
+) @auth(level: NO_ACCESS) {
+  businessSetting_upsert(data: {
+    tenantId: $tenantId
+    businessId: $businessId
+    currency: $currency
+    timezone: $timezone
+    fiscalYearStart: $fiscalYearStart
+    taxRate: $taxRate
+    lowStockThreshold: $lowStockThreshold
+    updatedAt_expr: "request.time"
   })
 }
 
@@ -181,10 +271,18 @@ mutation ProvisionEmployeeUser(
 mutation CompleteAssignedTask(
   $taskId: String!
   $userId: String!
+  $tenantId: String!
+  $businessId: String!
 ) @auth(level: NO_ACCESS) @transaction {
   query @redact {
-    user(id: $userId) @check(expr: "this != null", message: "Employee account not found") { id }
+    user(id: $userId) @check(expr: "this != null", message: "Employee account not found") {
+      id
+      tenantId @check(expr: "this == vars.tenantId", message: "Employee is outside this company")
+      businessId @check(expr: "this == vars.businessId", message: "Employee is outside this company")
+    }
     task(id: $taskId) @check(expr: "this != null", message: "Task not found") {
+      tenantId @check(expr: "this == vars.tenantId", message: "Task is outside this company")
+      businessId @check(expr: "this == vars.businessId", message: "Task is outside this company")
       assignedTo {
         id @check(expr: "this == vars.userId", message: "Task is not assigned to this employee")
       }
@@ -208,6 +306,7 @@ mutation CreateProduct(
   $sellingPrice: Float!
   $expiryDate: Date
   $lowStockLevel: Int
+  $status: String
   $createdBy: String!
 ) @auth(level: NO_ACCESS) {
   product_insert(data: {
@@ -220,6 +319,7 @@ mutation CreateProduct(
     sellingPrice: $sellingPrice
     expiryDate: $expiryDate
     lowStockLevel: $lowStockLevel
+    status: $status
     createdBy: $createdBy
     createdAt_expr: "request.time"
     updatedAt_expr: "request.time"
@@ -237,6 +337,7 @@ mutation UpdateProduct(
   $sellingPrice: Float
   $expiryDate: Date
   $lowStockLevel: Int
+  $status: String
   $createdBy: String
 ) @auth(level: NO_ACCESS) {
   product_update(id: $id, data: {
@@ -249,6 +350,7 @@ mutation UpdateProduct(
     sellingPrice: $sellingPrice
     expiryDate: $expiryDate
     lowStockLevel: $lowStockLevel
+    status: $status
     createdBy: $createdBy
     updatedAt_expr: "request.time"
   })
@@ -267,6 +369,7 @@ mutation CreateTransaction(
   $amount: Float!
   $date: Timestamp!
   $category: String
+  $description: String
   $receiptUrl: String
   $recordedBy: String!
 ) @auth(level: NO_ACCESS) {
@@ -277,6 +380,7 @@ mutation CreateTransaction(
     amount: $amount
     date: $date
     category: $category
+    description: $description
     receiptUrl: $receiptUrl
     recordedBy: $recordedBy
     createdAt_expr: "request.time"
@@ -291,6 +395,7 @@ mutation UpdateTransaction(
   $amount: Float
   $date: Timestamp
   $category: String
+  $description: String
   $receiptUrl: String
   $recordedBy: String
 ) @auth(level: NO_ACCESS) {
@@ -301,6 +406,7 @@ mutation UpdateTransaction(
     amount: $amount
     date: $date
     category: $category
+    description: $description
     receiptUrl: $receiptUrl
     recordedBy: $recordedBy
   })
@@ -352,6 +458,128 @@ mutation DeleteTaskComment($id: String!) @auth(level: NO_ACCESS) {
 
 # --- Employee ---
 
+mutation CreateEmployeeWithAccess(
+  $tenantId: String!
+  $businessId: String!
+  $fullName: String!
+  $position: String!
+  $role: String
+  $userRole: String!
+  $salary: Float
+  $department: String
+  $email: String!
+  $contact: String
+  $startDate: Date
+  $status: String
+  $attendance: Float
+  $salaryPaymentStatus: String
+  $accessCodeHash: String!
+) @auth(level: NO_ACCESS) @transaction {
+  employee_insert(data: {
+    tenantId: $tenantId
+    businessId: $businessId
+    fullName: $fullName
+    position: $position
+    role: $role
+    salary: $salary
+    department: $department
+    email: $email
+    contact: $contact
+    startDate: $startDate
+    status: $status
+    attendance: $attendance
+    salaryPaymentStatus: $salaryPaymentStatus
+    createdAt_expr: "request.time"
+  })
+  user_insert(data: {
+    id_expr: "uuidV4()"
+    tenantId: $tenantId
+    businessId: $businessId
+    email: $email
+    role: $userRole
+    fullName: $fullName
+    department: $department
+    phoneNumber: $contact
+    accessCodeHash: $accessCodeHash
+    createdAt_expr: "request.time"
+  })
+}
+
+mutation UpdateEmployeeWithAccess(
+  $id: String!
+  $tenantId: String!
+  $businessId: String!
+  $currentEmail: String!
+  $fullName: String!
+  $position: String!
+  $role: String
+  $userRole: String!
+  $salary: Float
+  $department: String
+  $email: String!
+  $contact: String
+  $startDate: Date
+  $status: String
+  $attendance: Float
+  $salaryPaymentStatus: String
+) @auth(level: NO_ACCESS) @transaction {
+  query @redact {
+    employee(id: $id) @check(expr: "this != null", message: "Employee not found") {
+      tenantId @check(expr: "this == vars.tenantId", message: "Employee is outside this company")
+      businessId @check(expr: "this == vars.businessId", message: "Employee is outside this company")
+      email @check(expr: "this == vars.currentEmail", message: "Employee login binding changed")
+    }
+  }
+  employee_update(id: $id, data: {
+    fullName: $fullName
+    position: $position
+    role: $role
+    salary: $salary
+    department: $department
+    email: $email
+    contact: $contact
+    startDate: $startDate
+    status: $status
+    attendance: $attendance
+    salaryPaymentStatus: $salaryPaymentStatus
+  })
+  user_updateMany(
+    where: {
+      tenantId: { eq: $tenantId }
+      businessId: { eq: $businessId }
+      email: { eq: $currentEmail }
+    }
+    data: {
+      email: $email
+      role: $userRole
+      fullName: $fullName
+      department: $department
+      phoneNumber: $contact
+    }
+  ) @check(expr: "this == 1", message: "Employee login profile is missing or duplicated")
+}
+
+mutation DeleteEmployeeWithAccess(
+  $id: String!
+  $tenantId: String!
+  $businessId: String!
+  $currentEmail: String!
+) @auth(level: NO_ACCESS) @transaction {
+  query @redact {
+    employee(id: $id) @check(expr: "this != null", message: "Employee not found") {
+      tenantId @check(expr: "this == vars.tenantId", message: "Employee is outside this company")
+      businessId @check(expr: "this == vars.businessId", message: "Employee is outside this company")
+      email @check(expr: "this == vars.currentEmail", message: "Employee login binding changed")
+    }
+  }
+  employee_delete(id: $id)
+  user_deleteMany(where: {
+    tenantId: { eq: $tenantId }
+    businessId: { eq: $businessId }
+    email: { eq: $currentEmail }
+  }) @check(expr: "this == 1", message: "Employee login profile is missing or duplicated")
+}
+
 mutation CreateEmployee(
   $tenantId: String!
   $businessId: String!
@@ -360,8 +588,12 @@ mutation CreateEmployee(
   $role: String
   $salary: Float
   $department: String
+  $email: String
+  $contact: String
   $startDate: Date
   $status: String
+  $attendance: Float
+  $salaryPaymentStatus: String
   $code: String
 ) @auth(level: NO_ACCESS) {
   employee_insert(data: {
@@ -372,8 +604,12 @@ mutation CreateEmployee(
     role: $role
     salary: $salary
     department: $department
+    email: $email
+    contact: $contact
     startDate: $startDate
     status: $status
+    attendance: $attendance
+    salaryPaymentStatus: $salaryPaymentStatus
     createdAt_expr: "request.time"
     code: $code
   })
@@ -388,8 +624,12 @@ mutation UpdateEmployee(
   $role: String
   $salary: Float
   $department: String
+  $email: String
+  $contact: String
   $startDate: Date
   $status: String
+  $attendance: Float
+  $salaryPaymentStatus: String
 ) @auth(level: NO_ACCESS) {
   employee_update(id: $id, data: {
     tenantId: $tenantId
@@ -399,8 +639,12 @@ mutation UpdateEmployee(
     role: $role
     salary: $salary
     department: $department
+    email: $email
+    contact: $contact
     startDate: $startDate
     status: $status
+    attendance: $attendance
+    salaryPaymentStatus: $salaryPaymentStatus
   })
 }
 
@@ -417,8 +661,7 @@ mutation CreateCustomer(
   $phoneNumber: String
   $email: String
   $location: String
-  $totalOrders: Int
-  $totalSpent: Float
+  $notes: String
 ) @auth(level: NO_ACCESS) {
   customer_insert(data: {
     tenantId: $tenantId
@@ -427,8 +670,7 @@ mutation CreateCustomer(
     phoneNumber: $phoneNumber
     email: $email
     location: $location
-    totalOrders: $totalOrders
-    totalSpent: $totalSpent
+    notes: $notes
     createdAt_expr: "request.time"
   })
 }
@@ -441,8 +683,7 @@ mutation UpdateCustomer(
   $phoneNumber: String
   $email: String
   $location: String
-  $totalOrders: Int
-  $totalSpent: Float
+  $notes: String
 ) @auth(level: NO_ACCESS) {
   customer_update(id: $id, data: {
     tenantId: $tenantId
@@ -451,8 +692,7 @@ mutation UpdateCustomer(
     phoneNumber: $phoneNumber
     email: $email
     location: $location
-    totalOrders: $totalOrders
-    totalSpent: $totalSpent
+    notes: $notes
   })
 }
 
@@ -468,6 +708,10 @@ mutation CreateSupplier(
   $supplierName: String!
   $phoneNumber: String
   $email: String
+  $location: String
+  $productsSupplied: String
+  $paymentStatus: String
+  $notes: String
 ) @auth(level: NO_ACCESS) {
   supplier_insert(data: {
     tenantId: $tenantId
@@ -475,6 +719,10 @@ mutation CreateSupplier(
     supplierName: $supplierName
     phoneNumber: $phoneNumber
     email: $email
+    location: $location
+    productsSupplied: $productsSupplied
+    paymentStatus: $paymentStatus
+    notes: $notes
     createdAt_expr: "request.time"
   })
 }
@@ -486,6 +734,10 @@ mutation UpdateSupplier(
   $supplierName: String
   $phoneNumber: String
   $email: String
+  $location: String
+  $productsSupplied: String
+  $paymentStatus: String
+  $notes: String
 ) @auth(level: NO_ACCESS) {
   supplier_update(id: $id, data: {
     tenantId: $tenantId
@@ -493,6 +745,10 @@ mutation UpdateSupplier(
     supplierName: $supplierName
     phoneNumber: $phoneNumber
     email: $email
+    location: $location
+    productsSupplied: $productsSupplied
+    paymentStatus: $paymentStatus
+    notes: $notes
   })
 }
 
@@ -508,6 +764,7 @@ mutation CreateDocument(
   $title: String!
   $documentType: String!
   $fileUrl: String!
+  $description: String
   $uploadedBy: String!
 ) @auth(level: NO_ACCESS) {
   document_insert(data: {
@@ -516,6 +773,7 @@ mutation CreateDocument(
     title: $title
     documentType: $documentType
     fileUrl: $fileUrl
+    description: $description
     uploadedBy: $uploadedBy
     uploadedAt_expr: "request.time"
   })
@@ -528,6 +786,7 @@ mutation UpdateDocument(
   $title: String
   $documentType: String
   $fileUrl: String
+  $description: String
   $uploadedBy: String
 ) @auth(level: NO_ACCESS) {
   document_update(id: $id, data: {
@@ -536,6 +795,7 @@ mutation UpdateDocument(
     title: $title
     documentType: $documentType
     fileUrl: $fileUrl
+    description: $description
     uploadedBy: $uploadedBy
   })
 }

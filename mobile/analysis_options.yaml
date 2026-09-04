@@ -10,8 +10,8 @@
 include: package:flutter_lints/flutter.yaml
 
 analyzer:
-  # Firebase Data Connect SDK output is regenerated from backend GraphQL and
-  # is not first-party Dart source. Keep all application code analyzed.
+  # Retired Data Connect SDK output is retained only as a migration reference.
+  # It is not imported or packaged by the application.
   exclude:
     - lib/generated/**
 

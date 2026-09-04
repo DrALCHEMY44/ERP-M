@@ -12,8 +12,10 @@ For each operation, there is a wrapper hook that can be used to call the operati
 
 Here are all of the hooks that get generated:
 ```ts
-import { useCreateTenant, useUpdateTenant, useDeleteTenant, useCreateUser, useUpdateUser, useDeleteUser, useClearLegacyAccessCode, useCreateBusiness, useUpdateBusiness, useDeleteBusiness } from '@dataconnect/generated/react';
+import { useBootstrapWorkspace, useCreateTenant, useUpdateTenant, useDeleteTenant, useCreateUser, useUpdateUser, useDeleteUser, useClearLegacyAccessCode, useCreateBusiness, useUpdateBusiness } from '@dataconnect/generated/react';
 // The types of these hooks are available in react/index.d.ts
+
+const { data, isPending, isSuccess, isError, error } = useBootstrapWorkspace(bootstrapWorkspaceVars);
 
 const { data, isPending, isSuccess, isError, error } = useCreateTenant(createTenantVars);
 
@@ -32,8 +34,6 @@ const { data, isPending, isSuccess, isError, error } = useClearLegacyAccessCode(
 const { data, isPending, isSuccess, isError, error } = useCreateBusiness(createBusinessVars);
 
 const { data, isPending, isSuccess, isError, error } = useUpdateBusiness(updateBusinessVars);
-
-const { data, isPending, isSuccess, isError, error } = useDeleteBusiness(deleteBusinessVars);
 
 ```
 
@@ -72,8 +72,11 @@ If a user is not using a supported framework, they can use the generated SDK dir
 Here's an example of how to use it with the first 5 operations:
 
 ```js
-import { createTenant, updateTenant, deleteTenant, createUser, updateUser, deleteUser, clearLegacyAccessCode, createBusiness, updateBusiness, deleteBusiness } from '@dataconnect/generated';
+import { bootstrapWorkspace, createTenant, updateTenant, deleteTenant, createUser, updateUser, deleteUser, clearLegacyAccessCode, createBusiness, updateBusiness } from '@dataconnect/generated';
 
+
+// Operation BootstrapWorkspace:  For variables, look at type BootstrapWorkspaceVars in ../index.d.ts
+const { data } = await BootstrapWorkspace(dataConnect, bootstrapWorkspaceVars);
 
 // Operation CreateTenant:  For variables, look at type CreateTenantVars in ../index.d.ts
 const { data } = await CreateTenant(dataConnect, createTenantVars);
@@ -101,9 +104,6 @@ const { data } = await CreateBusiness(dataConnect, createBusinessVars);
 
 // Operation UpdateBusiness:  For variables, look at type UpdateBusinessVars in ../index.d.ts
 const { data } = await UpdateBusiness(dataConnect, updateBusinessVars);
-
-// Operation DeleteBusiness:  For variables, look at type DeleteBusinessVars in ../index.d.ts
-const { data } = await DeleteBusiness(dataConnect, deleteBusinessVars);
 
 
 ```

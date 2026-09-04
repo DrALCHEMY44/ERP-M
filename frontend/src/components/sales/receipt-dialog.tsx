@@ -5,7 +5,7 @@
  */
 
 import * as React from "react";
-import { Printer, X, CreditCard, Smartphone, Banknote, ShoppingCart } from "lucide-react";
+import { Printer, CreditCard, Smartphone, Banknote, ShoppingCart } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -15,12 +15,27 @@ import {
 import { Button } from "@/components/ui/button";
 import { Sale, Product } from "@/lib/types";
 
+function escapeHtml(value: unknown) {
+  return String(value ?? "").replace(/[&<>"']/g, (character) => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#039;",
+  })[character]!);
+}
+
 interface ReceiptDialogProps {
   sale: Sale | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   businessName?: string;
+  businessAddress?: string;
+  businessPhone?: string;
   taxId?: string;
+  taxRatePercent?: number;
+  currency?: string;
+  recordedByName?: string;
   allProducts: Product[];
 }
 
@@ -28,8 +43,13 @@ export function ReceiptDialog({
   sale,
   open,
   onOpenChange,
-  businessName = "Superette de l'Avenir",
-  taxId = "M012345678901L",
+  businessName = "Business Receipt",
+  businessAddress,
+  businessPhone,
+  taxId,
+  taxRatePercent = 0,
+  currency = "FCFA",
+  recordedByName,
   allProducts,
 }: ReceiptDialogProps) {
   const formattedDate = sale ? new Date(sale.saleDate).toLocaleString("en-US", {
@@ -46,17 +66,17 @@ export function ReceiptDialog({
       return sale.productsSold.map((item) => {
         const product = allProducts.find((p) => p.id === item.productId);
         return {
-          name: product?.name || `Product (${item.productId.substring(0, 5)})`,
+          name: item.productName || product?.name || `Product (${item.productId.substring(0, 5)})`,
           quantity: item.quantity,
           price: item.priceAtSale,
           total: item.quantity * item.priceAtSale,
         };
       });
     }
-    // Fallback if no specific products are logged (general sale)
+    // Preserve the recorded total while making absent historical line detail explicit.
     return [
       {
-        name: "General Merchandise",
+        name: "Sale total (line details unavailable)",
         quantity: 1,
         price: sale?.totalAmount ?? 0,
         total: sale?.totalAmount ?? 0,
@@ -68,9 +88,10 @@ export function ReceiptDialog({
 
   // Calculations using whole integers for FCFA
   const subtotal = sale.totalAmount;
-  const taxRate = 0.1925; // Cameroon VAT is 19.25%
+  const taxRate = Math.max(0, Math.min(Number(taxRatePercent) || 0, 100)) / 100;
   const computedTax = Math.round(subtotal * (taxRate / (1 + taxRate))); // Back-calculate tax from total
   const netAmount = subtotal - computedTax;
+  const taxLabel = `Tax (${(taxRate * 100).toLocaleString(undefined, { maximumFractionDigits: 4 })}%):`;
 
   const handlePrint = () => {
     // Create hidden iframe
@@ -88,7 +109,7 @@ export function ReceiptDialog({
       .map(
         (item) => `
       <tr>
-        <td style="padding: 4px 0;">${item.name}</td>
+        <td style="padding: 4px 0;">${escapeHtml(item.name)}</td>
         <td style="text-align: center; padding: 4px 0;">${item.quantity}</td>
         <td style="text-align: right; padding: 4px 0;">${item.price.toLocaleString()}</td>
         <td style="text-align: right; padding: 4px 0;">${item.total.toLocaleString()}</td>
@@ -101,7 +122,7 @@ export function ReceiptDialog({
       <!DOCTYPE html>
       <html>
         <head>
-          <title>Receipt_${sale.id}</title>
+          <title>Receipt_${escapeHtml(sale.id)}</title>
           <style>
             @page {
               size: 80mm auto;
@@ -132,18 +153,18 @@ export function ReceiptDialog({
         </head>
         <body>
           <div class="text-center header">
-            <div class="title">${businessName}</div>
-            <div>Akwa, Douala, Cameroon</div>
-            <div>NIU: ${taxId}</div>
-            <div>Tel: +237 600 000 000</div>
+            <div class="title">${escapeHtml(businessName)}</div>
+            ${businessAddress ? `<div>${escapeHtml(businessAddress)}</div>` : ""}
+            ${taxId ? `<div>Tax ID: ${escapeHtml(taxId)}</div>` : ""}
+            ${businessPhone ? `<div>Tel: ${escapeHtml(businessPhone)}</div>` : ""}
           </div>
 
           <div class="divider"></div>
 
-          <div><strong>Ref:</strong> ${sale.id}</div>
-          <div><strong>Date:</strong> ${formattedDate}</div>
-          <div><strong>Cashier:</strong> Operator</div>
-          <div><strong>Payment:</strong> ${sale.paymentMethod}</div>
+          <div><strong>Ref:</strong> ${escapeHtml(sale.id)}</div>
+          <div><strong>Date:</strong> ${escapeHtml(formattedDate)}</div>
+          <div><strong>Recorded by:</strong> ${escapeHtml(recordedByName || sale.recordedBy)}</div>
+          <div><strong>Payment:</strong> ${escapeHtml(sale.paymentMethod)}</div>
 
           <div class="divider"></div>
 
@@ -166,15 +187,15 @@ export function ReceiptDialog({
           <table class="totals-table">
             <tr>
               <td>Subtotal (HT):</td>
-              <td class="text-right">${netAmount.toLocaleString()} FCFA</td>
+              <td class="text-right">${netAmount.toLocaleString()} ${escapeHtml(currency)}</td>
             </tr>
             <tr>
-              <td>TVA (19.25%):</td>
-              <td class="text-right">${computedTax.toLocaleString()} FCFA</td>
+              <td>${escapeHtml(taxLabel)}</td>
+              <td class="text-right">${computedTax.toLocaleString()} ${escapeHtml(currency)}</td>
             </tr>
             <tr class="totals-row">
               <td>TOTAL (TTC):</td>
-              <td class="text-right">${sale.totalAmount.toLocaleString()} FCFA</td>
+              <td class="text-right">${sale.totalAmount.toLocaleString()} ${escapeHtml(currency)}</td>
             </tr>
           </table>
 
@@ -189,7 +210,7 @@ export function ReceiptDialog({
           <div class="text-center footer">
             * THANK YOU FOR YOUR PATRONAGE *<br>
             * MERCI POUR VOTRE FIDELITE *<br>
-            SmartERP AI — Akwa Hub
+            Generated by SmartERP
           </div>
 
           <script>
@@ -223,9 +244,9 @@ export function ReceiptDialog({
         <div className="bg-card border border-muted/50 rounded-lg p-6 font-mono text-xs text-foreground shadow-inner max-h-[50vh] overflow-y-auto my-4 bg-amber-50/5">
           <div className="text-center space-y-1 mb-4">
             <h3 className="font-bold text-sm uppercase tracking-wide text-primary font-sans">{businessName}</h3>
-            <p className="text-[10px] text-muted-foreground">Akwa, Douala, Cameroon</p>
-            <p className="text-[10px] text-muted-foreground font-sans">NIU: {taxId}</p>
-            <p className="text-[10px] text-muted-foreground">Tel: +237 600 000 000</p>
+            {businessAddress && <p className="text-[10px] text-muted-foreground">{businessAddress}</p>}
+            {taxId && <p className="text-[10px] text-muted-foreground font-sans">Tax ID: {taxId}</p>}
+            {businessPhone && <p className="text-[10px] text-muted-foreground">Tel: {businessPhone}</p>}
           </div>
 
           <div className="border-b border-dashed my-3" />
@@ -249,6 +270,10 @@ export function ReceiptDialog({
                 <span className="font-semibold font-sans text-xs">{sale.paymentMethod}</span>
               </span>
             </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground font-sans">Recorded by:</span>
+              <span className="font-semibold font-sans text-xs">{recordedByName || sale.recordedBy}</span>
+            </div>
           </div>
 
           <div className="border-b border-dashed my-3" />
@@ -263,7 +288,7 @@ export function ReceiptDialog({
               <div key={index} className="grid grid-cols-4 gap-1 text-[11px]">
                 <span className="col-span-2 truncate">{item.name}</span>
                 <span className="text-center">{item.quantity}</span>
-                <span className="text-right font-semibold">{(item.price * item.quantity).toLocaleString()} FCFA</span>
+                <span className="text-right font-semibold">{(item.price * item.quantity).toLocaleString()} {currency}</span>
               </div>
             ))}
           </div>
@@ -273,15 +298,15 @@ export function ReceiptDialog({
           <div className="space-y-1.5 text-[11px] font-sans">
             <div className="flex justify-between">
               <span className="text-muted-foreground">Subtotal (HT):</span>
-              <span>{netAmount.toLocaleString()} FCFA</span>
+              <span>{netAmount.toLocaleString()} {currency}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">TVA (19.25%):</span>
-              <span>{computedTax.toLocaleString()} FCFA</span>
+              <span className="text-muted-foreground">{taxLabel}</span>
+              <span>{computedTax.toLocaleString()} {currency}</span>
             </div>
             <div className="flex justify-between font-bold font-mono text-sm text-primary pt-1 border-t border-dotted">
               <span>TOTAL (TTC):</span>
-              <span>{sale.totalAmount.toLocaleString()} FCFA</span>
+              <span>{sale.totalAmount.toLocaleString()} {currency}</span>
             </div>
           </div>
 

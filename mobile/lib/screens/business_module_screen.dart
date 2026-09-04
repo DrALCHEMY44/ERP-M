@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+
+import '../models/app_user.dart';
 import '../services/auth_service.dart';
-import '../services/api_service.dart';
+import '../services/data_api.dart';
 import '../widgets/app_drawer.dart';
 
 enum BusinessModule { employees, customers, suppliers, documents, settings }
@@ -14,38 +16,35 @@ class BusinessModuleScreen extends StatefulWidget {
 }
 
 class _BusinessModuleScreenState extends State<BusinessModuleScreen> {
+  List<Map<String, dynamic>> _rows = const [];
   bool _loading = true;
   String? _error;
-  List<_BusinessRow> _rows = const [];
   String _query = '';
-
-  String get _route => '/${widget.module.name}';
-
-  Future<Map<String, dynamic>> _operation(
-    String operation, [
-    Map<String, dynamic> variables = const {},
-  ]) {
-    return ApiService.request(
-      '/api/data',
-      method: 'POST',
-      body: {'operation': operation, 'variables': variables},
-    );
-  }
 
   String get _title => switch (widget.module) {
     BusinessModule.employees => 'Employees',
     BusinessModule.customers => 'Customers',
     BusinessModule.suppliers => 'Suppliers',
     BusinessModule.documents => 'Documents',
-    BusinessModule.settings => 'Workspace settings',
+    BusinessModule.settings => 'Settings',
   };
-
-  IconData get _icon => switch (widget.module) {
-    BusinessModule.employees => Icons.badge_outlined,
-    BusinessModule.customers => Icons.people_outline,
-    BusinessModule.suppliers => Icons.local_shipping_outlined,
-    BusinessModule.documents => Icons.folder_outlined,
-    BusinessModule.settings => Icons.tune,
+  String get _listOperation => switch (widget.module) {
+    BusinessModule.employees => 'listEmployeesByBusiness',
+    BusinessModule.customers => 'listCustomersByBusiness',
+    BusinessModule.suppliers => 'listSuppliersByBusiness',
+    _ => '',
+  };
+  String get _listKey => switch (widget.module) {
+    BusinessModule.employees => 'employees',
+    BusinessModule.customers => 'customers',
+    BusinessModule.suppliers => 'suppliers',
+    _ => '',
+  };
+  bool get _canManage => switch (widget.module) {
+    BusinessModule.employees => AuthService.hasPermission('manageEmployees'),
+    BusinessModule.customers => AuthService.hasPermission('manageCustomers'),
+    BusinessModule.suppliers => AuthService.hasPermission('manageSuppliers'),
+    _ => false,
   };
 
   @override
@@ -55,225 +54,380 @@ class _BusinessModuleScreenState extends State<BusinessModuleScreen> {
   }
 
   Future<void> _load() async {
-    final user = AuthService.currentUser;
-    if (user == null) return;
     setState(() {
       _loading = true;
       _error = null;
     });
     try {
-      final rows = <_BusinessRow>[];
-      switch (widget.module) {
-        case BusinessModule.employees:
-          final result = await _operation('listEmployeesByBusiness');
-          for (final item
-              in (result['data']['employees'] as List<dynamic>)
-                  .cast<Map<String, dynamic>>()) {
-            rows.add(
-              _BusinessRow(
-                item['fullName'],
-                item['position'],
-                item['department'] ?? 'General',
-                Icons.badge_outlined,
-                id: item['id'],
-              ),
-            );
-          }
-          break;
-        case BusinessModule.customers:
-          final result = await _operation('listCustomersByBusiness');
-          for (final item
-              in (result['data']['customers'] as List<dynamic>)
-                  .cast<Map<String, dynamic>>()) {
-            rows.add(
-              _BusinessRow(
-                item['customerName'],
-                item['phoneNumber'] ?? 'No phone',
-                item['location'] ?? 'No location',
-                Icons.person_outline,
-                id: item['id'],
-                orders: item['totalOrders'] ?? 0,
-                spent: (item['totalSpent'] as num?)?.toDouble() ?? 0,
-              ),
-            );
-          }
-          break;
-        case BusinessModule.suppliers:
-          final result = await _operation('listSuppliersByBusiness');
-          for (final item
-              in (result['data']['suppliers'] as List<dynamic>)
-                  .cast<Map<String, dynamic>>()) {
-            rows.add(
-              _BusinessRow(
-                item['supplierName'],
-                item['phoneNumber'] ?? 'No phone',
-                item['email'] ?? 'No email',
-                Icons.local_shipping_outlined,
-                id: item['id'],
-              ),
-            );
-          }
-          break;
-        case BusinessModule.documents:
-          final result = await _operation('listDocumentsByBusiness');
-          for (final item
-              in (result['data']['documents'] as List<dynamic>)
-                  .cast<Map<String, dynamic>>()) {
-            rows.add(
-              _BusinessRow(
-                item['title'],
-                item['documentType'],
-                'Uploaded by ${item['uploadedBy']}',
-                Icons.description_outlined,
-                id: item['id'],
-              ),
-            );
-          }
-          break;
-        case BusinessModule.settings:
-          rows.addAll([
-            _BusinessRow(
-              'Business profile',
-              user.businessCode ?? user.businessId,
-              'Company identity and workspace details',
-              Icons.domain_outlined,
-              route: '/business-profile',
-            ),
-            const _BusinessRow(
-              'Notifications',
-              'Manage your alerts',
-              'Review unread workspace activity',
-              Icons.notifications_outlined,
-              route: '/notifications',
-            ),
-            const _BusinessRow(
-              'Account and role',
-              'Profile settings',
-              'Review your account access',
-              Icons.manage_accounts_outlined,
-              route: '/profile',
-            ),
-          ]);
-          break;
-      }
-      if (mounted) setState(() => _rows = rows);
+      final data = await DataApi.operation(_listOperation);
+      _rows = (data[_listKey] as List<dynamic>? ?? const [])
+          .cast<Map<String, dynamic>>();
     } catch (error) {
-      if (mounted) setState(() => _error = error.toString());
+      _error = error.toString();
     } finally {
       if (mounted) setState(() => _loading = false);
     }
   }
 
-  Future<void> _createRecord() async {
-    final user = AuthService.currentUser;
-    if (user == null || widget.module == BusinessModule.settings) return;
-    final primary = TextEditingController();
-    final secondary = TextEditingController();
-    final tertiary = TextEditingController();
-    final labels = switch (widget.module) {
-      BusinessModule.employees => ('Full name', 'Position', 'Department'),
-      BusinessModule.customers => ('Customer name', 'Phone number', 'Location'),
-      BusinessModule.suppliers => ('Supplier name', 'Phone number', 'Email'),
-      BusinessModule.documents => (
-        'Document title',
-        'Document type',
-        'File URL',
-      ),
-      BusinessModule.settings => ('', '', ''),
-    };
-    final shouldSave = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text('Add ${_title.toLowerCase()} record'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: primary,
-              autofocus: true,
-              decoration: InputDecoration(labelText: labels.$1),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: secondary,
-              decoration: InputDecoration(labelText: labels.$2),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: tertiary,
-              decoration: InputDecoration(labelText: labels.$3),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext, false),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(dialogContext, true),
-            child: const Text('Save'),
-          ),
-        ],
-      ),
-    );
-    if (shouldSave != true || primary.text.trim().isEmpty) return;
-    setState(() => _loading = true);
-    try {
-      switch (widget.module) {
-        case BusinessModule.employees:
-          await _operation('CreateEmployee', {
-            'fullName': primary.text.trim(),
-            'position': secondary.text.trim().isEmpty
-                ? 'Staff'
-                : secondary.text.trim(),
-            'department': tertiary.text.trim(),
-          });
-          break;
-        case BusinessModule.customers:
-          await _operation('CreateCustomer', {
-            'customerName': primary.text.trim(),
-            'phoneNumber': secondary.text.trim(),
-            'location': tertiary.text.trim(),
-          });
-          break;
-        case BusinessModule.suppliers:
-          await _operation('CreateSupplier', {
-            'supplierName': primary.text.trim(),
-            'phoneNumber': secondary.text.trim(),
-            'email': tertiary.text.trim(),
-          });
-          break;
-        case BusinessModule.documents:
-          await _operation('CreateDocument', {
-            'title': primary.text.trim(),
-            'documentType': secondary.text.trim().isEmpty
-                ? 'Other'
-                : secondary.text.trim(),
-            'fileUrl': tertiary.text.trim(),
-          });
-          break;
-        case BusinessModule.settings:
-          break;
-      }
-      await _load();
-    } catch (error) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Could not save record: $error')),
-        );
-      }
-      if (mounted) setState(() => _loading = false);
+  TextEditingController _controller(Map<String, dynamic>? row, String key) =>
+      TextEditingController(text: row?[key]?.toString() ?? '');
+
+  Future<void> _edit(Map<String, dynamic>? row) async {
+    switch (widget.module) {
+      case BusinessModule.employees:
+        await _employeeDialog(row);
+        break;
+      case BusinessModule.customers:
+        await _customerDialog(row);
+        break;
+      case BusinessModule.suppliers:
+        await _supplierDialog(row);
+        break;
+      default:
+        break;
     }
   }
 
-  Future<void> _deleteRecord(_BusinessRow row) async {
-    if (row.id == null) return;
+  Future<void> _employeeDialog(Map<String, dynamic>? row) async {
+    final name = _controller(row, 'fullName');
+    final position = _controller(row, 'position');
+    final department = _controller(row, 'department');
+    final email = _controller(row, 'email');
+    final contact = _controller(row, 'contact');
+    final salary = _controller(row, 'salary');
+    var role = row?['role']?.toString() == 'Manager' ? 'Manager' : 'Staff';
+    var status = row?['status']?.toString() ?? 'Active';
+    final isOwner = AuthService.currentUser?.role == UserRole.businessOwner;
+    if (!isOwner) role = 'Staff';
+    final formKey = GlobalKey<FormState>();
+    final save = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: Text(row == null ? 'Add employee and login' : 'Edit employee'),
+          content: SizedBox(
+            width: 520,
+            child: SingleChildScrollView(
+              child: Form(
+                key: formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextFormField(
+                      controller: name,
+                      decoration: const InputDecoration(labelText: 'Full name'),
+                      validator: _required,
+                    ),
+                    const SizedBox(height: 10),
+                    TextFormField(
+                      controller: position,
+                      decoration: const InputDecoration(labelText: 'Position'),
+                      validator: _required,
+                    ),
+                    const SizedBox(height: 10),
+                    TextFormField(
+                      controller: department,
+                      decoration: const InputDecoration(
+                        labelText: 'Department',
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    TextFormField(
+                      controller: email,
+                      keyboardType: TextInputType.emailAddress,
+                      decoration: const InputDecoration(
+                        labelText: 'Login email',
+                      ),
+                      validator: (value) => value != null && value.contains('@')
+                          ? null
+                          : 'Enter a valid email',
+                    ),
+                    const SizedBox(height: 10),
+                    TextFormField(
+                      controller: contact,
+                      keyboardType: TextInputType.phone,
+                      decoration: const InputDecoration(labelText: 'Contact'),
+                    ),
+                    const SizedBox(height: 10),
+                    TextFormField(
+                      controller: salary,
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(labelText: 'Salary'),
+                    ),
+                    const SizedBox(height: 10),
+                    DropdownButtonFormField<String>(
+                      initialValue: role,
+                      decoration: const InputDecoration(
+                        labelText: 'Application role',
+                      ),
+                      items: (isOwner ? ['Manager', 'Staff'] : ['Staff'])
+                          .map(
+                            (value) => DropdownMenuItem(
+                              value: value,
+                              child: Text(value),
+                            ),
+                          )
+                          .toList(),
+                      onChanged: (value) =>
+                          setDialogState(() => role = value ?? 'Staff'),
+                    ),
+                    const SizedBox(height: 10),
+                    DropdownButtonFormField<String>(
+                      initialValue:
+                          ['Active', 'Inactive', 'On Leave'].contains(status)
+                          ? status
+                          : 'Active',
+                      decoration: const InputDecoration(labelText: 'Status'),
+                      items: ['Active', 'Inactive', 'On Leave']
+                          .map(
+                            (value) => DropdownMenuItem(
+                              value: value,
+                              child: Text(value),
+                            ),
+                          )
+                          .toList(),
+                      onChanged: (value) =>
+                          setDialogState(() => status = value ?? 'Active'),
+                    ),
+                    if (row == null)
+                      const Padding(
+                        padding: EdgeInsets.only(top: 12),
+                        child: Text(
+                          'A secure access code will be generated and displayed once after saving.',
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              onPressed: () {
+                if (formKey.currentState!.validate()) {
+                  Navigator.pop(dialogContext, true);
+                }
+              },
+              child: const Text('Save'),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (save == true) {
+      final variables = <String, dynamic>{
+        if (row != null) 'id': row['id'],
+        'fullName': name.text.trim(),
+        'position': position.text.trim(),
+        'department': department.text.trim(),
+        'email': email.text.trim().toLowerCase(),
+        'contact': contact.text.trim(),
+        'salary': double.tryParse(salary.text),
+        'role': role,
+        'userRole': role,
+        'startDate':
+            row?['startDate'] ??
+            DateTime.now().toIso8601String().split('T').first,
+        'status': status,
+        'attendance': row?['attendance'] ?? 0,
+        'salaryPaymentStatus': row?['salaryPaymentStatus'] ?? 'Pending',
+      };
+      String? accessCode;
+      if (row == null) {
+        final suffix = AuthService.currentUser!.id.length >= 4
+            ? AuthService.currentUser!.id.substring(0, 4)
+            : AuthService.currentUser!.id;
+        accessCode =
+            'EMP-${DateTime.now().microsecondsSinceEpoch.toRadixString(36).toUpperCase()}-${suffix.toUpperCase()}';
+        variables['accessCode'] = accessCode;
+      }
+      await _saveOperation(
+        row == null ? 'CreateEmployeeWithAccess' : 'UpdateEmployeeWithAccess',
+        variables,
+      );
+      if (accessCode != null && mounted) {
+        await showDialog<void>(
+          context: context,
+          builder: (dialogContext) => AlertDialog(
+            title: const Text('Employee access created'),
+            content: SelectableText(
+              'Share this code securely with ${name.text.trim()}:\n\n$accessCode\n\nIt will not be shown again.',
+            ),
+            actions: [
+              FilledButton(
+                onPressed: () => Navigator.pop(dialogContext),
+                child: const Text('Done'),
+              ),
+            ],
+          ),
+        );
+      }
+    }
+    for (final controller in [
+      name,
+      position,
+      department,
+      email,
+      contact,
+      salary,
+    ]) {
+      controller.dispose();
+    }
+  }
+
+  Future<void> _customerDialog(Map<String, dynamic>? row) async {
+    final name = _controller(row, 'customerName');
+    final phone = _controller(row, 'phoneNumber');
+    final email = _controller(row, 'email');
+    final location = _controller(row, 'location');
+    final notes = _controller(row, 'notes');
+    final saved = await _recordDialog(
+      title: row == null ? 'Add customer' : 'Edit customer',
+      fields: [
+        (name, 'Customer name', TextInputType.name, 1, true),
+        (phone, 'Phone number', TextInputType.phone, 1, false),
+        (email, 'Email', TextInputType.emailAddress, 1, false),
+        (location, 'Location', TextInputType.streetAddress, 1, false),
+        (notes, 'Notes', TextInputType.multiline, 3, false),
+      ],
+    );
+    if (saved) {
+      await _saveOperation(row == null ? 'CreateCustomer' : 'UpdateCustomer', {
+        if (row != null) 'id': row['id'],
+        'customerName': name.text.trim(),
+        'phoneNumber': phone.text.trim(),
+        'email': email.text.trim(),
+        'location': location.text.trim(),
+        'notes': notes.text.trim(),
+      });
+    }
+    for (final controller in [name, phone, email, location, notes]) {
+      controller.dispose();
+    }
+  }
+
+  Future<void> _supplierDialog(Map<String, dynamic>? row) async {
+    final name = _controller(row, 'supplierName');
+    final phone = _controller(row, 'phoneNumber');
+    final email = _controller(row, 'email');
+    final location = _controller(row, 'location');
+    final products = _controller(row, 'productsSupplied');
+    final payment = _controller(row, 'paymentStatus');
+    final notes = _controller(row, 'notes');
+    final saved = await _recordDialog(
+      title: row == null ? 'Add supplier' : 'Edit supplier',
+      fields: [
+        (name, 'Supplier name', TextInputType.name, 1, true),
+        (phone, 'Phone number', TextInputType.phone, 1, false),
+        (email, 'Email', TextInputType.emailAddress, 1, false),
+        (location, 'Location', TextInputType.streetAddress, 1, false),
+        (products, 'Products supplied', TextInputType.text, 2, false),
+        (payment, 'Payment status', TextInputType.text, 1, false),
+        (notes, 'Notes', TextInputType.multiline, 3, false),
+      ],
+    );
+    if (saved) {
+      await _saveOperation(row == null ? 'CreateSupplier' : 'UpdateSupplier', {
+        if (row != null) 'id': row['id'],
+        'supplierName': name.text.trim(),
+        'phoneNumber': phone.text.trim(),
+        'email': email.text.trim(),
+        'location': location.text.trim(),
+        'productsSupplied': products.text.trim(),
+        'paymentStatus': payment.text.trim(),
+        'notes': notes.text.trim(),
+      });
+    }
+    for (final controller in [
+      name,
+      phone,
+      email,
+      location,
+      products,
+      payment,
+      notes,
+    ]) {
+      controller.dispose();
+    }
+  }
+
+  Future<bool> _recordDialog({
+    required String title,
+    required List<(TextEditingController, String, TextInputType, int, bool)>
+    fields,
+  }) async {
+    final formKey = GlobalKey<FormState>();
+    return await showDialog<bool>(
+          context: context,
+          builder: (dialogContext) => AlertDialog(
+            title: Text(title),
+            content: SizedBox(
+              width: 520,
+              child: SingleChildScrollView(
+                child: Form(
+                  key: formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      for (final field in fields) ...[
+                        TextFormField(
+                          controller: field.$1,
+                          keyboardType: field.$3,
+                          maxLines: field.$4,
+                          decoration: InputDecoration(labelText: field.$2),
+                          validator: field.$5 ? _required : null,
+                        ),
+                        const SizedBox(height: 10),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(dialogContext, false),
+                child: const Text('Cancel'),
+              ),
+              FilledButton(
+                onPressed: () {
+                  if (formKey.currentState!.validate()) {
+                    Navigator.pop(dialogContext, true);
+                  }
+                },
+                child: const Text('Save'),
+              ),
+            ],
+          ),
+        ) ??
+        false;
+  }
+
+  String? _required(String? value) =>
+      value == null || value.trim().isEmpty ? 'Required' : null;
+
+  Future<void> _saveOperation(
+    String operation,
+    Map<String, dynamic> variables,
+  ) async {
+    try {
+      await DataApi.operation(operation, variables);
+      await _load();
+    } catch (error) {
+      _message(error.toString(), error: true);
+    }
+  }
+
+  Future<void> _delete(Map<String, dynamic> row) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: const Text('Delete record?'),
-        content: Text('This will permanently delete “${row.title}”.'),
+        content: const Text('This action cannot be undone.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, false),
@@ -287,165 +441,129 @@ class _BusinessModuleScreenState extends State<BusinessModuleScreen> {
       ),
     );
     if (confirmed != true) return;
-    switch (widget.module) {
-      case BusinessModule.employees:
-        await _operation('DeleteEmployee', {'id': row.id});
-        break;
-      case BusinessModule.customers:
-        await _operation('DeleteCustomer', {'id': row.id});
-        break;
-      case BusinessModule.suppliers:
-        await _operation('DeleteSupplier', {'id': row.id});
-        break;
-      case BusinessModule.documents:
-        await _operation('DeleteDocument', {'id': row.id});
-        break;
-      case BusinessModule.settings:
-        break;
-    }
-    await _load();
+    final operation = switch (widget.module) {
+      BusinessModule.employees =>
+        (row['email']?.toString().isNotEmpty ?? false)
+            ? 'DeleteEmployeeWithAccess'
+            : 'DeleteEmployee',
+      BusinessModule.customers => 'DeleteCustomer',
+      BusinessModule.suppliers => 'DeleteSupplier',
+      _ => '',
+    };
+    await _saveOperation(operation, {'id': row['id']});
   }
+
+  void _message(String message, {bool error = false}) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: error ? Colors.red : null,
+      ),
+    );
+  }
+
+  String _name(Map<String, dynamic> row) => switch (widget.module) {
+    BusinessModule.employees => row['fullName']?.toString() ?? 'Employee',
+    BusinessModule.customers => row['customerName']?.toString() ?? 'Customer',
+    BusinessModule.suppliers => row['supplierName']?.toString() ?? 'Supplier',
+    _ => 'Record',
+  };
+  String _subtitle(Map<String, dynamic> row) => switch (widget.module) {
+    BusinessModule.employees =>
+      '${row['position'] ?? 'Staff'} • ${row['department'] ?? 'General'}\n${row['email'] ?? 'No login email'} • ${row['status'] ?? 'Active'}',
+    BusinessModule.customers =>
+      '${row['phoneNumber'] ?? 'No phone'} • ${row['location'] ?? 'No location'}\n${row['totalOrders'] ?? 0} orders • FCFA ${row['totalSpent'] ?? 0}',
+    BusinessModule.suppliers =>
+      '${row['phoneNumber'] ?? 'No phone'} • ${row['email'] ?? 'No email'}\n${row['productsSupplied'] ?? 'Products not specified'}',
+    _ => '',
+  };
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final filtered = _rows
-        .where(
-          (row) => '${row.title} ${row.subtitle} ${row.meta}'
-              .toLowerCase()
-              .contains(_query),
-        )
+        .where((row) => row.values.join(' ').toLowerCase().contains(_query))
         .toList();
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          _title,
-          style: const TextStyle(fontWeight: FontWeight.w800),
-        ),
+        title: Text(_title),
         actions: [
-          IconButton(onPressed: _load, icon: const Icon(Icons.refresh_rounded)),
+          IconButton(onPressed: _load, icon: const Icon(Icons.refresh)),
         ],
       ),
-      drawer: AppDrawer(currentRoute: _route),
-      floatingActionButton: widget.module == BusinessModule.settings
-          ? null
-          : FloatingActionButton.extended(
-              onPressed: _createRecord,
+      drawer: AppDrawer(currentRoute: '/${widget.module.name}'),
+      floatingActionButton: _canManage
+          ? FloatingActionButton.extended(
+              onPressed: () => _edit(null),
               icon: const Icon(Icons.add),
-              label: const Text('Add record'),
-            ),
+              label: Text(
+                'Add ${_title.substring(0, _title.length - 1).toLowerCase()}',
+              ),
+            )
+          : null,
       body: RefreshIndicator(
         onRefresh: _load,
         child: ListView(
           physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
+          padding: const EdgeInsets.all(16),
           children: [
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF1E3A8A), Color(0xFF4F46E5)],
-                ),
-                borderRadius: BorderRadius.circular(24),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: .14),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Icon(_icon, color: Colors.white),
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          _title,
-                          style: theme.textTheme.titleLarge?.copyWith(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                        Text(
-                          '${_rows.length} workspace records',
-                          style: const TextStyle(color: Color(0xFFCBD5E1)),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            if (widget.module == BusinessModule.customers) ...[
-              const SizedBox(height: 14),
-              _CustomerDashboard(rows: _rows),
-            ],
-            const SizedBox(height: 18),
             TextField(
+              decoration: const InputDecoration(
+                prefixIcon: Icon(Icons.search),
+                hintText: 'Search',
+              ),
               onChanged: (value) =>
                   setState(() => _query = value.trim().toLowerCase()),
-              decoration: const InputDecoration(
-                hintText: 'Search records',
-                prefixIcon: Icon(Icons.search_rounded),
-              ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 14),
             if (_loading)
-              const Padding(
-                padding: EdgeInsets.all(48),
-                child: Center(child: CircularProgressIndicator()),
+              const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(32),
+                  child: CircularProgressIndicator(),
+                ),
               )
             else if (_error != null)
-              _ErrorState(onRetry: _load)
+              Center(child: Text(_error!))
             else if (filtered.isEmpty)
-              _EmptyState(icon: _icon, title: _title)
+              Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(32),
+                  child: Text('No ${_title.toLowerCase()} found.'),
+                ),
+              )
             else
               ...filtered.map(
                 (row) => Card(
-                  margin: const EdgeInsets.only(bottom: 10),
                   child: ListTile(
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 8,
-                    ),
-                    leading: Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.primary.withValues(alpha: .08),
-                        borderRadius: BorderRadius.circular(14),
+                    leading: CircleAvatar(
+                      child: Icon(
+                        widget.module == BusinessModule.employees
+                            ? Icons.badge_outlined
+                            : widget.module == BusinessModule.customers
+                            ? Icons.person_outline
+                            : Icons.local_shipping_outlined,
                       ),
-                      child: Icon(row.icon, color: theme.colorScheme.primary),
                     ),
                     title: Text(
-                      row.title,
-                      style: const TextStyle(fontWeight: FontWeight.w700),
+                      _name(row),
+                      style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
-                    subtitle: Text('${row.subtitle}\n${row.meta}'),
+                    subtitle: Text(_subtitle(row)),
                     isThreeLine: true,
-                    trailing: row.id != null
+                    trailing: _canManage
                         ? PopupMenuButton<String>(
-                            onSelected: (_) => _deleteRecord(row),
+                            onSelected: (value) =>
+                                value == 'edit' ? _edit(row) : _delete(row),
                             itemBuilder: (_) => const [
+                              PopupMenuItem(value: 'edit', child: Text('Edit')),
                               PopupMenuItem(
                                 value: 'delete',
-                                child: Row(
-                                  children: [
-                                    Icon(Icons.delete_outline),
-                                    SizedBox(width: 8),
-                                    Text('Delete'),
-                                  ],
-                                ),
+                                child: Text('Delete'),
                               ),
                             ],
                           )
-                        : const Icon(Icons.arrow_forward_rounded),
-                    onTap: row.route == null
-                        ? null
-                        : () => Navigator.pushNamed(context, row.route!),
+                        : null,
                   ),
                 ),
               ),
@@ -454,268 +572,4 @@ class _BusinessModuleScreenState extends State<BusinessModuleScreen> {
       ),
     );
   }
-}
-
-class _BusinessRow {
-  final String title;
-  final String subtitle;
-  final String meta;
-  final IconData icon;
-  final String? route;
-  final String? id;
-  final int orders;
-  final double spent;
-  const _BusinessRow(
-    this.title,
-    this.subtitle,
-    this.meta,
-    this.icon, {
-    this.route,
-    this.id,
-    this.orders = 0,
-    this.spent = 0,
-  });
-}
-
-class _CustomerDashboard extends StatelessWidget {
-  final List<_BusinessRow> rows;
-  const _CustomerDashboard({required this.rows});
-
-  @override
-  Widget build(BuildContext context) {
-    final totalRevenue = rows.fold<double>(0, (sum, row) => sum + row.spent);
-    final totalOrders = rows.fold<int>(0, (sum, row) => sum + row.orders);
-    final repeat = rows.where((row) => row.orders > 1).length;
-    final repeatRate = rows.isEmpty
-        ? 0
-        : ((repeat / rows.length) * 100).round();
-    final top = [...rows]..sort((a, b) => b.spent.compareTo(a.spent));
-
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFF0B1423),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFF1E293B)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Row(
-            children: [
-              Icon(Icons.insights_rounded, color: Color(0xFF22D3EE), size: 18),
-              SizedBox(width: 8),
-              Text(
-                'Customer intelligence',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-              Spacer(),
-              Text(
-                'LIVE',
-                style: TextStyle(
-                  color: Color(0xFF34D399),
-                  fontSize: 9,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: 1.2,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 14),
-          Row(
-            children: [
-              Expanded(
-                child: _CustomerMetric(
-                  label: 'REVENUE',
-                  value: '${(totalRevenue / 1000000).toStringAsFixed(1)}M',
-                  color: const Color(0xFF34D399),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _CustomerMetric(
-                  label: 'ORDERS',
-                  value: '$totalOrders',
-                  color: const Color(0xFF22D3EE),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _CustomerMetric(
-                  label: 'REPEAT',
-                  value: '$repeatRate%',
-                  color: const Color(0xFFA78BFA),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 14),
-          const Text(
-            'Top relationships',
-            style: TextStyle(
-              color: Color(0xFF94A3B8),
-              fontSize: 10,
-              fontWeight: FontWeight.w800,
-              letterSpacing: .8,
-            ),
-          ),
-          const SizedBox(height: 8),
-          if (top.isEmpty)
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 10),
-              child: Text(
-                'Sales activity will reveal your top customers.',
-                style: TextStyle(color: Color(0xFF64748B), fontSize: 11),
-              ),
-            )
-          else
-            ...top
-                .take(3)
-                .toList()
-                .asMap()
-                .entries
-                .map(
-                  (entry) => Padding(
-                    padding: const EdgeInsets.only(top: 7),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 25,
-                          height: 25,
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            color: const Color(
-                              0xFF22D3EE,
-                            ).withValues(alpha: .1),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(
-                            '${entry.key + 1}',
-                            style: const TextStyle(
-                              color: Color(0xFF67E8F9),
-                              fontSize: 10,
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 9),
-                        Expanded(
-                          child: Text(
-                            entry.value.title,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ),
-                        Text(
-                          '${entry.value.spent.toStringAsFixed(0)} FCFA',
-                          style: const TextStyle(
-                            color: Color(0xFF34D399),
-                            fontSize: 10,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-        ],
-      ),
-    );
-  }
-}
-
-class _CustomerMetric extends StatelessWidget {
-  final String label;
-  final String value;
-  final Color color;
-  const _CustomerMetric({
-    required this.label,
-    required this.value,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.all(11),
-    decoration: BoxDecoration(
-      color: Colors.white.withValues(alpha: .035),
-      borderRadius: BorderRadius.circular(14),
-      border: Border.all(color: Colors.white.withValues(alpha: .05)),
-    ),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(
-            color: Color(0xFF64748B),
-            fontSize: 8,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-        const SizedBox(height: 5),
-        Text(
-          value,
-          style: TextStyle(
-            color: color,
-            fontSize: 15,
-            fontWeight: FontWeight.w900,
-          ),
-        ),
-      ],
-    ),
-  );
-}
-
-class _EmptyState extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  const _EmptyState({required this.icon, required this.title});
-  @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.symmetric(vertical: 64),
-    child: Column(
-      children: [
-        Icon(icon, size: 44, color: Colors.blueGrey.shade300),
-        const SizedBox(height: 12),
-        Text(
-          'No $title yet',
-          style: const TextStyle(fontWeight: FontWeight.w700),
-        ),
-        const SizedBox(height: 4),
-        const Text(
-          'Pull down to synchronize workspace data.',
-          style: TextStyle(color: Colors.blueGrey),
-        ),
-      ],
-    ),
-  );
-}
-
-class _ErrorState extends StatelessWidget {
-  final VoidCallback onRetry;
-  const _ErrorState({required this.onRetry});
-  @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.symmetric(vertical: 48),
-    child: Column(
-      children: [
-        const Icon(Icons.cloud_off_outlined, size: 42),
-        const SizedBox(height: 12),
-        const Text('Could not synchronize this module.'),
-        TextButton.icon(
-          onPressed: onRetry,
-          icon: const Icon(Icons.refresh),
-          label: const Text('Try again'),
-        ),
-      ],
-    ),
-  );
 }

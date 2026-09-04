@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 class ApiConfig {
   static const String _configuredBaseUrl = String.fromEnvironment(
     'API_BASE_URL',
@@ -11,7 +13,9 @@ class ApiConfig {
           'API_BASE_URL is required for release builds and must be an HTTPS URL.',
         );
       }
-      return 'http://10.0.2.2:9002';
+      // Chrome runs on the host machine; 10.0.2.2 is only the Android
+      // emulator's alias for that host.
+      return kIsWeb ? 'http://localhost:9002' : 'http://10.0.2.2:9002';
     }
 
     final uri = Uri.tryParse(value);

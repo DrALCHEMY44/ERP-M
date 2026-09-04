@@ -2,17 +2,12 @@
 "use client"
 
 import * as React from "react"
-import { 
-  BarChart3, 
-  Download, 
-  ShoppingCart, 
-  Package, 
-  TrendingUp, 
-  ArrowUpRight, 
-  ArrowDownRight,
-  Filter,
+import {
+  Download,
+  ShoppingCart,
+  Package,
+  TrendingUp,
   Loader2,
-  Calendar
 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -30,52 +25,74 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart"
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Legend, ResponsiveContainer, Line, LineChart } from "recharts"
-import { useFirestore } from "@/hooks/use-firestore"
-import { Sale, Product } from "@/lib/types"
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts"
+import { useNeonData } from "@/hooks/use-neon-data"
+import { useAuth } from "@/hooks/use-auth"
+import { getReportSummaryQuery, listProductsByBusinessQuery, type ReportSummary } from "@/lib/data-service"
+import { Product } from "@/lib/types"
+import { downloadCsv } from "@/lib/csv"
 
 export default function SalesInventoryReportPage() {
-  const { data: sales, loading: salesLoading } = useFirestore<Sale>('sales');
-  const { data: products, loading: productsLoading } = useFirestore<Product>('products');
+  const { profile } = useAuth();
+  const { data: summary, loading: summaryLoading, error: summaryError } = useNeonData<ReportSummary>({
+    query: getReportSummaryQuery,
+    skip: !profile,
+    refreshInterval: 15000,
+  });
+  const { data: productsData, loading: productsLoading } = useNeonData({
+    query: listProductsByBusinessQuery,
+    variables: { tenantId: profile?.tenantId || "", businessId: profile?.businessId || "" },
+    skip: !profile?.tenantId || !profile?.businessId,
+    refreshInterval: 15000,
+  });
+  const products = React.useMemo(() => (productsData?.products || []) as Product[], [productsData]);
 
   const stats = React.useMemo(() => {
-    const totalRevenue = sales.reduce((acc, s) => acc + s.totalAmount, 0);
-    const totalInventoryValue = products.reduce((acc, p) => acc + (p.quantity * p.costPrice), 0);
-    const totalItems = products.reduce((acc, p) => acc + p.quantity, 0);
-    
-    // Top products by revenue
-    const productRevenue: Record<string, number> = {};
-    sales.forEach(sale => {
-      sale.productsSold.forEach(item => {
-        productRevenue[item.productId] = (productRevenue[item.productId] || 0) + (item.quantity * item.priceAtSale);
-      });
-    });
-
-    const topProducts = Object.entries(productRevenue)
-      .map(([id, revenue]) => ({
-        name: products.find(p => p.id === id)?.name || "Unknown Product",
-        revenue
-      }))
-      .sort((a, b) => b.revenue - a.revenue)
-      .slice(0, 5);
-
-    return { totalRevenue, totalInventoryValue, totalItems, topProducts };
-  }, [sales, products]);
+    return {
+      totalRevenue: summary?.totalRevenue || 0,
+      totalInventoryValue: summary?.inventoryValue || 0,
+      totalItems: summary?.totalItems || 0,
+      topProducts: summary?.topProducts || [],
+    };
+  }, [summary]);
 
   const trendData = React.useMemo(() => {
-    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"];
-    return months.map(m => ({
-      name: m,
-      sales: Math.floor(Math.random() * 5000000) + 1000000,
-    }));
-  }, []);
+    const recorded = new Map((summary?.revenueTrend || []).map((row) => [row.month, row.sales]));
+    return Array.from({ length: 6 }, (_, index) => {
+      const date = new Date();
+      date.setDate(1);
+      date.setMonth(date.getMonth() - (5 - index));
+      const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+      return { name: date.toLocaleDateString(undefined, { month: "short" }), sales: recorded.get(key) || 0 };
+    });
+  }, [summary]);
 
-  if (salesLoading || productsLoading) {
+  const exportReport = React.useCallback(() => {
+    const date = new Date().toISOString().slice(0, 10);
+    downloadCsv(`sales-inventory-${date}.csv`, [
+      ["Sales and inventory report", date],
+      ["Total sales revenue", stats.totalRevenue],
+      ["Stock asset valuation", stats.totalInventoryValue],
+      ["Total inventory units", stats.totalItems],
+      [],
+      ["Product ID", "Name", "Category", "Quantity", "Cost price", "Selling price", "Inventory value"],
+      ...products.map((product) => [
+        product.id, product.name, product.category, product.quantity, product.costPrice,
+        product.sellingPrice, product.quantity * product.costPrice,
+      ]),
+    ]);
+  }, [products, stats]);
+
+  if (summaryLoading || productsLoading) {
     return (
       <div className="flex h-[60vh] items-center justify-center">
         <Loader2 className="size-8 animate-spin text-primary" />
       </div>
     );
+  }
+
+  if (summaryError) {
+    return <Card><CardContent className="p-6 text-sm text-destructive">Unable to load report data: {summaryError.message}</CardContent></Card>;
   }
 
   return (
@@ -86,7 +103,7 @@ export default function SalesInventoryReportPage() {
           <p className="text-sm text-muted-foreground uppercase tracking-widest font-bold text-[10px]">Deep Dive into Operational Revenue & Assets</p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" className="text-[10px] font-bold uppercase tracking-widest bg-card">
+          <Button variant="outline" size="sm" className="text-[10px] font-bold uppercase tracking-widest bg-card" onClick={exportReport}>
             <Download className="size-4 mr-2" /> Export CSV
           </Button>
         </div>
@@ -155,8 +172,8 @@ export default function SalesInventoryReportPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {stats.topProducts.map((p, i) => (
-                  <TableRow key={i} className="hover:bg-muted/10 text-xs">
+                {stats.topProducts.map((p) => (
+                  <TableRow key={p.id} className="hover:bg-muted/10 text-xs">
                     <TableCell className="font-bold">{p.name}</TableCell>
                     <TableCell className="text-right font-bold text-emerald-600">{p.revenue.toLocaleString()}</TableCell>
                   </TableRow>
@@ -170,7 +187,7 @@ export default function SalesInventoryReportPage() {
       <Card className="shadow-sm">
         <CardHeader className="bg-muted/30 border-b flex flex-row items-center justify-between p-4">
           <div>
-            <CardTitle className="text-sm font-bold uppercase">Inventory & Sales Audit</CardTitle>
+            <CardTitle className="text-sm font-bold uppercase">Inventory & Sales Detail</CardTitle>
             <CardDescription className="text-[10px] font-medium uppercase tracking-tighter">Unified list of products and their current commercial value</CardDescription>
           </div>
           <Badge variant="outline" className="text-[9px] font-bold uppercase bg-card">Real-time Synchronization</Badge>

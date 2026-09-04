@@ -6,8 +6,6 @@
     "frontend:dev": "npm --prefix frontend run dev",
     "frontend:typecheck": "npm --prefix frontend run typecheck",
     "frontend:build": "npm --prefix frontend run build",
-    "backend:emulators": "npx -y firebase-tools@latest --config backend/firebase.json emulators:start",
-    "backend:compile": "npx -y firebase-tools@latest --config backend/firebase.json dataconnect:compile",
-    "backend:generate": "npx -y firebase-tools@latest --config backend/firebase.json dataconnect:sdk:generate"
+    "backend:auth-emulator": "npx -y firebase-tools@latest --config backend/firebase.json --project demo-smarterp-ai-defence-local emulators:start --only auth"
   }
 }

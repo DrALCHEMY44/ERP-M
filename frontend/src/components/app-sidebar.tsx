@@ -17,11 +17,13 @@ import {
   FileText,
   PieChart,
   History,
-  Languages,
   ShieldCheck,
   Globe,
   Loader2,
   Megaphone,
+  CalendarCheck,
+  WalletCards,
+  BookOpenCheck,
 } from "lucide-react"
 
 import {
@@ -47,9 +49,9 @@ import {
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { useTranslation } from "@/components/language-provider"
-import { signOut } from "firebase/auth"
-import { auth } from "@/lib/firebase"
+import { authClient } from "@/lib/auth/client"
 import { useAuth } from "@/hooks/use-auth"
+import { canAccessRoute } from "@/lib/client-access"
 
 export function AppSidebar() {
   const pathname = usePathname()
@@ -60,31 +62,20 @@ export function AppSidebar() {
 
   const handleLogout = async () => {
     try {
-      await signOut(auth)
+      await authClient.signOut()
       router.push("/login")
     } catch (error) {
       console.error("Logout error", error)
     }
   }
 
-  const allowedRoutes: Record<string, string[]> = {
-    "/admin/dashboard": ["Platform Super Admin"],
-    "/inventory": ["Business Owner", "Manager", "Staff", "Viewer", "Accountant"],
-    "/sales": ["Business Owner", "Manager", "Accountant", "Staff", "Viewer"],
-    "/expenses": ["Business Owner", "Manager", "Accountant"],
-    "/finance": ["Business Owner", "Accountant"],
-    "/employees": ["Business Owner", "HR Officer"],
-    "/customers": ["Business Owner", "Manager"],
-    "/suppliers": ["Business Owner", "Manager"],
-    "/activity-logs": ["Business Owner", "Manager"],
-    "/settings": ["Business Owner"],
-  }
-  const canOpen = (href: string) => !allowedRoutes[href] || allowedRoutes[href].includes(profile?.role || "")
+  const canOpen = (href: string) => canAccessRoute(href, profile?.role)
   const groups = [
     {
       label: "Platform Administration",
       items: [
         { name: "SaaS Dashboard", icon: ShieldCheck, href: "/admin/dashboard", accent: true },
+        { name: "Platform Users", icon: Users, href: "/admin/users" },
       ]
     },
     {
@@ -101,6 +92,7 @@ export function AppSidebar() {
         { name: t('common.sales'), icon: ShoppingCart, href: "/sales" },
         { name: t('common.expenses'), icon: Receipt, href: "/expenses" },
         { name: t('common.finance'), icon: BarChart3, href: "/finance" },
+        { name: "Accounting", icon: BookOpenCheck, href: "/accounting" },
       ]
     },
     {
@@ -109,6 +101,8 @@ export function AppSidebar() {
         { name: t('common.tasks'), icon: Briefcase, href: "/tasks" },
         { name: "Announcements", icon: Megaphone, href: "/announcements" },
         { name: t('common.employees'), icon: Users, href: "/employees" },
+        { name: "HR Operations", icon: CalendarCheck, href: "/hr" },
+        { name: "Payroll", icon: WalletCards, href: "/payroll" },
         { name: t('common.customers'), icon: UserCircle, href: "/customers" },
         { name: t('common.suppliers'), icon: Truck, href: "/suppliers" },
       ]
@@ -200,9 +194,11 @@ export function AppSidebar() {
               <span>{language === 'en' ? 'Français' : 'English'}</span>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <Link href="/business-profile">
-              <DropdownMenuItem className="cursor-pointer">{t('common.profile')}</DropdownMenuItem>
-            </Link>
+            {canOpen("/business-profile") && (
+              <DropdownMenuItem asChild className="cursor-pointer">
+                <Link href="/business-profile">{t('common.profile')}</Link>
+              </DropdownMenuItem>
+            )}
             <DropdownMenuItem className="cursor-pointer text-destructive" onClick={handleLogout}>{t('common.logout')}</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

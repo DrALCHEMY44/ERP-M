@@ -291,6 +291,60 @@ ref.subscribe(...);
 ```
 
 
+### getBusinessSettings
+#### Required Arguments
+```dart
+String tenantId = ...;
+String businessId = ...;
+ExampleConnector.instance.getBusinessSettings(
+  tenantId: tenantId,
+  businessId: businessId,
+).execute();
+```
+
+
+
+#### Return Type
+`execute()` returns a `QueryResult<getBusinessSettingsData, getBusinessSettingsVariables>`
+```dart
+/// Result of an Operation Request (query/mutation).
+class OperationResult<Data, Variables> {
+  OperationResult(this.dataConnect, this.data, this.ref);
+  Data data;
+  OperationRef<Data, Variables> ref;
+  FirebaseDataConnect dataConnect;
+}
+
+/// Result of a query request. Created to hold extra variables in the future.
+class QueryResult<Data, Variables> extends OperationResult<Data, Variables> {
+  QueryResult(super.dataConnect, super.data, super.ref);
+}
+
+final result = await ExampleConnector.instance.getBusinessSettings(
+  tenantId: tenantId,
+  businessId: businessId,
+);
+getBusinessSettingsData data = result.data;
+final ref = result.ref;
+```
+
+#### Getting the Ref
+Each builder returns an `execute` function, which is a helper function that creates a `Ref` object, and executes the underlying operation.
+An example of how to use the `Ref` object is shown below:
+```dart
+String tenantId = ...;
+String businessId = ...;
+
+final ref = ExampleConnector.instance.getBusinessSettings(
+  tenantId: tenantId,
+  businessId: businessId,
+).ref();
+ref.execute();
+
+ref.subscribe(...);
+```
+
+
 ### getBusinessByCode
 #### Required Arguments
 ```dart
@@ -631,6 +685,173 @@ String tenantId = ...;
 String businessId = ...;
 
 final ref = ExampleConnector.instance.listCustomersByBusiness(
+  tenantId: tenantId,
+  businessId: businessId,
+).ref();
+ref.execute();
+
+ref.subscribe(...);
+```
+
+
+### getCustomerForCompany
+#### Required Arguments
+```dart
+String id = ...;
+String tenantId = ...;
+String businessId = ...;
+ExampleConnector.instance.getCustomerForCompany(
+  id: id,
+  tenantId: tenantId,
+  businessId: businessId,
+).execute();
+```
+
+
+
+#### Return Type
+`execute()` returns a `QueryResult<getCustomerForCompanyData, getCustomerForCompanyVariables>`
+```dart
+/// Result of an Operation Request (query/mutation).
+class OperationResult<Data, Variables> {
+  OperationResult(this.dataConnect, this.data, this.ref);
+  Data data;
+  OperationRef<Data, Variables> ref;
+  FirebaseDataConnect dataConnect;
+}
+
+/// Result of a query request. Created to hold extra variables in the future.
+class QueryResult<Data, Variables> extends OperationResult<Data, Variables> {
+  QueryResult(super.dataConnect, super.data, super.ref);
+}
+
+final result = await ExampleConnector.instance.getCustomerForCompany(
+  id: id,
+  tenantId: tenantId,
+  businessId: businessId,
+);
+getCustomerForCompanyData data = result.data;
+final ref = result.ref;
+```
+
+#### Getting the Ref
+Each builder returns an `execute` function, which is a helper function that creates a `Ref` object, and executes the underlying operation.
+An example of how to use the `Ref` object is shown below:
+```dart
+String id = ...;
+String tenantId = ...;
+String businessId = ...;
+
+final ref = ExampleConnector.instance.getCustomerForCompany(
+  id: id,
+  tenantId: tenantId,
+  businessId: businessId,
+).ref();
+ref.execute();
+
+ref.subscribe(...);
+```
+
+
+### listSaleCustomersByBusiness
+#### Required Arguments
+```dart
+String tenantId = ...;
+String businessId = ...;
+ExampleConnector.instance.listSaleCustomersByBusiness(
+  tenantId: tenantId,
+  businessId: businessId,
+).execute();
+```
+
+
+
+#### Return Type
+`execute()` returns a `QueryResult<listSaleCustomersByBusinessData, listSaleCustomersByBusinessVariables>`
+```dart
+/// Result of an Operation Request (query/mutation).
+class OperationResult<Data, Variables> {
+  OperationResult(this.dataConnect, this.data, this.ref);
+  Data data;
+  OperationRef<Data, Variables> ref;
+  FirebaseDataConnect dataConnect;
+}
+
+/// Result of a query request. Created to hold extra variables in the future.
+class QueryResult<Data, Variables> extends OperationResult<Data, Variables> {
+  QueryResult(super.dataConnect, super.data, super.ref);
+}
+
+final result = await ExampleConnector.instance.listSaleCustomersByBusiness(
+  tenantId: tenantId,
+  businessId: businessId,
+);
+listSaleCustomersByBusinessData data = result.data;
+final ref = result.ref;
+```
+
+#### Getting the Ref
+Each builder returns an `execute` function, which is a helper function that creates a `Ref` object, and executes the underlying operation.
+An example of how to use the `Ref` object is shown below:
+```dart
+String tenantId = ...;
+String businessId = ...;
+
+final ref = ExampleConnector.instance.listSaleCustomersByBusiness(
+  tenantId: tenantId,
+  businessId: businessId,
+).ref();
+ref.execute();
+
+ref.subscribe(...);
+```
+
+
+### listTaskAssigneesByBusiness
+#### Required Arguments
+```dart
+String tenantId = ...;
+String businessId = ...;
+ExampleConnector.instance.listTaskAssigneesByBusiness(
+  tenantId: tenantId,
+  businessId: businessId,
+).execute();
+```
+
+
+
+#### Return Type
+`execute()` returns a `QueryResult<listTaskAssigneesByBusinessData, listTaskAssigneesByBusinessVariables>`
+```dart
+/// Result of an Operation Request (query/mutation).
+class OperationResult<Data, Variables> {
+  OperationResult(this.dataConnect, this.data, this.ref);
+  Data data;
+  OperationRef<Data, Variables> ref;
+  FirebaseDataConnect dataConnect;
+}
+
+/// Result of a query request. Created to hold extra variables in the future.
+class QueryResult<Data, Variables> extends OperationResult<Data, Variables> {
+  QueryResult(super.dataConnect, super.data, super.ref);
+}
+
+final result = await ExampleConnector.instance.listTaskAssigneesByBusiness(
+  tenantId: tenantId,
+  businessId: businessId,
+);
+listTaskAssigneesByBusinessData data = result.data;
+final ref = result.ref;
+```
+
+#### Getting the Ref
+Each builder returns an `execute` function, which is a helper function that creates a `Ref` object, and executes the underlying operation.
+An example of how to use the `Ref` object is shown below:
+```dart
+String tenantId = ...;
+String businessId = ...;
+
+final ref = ExampleConnector.instance.listTaskAssigneesByBusiness(
   tenantId: tenantId,
   businessId: businessId,
 ).ref();
@@ -1345,6 +1566,93 @@ ref.subscribe(...);
 
 ## Mutations
 
+### BootstrapWorkspace
+#### Required Arguments
+```dart
+String tenantId = ...;
+String businessId = ...;
+String userId = ...;
+String name = ...;
+String businessSector = ...;
+String location = ...;
+String region = ...;
+String ownerEmail = ...;
+String fullName = ...;
+String code = ...;
+ExampleConnector.instance.bootstrapWorkspace(
+  tenantId: tenantId,
+  businessId: businessId,
+  userId: userId,
+  name: name,
+  businessSector: businessSector,
+  location: location,
+  region: region,
+  ownerEmail: ownerEmail,
+  fullName: fullName,
+  code: code,
+).execute();
+```
+
+
+
+#### Return Type
+`execute()` returns a `OperationResult<BootstrapWorkspaceData, BootstrapWorkspaceVariables>`
+```dart
+/// Result of an Operation Request (query/mutation).
+class OperationResult<Data, Variables> {
+  OperationResult(this.dataConnect, this.data, this.ref);
+  Data data;
+  OperationRef<Data, Variables> ref;
+  FirebaseDataConnect dataConnect;
+}
+
+final result = await ExampleConnector.instance.bootstrapWorkspace(
+  tenantId: tenantId,
+  businessId: businessId,
+  userId: userId,
+  name: name,
+  businessSector: businessSector,
+  location: location,
+  region: region,
+  ownerEmail: ownerEmail,
+  fullName: fullName,
+  code: code,
+);
+BootstrapWorkspaceData data = result.data;
+final ref = result.ref;
+```
+
+#### Getting the Ref
+Each builder returns an `execute` function, which is a helper function that creates a `Ref` object, and executes the underlying operation.
+An example of how to use the `Ref` object is shown below:
+```dart
+String tenantId = ...;
+String businessId = ...;
+String userId = ...;
+String name = ...;
+String businessSector = ...;
+String location = ...;
+String region = ...;
+String ownerEmail = ...;
+String fullName = ...;
+String code = ...;
+
+final ref = ExampleConnector.instance.bootstrapWorkspace(
+  tenantId: tenantId,
+  businessId: businessId,
+  userId: userId,
+  name: name,
+  businessSector: businessSector,
+  location: location,
+  region: region,
+  ownerEmail: ownerEmail,
+  fullName: fullName,
+  code: code,
+).ref();
+ref.execute();
+```
+
+
 ### CreateTenant
 #### Required Arguments
 ```dart
@@ -1967,8 +2275,36 @@ class UpdateBusinessVariablesBuilder {
    _businessType.value = t;
    return this;
   }
+  UpdateBusinessVariablesBuilder entityType(String? t) {
+   _entityType.value = t;
+   return this;
+  }
+  UpdateBusinessVariablesBuilder city(String? t) {
+   _city.value = t;
+   return this;
+  }
   UpdateBusinessVariablesBuilder region(String? t) {
    _region.value = t;
+   return this;
+  }
+  UpdateBusinessVariablesBuilder phone(String? t) {
+   _phone.value = t;
+   return this;
+  }
+  UpdateBusinessVariablesBuilder email(String? t) {
+   _email.value = t;
+   return this;
+  }
+  UpdateBusinessVariablesBuilder taxId(String? t) {
+   _taxId.value = t;
+   return this;
+  }
+  UpdateBusinessVariablesBuilder description(String? t) {
+   _description.value = t;
+   return this;
+  }
+  UpdateBusinessVariablesBuilder logoUrl(String? t) {
+   _logoUrl.value = t;
    return this;
   }
   UpdateBusinessVariablesBuilder code(String? t) {
@@ -1985,7 +2321,14 @@ ExampleConnector.instance.updateBusiness(
 .name(name)
 .location(location)
 .businessType(businessType)
+.entityType(entityType)
+.city(city)
 .region(region)
+.phone(phone)
+.email(email)
+.taxId(taxId)
+.description(description)
+.logoUrl(logoUrl)
 .code(code)
 .execute();
 ```
@@ -2016,6 +2359,78 @@ String id = ...;
 
 final ref = ExampleConnector.instance.updateBusiness(
   id: id,
+).ref();
+ref.execute();
+```
+
+
+### UpsertBusinessSettings
+#### Required Arguments
+```dart
+String tenantId = ...;
+String businessId = ...;
+String currency = ...;
+String timezone = ...;
+String fiscalYearStart = ...;
+double taxRate = ...;
+int lowStockThreshold = ...;
+ExampleConnector.instance.upsertBusinessSettings(
+  tenantId: tenantId,
+  businessId: businessId,
+  currency: currency,
+  timezone: timezone,
+  fiscalYearStart: fiscalYearStart,
+  taxRate: taxRate,
+  lowStockThreshold: lowStockThreshold,
+).execute();
+```
+
+
+
+#### Return Type
+`execute()` returns a `OperationResult<UpsertBusinessSettingsData, UpsertBusinessSettingsVariables>`
+```dart
+/// Result of an Operation Request (query/mutation).
+class OperationResult<Data, Variables> {
+  OperationResult(this.dataConnect, this.data, this.ref);
+  Data data;
+  OperationRef<Data, Variables> ref;
+  FirebaseDataConnect dataConnect;
+}
+
+final result = await ExampleConnector.instance.upsertBusinessSettings(
+  tenantId: tenantId,
+  businessId: businessId,
+  currency: currency,
+  timezone: timezone,
+  fiscalYearStart: fiscalYearStart,
+  taxRate: taxRate,
+  lowStockThreshold: lowStockThreshold,
+);
+UpsertBusinessSettingsData data = result.data;
+final ref = result.ref;
+```
+
+#### Getting the Ref
+Each builder returns an `execute` function, which is a helper function that creates a `Ref` object, and executes the underlying operation.
+An example of how to use the `Ref` object is shown below:
+```dart
+String tenantId = ...;
+String businessId = ...;
+String currency = ...;
+String timezone = ...;
+String fiscalYearStart = ...;
+double taxRate = ...;
+int lowStockThreshold = ...;
+
+final ref = ExampleConnector.instance.upsertBusinessSettings(
+  tenantId: tenantId,
+  businessId: businessId,
+  currency: currency,
+  timezone: timezone,
+  fiscalYearStart: fiscalYearStart,
+  taxRate: taxRate,
+  lowStockThreshold: lowStockThreshold,
 ).ref();
 ref.execute();
 ```
@@ -2163,9 +2578,13 @@ ref.execute();
 ```dart
 String taskId = ...;
 String userId = ...;
+String tenantId = ...;
+String businessId = ...;
 ExampleConnector.instance.completeAssignedTask(
   taskId: taskId,
   userId: userId,
+  tenantId: tenantId,
+  businessId: businessId,
 ).execute();
 ```
 
@@ -2185,6 +2604,8 @@ class OperationResult<Data, Variables> {
 final result = await ExampleConnector.instance.completeAssignedTask(
   taskId: taskId,
   userId: userId,
+  tenantId: tenantId,
+  businessId: businessId,
 );
 CompleteAssignedTaskData data = result.data;
 final ref = result.ref;
@@ -2196,10 +2617,14 @@ An example of how to use the `Ref` object is shown below:
 ```dart
 String taskId = ...;
 String userId = ...;
+String tenantId = ...;
+String businessId = ...;
 
 final ref = ExampleConnector.instance.completeAssignedTask(
   taskId: taskId,
   userId: userId,
+  tenantId: tenantId,
+  businessId: businessId,
 ).ref();
 ref.execute();
 ```
@@ -2246,6 +2671,10 @@ class CreateProductVariablesBuilder {
    _lowStockLevel.value = t;
    return this;
   }
+  CreateProductVariablesBuilder status(String? t) {
+   _status.value = t;
+   return this;
+  }
 
   ...
 }
@@ -2261,6 +2690,7 @@ ExampleConnector.instance.createProduct(
 .costPrice(costPrice)
 .expiryDate(expiryDate)
 .lowStockLevel(lowStockLevel)
+.status(status)
 .execute();
 ```
 
@@ -2361,6 +2791,10 @@ class UpdateProductVariablesBuilder {
    _lowStockLevel.value = t;
    return this;
   }
+  UpdateProductVariablesBuilder status(String? t) {
+   _status.value = t;
+   return this;
+  }
   UpdateProductVariablesBuilder createdBy(String? t) {
    _createdBy.value = t;
    return this;
@@ -2380,6 +2814,7 @@ ExampleConnector.instance.updateProduct(
 .sellingPrice(sellingPrice)
 .expiryDate(expiryDate)
 .lowStockLevel(lowStockLevel)
+.status(status)
 .createdBy(createdBy)
 .execute();
 ```
@@ -2486,6 +2921,10 @@ class CreateTransactionVariablesBuilder {
    _category.value = t;
    return this;
   }
+  CreateTransactionVariablesBuilder description(String? t) {
+   _description.value = t;
+   return this;
+  }
   CreateTransactionVariablesBuilder receiptUrl(String? t) {
    _receiptUrl.value = t;
    return this;
@@ -2502,6 +2941,7 @@ ExampleConnector.instance.createTransaction(
   recordedBy: recordedBy,
 )
 .category(category)
+.description(description)
 .receiptUrl(receiptUrl)
 .execute();
 ```
@@ -2591,6 +3031,10 @@ class UpdateTransactionVariablesBuilder {
    _category.value = t;
    return this;
   }
+  UpdateTransactionVariablesBuilder description(String? t) {
+   _description.value = t;
+   return this;
+  }
   UpdateTransactionVariablesBuilder receiptUrl(String? t) {
    _receiptUrl.value = t;
    return this;
@@ -2611,6 +3055,7 @@ ExampleConnector.instance.updateTransaction(
 .amount(amount)
 .date(date)
 .category(category)
+.description(description)
 .receiptUrl(receiptUrl)
 .recordedBy(recordedBy)
 .execute();
@@ -2873,6 +3318,331 @@ ref.execute();
 ```
 
 
+### CreateEmployeeWithAccess
+#### Required Arguments
+```dart
+String tenantId = ...;
+String businessId = ...;
+String fullName = ...;
+String position = ...;
+String userRole = ...;
+String email = ...;
+String accessCodeHash = ...;
+ExampleConnector.instance.createEmployeeWithAccess(
+  tenantId: tenantId,
+  businessId: businessId,
+  fullName: fullName,
+  position: position,
+  userRole: userRole,
+  email: email,
+  accessCodeHash: accessCodeHash,
+).execute();
+```
+
+#### Optional Arguments
+We return a builder for each query. For CreateEmployeeWithAccess, we created `CreateEmployeeWithAccessBuilder`. For queries and mutations with optional parameters, we return a builder class.
+The builder pattern allows Data Connect to distinguish between fields that haven't been set and fields that have been set to null. A field can be set by calling its respective setter method like below:
+```dart
+class CreateEmployeeWithAccessVariablesBuilder {
+  ...
+   CreateEmployeeWithAccessVariablesBuilder role(String? t) {
+   _role.value = t;
+   return this;
+  }
+  CreateEmployeeWithAccessVariablesBuilder salary(double? t) {
+   _salary.value = t;
+   return this;
+  }
+  CreateEmployeeWithAccessVariablesBuilder department(String? t) {
+   _department.value = t;
+   return this;
+  }
+  CreateEmployeeWithAccessVariablesBuilder contact(String? t) {
+   _contact.value = t;
+   return this;
+  }
+  CreateEmployeeWithAccessVariablesBuilder startDate(DateTime? t) {
+   _startDate.value = t;
+   return this;
+  }
+  CreateEmployeeWithAccessVariablesBuilder status(String? t) {
+   _status.value = t;
+   return this;
+  }
+  CreateEmployeeWithAccessVariablesBuilder attendance(double? t) {
+   _attendance.value = t;
+   return this;
+  }
+  CreateEmployeeWithAccessVariablesBuilder salaryPaymentStatus(String? t) {
+   _salaryPaymentStatus.value = t;
+   return this;
+  }
+
+  ...
+}
+ExampleConnector.instance.createEmployeeWithAccess(
+  tenantId: tenantId,
+  businessId: businessId,
+  fullName: fullName,
+  position: position,
+  userRole: userRole,
+  email: email,
+  accessCodeHash: accessCodeHash,
+)
+.role(role)
+.salary(salary)
+.department(department)
+.contact(contact)
+.startDate(startDate)
+.status(status)
+.attendance(attendance)
+.salaryPaymentStatus(salaryPaymentStatus)
+.execute();
+```
+
+#### Return Type
+`execute()` returns a `OperationResult<CreateEmployeeWithAccessData, CreateEmployeeWithAccessVariables>`
+```dart
+/// Result of an Operation Request (query/mutation).
+class OperationResult<Data, Variables> {
+  OperationResult(this.dataConnect, this.data, this.ref);
+  Data data;
+  OperationRef<Data, Variables> ref;
+  FirebaseDataConnect dataConnect;
+}
+
+final result = await ExampleConnector.instance.createEmployeeWithAccess(
+  tenantId: tenantId,
+  businessId: businessId,
+  fullName: fullName,
+  position: position,
+  userRole: userRole,
+  email: email,
+  accessCodeHash: accessCodeHash,
+);
+CreateEmployeeWithAccessData data = result.data;
+final ref = result.ref;
+```
+
+#### Getting the Ref
+Each builder returns an `execute` function, which is a helper function that creates a `Ref` object, and executes the underlying operation.
+An example of how to use the `Ref` object is shown below:
+```dart
+String tenantId = ...;
+String businessId = ...;
+String fullName = ...;
+String position = ...;
+String userRole = ...;
+String email = ...;
+String accessCodeHash = ...;
+
+final ref = ExampleConnector.instance.createEmployeeWithAccess(
+  tenantId: tenantId,
+  businessId: businessId,
+  fullName: fullName,
+  position: position,
+  userRole: userRole,
+  email: email,
+  accessCodeHash: accessCodeHash,
+).ref();
+ref.execute();
+```
+
+
+### UpdateEmployeeWithAccess
+#### Required Arguments
+```dart
+String id = ...;
+String tenantId = ...;
+String businessId = ...;
+String currentEmail = ...;
+String fullName = ...;
+String position = ...;
+String userRole = ...;
+String email = ...;
+ExampleConnector.instance.updateEmployeeWithAccess(
+  id: id,
+  tenantId: tenantId,
+  businessId: businessId,
+  currentEmail: currentEmail,
+  fullName: fullName,
+  position: position,
+  userRole: userRole,
+  email: email,
+).execute();
+```
+
+#### Optional Arguments
+We return a builder for each query. For UpdateEmployeeWithAccess, we created `UpdateEmployeeWithAccessBuilder`. For queries and mutations with optional parameters, we return a builder class.
+The builder pattern allows Data Connect to distinguish between fields that haven't been set and fields that have been set to null. A field can be set by calling its respective setter method like below:
+```dart
+class UpdateEmployeeWithAccessVariablesBuilder {
+  ...
+   UpdateEmployeeWithAccessVariablesBuilder role(String? t) {
+   _role.value = t;
+   return this;
+  }
+  UpdateEmployeeWithAccessVariablesBuilder salary(double? t) {
+   _salary.value = t;
+   return this;
+  }
+  UpdateEmployeeWithAccessVariablesBuilder department(String? t) {
+   _department.value = t;
+   return this;
+  }
+  UpdateEmployeeWithAccessVariablesBuilder contact(String? t) {
+   _contact.value = t;
+   return this;
+  }
+  UpdateEmployeeWithAccessVariablesBuilder startDate(DateTime? t) {
+   _startDate.value = t;
+   return this;
+  }
+  UpdateEmployeeWithAccessVariablesBuilder status(String? t) {
+   _status.value = t;
+   return this;
+  }
+  UpdateEmployeeWithAccessVariablesBuilder attendance(double? t) {
+   _attendance.value = t;
+   return this;
+  }
+  UpdateEmployeeWithAccessVariablesBuilder salaryPaymentStatus(String? t) {
+   _salaryPaymentStatus.value = t;
+   return this;
+  }
+
+  ...
+}
+ExampleConnector.instance.updateEmployeeWithAccess(
+  id: id,
+  tenantId: tenantId,
+  businessId: businessId,
+  currentEmail: currentEmail,
+  fullName: fullName,
+  position: position,
+  userRole: userRole,
+  email: email,
+)
+.role(role)
+.salary(salary)
+.department(department)
+.contact(contact)
+.startDate(startDate)
+.status(status)
+.attendance(attendance)
+.salaryPaymentStatus(salaryPaymentStatus)
+.execute();
+```
+
+#### Return Type
+`execute()` returns a `OperationResult<UpdateEmployeeWithAccessData, UpdateEmployeeWithAccessVariables>`
+```dart
+/// Result of an Operation Request (query/mutation).
+class OperationResult<Data, Variables> {
+  OperationResult(this.dataConnect, this.data, this.ref);
+  Data data;
+  OperationRef<Data, Variables> ref;
+  FirebaseDataConnect dataConnect;
+}
+
+final result = await ExampleConnector.instance.updateEmployeeWithAccess(
+  id: id,
+  tenantId: tenantId,
+  businessId: businessId,
+  currentEmail: currentEmail,
+  fullName: fullName,
+  position: position,
+  userRole: userRole,
+  email: email,
+);
+UpdateEmployeeWithAccessData data = result.data;
+final ref = result.ref;
+```
+
+#### Getting the Ref
+Each builder returns an `execute` function, which is a helper function that creates a `Ref` object, and executes the underlying operation.
+An example of how to use the `Ref` object is shown below:
+```dart
+String id = ...;
+String tenantId = ...;
+String businessId = ...;
+String currentEmail = ...;
+String fullName = ...;
+String position = ...;
+String userRole = ...;
+String email = ...;
+
+final ref = ExampleConnector.instance.updateEmployeeWithAccess(
+  id: id,
+  tenantId: tenantId,
+  businessId: businessId,
+  currentEmail: currentEmail,
+  fullName: fullName,
+  position: position,
+  userRole: userRole,
+  email: email,
+).ref();
+ref.execute();
+```
+
+
+### DeleteEmployeeWithAccess
+#### Required Arguments
+```dart
+String id = ...;
+String tenantId = ...;
+String businessId = ...;
+String currentEmail = ...;
+ExampleConnector.instance.deleteEmployeeWithAccess(
+  id: id,
+  tenantId: tenantId,
+  businessId: businessId,
+  currentEmail: currentEmail,
+).execute();
+```
+
+
+
+#### Return Type
+`execute()` returns a `OperationResult<DeleteEmployeeWithAccessData, DeleteEmployeeWithAccessVariables>`
+```dart
+/// Result of an Operation Request (query/mutation).
+class OperationResult<Data, Variables> {
+  OperationResult(this.dataConnect, this.data, this.ref);
+  Data data;
+  OperationRef<Data, Variables> ref;
+  FirebaseDataConnect dataConnect;
+}
+
+final result = await ExampleConnector.instance.deleteEmployeeWithAccess(
+  id: id,
+  tenantId: tenantId,
+  businessId: businessId,
+  currentEmail: currentEmail,
+);
+DeleteEmployeeWithAccessData data = result.data;
+final ref = result.ref;
+```
+
+#### Getting the Ref
+Each builder returns an `execute` function, which is a helper function that creates a `Ref` object, and executes the underlying operation.
+An example of how to use the `Ref` object is shown below:
+```dart
+String id = ...;
+String tenantId = ...;
+String businessId = ...;
+String currentEmail = ...;
+
+final ref = ExampleConnector.instance.deleteEmployeeWithAccess(
+  id: id,
+  tenantId: tenantId,
+  businessId: businessId,
+  currentEmail: currentEmail,
+).ref();
+ref.execute();
+```
+
+
 ### CreateEmployee
 #### Required Arguments
 ```dart
@@ -2906,12 +3676,28 @@ class CreateEmployeeVariablesBuilder {
    _department.value = t;
    return this;
   }
+  CreateEmployeeVariablesBuilder email(String? t) {
+   _email.value = t;
+   return this;
+  }
+  CreateEmployeeVariablesBuilder contact(String? t) {
+   _contact.value = t;
+   return this;
+  }
   CreateEmployeeVariablesBuilder startDate(DateTime? t) {
    _startDate.value = t;
    return this;
   }
   CreateEmployeeVariablesBuilder status(String? t) {
    _status.value = t;
+   return this;
+  }
+  CreateEmployeeVariablesBuilder attendance(double? t) {
+   _attendance.value = t;
+   return this;
+  }
+  CreateEmployeeVariablesBuilder salaryPaymentStatus(String? t) {
+   _salaryPaymentStatus.value = t;
    return this;
   }
   CreateEmployeeVariablesBuilder code(String? t) {
@@ -2930,8 +3716,12 @@ ExampleConnector.instance.createEmployee(
 .role(role)
 .salary(salary)
 .department(department)
+.email(email)
+.contact(contact)
 .startDate(startDate)
 .status(status)
+.attendance(attendance)
+.salaryPaymentStatus(salaryPaymentStatus)
 .code(code)
 .execute();
 ```
@@ -3019,12 +3809,28 @@ class UpdateEmployeeVariablesBuilder {
    _department.value = t;
    return this;
   }
+  UpdateEmployeeVariablesBuilder email(String? t) {
+   _email.value = t;
+   return this;
+  }
+  UpdateEmployeeVariablesBuilder contact(String? t) {
+   _contact.value = t;
+   return this;
+  }
   UpdateEmployeeVariablesBuilder startDate(DateTime? t) {
    _startDate.value = t;
    return this;
   }
   UpdateEmployeeVariablesBuilder status(String? t) {
    _status.value = t;
+   return this;
+  }
+  UpdateEmployeeVariablesBuilder attendance(double? t) {
+   _attendance.value = t;
+   return this;
+  }
+  UpdateEmployeeVariablesBuilder salaryPaymentStatus(String? t) {
+   _salaryPaymentStatus.value = t;
    return this;
   }
 
@@ -3040,8 +3846,12 @@ ExampleConnector.instance.updateEmployee(
 .role(role)
 .salary(salary)
 .department(department)
+.email(email)
+.contact(contact)
 .startDate(startDate)
 .status(status)
+.attendance(attendance)
+.salaryPaymentStatus(salaryPaymentStatus)
 .execute();
 ```
 
@@ -3149,12 +3959,8 @@ class CreateCustomerVariablesBuilder {
    _location.value = t;
    return this;
   }
-  CreateCustomerVariablesBuilder totalOrders(int? t) {
-   _totalOrders.value = t;
-   return this;
-  }
-  CreateCustomerVariablesBuilder totalSpent(double? t) {
-   _totalSpent.value = t;
+  CreateCustomerVariablesBuilder notes(String? t) {
+   _notes.value = t;
    return this;
   }
 
@@ -3168,8 +3974,7 @@ ExampleConnector.instance.createCustomer(
 .phoneNumber(phoneNumber)
 .email(email)
 .location(location)
-.totalOrders(totalOrders)
-.totalSpent(totalSpent)
+.notes(notes)
 .execute();
 ```
 
@@ -3249,12 +4054,8 @@ class UpdateCustomerVariablesBuilder {
    _location.value = t;
    return this;
   }
-  UpdateCustomerVariablesBuilder totalOrders(int? t) {
-   _totalOrders.value = t;
-   return this;
-  }
-  UpdateCustomerVariablesBuilder totalSpent(double? t) {
-   _totalSpent.value = t;
+  UpdateCustomerVariablesBuilder notes(String? t) {
+   _notes.value = t;
    return this;
   }
 
@@ -3269,8 +4070,7 @@ ExampleConnector.instance.updateCustomer(
 .phoneNumber(phoneNumber)
 .email(email)
 .location(location)
-.totalOrders(totalOrders)
-.totalSpent(totalSpent)
+.notes(notes)
 .execute();
 ```
 
@@ -3374,6 +4174,22 @@ class CreateSupplierVariablesBuilder {
    _email.value = t;
    return this;
   }
+  CreateSupplierVariablesBuilder location(String? t) {
+   _location.value = t;
+   return this;
+  }
+  CreateSupplierVariablesBuilder productsSupplied(String? t) {
+   _productsSupplied.value = t;
+   return this;
+  }
+  CreateSupplierVariablesBuilder paymentStatus(String? t) {
+   _paymentStatus.value = t;
+   return this;
+  }
+  CreateSupplierVariablesBuilder notes(String? t) {
+   _notes.value = t;
+   return this;
+  }
 
   ...
 }
@@ -3384,6 +4200,10 @@ ExampleConnector.instance.createSupplier(
 )
 .phoneNumber(phoneNumber)
 .email(email)
+.location(location)
+.productsSupplied(productsSupplied)
+.paymentStatus(paymentStatus)
+.notes(notes)
 .execute();
 ```
 
@@ -3459,6 +4279,22 @@ class UpdateSupplierVariablesBuilder {
    _email.value = t;
    return this;
   }
+  UpdateSupplierVariablesBuilder location(String? t) {
+   _location.value = t;
+   return this;
+  }
+  UpdateSupplierVariablesBuilder productsSupplied(String? t) {
+   _productsSupplied.value = t;
+   return this;
+  }
+  UpdateSupplierVariablesBuilder paymentStatus(String? t) {
+   _paymentStatus.value = t;
+   return this;
+  }
+  UpdateSupplierVariablesBuilder notes(String? t) {
+   _notes.value = t;
+   return this;
+  }
 
   ...
 }
@@ -3470,6 +4306,10 @@ ExampleConnector.instance.updateSupplier(
 .supplierName(supplierName)
 .phoneNumber(phoneNumber)
 .email(email)
+.location(location)
+.productsSupplied(productsSupplied)
+.paymentStatus(paymentStatus)
+.notes(notes)
 .execute();
 ```
 
@@ -3565,7 +4405,30 @@ ExampleConnector.instance.createDocument(
 ).execute();
 ```
 
+#### Optional Arguments
+We return a builder for each query. For CreateDocument, we created `CreateDocumentBuilder`. For queries and mutations with optional parameters, we return a builder class.
+The builder pattern allows Data Connect to distinguish between fields that haven't been set and fields that have been set to null. A field can be set by calling its respective setter method like below:
+```dart
+class CreateDocumentVariablesBuilder {
+  ...
+   CreateDocumentVariablesBuilder description(String? t) {
+   _description.value = t;
+   return this;
+  }
 
+  ...
+}
+ExampleConnector.instance.createDocument(
+  tenantId: tenantId,
+  businessId: businessId,
+  title: title,
+  documentType: documentType,
+  fileUrl: fileUrl,
+  uploadedBy: uploadedBy,
+)
+.description(description)
+.execute();
+```
 
 #### Return Type
 `execute()` returns a `OperationResult<CreateDocumentData, CreateDocumentVariables>`
@@ -3648,6 +4511,10 @@ class UpdateDocumentVariablesBuilder {
    _fileUrl.value = t;
    return this;
   }
+  UpdateDocumentVariablesBuilder description(String? t) {
+   _description.value = t;
+   return this;
+  }
   UpdateDocumentVariablesBuilder uploadedBy(String? t) {
    _uploadedBy.value = t;
    return this;
@@ -3663,6 +4530,7 @@ ExampleConnector.instance.updateDocument(
 .title(title)
 .documentType(documentType)
 .fileUrl(fileUrl)
+.description(description)
 .uploadedBy(uploadedBy)
 .execute();
 ```

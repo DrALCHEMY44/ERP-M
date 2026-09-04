@@ -1,5 +1,13 @@
 # Production dependency risk register
 
+Current status (3 September 2026): `npm audit --omit=dev --audit-level=high`
+reports zero production dependency vulnerabilities. Firebase browser and Admin
+packages are migration-only development dependencies and are absent from the
+deployed web, API, and Flutter runtime.
+
+The August assessment below is retained as historical upgrade evidence and is
+superseded by the current status above.
+
 Assessment date: 2026-08-11. `npm audit --omit=dev` reports three high and six moderate package findings. No automatic Next.js 16 or Firebase Admin downgrade is approved.
 
 | Package | Severity | Runtime reachability | SmartERP AI feature | Available mitigation | Decision |

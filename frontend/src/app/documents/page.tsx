@@ -1,15 +1,14 @@
 "use client"
 
 import * as React from "react"
-import { 
-  FileText, 
-  Search, 
-  Plus, 
-  Download, 
-  Trash2, 
-  Filter, 
-  FileCheck, 
-  ShieldCheck,
+import {
+  FileText,
+  Search,
+  Plus,
+  Download,
+  Trash2,
+  Filter,
+  FileCheck,
   MoreVertical,
   Loader2,
   Eye
@@ -17,7 +16,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,7 +24,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { useAuth } from "@/hooks/use-auth"
-import { useDataConnect } from "@/hooks/use-dataconnect"
+import { useNeonData } from "@/hooks/use-neon-data"
 import { listDocumentsByBusinessQuery, createDocumentMutation, deleteDocumentMutation } from "@/lib/data-service"
 import { BusinessDocument } from "@/lib/types"
 import { useToast } from "@/hooks/use-toast"
@@ -33,8 +32,9 @@ import { DocumentDialog } from "@/components/documents/document-dialog"
 
 export default function DocumentsPage() {
   const { profile, user } = useAuth();
+  const canManageDocuments = Boolean(profile && ["Business Owner", "Manager", "HR Officer"].includes(profile.role));
   const { toast } = useToast();
-  const { data: documentsData, loading, refetch } = useDataConnect({
+  const { data: documentsData, loading, refetch } = useNeonData({
     query: listDocumentsByBusinessQuery,
     variables: {
       tenantId: profile?.tenantId || "",
@@ -55,7 +55,7 @@ export default function DocumentsPage() {
       uploadedBy: sc.uploadedBy,
       uploadedByName: 'Member',
       uploadedAt: sc.uploadedAt,
-      description: ''
+      description: sc.description || ''
     })) as BusinessDocument[];
   }, [documentsData]);
 
@@ -64,11 +64,16 @@ export default function DocumentsPage() {
   const [selectedType, setSelectedType] = React.useState<BusinessDocument['type'] | 'All'>('All')
 
   const filteredDocs = documents.filter(doc => {
-    const matchesSearch = doc.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    const matchesSearch = doc.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           doc.description?.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesType = selectedType === 'All' || doc.type === selectedType;
     return matchesSearch && matchesType;
   }).sort((a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime());
+  const reportFileCount = documents.filter((document) => document.type === "Report").length;
+  const recentUploadCount = documents.filter((document) => {
+    const uploadedAt = new Date(document.uploadedAt).getTime();
+    return Number.isFinite(uploadedAt) && uploadedAt >= Date.now() - 30 * 24 * 60 * 60 * 1000;
+  }).length;
 
   const handleSave = async (docData: Partial<BusinessDocument>) => {
     if (!profile?.tenantId || !profile?.businessId || !user) {
@@ -86,39 +91,42 @@ export default function DocumentsPage() {
         title: docData.name || '',
         documentType: docData.type || 'Other',
         fileUrl: docData.fileUrl || '',
+        description: docData.description || '',
         uploadedBy: user.uid
       });
       await refetch();
       toast({ title: "Document Saved", description: "File reference added to secure cloud directory." });
       return result.data.document_insert.id;
-    } catch (e) {
+    } catch (error) {
       toast({ variant: "destructive", title: "Error", description: "Failed to index document." });
-      return undefined;
+      throw error;
     }
   }
 
   const handleDelete = async (document: BusinessDocument) => {
     if (confirm("Permanently delete this document from the vault?")) {
       try {
-        await deleteDocumentMutation({ id: document.id! });
         if (document.fileUrl.startsWith('/api/files') && user && profile) {
           const key = new URL(document.fileUrl, window.location.origin).searchParams.get('key');
           if (key) {
             const response = await fetch(`/api/files?key=${encodeURIComponent(key)}`, {
               method: 'DELETE',
               headers: {
-                Authorization: `Bearer ${await user.getIdToken()}`,
                 "X-Tenant-Id": profile.tenantId,
                 "X-Business-Id": profile.businessId,
               },
             });
-            if (!response.ok) console.error('Document record deleted, but object cleanup failed');
+            if (!response.ok) throw new Error('Managed storage object cleanup failed');
           }
         }
+        await deleteDocumentMutation({ id: document.id! });
         await refetch();
-        toast({ title: "Document Removed", description: "Document and cloud object deleted." });
-      } catch (e) {
-        toast({ variant: "destructive", title: "Error", description: "Failed to delete record." });
+        toast({
+          title: "Document Removed",
+          description: "Document record and managed storage object removed.",
+        });
+      } catch {
+        toast({ variant: "destructive", title: "Delete Failed", description: "Could not remove the document record and managed storage object." });
       }
     }
   }
@@ -141,11 +149,9 @@ export default function DocumentsPage() {
       }
 
       // Fetch the file and trigger a proper browser download
-      const token = await user?.getIdToken();
       const isPrivateObject = downloadUrl.startsWith('/api/files');
       const response = await fetch(downloadUrl, {
-        headers: token && isPrivateObject && profile ? {
-          Authorization: `Bearer ${token}`,
+        headers: isPrivateObject && profile ? {
           "X-Tenant-Id": profile.tenantId,
           "X-Business-Id": profile.businessId,
         } : undefined,
@@ -173,7 +179,7 @@ export default function DocumentsPage() {
     }
   }
 
-  const handleView = async (fileUrl: string, fileName: string) => {
+  const handleView = async (fileUrl: string) => {
     if (!fileUrl) {
       toast({
         variant: "destructive",
@@ -188,21 +194,23 @@ export default function DocumentsPage() {
       const separator = fileUrl.includes('?') ? '&' : '?';
       viewUrl = `${fileUrl}${separator}mode=view`;
     }
+    const viewer = window.open("about:blank", "_blank");
+    if (viewer) viewer.opener = null;
     try {
-      const token = await user?.getIdToken();
       const isPrivateObject = viewUrl.startsWith('/api/files');
       const response = await fetch(viewUrl, {
-        headers: token && isPrivateObject && profile ? {
-          Authorization: `Bearer ${token}`,
+        headers: isPrivateObject && profile ? {
           "X-Tenant-Id": profile.tenantId,
           "X-Business-Id": profile.businessId,
         } : undefined,
       });
       if (!response.ok) throw new Error(`View failed with status ${response.status}`);
       const blobUrl = URL.createObjectURL(await response.blob());
-      window.open(blobUrl, '_blank', 'noopener,noreferrer');
+      if (!viewer) throw new Error("The browser blocked the document viewer window");
+      viewer.location.href = blobUrl;
       window.setTimeout(() => URL.revokeObjectURL(blobUrl), 60_000);
     } catch (error) {
+      viewer?.close();
       console.error("Failed to view document:", error);
       toast({ variant: "destructive", title: "View Failed", description: "Could not open this file." });
     }
@@ -223,9 +231,11 @@ export default function DocumentsPage() {
           <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Document Management</h1>
           <p className="text-sm text-muted-foreground">Secure multi-tenant vault for business records and compliance files.</p>
         </div>
-        <Button onClick={() => setIsDialogOpen(true)} className="bg-primary hover:bg-primary/90 text-white font-bold uppercase text-xs tracking-widest shadow-lg">
-          <Plus className="size-4 mr-2" /> Upload Document
-        </Button>
+        {canManageDocuments && (
+          <Button onClick={() => setIsDialogOpen(true)} className="bg-primary hover:bg-primary/90 text-white font-bold uppercase text-xs tracking-widest shadow-lg">
+            <Plus className="size-4 mr-2" /> Upload Document
+          </Button>
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -237,14 +247,14 @@ export default function DocumentsPage() {
         </Card>
         <Card className="border-t-4 border-emerald-500 shadow-sm bg-emerald-50/10">
           <CardHeader className="pb-2 p-4">
-            <CardDescription className="text-[10px] font-bold uppercase tracking-widest">Compliance Status</CardDescription>
-            <CardTitle className="text-2xl font-bold text-emerald-700">Audit Ready</CardTitle>
+            <CardDescription className="text-[10px] font-bold uppercase tracking-widest">Generated Reports</CardDescription>
+            <CardTitle className="text-2xl font-bold text-emerald-700">{reportFileCount}</CardTitle>
           </CardHeader>
         </Card>
         <Card className="border-t-4 border-blue-500 shadow-sm bg-blue-50/10">
           <CardHeader className="pb-2 p-4">
-            <CardDescription className="text-[10px] font-bold uppercase tracking-widest">Storage Used</CardDescription>
-            <CardTitle className="text-2xl font-bold text-blue-700">{(documents.length * 1.5).toFixed(1)} MB</CardTitle>
+            <CardDescription className="text-[10px] font-bold uppercase tracking-widest">Uploaded in 30 Days</CardDescription>
+            <CardTitle className="text-2xl font-bold text-blue-700">{recentUploadCount}</CardTitle>
           </CardHeader>
         </Card>
       </div>
@@ -253,8 +263,8 @@ export default function DocumentsPage() {
         <div className="p-4 border-b flex flex-col md:flex-row gap-4 items-center">
           <div className="relative w-full md:w-96">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-            <Input 
-              placeholder="Search by filename or description..." 
+            <Input
+              placeholder="Search by filename or description..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-9 bg-muted/20"
@@ -284,38 +294,40 @@ export default function DocumentsPage() {
               <Card key={doc.id} className="group hover:border-primary/50 transition-all shadow-sm overflow-hidden flex flex-col">
                 <div className="p-4 flex-1">
                   <div className="flex items-start justify-between mb-3">
-                    <div 
+                    <button
+                      type="button"
                       className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary border cursor-pointer hover:bg-primary/20 transition-colors"
-                      onClick={() => handleView(doc.fileUrl, doc.name)}
+                      onClick={() => handleView(doc.fileUrl)}
                       title="Click to view"
+                      aria-label={`View ${doc.name}`}
                     >
                       <FileText className="size-6" />
-                    </div>
+                    </button>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
+                        <Button variant="ghost" size="icon" className="h-8 w-8" aria-label={`Actions for ${doc.name}`}>
                           <MoreVertical className="size-4" />
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem 
+                        <DropdownMenuItem
                           className="text-[10px] font-bold uppercase cursor-pointer"
-                          onClick={() => handleView(doc.fileUrl, doc.name)}
+                          onClick={() => handleView(doc.fileUrl)}
                         >
                           <Eye className="size-3 mr-2" /> View
                         </DropdownMenuItem>
-                        <DropdownMenuItem 
+                        <DropdownMenuItem
                           className="text-[10px] font-bold uppercase cursor-pointer"
                           onClick={() => handleDownload(doc.fileUrl, doc.name)}
                         >
                           <Download className="size-3 mr-2" /> Download
                         </DropdownMenuItem>
-                        <DropdownMenuItem 
+                        {canManageDocuments && <DropdownMenuItem
                           className="text-[10px] font-bold uppercase text-destructive cursor-pointer"
                           onClick={() => handleDelete(doc)}
                         >
                           <Trash2 className="size-3 mr-2" /> Delete
-                        </DropdownMenuItem>
+                        </DropdownMenuItem>}
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </div>
@@ -325,7 +337,7 @@ export default function DocumentsPage() {
                       <Badge variant="secondary" className="text-[8px] uppercase font-bold tracking-tighter h-4">
                         {doc.type}
                       </Badge>
-                      <span className="text-[10px] text-muted-foreground">{doc.fileSize}</span>
+                      {doc.fileSize && <span className="text-[10px] text-muted-foreground">{doc.fileSize}</span>}
                     </div>
                     {doc.description && (
                       <p className="text-[10px] text-muted-foreground line-clamp-2 mt-2">{doc.description}</p>
@@ -354,11 +366,13 @@ export default function DocumentsPage() {
           )}
         </div>
       </div>
-      <DocumentDialog 
-        open={isDialogOpen}
-        onOpenChange={setIsDialogOpen}
-        onSave={handleSave}
-      />
+      {canManageDocuments && (
+        <DocumentDialog
+          open={isDialogOpen}
+          onOpenChange={setIsDialogOpen}
+          onSave={handleSave}
+        />
+      )}
     </div>
   )
 }

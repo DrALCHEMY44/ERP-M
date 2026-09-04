@@ -1,5 +1,8 @@
 # Defence-day checklist
 
+> Historical Firebase/Data Connect checklist. Do not use it for the current
+> release; follow `IMPLEMENTATION_STATUS.md` and `DEPLOYMENT.md`.
+
 - Public web URL: pending verified Vercel deployment
 - Health URL: `https://<domain>/api/health`
 - Firebase project ID: pending new `smarterp-ai-defence-demo-<suffix>` project

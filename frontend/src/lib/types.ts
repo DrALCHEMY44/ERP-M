@@ -62,7 +62,25 @@ export type Product = {
   expiryDate?: string;
   lowStockLevel: number;
   status: 'active' | 'inactive';
+  baseUnit?: string;
+  barcode?: string | null;
+  units?: ProductUnit[];
+  scanUnit?: string;
+  conversionFactor?: number;
+  scanSellingPrice?: number;
+  scanUnitId?: string;
   createdAt: string;
+};
+
+export type ProductUnit = {
+  id: string;
+  productId: string;
+  unitName: string;
+  abbreviation: string;
+  conversionFactor: number;
+  barcode?: string | null;
+  sellingPrice?: number | null;
+  isBase: boolean;
 };
 
 export type InventoryMovement = {
@@ -108,8 +126,12 @@ export type Supplier = {
 
 export type SaleItem = {
   productId: string;
+  productName?: string;
   quantity: number;
   priceAtSale: number;
+  unitId?: string;
+  unitName?: string;
+  conversionFactor?: number;
 };
 
 export type Sale = {
@@ -120,7 +142,7 @@ export type Sale = {
   customerId?: string;
   productsSold: SaleItem[];
   totalAmount: number;
-  paymentMethod: 'Cash' | 'Mobile Money' | 'Bank Transfer' | 'Credit';
+  paymentMethod: 'Cash' | 'Mobile Money' | 'Bank Transfer' | 'Credit' | 'Unknown';
   saleDate: string;
   recordedBy: string;
   createdAt: string;

@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 import '../models/app_user.dart';
+import 'package:provider/provider.dart';
+import '../providers/core_provider.dart';
+import '../providers/inventory_provider.dart';
+import '../providers/task_provider.dart';
+import '../providers/transaction_provider.dart';
 
 class AppDrawer extends StatelessWidget {
   final String currentRoute;
@@ -15,84 +20,178 @@ class AppDrawer extends StatelessWidget {
     // Dynamic destination items based on role-based security rules
     final List<_DrawerItemData> items = [];
 
-    final isEmployee = user?.role == UserRole.staff;
-    if (!isEmployee) {
-      items.add(_DrawerItemData(
-        icon: Icons.dashboard_outlined,
-        selectedIcon: Icons.dashboard,
-        label: 'Dashboard',
-        route: '/dashboard',
-      ));
-    }
-
-    if (AuthService.hasPermission('viewInventory')) {
-      items.add(_DrawerItemData(
-        icon: Icons.inventory_2_outlined,
-        selectedIcon: Icons.inventory_2,
-        label: 'Inventory',
-        route: '/inventory',
-      ));
-    }
-
-    if (AuthService.hasPermission('viewSales')) {
-      items.add(_DrawerItemData(
-        icon: Icons.point_of_sale_outlined,
-        selectedIcon: Icons.point_of_sale,
-        label: 'Sales Log',
-        route: '/sales',
-      ));
-    }
-
-    if (AuthService.hasPermission('viewExpenses')) {
-      items.add(_DrawerItemData(
-        icon: Icons.payments_outlined,
-        selectedIcon: Icons.payments,
-        label: 'Expenses',
-        route: '/expenses',
-      ));
-      items.add(_DrawerItemData(
-        icon: Icons.account_balance_wallet_outlined,
-        selectedIcon: Icons.account_balance_wallet,
-        label: 'Finance',
-        route: '/finance',
-      ));
-    }
-
-    if (AuthService.hasPermission('viewTasks')) {
-      items.add(_DrawerItemData(
-        icon: Icons.task_alt,
-        selectedIcon: Icons.task,
-        label: 'Tasks',
-        route: '/tasks',
-      ));
-    }
-
-    if (AuthService.hasPermission('viewReports')) {
-      items.add(_DrawerItemData(
-        icon: Icons.analytics_outlined,
-        selectedIcon: Icons.analytics,
-        label: 'Business Reports',
-        route: '/reports',
-      ));
-    }
-
-    if (!isEmployee) {
-      items.addAll([
-        _DrawerItemData(icon: Icons.badge_outlined, selectedIcon: Icons.badge, label: 'Employees', route: '/employees'),
-        _DrawerItemData(icon: Icons.people_outline, selectedIcon: Icons.people, label: 'Customers', route: '/customers'),
-        _DrawerItemData(icon: Icons.local_shipping_outlined, selectedIcon: Icons.local_shipping, label: 'Suppliers', route: '/suppliers'),
-        _DrawerItemData(icon: Icons.folder_outlined, selectedIcon: Icons.folder, label: 'Documents', route: '/documents'),
+    if (user?.role == UserRole.platformSuperAdmin) {
+      items.addAll(const [
+        _DrawerItemData(
+          icon: Icons.admin_panel_settings_outlined,
+          selectedIcon: Icons.admin_panel_settings,
+          label: 'SaaS Dashboard',
+          route: '/admin/dashboard',
+        ),
+        _DrawerItemData(
+          icon: Icons.manage_accounts_outlined,
+          selectedIcon: Icons.manage_accounts,
+          label: 'Platform Users',
+          route: '/admin/users',
+        ),
       ]);
     }
 
-    // AI Assistant always visible
-    if (!isEmployee) {
-      items.add(_DrawerItemData(
-        icon: Icons.psychology_outlined,
-        selectedIcon: Icons.psychology,
-        label: 'SmartERP AI',
-        route: '/ai-assistant',
-      ));
+    final isEmployee = user?.role == UserRole.staff;
+    if (!isEmployee && user?.role != UserRole.platformSuperAdmin) {
+      items.add(
+        _DrawerItemData(
+          icon: Icons.dashboard_outlined,
+          selectedIcon: Icons.dashboard,
+          label: 'Dashboard',
+          route: '/dashboard',
+        ),
+      );
+    }
+
+    if (AuthService.hasPermission('viewInventory')) {
+      items.add(
+        _DrawerItemData(
+          icon: Icons.inventory_2_outlined,
+          selectedIcon: Icons.inventory_2,
+          label: 'Inventory',
+          route: '/inventory',
+        ),
+      );
+    }
+
+    if (AuthService.hasPermission('viewSales')) {
+      items.add(
+        _DrawerItemData(
+          icon: Icons.point_of_sale_outlined,
+          selectedIcon: Icons.point_of_sale,
+          label: 'Sales Log',
+          route: '/sales',
+        ),
+      );
+    }
+
+    if (AuthService.hasPermission('viewExpenses')) {
+      items.add(
+        _DrawerItemData(
+          icon: Icons.payments_outlined,
+          selectedIcon: Icons.payments,
+          label: 'Expenses',
+          route: '/expenses',
+        ),
+      );
+      items.add(
+        _DrawerItemData(
+          icon: Icons.account_balance_wallet_outlined,
+          selectedIcon: Icons.account_balance_wallet,
+          label: 'Finance',
+          route: '/finance',
+        ),
+      );
+    }
+
+    if (AuthService.hasPermission('viewTasks')) {
+      items.add(
+        _DrawerItemData(
+          icon: Icons.task_alt,
+          selectedIcon: Icons.task,
+          label: 'Tasks',
+          route: '/tasks',
+        ),
+      );
+    }
+
+    if (AuthService.hasPermission('viewReports')) {
+      items.add(
+        _DrawerItemData(
+          icon: Icons.analytics_outlined,
+          selectedIcon: Icons.analytics,
+          label: 'Business Reports',
+          route: '/reports',
+        ),
+      );
+    }
+
+    if (AuthService.hasPermission('viewEmployees')) {
+      items.add(
+        _DrawerItemData(
+          icon: Icons.badge_outlined,
+          selectedIcon: Icons.badge,
+          label: 'Employees',
+          route: '/employees',
+        ),
+      );
+    }
+    if (AuthService.hasPermission('viewHr')) {
+      items.add(
+        _DrawerItemData(
+          icon: Icons.calendar_month_outlined,
+          selectedIcon: Icons.calendar_month,
+          label: 'HR Operations',
+          route: '/hr',
+        ),
+      );
+    }
+    if (AuthService.hasPermission('viewPayroll')) {
+      items.add(
+        _DrawerItemData(
+          icon: Icons.payments_outlined,
+          selectedIcon: Icons.payments,
+          label: 'Payroll',
+          route: '/payroll',
+        ),
+      );
+    }
+    if (AuthService.hasPermission('viewAccounting')) {
+      items.add(
+        _DrawerItemData(
+          icon: Icons.account_balance_outlined,
+          selectedIcon: Icons.account_balance,
+          label: 'Accounting',
+          route: '/accounting',
+        ),
+      );
+    }
+    if (AuthService.hasPermission('viewCustomers')) {
+      items.add(
+        _DrawerItemData(
+          icon: Icons.people_outline,
+          selectedIcon: Icons.people,
+          label: 'Customers',
+          route: '/customers',
+        ),
+      );
+    }
+    if (AuthService.hasPermission('viewSuppliers')) {
+      items.add(
+        _DrawerItemData(
+          icon: Icons.local_shipping_outlined,
+          selectedIcon: Icons.local_shipping,
+          label: 'Suppliers',
+          route: '/suppliers',
+        ),
+      );
+    }
+    if (AuthService.hasPermission('viewDocuments')) {
+      items.add(
+        _DrawerItemData(
+          icon: Icons.folder_outlined,
+          selectedIcon: Icons.folder,
+          label: 'Documents',
+          route: '/documents',
+        ),
+      );
+    }
+
+    if (AuthService.hasPermission('useAi')) {
+      items.add(
+        _DrawerItemData(
+          icon: Icons.psychology_outlined,
+          selectedIcon: Icons.psychology,
+          label: 'SmartERP AI',
+          route: '/ai-assistant',
+        ),
+      );
     }
 
     // Divider
@@ -100,35 +199,52 @@ class AppDrawer extends StatelessWidget {
 
     // Activity Logs (Manager/Owner only)
     if (AuthService.hasPermission('viewActivityLogs')) {
-      items.add(_DrawerItemData(
-        icon: Icons.history_outlined,
-        selectedIcon: Icons.history,
-        label: 'Activity Logs',
-        route: '/activity-logs',
-      ));
+      items.add(
+        _DrawerItemData(
+          icon: Icons.history_outlined,
+          selectedIcon: Icons.history,
+          label: 'Activity Logs',
+          route: '/activity-logs',
+        ),
+      );
     }
 
-    // Notifications & Profile always visible
-    items.add(_DrawerItemData(
-      icon: Icons.notifications_none,
-      selectedIcon: Icons.notifications,
-      label: 'Notifications',
-      route: '/notifications',
-    ));
+    if (user?.role != UserRole.platformSuperAdmin) {
+      items.add(
+        _DrawerItemData(
+          icon: Icons.campaign_outlined,
+          selectedIcon: Icons.campaign,
+          label: 'Announcements',
+          route: '/notifications',
+        ),
+      );
+    }
 
-    items.add(_DrawerItemData(
-      icon: Icons.person_outline,
-      selectedIcon: Icons.person,
-      label: 'My Profile',
-      route: '/profile',
-    ));
-    if (!isEmployee) {
-      items.add(_DrawerItemData(
-        icon: Icons.settings_outlined,
-        selectedIcon: Icons.settings,
-        label: 'Settings',
-        route: '/settings',
-      ));
+    items.add(
+      _DrawerItemData(
+        icon: Icons.person_outline,
+        selectedIcon: Icons.person,
+        label: 'My Profile',
+        route: '/profile',
+      ),
+    );
+    if (AuthService.hasPermission('company:manage')) {
+      items.add(
+        _DrawerItemData(
+          icon: Icons.business_outlined,
+          selectedIcon: Icons.business,
+          label: 'Business Profile',
+          route: '/business-profile',
+        ),
+      );
+      items.add(
+        _DrawerItemData(
+          icon: Icons.settings_outlined,
+          selectedIcon: Icons.settings,
+          label: 'Settings',
+          route: '/settings',
+        ),
+      );
     }
 
     int selectedIdx = items.indexWhere((item) => item.route == currentRoute);
@@ -141,7 +257,8 @@ class AppDrawer extends StatelessWidget {
         if (item.route != currentRoute) {
           final navigator = Navigator.of(context);
           navigator.pop(); // Close the drawer before changing pages.
-          if (currentRoute == '/dashboard' || (isEmployee && currentRoute == '/tasks')) {
+          if (currentRoute == '/dashboard' ||
+              (isEmployee && currentRoute == '/tasks')) {
             // Keep the dashboard below the selected module so Android Back
             // returns to the workspace instead of closing the application.
             navigator.pushNamed(item.route);
@@ -157,7 +274,14 @@ class AppDrawer extends StatelessWidget {
       children: [
         const Padding(
           padding: EdgeInsets.fromLTRB(28, 12, 28, 8),
-          child: Text('SMARTERP WORKSPACE', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, letterSpacing: 1.4)),
+          child: Text(
+            'SMARTERP WORKSPACE',
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 1.4,
+            ),
+          ),
         ),
         Padding(
           padding: const EdgeInsets.fromLTRB(28, 32, 16, 20),
@@ -169,7 +293,11 @@ class AppDrawer extends StatelessWidget {
                   CircleAvatar(
                     radius: 28,
                     backgroundColor: theme.colorScheme.primaryContainer,
-                    child: Icon(Icons.person, size: 30, color: theme.colorScheme.primary),
+                    child: Icon(
+                      Icons.person,
+                      size: 30,
+                      color: theme.colorScheme.primary,
+                    ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -178,7 +306,9 @@ class AppDrawer extends StatelessWidget {
                       children: [
                         Text(
                           user?.name ?? 'Guest User',
-                          style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
                           overflow: TextOverflow.ellipsis,
                         ),
                         Text(
@@ -197,15 +327,26 @@ class AppDrawer extends StatelessWidget {
               const SizedBox(height: 16),
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
-                  color: theme.colorScheme.secondaryContainer.withValues(alpha: 0.5),
+                  color: theme.colorScheme.secondaryContainer.withValues(
+                    alpha: 0.5,
+                  ),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: theme.colorScheme.secondaryContainer),
+                  border: Border.all(
+                    color: theme.colorScheme.secondaryContainer,
+                  ),
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.domain, size: 16, color: theme.colorScheme.onSecondaryContainer),
+                    Icon(
+                      Icons.domain,
+                      size: 16,
+                      color: theme.colorScheme.onSecondaryContainer,
+                    ),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
@@ -223,7 +364,7 @@ class AppDrawer extends StatelessWidget {
             ],
           ),
         ),
-        
+
         // Render drawer items
         for (int i = 0; i < items.length; i++) ...[
           if (i == dividerIndex)
@@ -241,17 +382,30 @@ class AppDrawer extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.fromLTRB(28, 24, 28, 20),
           child: OutlinedButton.icon(
-            onPressed: () {
-              AuthService.logout();
-              Navigator.pushReplacementNamed(context, '/login');
+            onPressed: () async {
+              await AuthService.logout();
+              if (!context.mounted) return;
+              context.read<CoreProvider>().reset();
+              context.read<InventoryProvider>().reset();
+              context.read<TransactionProvider>().reset();
+              context.read<TaskProvider>().reset();
+              Navigator.pushNamedAndRemoveUntil(
+                context,
+                '/login',
+                (_) => false,
+              );
             },
             icon: const Icon(Icons.logout),
             label: const Text('Sign Out'),
             style: OutlinedButton.styleFrom(
               foregroundColor: theme.colorScheme.error,
-              side: BorderSide(color: theme.colorScheme.error.withValues(alpha: 0.5)),
+              side: BorderSide(
+                color: theme.colorScheme.error.withValues(alpha: 0.5),
+              ),
               padding: const EdgeInsets.symmetric(vertical: 12),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
           ),
         ),
@@ -266,7 +420,7 @@ class _DrawerItemData {
   final String label;
   final String route;
 
-  _DrawerItemData({
+  const _DrawerItemData({
     required this.icon,
     required this.selectedIcon,
     required this.label,

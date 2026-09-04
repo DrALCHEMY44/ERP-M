@@ -5,7 +5,6 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import {
   Building2,
-  Sparkles,
   Loader2,
   ArrowRight,
   ArrowLeft,
@@ -31,11 +30,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { createUserWithEmailAndPassword } from "firebase/auth"
-import { auth } from "@/lib/firebase"
+import { authClient } from "@/lib/auth/client"
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/hooks/use-auth"
-import { getUserByEmailQuery } from "@/lib/data-service"
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -86,13 +83,13 @@ export default function RegisterPage() {
 
   // Step control
   const [step, setStep] = React.useState(1)
-  const [slideDirection, setSlideDirection] = React.useState<"forward" | "backward">("forward")
 
   // Step 1 fields
   const [fullName, setFullName] = React.useState("")
   const [email, setEmail] = React.useState("")
   const [password, setPassword] = React.useState("")
   const [confirmPassword, setConfirmPassword] = React.useState("")
+  const [invitationToken, setInvitationToken] = React.useState("")
   const [showPassword, setShowPassword] = React.useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = React.useState(false)
 
@@ -124,13 +121,20 @@ export default function RegisterPage() {
   const router = useRouter()
   const { toast } = useToast()
 
+  React.useEffect(() => {
+    const parameters = new URLSearchParams(window.location.search)
+    setInvitationToken(parameters.get("invite") || "")
+    const invitedEmail = parameters.get("email")
+    if (invitedEmail) setEmail(invitedEmail.toLowerCase())
+  }, [])
+
   // Onboarding continuation for already authenticated users
   React.useEffect(() => {
     if (user && !profile && step === 1) {
       const displayName = user.displayName || ""
       const userEmail = user.email || ""
       const defaultName = displayName || userEmail.split("@")[0] || "User"
-      
+
       setFullName(displayName)
       setEmail(userEmail)
       setStep1Data({
@@ -153,12 +157,12 @@ export default function RegisterPage() {
     if (!email.trim()) newErrors.email = "Email is required"
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
       newErrors.email = "Enter a valid email address"
-    
+
     // Enforce criteria matching mockup
     if (!criteria.length || !criteria.uppercase || !criteria.number) {
       newErrors.password = "Password does not meet criteria checklist"
     }
-    
+
     if (password !== confirmPassword)
       newErrors.confirmPassword = "Passwords do not match"
 
@@ -167,22 +171,7 @@ export default function RegisterPage() {
       return
     }
 
-    setIsLoading(true)
-    setErrors({})
-    try {
-      const result = await getUserByEmailQuery({ email: email.trim() })
-      if (result.data.users.length > 0) {
-        setErrors({ email: "An account with this email already exists. Try logging in instead." })
-        setIsLoading(false)
-        return
-      }
-    } catch {
-      // If query fails, continue; mutation will enforce constraints
-    }
-    setIsLoading(false)
-
     setStep1Data({ fullName: fullName.trim(), email: email.trim(), password })
-    setSlideDirection("forward")
     setStep(2)
   }
 
@@ -193,10 +182,12 @@ export default function RegisterPage() {
     if (!step1Data) return
 
     const newErrors: Record<string, string> = {}
-    if (!businessName.trim()) newErrors.businessName = "Business name is required"
-    if (!sector) newErrors.sector = "Select a business sector"
-    if (!city.trim()) newErrors.city = "City / location is required"
-    if (!region) newErrors.region = "Select a region"
+    if (!invitationToken) {
+      if (!businessName.trim()) newErrors.businessName = "Business name is required"
+      if (!sector) newErrors.sector = "Select a business sector"
+      if (!city.trim()) newErrors.city = "City / location is required"
+      if (!region) newErrors.region = "Select a region"
+    }
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors)
@@ -212,40 +203,36 @@ export default function RegisterPage() {
       setPipelineStage(PIPELINE_STAGES[0])
       setPipelineProgress(1)
 
-      const currentAuthUser = auth.currentUser
-      if (!currentAuthUser || currentAuthUser.email?.toLowerCase() !== step1Data.email.toLowerCase()) {
-        try {
-          await createUserWithEmailAndPassword(
-            auth,
-            step1Data.email,
-            step1Data.password
-          )
-        } catch (authError: any) {
-          if (authError.code === "auth/email-already-in-use") {
+      if (!user || user.email.toLowerCase() !== step1Data.email.toLowerCase()) {
+        const authResult = await authClient.signUp.email({
+          email: step1Data.email.toLowerCase(),
+          password: step1Data.password,
+          name: step1Data.fullName,
+        })
+        if (authResult.error) {
+          if (authResult.error.status === 422 || authResult.error.message?.toLowerCase().includes("already")) {
             setErrors({ form: "An account with this email already exists. Try logging in instead." })
             setIsLoading(false)
             setPipelineStage("")
             return
           }
-          throw authError
+          throw new Error(authResult.error.message || "Neon Auth registration failed")
         }
       }
 
       // ── Stages 2-4: trusted server bootstrap ────────────
       setPipelineStage(PIPELINE_STAGES[1])
       setPipelineProgress(2)
-      const bootstrapUser = auth.currentUser
-      const token = await bootstrapUser?.getIdToken()
-      if (!token) throw new Error("Authentication session was not established")
       const bootstrapResponse = await fetch("/api/bootstrap", {
         method: "POST",
-        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           fullName: step1Data.fullName,
-          businessName: businessName.trim(),
-          businessSector: sector,
-          location: `${city.trim()}, ${region}`,
-          region,
+          businessName: invitationToken ? "Invited workspace" : businessName.trim(),
+          businessSector: invitationToken ? "Invited workspace" : sector,
+          location: invitationToken ? "Invited workspace" : `${city.trim()}, ${region}`,
+          region: invitationToken ? "Invited workspace" : region,
+          invitationToken: invitationToken || undefined,
         }),
       })
       const bootstrapBody = await bootstrapResponse.json()
@@ -264,8 +251,10 @@ export default function RegisterPage() {
       setPipelineStage("")
 
       toast({
-        title: "Workspace Ready!",
-        description: `Welcome to ${businessName}. Redirecting to your dashboard...`,
+        title: invitationToken ? "Invitation accepted!" : "Workspace Ready!",
+        description: invitationToken
+          ? "Your account is ready. Redirecting to your dashboard..."
+          : `Welcome to ${businessName}. Redirecting to your dashboard...`,
       })
 
       setTimeout(() => {
@@ -312,15 +301,15 @@ export default function RegisterPage() {
 
       {/* Main card section */}
       <div className="flex-1 flex flex-col items-center justify-center py-8">
-        
+
         {/* Step Indicator Header */}
         <div className="w-full max-w-[390px] mb-6">
           <div className="flex items-center justify-center gap-3">
             {/* Step 1 */}
             <div className="flex flex-col items-center gap-1">
               <div className={`h-6 w-6 rounded-full flex items-center justify-center text-[10px] font-bold transition-all ${
-                step === 1 
-                  ? "bg-blue-600 text-white shadow-md shadow-blue-500/30" 
+                step === 1
+                  ? "bg-blue-600 text-white shadow-md shadow-blue-500/30"
                   : "bg-emerald-500 text-white"
               }`}>
                 {step > 1 ? <CheckCircle2 className="size-3.5" /> : "1"}
@@ -338,22 +327,22 @@ export default function RegisterPage() {
             {/* Step 2 */}
             <div className="flex flex-col items-center gap-1">
               <div className={`h-6 w-6 rounded-full flex items-center justify-center text-[10px] font-bold transition-all ${
-                step === 2 
-                  ? "bg-blue-600 text-white shadow-md shadow-blue-500/30" 
+                step === 2
+                  ? "bg-blue-600 text-white shadow-md shadow-blue-500/30"
                   : "bg-slate-200 text-slate-400"
               }`}>
                 2
               </div>
               <span className={`text-[9px] font-bold uppercase tracking-wider ${
                 step === 2 ? "text-blue-600" : "text-slate-400"
-              }`}>Workspace</span>
+              }`}>{invitationToken ? "Invitation" : "Workspace"}</span>
             </div>
           </div>
         </div>
 
         {/* Card */}
         <div className="w-full max-w-[390px] bg-[#0d111c] border border-slate-800/60 rounded-3xl p-8 shadow-2xl shadow-slate-950/20 text-white relative overflow-hidden">
-          
+
           {/* Completion Overlay */}
           {isComplete && (
             <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-[#0d111c]/95 backdrop-blur-sm">
@@ -435,6 +424,7 @@ export default function RegisterPage() {
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
+                      aria-label={showPassword ? "Hide password" : "Show password"}
                       className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-350"
                     >
                       {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
@@ -460,6 +450,7 @@ export default function RegisterPage() {
                     <button
                       type="button"
                       onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      aria-label={showConfirmPassword ? "Hide confirmation password" : "Show confirmation password"}
                       className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-350"
                     >
                       {showConfirmPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
@@ -499,7 +490,6 @@ export default function RegisterPage() {
                     type="button"
                     onClick={() => {
                       if (isLoading) return
-                      setSlideDirection("backward")
                       setStep(1)
                     }}
                     className="h-7 w-7 rounded-lg bg-slate-800 border border-slate-700/60 flex items-center justify-center text-slate-400 hover:text-white transition-all shrink-0"
@@ -508,13 +498,22 @@ export default function RegisterPage() {
                     <ArrowLeft className="size-3.5" />
                   </button>
                   <div className="space-y-0.5">
-                    <h2 className="text-xl font-bold tracking-tight">Configure your workspace</h2>
-                    <p className="text-[11px] text-slate-400">Tell us about your business.</p>
+                    <h2 className="text-xl font-bold tracking-tight">
+                      {invitationToken ? "Accept your invitation" : "Configure your workspace"}
+                    </h2>
+                    <p className="text-[11px] text-slate-400">
+                      {invitationToken ? "Confirm your account to join the assigned workspace." : "Tell us about your business."}
+                    </p>
                   </div>
                 </div>
 
                 {errors.form && <p className="text-[11px] text-red-400">{errors.form}</p>}
 
+                {invitationToken ? (
+                  <div className="rounded-xl border border-blue-500/20 bg-blue-500/10 p-4 text-xs leading-5 text-blue-100">
+                    You were invited as <span className="font-semibold">{step1Data?.email}</span>. Your workspace, business, and role will be assigned automatically.
+                  </div>
+                ) : <>
                 {/* Business Name */}
                 <div className="space-y-1.5">
                   <Label htmlFor="biz-name" className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
@@ -616,6 +615,7 @@ export default function RegisterPage() {
                   </Select>
                   {errors.region && <p className="text-[10px] text-red-400">{errors.region}</p>}
                 </div>
+                </>}
 
                 {/* Pipeline Progress Indicator */}
                 {isLoading && pipelineStage && (
@@ -641,11 +641,11 @@ export default function RegisterPage() {
                   {isLoading ? (
                     <>
                       <Loader2 className="size-4 animate-spin mr-2" />
-                      Creating Workspace...
+                      {invitationToken ? "Accepting Invitation..." : "Creating Workspace..."}
                     </>
                   ) : (
                     <>
-                      Launch Workspace
+                      {invitationToken ? "Accept Invitation" : "Launch Workspace"}
                       <ChevronRight className="ml-2 size-4" />
                     </>
                   )}
@@ -666,7 +666,7 @@ export default function RegisterPage() {
       {/* Bottom Footer Row */}
       <div className="w-full text-center py-4 border-t border-slate-200">
         <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">
-          OHADA Compliant • Secured in Cameroon • AES-256 Encrypted
+          Tenant-isolated • Private object storage • Role-based access
         </p>
       </div>
     </div>

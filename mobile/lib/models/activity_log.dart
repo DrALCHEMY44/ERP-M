@@ -6,7 +6,7 @@ class ActivityLog {
   final String userName;
   final String userRole;
   final String actionType; // e.g., 'LOGIN', 'RECORD_SALE', etc.
-  final String module;     // e.g., 'Auth', 'Sales', 'Tasks'
+  final String module; // e.g., 'Auth', 'Sales', 'Tasks'
   final String description;
   final DateTime timestamp;
 

@@ -8,7 +8,6 @@ import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { useAuth } from "@/hooks/use-auth"
-import { logActivity } from "@/lib/audit-logger"
 import Link from "next/link"
 
 interface Message {
@@ -21,6 +20,8 @@ interface AIQueryResponse {
   metadata?: {
     model: string
     role: string
+    purpose: "assistant" | "dashboard"
+    cached: boolean
     processingTimeMs: number
     contextModules: string[]
   }
@@ -56,36 +57,16 @@ export default function AIAssistantPage() {
     setIsLoading(true)
 
     try {
-      // Log the user's AI query for the audit trail
-      await logActivity({
-        actionType: 'AI_QUERY',
-        module: 'AI Assistant',
-        description: `User asked AI: "${userMsg.substring(0, 50)}${userMsg.length > 50 ? '...' : ''}"`,
-        userProfile: {
-          tenantId: profile.tenantId,
-          businessId: profile.businessId,
-          uid: profile.id,
-          fullName: profile.fullName,
-          role: profile.role,
-        },
-      })
-
       // Call our secure server-side API route
       if (!user) throw new Error('Your session has expired. Please sign in again.')
-      const token = await user.getIdToken()
       const response = await fetch('/api/ai/query', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           queryText: userMsg,
-          tenantId: profile.tenantId,
-          businessId: profile.businessId,
-          userId: profile.id,
-          role: profile.role,
-          userName: profile.fullName || profile.email,
+          purpose: "assistant",
         }),
       })
 
@@ -174,7 +155,7 @@ export default function AIAssistantPage() {
         <ShieldAlert className="size-4 text-primary" />
         <AlertTitle className="text-primary text-xs font-bold uppercase tracking-widest">Security Protocol Active</AlertTitle>
         <AlertDescription className="text-[10px] uppercase font-bold text-muted-foreground mt-1">
-          Read-Only Assistant • Multi-Tenant Isolated • Permission Aware • Powered by Gemma 4
+          Read-Only Assistant • Multi-Tenant Isolated • Permission Aware • Resilient OpenRouter Pipeline
         </AlertDescription>
       </Alert>
 
@@ -189,8 +170,8 @@ export default function AIAssistantPage() {
                   </div>
                 )}
                 <div className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm shadow-sm leading-relaxed ${
-                  msg.role === 'assistant' 
-                    ? 'bg-muted text-foreground rounded-tl-none' 
+                  msg.role === 'assistant'
+                    ? 'bg-muted text-foreground rounded-tl-none'
                     : 'bg-primary text-primary-foreground rounded-tr-none'
                 }`}>
                   <AIResponseRenderer content={msg.content} role={msg.role} />
@@ -216,17 +197,18 @@ export default function AIAssistantPage() {
         </ScrollArea>
 
         <div className="p-4 border-t bg-muted/20">
-          <form 
+          <form
             onSubmit={(e) => { e.preventDefault(); handleSend(); }}
             className="flex gap-2"
           >
-            <Input 
-              placeholder="Ask me: 'What are my total sales?' or 'Show low stock items'..." 
+            <Input
+              placeholder="Ask me: 'What are my total sales?' or 'Show low stock items'..."
               value={input}
+              maxLength={2000}
               onChange={(e) => setInput(e.target.value)}
               className="bg-background rounded-full px-6 shadow-inner h-12 border-primary/20 focus-visible:ring-primary"
             />
-            <Button size="icon" className="rounded-full shrink-0 shadow-lg h-12 w-12 bg-primary hover:bg-primary/90" disabled={isLoading}>
+            <Button size="icon" className="rounded-full shrink-0 shadow-lg h-12 w-12 bg-primary hover:bg-primary/90" disabled={isLoading || !input.trim()} aria-label="Send message">
               {isLoading ? <Loader2 className="size-5 animate-spin" /> : <Send className="size-5" />}
             </Button>
           </form>
@@ -235,7 +217,7 @@ export default function AIAssistantPage() {
                Tenant: {profile.tenantId}
              </p>
              <p className="text-[8px] text-primary uppercase tracking-widest font-bold">
-               Immutable Log Protocol
+               Tenant-scoped query logging
              </p>
           </div>
         </div>
@@ -249,28 +231,28 @@ function AIResponseRenderer({ content, role }: { content: string; role: 'assista
   const parseMarkdown = (text: string) => {
     // Splitting by **bold** first
     const boldParts = text.split(/(\*\*.*?\*\*)/g);
-    
+
     return boldParts.map((boldPart, i) => {
       if (boldPart.startsWith('**') && boldPart.endsWith('**')) {
         const innerText = boldPart.slice(2, -2);
         return (
-          <strong 
-            key={`b-${i}`} 
+          <strong
+            key={`b-${i}`}
             className={`font-bold ${role === 'user' ? 'text-white' : 'text-primary'}`}
           >
             {innerText}
           </strong>
         );
       }
-      
+
       // Split by *italics*
       const italicParts = boldPart.split(/(\*.*?\*)/g);
       return italicParts.map((italicPart, j) => {
         if (italicPart.startsWith('*') && italicPart.endsWith('*')) {
           const innerItalicText = italicPart.slice(1, -1);
           return (
-            <em 
-              key={`i-${j}`} 
+            <em
+              key={`i-${j}`}
               className={`italic ${role === 'user' ? 'text-white/90' : 'text-muted-foreground text-xs'}`}
             >
               {innerItalicText}

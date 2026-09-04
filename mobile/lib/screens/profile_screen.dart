@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../models/app_user.dart';
 import '../providers/theme_provider.dart';
 import '../services/auth_service.dart';
 import '../widgets/app_drawer.dart';
@@ -19,7 +20,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final user = AuthService.currentUser;
 
     // Fetch permissions list for the current role
-    final permissions = AuthService.rolePermissions[user?.role] ?? [];
+    final permissions = user?.permissions.isNotEmpty == true
+        ? user!.permissions
+        : AuthService.rolePermissions[user?.role] ?? const <String>[];
 
     return Scaffold(
       appBar: AppBar(title: const Text('My Profile & Settings')),
@@ -78,35 +81,36 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             const SizedBox(height: 20),
 
-            // Profile info items
-            Text(
-              'Workspace Isolation Details',
-              style: theme.textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
-                child: Column(
-                  children: [
-                    _infoTile(
-                      Icons.domain,
-                      'Business Code Space',
-                      user?.businessCode ?? user?.tenantId ?? 'N/A',
-                    ),
-                    const Divider(height: 1),
-                    _infoTile(
-                      Icons.business_center,
-                      'Business Identifier',
-                      user?.businessId ?? 'N/A',
-                    ),
-                  ],
+            if (user?.role != UserRole.platformSuperAdmin) ...[
+              Text(
+                'Workspace Isolation Details',
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
                 ),
               ),
-            ),
-            const SizedBox(height: 20),
+              const SizedBox(height: 8),
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  child: Column(
+                    children: [
+                      _infoTile(
+                        Icons.domain,
+                        'Business Code Space',
+                        user?.businessCode ?? user?.tenantId ?? 'N/A',
+                      ),
+                      const Divider(height: 1),
+                      _infoTile(
+                        Icons.business_center,
+                        'Business Identifier',
+                        user?.businessId ?? 'N/A',
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+            ],
 
             // Theme Settings
             Text(

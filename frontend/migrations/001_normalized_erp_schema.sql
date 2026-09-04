@@ -173,6 +173,21 @@ CREATE TABLE IF NOT EXISTS notifications (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+-- Transitional ingestion table used by the early Firebase mirror. Migration
+-- 004 retires its normalization trigger once Neon operational tables become
+-- authoritative, but fresh databases must still be able to apply migration 001.
+CREATE TABLE IF NOT EXISTS erp_mirror_records (
+  entity_type TEXT NOT NULL,
+  record_id TEXT NOT NULL,
+  tenant_id TEXT NOT NULL,
+  business_id TEXT NOT NULL,
+  operation TEXT NOT NULL CHECK (operation IN ('upsert', 'delete')),
+  payload JSONB NOT NULL DEFAULT '{}'::jsonb,
+  firebase_updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  mirrored_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  PRIMARY KEY (entity_type, record_id)
+);
+
 CREATE INDEX IF NOT EXISTS businesses_tenant_idx ON businesses (tenant_id);
 CREATE INDEX IF NOT EXISTS users_company_idx ON users (tenant_id, business_id);
 CREATE INDEX IF NOT EXISTS products_company_idx ON products (tenant_id, business_id);

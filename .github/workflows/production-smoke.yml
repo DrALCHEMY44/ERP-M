@@ -1,0 +1,47 @@
+name: Production read-only smoke test
+
+on:
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: HTTPS URL of the deployed SmartERP service
+        required: true
+        type: string
+      include_ai:
+        description: Also make one OpenRouter request
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    environment: production
+    defaults:
+      run:
+        working-directory: frontend
+    env:
+      PLAYWRIGHT_BASE_URL: ${{ inputs.base_url }}
+      SMOKE_OWNER_EMAIL: ${{ secrets.SMOKE_OWNER_EMAIL }}
+      SMOKE_OWNER_PASSWORD: ${{ secrets.SMOKE_OWNER_PASSWORD }}
+      SMOKE_TEST_AI: ${{ inputs.include_ai }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Require dedicated smoke credentials
+        shell: bash
+        run: |
+          if [[ -z "$SMOKE_OWNER_EMAIL" || -z "$SMOKE_OWNER_PASSWORD" ]]; then
+            echo '::error::Configure SMOKE_OWNER_EMAIL and SMOKE_OWNER_PASSWORD in the production environment.'
+            exit 1
+          fi
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e:smoke

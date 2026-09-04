@@ -7,6 +7,7 @@ class Expense {
   final double amount;
   final DateTime date;
   final String recordedBy;
+  final String? receiptUrl;
 
   Expense({
     required this.id,
@@ -17,5 +18,6 @@ class Expense {
     required this.amount,
     required this.date,
     required this.recordedBy,
+    this.receiptUrl,
   });
 }

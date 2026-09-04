@@ -2,20 +2,14 @@
 "use client"
 
 import * as React from "react"
-import { 
-  BarChart3, 
-  PieChart as PieChartIcon, 
-  Download, 
-  Filter, 
-  Search, 
-  Users, 
-  Building2, 
-  Clock, 
-  AlertCircle, 
+import {
+  Download,
+  Search,
+  Users,
+  AlertCircle,
   CheckCircle2,
   Calendar as CalendarIcon,
   Loader2,
-  ArrowRight
 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -42,13 +36,38 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart"
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Legend, Pie, PieChart, Cell, ResponsiveContainer } from "recharts"
-import { useFirestore } from "@/hooks/use-firestore"
+import { useNeonData } from "@/hooks/use-neon-data"
+import { useAuth } from "@/hooks/use-auth"
+import { listTasksByBusinessQuery } from "@/lib/data-service"
+import { downloadCsv } from "@/lib/csv"
 import { Task, TaskStatus } from "@/lib/types"
-import { isToday, isThisWeek, parseISO, isAfter, startOfDay, isBefore } from "date-fns"
+import { isToday, isThisWeek, parseISO, startOfDay, isBefore } from "date-fns"
 
 export default function TaskReportsPage() {
-  const { data: tasks, loading } = useFirestore<Task>('tasks');
-  
+  const { profile } = useAuth();
+  const { data, loading, error } = useNeonData({
+    query: listTasksByBusinessQuery,
+    variables: { tenantId: profile?.tenantId || "", businessId: profile?.businessId || "" },
+    skip: !profile?.tenantId || !profile?.businessId,
+    refreshInterval: 15000,
+  });
+  const tasks = React.useMemo(() => ((data?.tasks || []) as any[]).map((task) => {
+    const status: TaskStatus = task.status === "COMPLETED" ? "Completed"
+      : task.status === "ONGOING" ? "Ongoing"
+        : task.status === "LATE" ? "Late" : "Pending";
+    const priority = task.priority === "HIGH" ? "High" : task.priority === "MEDIUM" ? "Medium" : "Low";
+    return {
+      ...task,
+      status,
+      priority,
+      assignedTo: task.assignedTo?.id || "",
+      assignedToName: task.assignedTo?.fullName || task.assignedTo?.email || "Unassigned",
+      department: task.assignedTo?.department || "Unassigned",
+      assignedBy: task.createdBy,
+      startDate: task.createdAt,
+    } as Task;
+  }), [data]);
+
   const [filterEmployee, setFilterEmployee] = React.useState("all")
   const [filterDept, setFilterDept] = React.useState("all")
   const [filterStatus, setFilterStatus] = React.useState("all")
@@ -57,11 +76,11 @@ export default function TaskReportsPage() {
   // Dynamic calculations based on current data
   const processedTasks = React.useMemo(() => {
     const today = startOfDay(new Date());
-    
+
     return tasks.map(task => {
       const dueDate = startOfDay(parseISO(task.dueDate));
       let effectiveStatus = task.status;
-      
+
       // Auto-detect overdue
       if (task.status !== 'Completed' && task.status !== 'Cancelled' && isBefore(dueDate, today)) {
         effectiveStatus = 'Overdue';
@@ -82,7 +101,7 @@ export default function TaskReportsPage() {
       const matchEmp = filterEmployee === "all" || t.assignedToName === filterEmployee;
       const matchDept = filterDept === "all" || t.department === filterDept;
       const matchStatus = filterStatus === "all" || t.effectiveStatus === filterStatus;
-      const matchSearch = t.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      const matchSearch = t.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           t.assignedToName.toLowerCase().includes(searchQuery.toLowerCase());
       return matchEmp && matchDept && matchStatus && matchSearch;
     });
@@ -119,12 +138,29 @@ export default function TaskReportsPage() {
 
   const employeeNames = Array.from(new Set(tasks.map(t => t.assignedToName)));
 
+  const exportPerformance = React.useCallback(() => {
+    const date = new Date().toISOString().slice(0, 10);
+    downloadCsv(`task-performance-${date}.csv`, [
+      ["Task performance report", date],
+      ["Total", stats.total, "Completed", stats.completed, "Overdue", stats.overdue],
+      [],
+      ["Task", "Assigned to", "Department", "Due date", "Priority", "Status"],
+      ...filteredTasks.map((task) => [
+        task.title, task.assignedToName, task.department, task.dueDate, task.priority, task.effectiveStatus,
+      ]),
+    ]);
+  }, [filteredTasks, stats]);
+
   if (loading) {
     return (
       <div className="flex h-[60vh] items-center justify-center">
         <Loader2 className="size-8 animate-spin text-primary" />
       </div>
     );
+  }
+
+  if (error) {
+    return <Card><CardContent className="p-6 text-sm text-destructive">Unable to load task performance: {error.message}</CardContent></Card>;
   }
 
   return (
@@ -135,8 +171,8 @@ export default function TaskReportsPage() {
           <p className="text-sm text-muted-foreground uppercase tracking-widest font-bold text-[10px]">Task Performance & Workforce Utilization</p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" className="text-[10px] font-bold uppercase tracking-widest bg-card">
-            <Download className="size-4 mr-2" /> Export Performance DSF
+          <Button variant="outline" size="sm" className="text-[10px] font-bold uppercase tracking-widest bg-card" onClick={exportPerformance}>
+            <Download className="size-4 mr-2" /> Export CSV
           </Button>
         </div>
       </div>
@@ -186,8 +222,8 @@ export default function TaskReportsPage() {
         <CardContent className="p-4 flex flex-col md:flex-row gap-4">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-            <Input 
-              placeholder="Search by task title or employee..." 
+            <Input
+              placeholder="Search by task title or employee..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-9 bg-muted/20"

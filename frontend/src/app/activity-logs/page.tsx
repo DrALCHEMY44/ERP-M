@@ -2,15 +2,16 @@
 "use client"
 
 import * as React from "react"
-import { History, Search, Download, ShieldCheck, User, Filter, ArrowUpDown, Loader2 } from "lucide-react"
+import { History, Search, Download, ShieldCheck, Filter, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { useAuth } from "@/hooks/use-auth"
-import { useDataConnect } from "@/hooks/use-dataconnect"
+import { useNeonData } from "@/hooks/use-neon-data"
 import { listActivityLogsByBusinessQuery } from "@/lib/data-service"
 import { ActivityLog } from "@/lib/types"
+import { downloadCsv } from "@/lib/csv"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,7 +21,7 @@ import {
 
 export default function ActivityLogsPage() {
   const { profile } = useAuth();
-  const { data: logsData, loading } = useDataConnect({
+  const { data: logsData, loading } = useNeonData({
     query: listActivityLogsByBusinessQuery,
     variables: {
       tenantId: profile?.tenantId || "",
@@ -41,53 +42,26 @@ export default function ActivityLogsPage() {
 
   const filteredLogs = React.useMemo(() => {
     return logs.filter(log => {
-      const matchesSearch = 
+      const matchesSearch =
         log.userName.toLowerCase().includes(searchQuery.toLowerCase()) ||
         log.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
         log.actionType.toLowerCase().includes(searchQuery.toLowerCase());
-      
+
       const matchesModule = filterModule === "all" || log.module === filterModule;
-      
+
       return matchesSearch && matchesModule;
     }).sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
   }, [logs, searchQuery, filterModule]);
 
   const handleExportCSV = () => {
     if (filteredLogs.length === 0) return;
-    
-    const headers = ["Timestamp", "User", "Action", "Module", "Description", "Details (Record ID)"];
-    const rows = filteredLogs.map(log => [
-      new Date(log.timestamp).toISOString(),
-      log.userName,
-      log.actionType,
-      log.module,
-      log.description || "",
-      log.recordId || ""
-    ]);
 
-    const csvContent = [
-      headers.join(","),
-      ...rows.map(row => 
-        row.map(value => {
-          const stringVal = String(value);
-          if (stringVal.includes(",") || stringVal.includes('"') || stringVal.includes("\n")) {
-            return `"${stringVal.replace(/"/g, '""')}"`;
-          }
-          return stringVal;
-        }).join(",")
-      )
-    ].join("\n");
-
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.setAttribute("href", url);
     const dateStr = new Date().toISOString().split('T')[0];
-    link.setAttribute("download", `smarterp_audit_trail_${dateStr}.csv`);
-    link.style.visibility = "hidden";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    downloadCsv(`smarterp_audit_trail_${dateStr}.csv`, [
+      ["Timestamp", "User", "Action", "Module", "Description", "Details (Record ID)"],
+      ...filteredLogs.map(log => [new Date(log.timestamp).toISOString(), log.userName, log.actionType,
+        log.module, log.description || "", log.recordId || ""]),
+    ]);
   };
 
   const modules = Array.from(new Set(logs.map(l => l.module)));
@@ -105,12 +79,12 @@ export default function ActivityLogsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="space-y-1">
           <h1 className="text-2xl md:text-3xl font-bold tracking-tight">System Audit Trail</h1>
-          <p className="text-sm text-muted-foreground">Immutable, append-only records of all user and AI interactions.</p>
+          <p className="text-sm text-muted-foreground">Operational records of user and AI activity in this workspace.</p>
         </div>
-        <Button 
+        <Button
           onClick={handleExportCSV}
-          variant="outline" 
-          size="sm" 
+          variant="outline"
+          size="sm"
           className="bg-card shadow-sm font-bold uppercase text-[10px] tracking-widest text-primary hover:bg-primary hover:text-primary-foreground"
         >
           <Download className="size-4 mr-2" /> Export Full Audit
@@ -121,9 +95,9 @@ export default function ActivityLogsPage() {
         <div className="p-4 border-b flex flex-col md:flex-row gap-4 items-center">
           <div className="relative w-full md:w-96">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-            <Input 
-              placeholder="Search by user or action..." 
-              className="pl-9 bg-muted/20" 
+            <Input
+              placeholder="Search by user or action..."
+              className="pl-9 bg-muted/20"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -195,7 +169,9 @@ export default function ActivityLogsPage() {
                     <TableCell className="max-w-[300px] truncate">{log.description}</TableCell>
                     <TableCell className="text-right">
                       {log.recordId ? (
-                        <Button variant="ghost" size="sm" className="text-[10px] uppercase font-bold">ID: {log.recordId.substring(0,6)}</Button>
+                        <span className="inline-flex h-8 items-center px-3 text-[10px] font-bold uppercase">
+                          ID: {log.recordId.substring(0, 6)}
+                        </span>
                       ) : (
                         <span className="text-muted-foreground text-[10px]">-</span>
                       )}
@@ -213,20 +189,20 @@ export default function ActivityLogsPage() {
           </Table>
         </div>
       </div>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
         <div className="p-4 bg-primary/5 border border-primary/20 rounded-xl flex items-center gap-4">
           <ShieldCheck className="size-8 text-primary" />
           <div>
-            <h4 className="text-sm font-bold uppercase tracking-tight">Immutable Records</h4>
-            <p className="text-[10px] text-muted-foreground uppercase font-bold">All logs are signed and protected. Edits or deletions are strictly prohibited by system protocol.</p>
+            <h4 className="text-sm font-bold uppercase tracking-tight">Activity Records</h4>
+            <p className="text-[10px] text-muted-foreground uppercase font-bold">Events are recorded through the application and exposed here as a read-only operational trail.</p>
           </div>
         </div>
         <div className="p-4 bg-muted/50 border rounded-xl flex items-center gap-4">
           <History className="size-8 text-muted-foreground" />
           <div>
             <h4 className="text-sm font-bold uppercase tracking-tight">Audit History</h4>
-            <p className="text-[10px] text-muted-foreground uppercase font-bold">Full history retained for fiscal compliance and accountability audits.</p>
+            <p className="text-[10px] text-muted-foreground uppercase font-bold">History is retained according to your configured data-retention policy.</p>
           </div>
         </div>
       </div>

@@ -5,13 +5,13 @@ import * as React from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogDescription, 
-  DialogFooter, 
-  DialogHeader, 
-  DialogTitle 
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import {
@@ -31,7 +31,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Task, TaskPriority, TaskStatus } from "@/lib/types"
+import { Task } from "@/lib/types"
 import { ClipboardList } from "lucide-react"
 
 const taskSchema = z.object({
@@ -105,7 +105,7 @@ export function TaskDialog({ task, open, onOpenChange, onSave, users = [] }: Tas
       ...values,
       completedAt: values.status === 'Completed' ? new Date().toISOString() : undefined,
     }
-    
+
     if (task?.id) {
       payload.id = task.id;
     }
@@ -165,7 +165,7 @@ export function TaskDialog({ task, open, onOpenChange, onSave, users = [] }: Tas
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-[10px] font-bold uppercase tracking-widest">Assigned Employee</FormLabel>
-                      <Select 
+                      <Select
                         onValueChange={(val) => {
                           field.onChange(val);
                           const selectedUser = users.find(u => u.id === val);
@@ -175,7 +175,7 @@ export function TaskDialog({ task, open, onOpenChange, onSave, users = [] }: Tas
                               form.setValue("department", selectedUser.department);
                             }
                           }
-                        }} 
+                        }}
                         value={field.value}
                       >
                         <FormControl>

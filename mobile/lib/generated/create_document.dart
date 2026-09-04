@@ -6,44 +6,76 @@ class CreateDocumentVariablesBuilder {
   String title;
   String documentType;
   String fileUrl;
+  Optional<String> _description = Optional.optional(
+    nativeFromJson,
+    nativeToJson,
+  );
   String uploadedBy;
 
   final FirebaseDataConnect _dataConnect;
-  CreateDocumentVariablesBuilder(this._dataConnect, {required  this.tenantId,required  this.businessId,required  this.title,required  this.documentType,required  this.fileUrl,required  this.uploadedBy,});
-  Deserializer<CreateDocumentData> dataDeserializer = (dynamic json)  => CreateDocumentData.fromJson(jsonDecode(json));
-  Serializer<CreateDocumentVariables> varsSerializer = (CreateDocumentVariables vars) => jsonEncode(vars.toJson());
-  Future<OperationResult<CreateDocumentData, CreateDocumentVariables>> execute() {
+  CreateDocumentVariablesBuilder description(String? t) {
+    _description.value = t;
+    return this;
+  }
+
+  CreateDocumentVariablesBuilder(
+    this._dataConnect, {
+    required this.tenantId,
+    required this.businessId,
+    required this.title,
+    required this.documentType,
+    required this.fileUrl,
+    required this.uploadedBy,
+  });
+  Deserializer<CreateDocumentData> dataDeserializer = (dynamic json) =>
+      CreateDocumentData.fromJson(jsonDecode(json));
+  Serializer<CreateDocumentVariables> varsSerializer =
+      (CreateDocumentVariables vars) => jsonEncode(vars.toJson());
+  Future<OperationResult<CreateDocumentData, CreateDocumentVariables>>
+  execute() {
     return ref().execute();
   }
 
   MutationRef<CreateDocumentData, CreateDocumentVariables> ref() {
-    CreateDocumentVariables vars= CreateDocumentVariables(tenantId: tenantId,businessId: businessId,title: title,documentType: documentType,fileUrl: fileUrl,uploadedBy: uploadedBy,);
-    return _dataConnect.mutation("CreateDocument", dataDeserializer, varsSerializer, vars);
+    CreateDocumentVariables vars = CreateDocumentVariables(
+      tenantId: tenantId,
+      businessId: businessId,
+      title: title,
+      documentType: documentType,
+      fileUrl: fileUrl,
+      description: _description,
+      uploadedBy: uploadedBy,
+    );
+    return _dataConnect.mutation(
+      "CreateDocument",
+      dataDeserializer,
+      varsSerializer,
+      vars,
+    );
   }
 }
 
 @immutable
 class CreateDocumentDocumentInsert {
   final String id;
-  CreateDocumentDocumentInsert.fromJson(dynamic json):
-  
-  id = nativeFromJson<String>(json['id']);
+  CreateDocumentDocumentInsert.fromJson(dynamic json)
+    : id = nativeFromJson<String>(json['id']);
   @override
   bool operator ==(Object other) {
-    if(identical(this, other)) {
+    if (identical(this, other)) {
       return true;
     }
-    if(other.runtimeType != runtimeType) {
+    if (other.runtimeType != runtimeType) {
       return false;
     }
 
-    final CreateDocumentDocumentInsert otherTyped = other as CreateDocumentDocumentInsert;
+    final CreateDocumentDocumentInsert otherTyped =
+        other as CreateDocumentDocumentInsert;
     return id == otherTyped.id;
-    
   }
+
   @override
   int get hashCode => id.hashCode;
-  
 
   Map<String, dynamic> toJson() {
     Map<String, dynamic> json = {};
@@ -51,33 +83,31 @@ class CreateDocumentDocumentInsert {
     return json;
   }
 
-  CreateDocumentDocumentInsert({
-    required this.id,
-  });
+  CreateDocumentDocumentInsert({required this.id});
 }
 
 @immutable
 class CreateDocumentData {
   final CreateDocumentDocumentInsert document_insert;
-  CreateDocumentData.fromJson(dynamic json):
-  
-  document_insert = CreateDocumentDocumentInsert.fromJson(json['document_insert']);
+  CreateDocumentData.fromJson(dynamic json)
+    : document_insert = CreateDocumentDocumentInsert.fromJson(
+        json['document_insert'],
+      );
   @override
   bool operator ==(Object other) {
-    if(identical(this, other)) {
+    if (identical(this, other)) {
       return true;
     }
-    if(other.runtimeType != runtimeType) {
+    if (other.runtimeType != runtimeType) {
       return false;
     }
 
     final CreateDocumentData otherTyped = other as CreateDocumentData;
     return document_insert == otherTyped.document_insert;
-    
   }
+
   @override
   int get hashCode => document_insert.hashCode;
-  
 
   Map<String, dynamic> toJson() {
     Map<String, dynamic> json = {};
@@ -85,9 +115,7 @@ class CreateDocumentData {
     return json;
   }
 
-  CreateDocumentData({
-    required this.document_insert,
-  });
+  CreateDocumentData({required this.document_insert});
 }
 
 @immutable
@@ -97,37 +125,52 @@ class CreateDocumentVariables {
   final String title;
   final String documentType;
   final String fileUrl;
+  late final Optional<String> description;
   final String uploadedBy;
-  @Deprecated('fromJson is deprecated for Variable classes as they are no longer required for deserialization.')
-  CreateDocumentVariables.fromJson(Map<String, dynamic> json):
-  
-  tenantId = nativeFromJson<String>(json['tenantId']),
-  businessId = nativeFromJson<String>(json['businessId']),
-  title = nativeFromJson<String>(json['title']),
-  documentType = nativeFromJson<String>(json['documentType']),
-  fileUrl = nativeFromJson<String>(json['fileUrl']),
-  uploadedBy = nativeFromJson<String>(json['uploadedBy']);
+  @Deprecated(
+    'fromJson is deprecated for Variable classes as they are no longer required for deserialization.',
+  )
+  CreateDocumentVariables.fromJson(Map<String, dynamic> json)
+    : tenantId = nativeFromJson<String>(json['tenantId']),
+      businessId = nativeFromJson<String>(json['businessId']),
+      title = nativeFromJson<String>(json['title']),
+      documentType = nativeFromJson<String>(json['documentType']),
+      fileUrl = nativeFromJson<String>(json['fileUrl']),
+      uploadedBy = nativeFromJson<String>(json['uploadedBy']) {
+    description = Optional.optional(nativeFromJson, nativeToJson);
+    description.value = json['description'] == null
+        ? null
+        : nativeFromJson<String>(json['description']);
+  }
   @override
   bool operator ==(Object other) {
-    if(identical(this, other)) {
+    if (identical(this, other)) {
       return true;
     }
-    if(other.runtimeType != runtimeType) {
+    if (other.runtimeType != runtimeType) {
       return false;
     }
 
     final CreateDocumentVariables otherTyped = other as CreateDocumentVariables;
-    return tenantId == otherTyped.tenantId && 
-    businessId == otherTyped.businessId && 
-    title == otherTyped.title && 
-    documentType == otherTyped.documentType && 
-    fileUrl == otherTyped.fileUrl && 
-    uploadedBy == otherTyped.uploadedBy;
-    
+    return tenantId == otherTyped.tenantId &&
+        businessId == otherTyped.businessId &&
+        title == otherTyped.title &&
+        documentType == otherTyped.documentType &&
+        fileUrl == otherTyped.fileUrl &&
+        description == otherTyped.description &&
+        uploadedBy == otherTyped.uploadedBy;
   }
+
   @override
-  int get hashCode => Object.hashAll([tenantId.hashCode, businessId.hashCode, title.hashCode, documentType.hashCode, fileUrl.hashCode, uploadedBy.hashCode]);
-  
+  int get hashCode => Object.hashAll([
+    tenantId.hashCode,
+    businessId.hashCode,
+    title.hashCode,
+    documentType.hashCode,
+    fileUrl.hashCode,
+    description.hashCode,
+    uploadedBy.hashCode,
+  ]);
 
   Map<String, dynamic> toJson() {
     Map<String, dynamic> json = {};
@@ -136,6 +179,9 @@ class CreateDocumentVariables {
     json['title'] = nativeToJson<String>(title);
     json['documentType'] = nativeToJson<String>(documentType);
     json['fileUrl'] = nativeToJson<String>(fileUrl);
+    if (description.state == OptionalState.set) {
+      json['description'] = description.toJson();
+    }
     json['uploadedBy'] = nativeToJson<String>(uploadedBy);
     return json;
   }
@@ -146,7 +192,7 @@ class CreateDocumentVariables {
     required this.title,
     required this.documentType,
     required this.fileUrl,
+    required this.description,
     required this.uploadedBy,
   });
 }
-

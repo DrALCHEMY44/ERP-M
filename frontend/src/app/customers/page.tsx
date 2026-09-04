@@ -7,7 +7,7 @@ import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YA
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   Table,
   TableBody,
@@ -20,17 +20,17 @@ import { Customer } from "@/lib/types"
 import { CustomerDialog } from "@/components/customers/customer-dialog"
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/hooks/use-auth"
-import { useDataConnect } from "@/hooks/use-dataconnect"
+import { useNeonData } from "@/hooks/use-neon-data"
 import { useTranslation } from "@/components/language-provider"
 import { listCustomersByBusinessQuery, createCustomerMutation, updateCustomerMutation, deleteCustomerMutation } from "@/lib/data-service"
 import { LogIn } from "lucide-react"
 import Link from "next/link"
 
 export default function CustomersPage() {
-  const { user, profile } = useAuth();
+  const { profile } = useAuth();
   const { t } = useTranslation();
-  
-  const { data: dbCustomers, loading: dbLoading, error: dbError, unauthenticated, refetch } = useDataConnect({
+
+  const { data: dbCustomers, loading: dbLoading, error: dbError, unauthenticated, refetch } = useNeonData({
     query: listCustomersByBusinessQuery,
     variables: {
       tenantId: profile?.tenantId || "",
@@ -39,7 +39,7 @@ export default function CustomersPage() {
     skip: !profile || !profile.tenantId || !profile.businessId,
     refreshInterval: 5000
   });
-  
+
   const customers = React.useMemo(() => {
     const sqlList = dbCustomers?.customers || [];
     return sqlList.map((sc: any) => ({
@@ -47,9 +47,10 @@ export default function CustomersPage() {
       name: sc.customerName,
       phone: sc.phoneNumber || "",
       email: sc.email || "",
-      location: sc.location || "Douala",
+      location: sc.location || "Not provided",
       totalOrders: sc.totalOrders || 0,
       totalSpent: sc.totalSpent || 0,
+      notes: sc.notes || "",
       createdAt: sc.createdAt
     })) as Customer[];
   }, [dbCustomers]);
@@ -65,18 +66,18 @@ export default function CustomersPage() {
       toast({
         variant: "destructive",
         title: "Synchronization Error",
-        description: "Failed to fetch customer records from SQL Connect database."
+        description: "Failed to fetch customer records from Neon."
       });
     } else if (dbCustomers && !dbLoading && !hasShownSuccess) {
       toast({
         title: "Live Database Sync",
-        description: `Successfully loaded ${dbCustomers?.customers?.length || 0} customer records from SQL Connect.`
+        description: `Successfully loaded ${dbCustomers?.customers?.length || 0} customer records from Neon.`
       });
       setHasShownSuccess(true);
     }
   }, [dbCustomers, dbLoading, dbError, hasShownSuccess, toast]);
 
-  const filteredCustomers = customers.filter(c => 
+  const filteredCustomers = customers.filter(c =>
     (c.name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
     (c.phone || "").includes(searchQuery) ||
     (c.location || "").toLowerCase().includes(searchQuery.toLowerCase())
@@ -128,8 +129,7 @@ export default function CustomersPage() {
           phoneNumber: data.phone,
           email: data.email,
           location: data.location,
-          totalOrders: data.totalOrders,
-          totalSpent: data.totalSpent
+          notes: data.notes,
         });
         await refetch();
         toast({ title: "Customer Updated", description: `${data.name}'s profile has been synchronized.` });
@@ -140,14 +140,13 @@ export default function CustomersPage() {
           customerName: data.name || "",
           phoneNumber: data.phone || "",
           email: data.email || "",
-          location: data.location || "Douala",
-          totalOrders: data.totalOrders || 0,
-          totalSpent: data.totalSpent || 0
+          location: data.location || "",
+          notes: data.notes || "",
         });
         await refetch();
         toast({ title: "Customer Added", description: `${data.name} is now in your directory.` });
       }
-    } catch (e) {
+    } catch {
       toast({ variant: "destructive", title: "Error", description: "Failed to save customer data." });
     }
   }
@@ -157,9 +156,13 @@ export default function CustomersPage() {
       try {
         await deleteCustomerMutation({ id });
         await refetch();
-        toast({ title: "Customer Removed", description: "Data deleted from cloud database." });
-      } catch (e) {
-        toast({ variant: "destructive", title: "Error", description: "Failed to delete customer." });
+        toast({ title: "Customer Removed", description: "Customer record deleted." });
+      } catch (error) {
+        toast({
+          variant: "destructive",
+          title: "Customer Not Deleted",
+          description: error instanceof Error ? error.message : "Failed to delete customer.",
+        });
       }
     }
   }
@@ -178,11 +181,11 @@ export default function CustomersPage() {
             <p className="text-sm text-muted-foreground">
               Please sign in to view customer records. All operations require an authenticated session.
             </p>
-            <Link href="/login">
-              <Button className="bg-primary hover:bg-primary/90 text-white font-bold uppercase text-xs tracking-widest">
+            <Button asChild className="bg-primary hover:bg-primary/90 text-white font-bold uppercase text-xs tracking-widest">
+              <Link href="/login">
                 <LogIn className="size-4 mr-2" /> Sign In
-              </Button>
-            </Link>
+              </Link>
+            </Button>
           </CardContent>
         </Card>
       </div>
@@ -242,7 +245,7 @@ export default function CustomersPage() {
         <div className="p-4 border-b flex flex-col md:flex-row gap-4 items-center">
           <div className="relative w-full md:w-96">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-            <Input 
+            <Input
               placeholder={t('customers.searchPlaceholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -313,7 +316,7 @@ export default function CustomersPage() {
                         <Button variant="ghost" size="sm" onClick={() => handleEdit(customer)} className="text-[10px] uppercase font-bold tracking-widest">
                           {t('common.edit')}
                         </Button>
-                        <Button variant="ghost" size="icon" onClick={() => handleDelete(customer.id!)} className="h-8 w-8 text-destructive">
+                        <Button variant="ghost" size="icon" onClick={() => handleDelete(customer.id!)} className="h-8 w-8 text-destructive" aria-label={`Delete ${customer.name}`}>
                           <Trash2 className="size-4" />
                         </Button>
                        </div>
@@ -332,7 +335,7 @@ export default function CustomersPage() {
         </div>
       </div>
 
-      <CustomerDialog 
+      <CustomerDialog
         customer={selectedCustomer}
         open={isDialogOpen}
         onOpenChange={setIsDialogOpen}

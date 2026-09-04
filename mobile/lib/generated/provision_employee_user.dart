@@ -6,54 +6,88 @@ class ProvisionEmployeeUserVariablesBuilder {
   String email;
   String role;
   String fullName;
-  Optional<String> _department = Optional.optional(nativeFromJson, nativeToJson);
-  Optional<String> _phoneNumber = Optional.optional(nativeFromJson, nativeToJson);
+  Optional<String> _department = Optional.optional(
+    nativeFromJson,
+    nativeToJson,
+  );
+  Optional<String> _phoneNumber = Optional.optional(
+    nativeFromJson,
+    nativeToJson,
+  );
   String accessCodeHash;
 
-  final FirebaseDataConnect _dataConnect;  ProvisionEmployeeUserVariablesBuilder department(String? t) {
-   _department.value = t;
-   return this;
-  }
-  ProvisionEmployeeUserVariablesBuilder phoneNumber(String? t) {
-   _phoneNumber.value = t;
-   return this;
+  final FirebaseDataConnect _dataConnect;
+  ProvisionEmployeeUserVariablesBuilder department(String? t) {
+    _department.value = t;
+    return this;
   }
 
-  ProvisionEmployeeUserVariablesBuilder(this._dataConnect, {required  this.tenantId,required  this.businessId,required  this.email,required  this.role,required  this.fullName,required  this.accessCodeHash,});
-  Deserializer<ProvisionEmployeeUserData> dataDeserializer = (dynamic json)  => ProvisionEmployeeUserData.fromJson(jsonDecode(json));
-  Serializer<ProvisionEmployeeUserVariables> varsSerializer = (ProvisionEmployeeUserVariables vars) => jsonEncode(vars.toJson());
-  Future<OperationResult<ProvisionEmployeeUserData, ProvisionEmployeeUserVariables>> execute() {
+  ProvisionEmployeeUserVariablesBuilder phoneNumber(String? t) {
+    _phoneNumber.value = t;
+    return this;
+  }
+
+  ProvisionEmployeeUserVariablesBuilder(
+    this._dataConnect, {
+    required this.tenantId,
+    required this.businessId,
+    required this.email,
+    required this.role,
+    required this.fullName,
+    required this.accessCodeHash,
+  });
+  Deserializer<ProvisionEmployeeUserData> dataDeserializer = (dynamic json) =>
+      ProvisionEmployeeUserData.fromJson(jsonDecode(json));
+  Serializer<ProvisionEmployeeUserVariables> varsSerializer =
+      (ProvisionEmployeeUserVariables vars) => jsonEncode(vars.toJson());
+  Future<
+    OperationResult<ProvisionEmployeeUserData, ProvisionEmployeeUserVariables>
+  >
+  execute() {
     return ref().execute();
   }
 
   MutationRef<ProvisionEmployeeUserData, ProvisionEmployeeUserVariables> ref() {
-    ProvisionEmployeeUserVariables vars= ProvisionEmployeeUserVariables(tenantId: tenantId,businessId: businessId,email: email,role: role,fullName: fullName,department: _department,phoneNumber: _phoneNumber,accessCodeHash: accessCodeHash,);
-    return _dataConnect.mutation("ProvisionEmployeeUser", dataDeserializer, varsSerializer, vars);
+    ProvisionEmployeeUserVariables vars = ProvisionEmployeeUserVariables(
+      tenantId: tenantId,
+      businessId: businessId,
+      email: email,
+      role: role,
+      fullName: fullName,
+      department: _department,
+      phoneNumber: _phoneNumber,
+      accessCodeHash: accessCodeHash,
+    );
+    return _dataConnect.mutation(
+      "ProvisionEmployeeUser",
+      dataDeserializer,
+      varsSerializer,
+      vars,
+    );
   }
 }
 
 @immutable
 class ProvisionEmployeeUserUserInsert {
   final String id;
-  ProvisionEmployeeUserUserInsert.fromJson(dynamic json):
-  
-  id = nativeFromJson<String>(json['id']);
+  ProvisionEmployeeUserUserInsert.fromJson(dynamic json)
+    : id = nativeFromJson<String>(json['id']);
   @override
   bool operator ==(Object other) {
-    if(identical(this, other)) {
+    if (identical(this, other)) {
       return true;
     }
-    if(other.runtimeType != runtimeType) {
+    if (other.runtimeType != runtimeType) {
       return false;
     }
 
-    final ProvisionEmployeeUserUserInsert otherTyped = other as ProvisionEmployeeUserUserInsert;
+    final ProvisionEmployeeUserUserInsert otherTyped =
+        other as ProvisionEmployeeUserUserInsert;
     return id == otherTyped.id;
-    
   }
+
   @override
   int get hashCode => id.hashCode;
-  
 
   Map<String, dynamic> toJson() {
     Map<String, dynamic> json = {};
@@ -61,33 +95,32 @@ class ProvisionEmployeeUserUserInsert {
     return json;
   }
 
-  ProvisionEmployeeUserUserInsert({
-    required this.id,
-  });
+  ProvisionEmployeeUserUserInsert({required this.id});
 }
 
 @immutable
 class ProvisionEmployeeUserData {
   final ProvisionEmployeeUserUserInsert user_insert;
-  ProvisionEmployeeUserData.fromJson(dynamic json):
-  
-  user_insert = ProvisionEmployeeUserUserInsert.fromJson(json['user_insert']);
+  ProvisionEmployeeUserData.fromJson(dynamic json)
+    : user_insert = ProvisionEmployeeUserUserInsert.fromJson(
+        json['user_insert'],
+      );
   @override
   bool operator ==(Object other) {
-    if(identical(this, other)) {
+    if (identical(this, other)) {
       return true;
     }
-    if(other.runtimeType != runtimeType) {
+    if (other.runtimeType != runtimeType) {
       return false;
     }
 
-    final ProvisionEmployeeUserData otherTyped = other as ProvisionEmployeeUserData;
+    final ProvisionEmployeeUserData otherTyped =
+        other as ProvisionEmployeeUserData;
     return user_insert == otherTyped.user_insert;
-    
   }
+
   @override
   int get hashCode => user_insert.hashCode;
-  
 
   Map<String, dynamic> toJson() {
     Map<String, dynamic> json = {};
@@ -95,9 +128,7 @@ class ProvisionEmployeeUserData {
     return json;
   }
 
-  ProvisionEmployeeUserData({
-    required this.user_insert,
-  });
+  ProvisionEmployeeUserData({required this.user_insert});
 }
 
 @immutable
@@ -107,57 +138,61 @@ class ProvisionEmployeeUserVariables {
   final String email;
   final String role;
   final String fullName;
-  late final Optional<String>department;
-  late final Optional<String>phoneNumber;
+  late final Optional<String> department;
+  late final Optional<String> phoneNumber;
   final String accessCodeHash;
-  @Deprecated('fromJson is deprecated for Variable classes as they are no longer required for deserialization.')
-  ProvisionEmployeeUserVariables.fromJson(Map<String, dynamic> json):
-  
-  tenantId = nativeFromJson<String>(json['tenantId']),
-  businessId = nativeFromJson<String>(json['businessId']),
-  email = nativeFromJson<String>(json['email']),
-  role = nativeFromJson<String>(json['role']),
-  fullName = nativeFromJson<String>(json['fullName']),
-  accessCodeHash = nativeFromJson<String>(json['accessCodeHash']) {
-  
-  
-  
-  
-  
-  
-  
+  @Deprecated(
+    'fromJson is deprecated for Variable classes as they are no longer required for deserialization.',
+  )
+  ProvisionEmployeeUserVariables.fromJson(Map<String, dynamic> json)
+    : tenantId = nativeFromJson<String>(json['tenantId']),
+      businessId = nativeFromJson<String>(json['businessId']),
+      email = nativeFromJson<String>(json['email']),
+      role = nativeFromJson<String>(json['role']),
+      fullName = nativeFromJson<String>(json['fullName']),
+      accessCodeHash = nativeFromJson<String>(json['accessCodeHash']) {
     department = Optional.optional(nativeFromJson, nativeToJson);
-    department.value = json['department'] == null ? null : nativeFromJson<String>(json['department']);
-  
-  
+    department.value = json['department'] == null
+        ? null
+        : nativeFromJson<String>(json['department']);
+
     phoneNumber = Optional.optional(nativeFromJson, nativeToJson);
-    phoneNumber.value = json['phoneNumber'] == null ? null : nativeFromJson<String>(json['phoneNumber']);
-  
-  
+    phoneNumber.value = json['phoneNumber'] == null
+        ? null
+        : nativeFromJson<String>(json['phoneNumber']);
   }
   @override
   bool operator ==(Object other) {
-    if(identical(this, other)) {
+    if (identical(this, other)) {
       return true;
     }
-    if(other.runtimeType != runtimeType) {
+    if (other.runtimeType != runtimeType) {
       return false;
     }
 
-    final ProvisionEmployeeUserVariables otherTyped = other as ProvisionEmployeeUserVariables;
-    return tenantId == otherTyped.tenantId && 
-    businessId == otherTyped.businessId && 
-    email == otherTyped.email && 
-    role == otherTyped.role && 
-    fullName == otherTyped.fullName && 
-    department == otherTyped.department && 
-    phoneNumber == otherTyped.phoneNumber && 
-    accessCodeHash == otherTyped.accessCodeHash;
-    
+    final ProvisionEmployeeUserVariables otherTyped =
+        other as ProvisionEmployeeUserVariables;
+    return tenantId == otherTyped.tenantId &&
+        businessId == otherTyped.businessId &&
+        email == otherTyped.email &&
+        role == otherTyped.role &&
+        fullName == otherTyped.fullName &&
+        department == otherTyped.department &&
+        phoneNumber == otherTyped.phoneNumber &&
+        accessCodeHash == otherTyped.accessCodeHash;
   }
+
   @override
-  int get hashCode => Object.hashAll([tenantId.hashCode, businessId.hashCode, email.hashCode, role.hashCode, fullName.hashCode, department.hashCode, phoneNumber.hashCode, accessCodeHash.hashCode]);
-  
+  int get hashCode => Object.hashAll([
+    tenantId.hashCode,
+    businessId.hashCode,
+    email.hashCode,
+    role.hashCode,
+    fullName.hashCode,
+    department.hashCode,
+    phoneNumber.hashCode,
+    accessCodeHash.hashCode,
+  ]);
 
   Map<String, dynamic> toJson() {
     Map<String, dynamic> json = {};
@@ -166,10 +201,10 @@ class ProvisionEmployeeUserVariables {
     json['email'] = nativeToJson<String>(email);
     json['role'] = nativeToJson<String>(role);
     json['fullName'] = nativeToJson<String>(fullName);
-    if(department.state == OptionalState.set) {
+    if (department.state == OptionalState.set) {
       json['department'] = department.toJson();
     }
-    if(phoneNumber.state == OptionalState.set) {
+    if (phoneNumber.state == OptionalState.set) {
       json['phoneNumber'] = phoneNumber.toJson();
     }
     json['accessCodeHash'] = nativeToJson<String>(accessCodeHash);
@@ -187,4 +222,3 @@ class ProvisionEmployeeUserVariables {
     required this.accessCodeHash,
   });
 }
-

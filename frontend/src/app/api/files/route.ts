@@ -1,8 +1,10 @@
 import { randomUUID } from "crypto"
 import { DeleteObjectCommand, GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3"
 import { NextResponse } from "next/server"
-import { authorizeRequest } from "@/lib/server/firebase-token"
+import { authorizeRequest } from "@/lib/server/auth"
+import { requirePermission } from "@/lib/server/authorization"
 import { objectStorage, storageBucket } from "@/lib/server/object-storage"
+import { requireFeatureEntitlement } from "@/lib/server/saas-entitlements"
 
 export const runtime = "nodejs"
 const MAX_FILE_SIZE = 25 * 1024 * 1024
@@ -31,14 +33,25 @@ function uploadErrorResponse(error: unknown) {
   return NextResponse.json({ error: "The storage service could not accept this file. Please retry." }, { status: 502 })
 }
 
+function authorizationErrorResponse(error: unknown) {
+  const message = error instanceof Error ? error.message : ""
+  const forbidden = message.startsWith("Forbidden")
+  return NextResponse.json(
+    { error: forbidden ? "You do not have permission to manage documents." : "Your session is missing or expired. Please sign in again." },
+    { status: forbidden ? 403 : 401 },
+  )
+}
+
 export async function POST(request: Request) {
   let profile
   try {
     try {
       profile = await authorizeRequest(request)
+      requirePermission(profile, "documents:write")
+      await requireFeatureEntitlement(profile, "documents")
     } catch (error) {
       console.warn("Object upload authentication rejected", error instanceof Error ? error.message : error)
-      return NextResponse.json({ error: "Your session is missing or expired. Please sign in again." }, { status: 401 })
+      return authorizationErrorResponse(error)
     }
     const form = await request.formData()
     const file = form.get("file")
@@ -73,6 +86,7 @@ export async function POST(request: Request) {
 export async function GET(request: Request) {
   try {
     const profile = await authorizeRequest(request)
+    requirePermission(profile, "documents:read")
     const key = new URL(request.url).searchParams.get("key") ?? ""
     if (!allowedKey(key, profile)) return NextResponse.json({ error: "File access denied" }, { status: 403 })
     const object = await objectStorage().send(new GetObjectCommand({ Bucket: storageBucket(), Key: key }))
@@ -87,6 +101,10 @@ export async function GET(request: Request) {
     })
   } catch (error) {
     console.error("Object download failed", error)
+    const message = error instanceof Error ? error.message : ""
+    if (message.startsWith("Forbidden") || message.includes("authentication")) {
+      return authorizationErrorResponse(error)
+    }
     return NextResponse.json({ error: "Object download failed" }, { status: 500 })
   }
 }
@@ -94,12 +112,17 @@ export async function GET(request: Request) {
 export async function DELETE(request: Request) {
   try {
     const profile = await authorizeRequest(request)
+    requirePermission(profile, "documents:write")
     const key = new URL(request.url).searchParams.get("key") ?? ""
     if (!allowedKey(key, profile)) return NextResponse.json({ error: "File access denied" }, { status: 403 })
     await objectStorage().send(new DeleteObjectCommand({ Bucket: storageBucket(), Key: key }))
     return NextResponse.json({ deleted: true })
   } catch (error) {
     console.error("Object deletion failed", error)
+    const message = error instanceof Error ? error.message : ""
+    if (message.startsWith("Forbidden") || message.includes("authentication")) {
+      return authorizationErrorResponse(error)
+    }
     return NextResponse.json({ error: "Object deletion failed" }, { status: 500 })
   }
 }

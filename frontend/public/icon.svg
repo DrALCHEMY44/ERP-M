@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="SmartERP">
+  <defs>
+    <linearGradient id="background" x1="64" y1="32" x2="448" y2="480" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#22d3ee"/>
+      <stop offset="0.48" stop-color="#2563eb"/>
+      <stop offset="1" stop-color="#312e81"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="#07111f"/>
+  <path d="M112 142c0-16.6 13.4-30 30-30h228c16.6 0 30 13.4 30 30v44H112v-44Z" fill="url(#background)"/>
+  <path d="M112 212h288v158c0 16.6-13.4 30-30 30H142c-16.6 0-30-13.4-30-30V212Z" fill="#f8fafc"/>
+  <path d="M164 260h184M164 310h112M164 360h152" stroke="#2563eb" stroke-width="28" stroke-linecap="round"/>
+  <circle cx="354" cy="336" r="58" fill="#07111f"/>
+  <path d="m330 337 17 17 33-39" fill="none" stroke="#22d3ee" stroke-width="15" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

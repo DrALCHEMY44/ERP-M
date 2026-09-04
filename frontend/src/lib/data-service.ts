@@ -1,28 +1,58 @@
-import type { CreateUserVariables, UpdateTenantVariables, UpdateUserVariables } from "@dataconnect/generated"
+import { ApiOperationError } from "@/lib/api-operation-error"
+
+type CreateUserVariables = {
+  id: string
+  tenantId: string
+  businessId: string
+  email: string
+  role: string
+  fullName?: string | null
+  department?: string | null
+  phoneNumber?: string | null
+  accessCode?: string
+}
+type UpdateUserVariables = CreateUserVariables
+type UpdateTenantVariables = {
+  id: string
+  name?: string | null
+  businessSector?: string | null
+  location?: string | null
+  ownerEmail?: string | null
+  taxId?: string | null
+  logoUrl?: string | null
+  subscriptionTier?: string | null
+  status?: string | null
+}
+
+export { ApiOperationError } from "@/lib/api-operation-error"
 
 async function secureOperation<T = any>(operation: string, variables: Record<string, unknown> = {}): Promise<{ data: T }> {
   if (typeof window === "undefined") throw new Error(`${operation} must be called through a trusted server service`)
-  const { auth } = await import("@/lib/firebase")
-  const token = await auth.currentUser?.getIdToken()
-  if (!token) throw new Error("Authentication required")
   const response = await fetch("/api/data", {
     method: "POST",
-    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ operation, variables }),
   })
-  const body = await response.json()
-  if (!response.ok) throw new Error(body.error || `${operation} failed`)
-  return body
+  const body = await response.json().catch(() => ({})) as { error?: unknown; data?: T }
+  if (!response.ok) {
+    const message = typeof body.error === "string" ? body.error : `${operation} failed`
+    throw new ApiOperationError(message, response.status)
+  }
+  return body as { data: T }
 }
 
 const operation = (name: string) => (variables: Record<string, unknown> = {}) => secureOperation(name, variables)
 
 export const getUserByEmailQuery = operation("getUserByEmail")
 export const getBusinessByIdQuery = operation("getBusinessById")
+export const getBusinessSettingsQuery = operation("getBusinessSettings")
 export const listProductsByBusinessQuery = operation("listProductsByBusiness")
 export const listCustomersByBusinessQuery = operation("listCustomersByBusiness")
+export const listSaleCustomersByBusinessQuery = operation("listSaleCustomersByBusiness")
+export const listSaleProductsByBusinessQuery = operation("listSaleProductsByBusiness")
 export const listSuppliersByBusinessQuery = operation("listSuppliersByBusiness")
 export const listTasksByBusinessQuery = operation("listTasksByBusiness")
+export const listTaskAssigneesByBusinessQuery = operation("listTaskAssigneesByBusiness")
 export const listTransactionsByBusinessQuery = operation("listTransactionsByBusiness")
 export const listTransactionsByTypeQuery = operation("listTransactionsByType")
 export const listEmployeesByBusinessQuery = operation("listEmployeesByBusiness")
@@ -42,9 +72,13 @@ export const deleteTransactionMutation = operation("DeleteTransaction")
 export const createTaskMutation = operation("CreateTask")
 export const updateTaskMutation = operation("UpdateTask")
 export const deleteTaskMutation = operation("DeleteTask")
+export const completeAssignedTaskMutation = operation("CompleteAssignedTask")
 export const createEmployeeMutation = operation("CreateEmployee")
+export const createEmployeeWithAccessMutation = operation("CreateEmployeeWithAccess")
 export const updateEmployeeMutation = operation("UpdateEmployee")
+export const updateEmployeeWithAccessMutation = operation("UpdateEmployeeWithAccess")
 export const deleteEmployeeMutation = operation("DeleteEmployee")
+export const deleteEmployeeWithAccessMutation = operation("DeleteEmployeeWithAccess")
 export const createCustomerMutation = operation("CreateCustomer")
 export const updateCustomerMutation = operation("UpdateCustomer")
 export const deleteCustomerMutation = operation("DeleteCustomer")
@@ -55,6 +89,8 @@ export const createDocumentMutation = operation("CreateDocument")
 export const deleteDocumentMutation = operation("DeleteDocument")
 export const updateUserMutation = operation("UpdateUser")
 export const updateTenantMutation = operation("UpdateTenant")
+export const updateBusinessMutation = operation("UpdateBusiness")
+export const upsertBusinessSettingsMutation = operation("UpsertBusinessSettings")
 export const provisionEmployeeUserMutation = operation("ProvisionEmployeeUser")
 
 // Audit creation is intentionally not exported to clients. Trusted API routes
@@ -102,3 +138,36 @@ export async function updateTenant(id: string, data: Partial<Omit<UpdateTenantVa
 export const createTenantMutation = async () => { throw new Error("Use /api/bootstrap") }
 export const createBusinessMutation = operation("CreateBusiness")
 export const createUserMutation = async () => { throw new Error("Use /api/bootstrap") }
+
+export type ReportSummary = {
+  totalRevenue: number | null
+  totalExpenses: number | null
+  netProfit: number | null
+  inventoryValue: number | null
+  totalItems: number | null
+  lowStockCount: number | null
+  activeCustomers: number | null
+  taskTotal: number | null
+  taskCompleted: number | null
+  taskOverdue: number | null
+  taskCompletionRate: number | null
+  mostValuableCategory: string | null
+  revenueTrend: Array<{ month: string; sales: number }>
+  topProducts: Array<{ id: string; name: string; quantity: number; revenue: number }>
+}
+
+export async function getReportSummaryQuery(): Promise<{ data: ReportSummary }> {
+  if (typeof window === "undefined") throw new Error("Report summaries must be requested from the browser")
+  const response = await fetch("/api/reports/summary")
+  const body = await response.json()
+  if (!response.ok) throw new Error(body.error || "Report summary failed")
+  return { data: body as ReportSummary }
+}
+
+export async function getSalesQuery(): Promise<{ data: { sales: unknown[] } }> {
+  if (typeof window === "undefined") throw new Error("Sales must be requested from the browser")
+  const response = await fetch("/api/sales")
+  const body = await response.json()
+  if (!response.ok) throw new Error(body.error || "Could not load sales")
+  return { data: body }
+}

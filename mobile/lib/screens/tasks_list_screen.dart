@@ -14,7 +14,8 @@ class TasksListScreen extends StatefulWidget {
   State<TasksListScreen> createState() => _TasksListScreenState();
 }
 
-class _TasksListScreenState extends State<TasksListScreen> with SingleTickerProviderStateMixin {
+class _TasksListScreenState extends State<TasksListScreen>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
   @override
@@ -32,79 +33,171 @@ class _TasksListScreenState extends State<TasksListScreen> with SingleTickerProv
     super.dispose();
   }
 
-  void _updateProgress(ErpTask task) {
-    final user = AuthService.currentUser;
-
-    // Security rule: Staff can only update tasks assigned to them
-    if (user?.role == UserRole.staff && task.assignedToId != user?.id) {
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Row(
-            children: [
-              Icon(Icons.warning, color: Colors.red),
-              SizedBox(width: 8),
-              Text('Access Denied'),
-            ],
+  Future<void> _updateStatus(ErpTask task) async {
+    final taskProvider = context.read<TaskProvider>();
+    var status = task.status;
+    final save = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: Text('Update ${task.title}'),
+          content: DropdownButtonFormField<TaskStatus>(
+            initialValue: status,
+            decoration: const InputDecoration(
+              labelText: 'Authoritative status',
+            ),
+            items:
+                const [
+                      TaskStatus.pending,
+                      TaskStatus.ongoing,
+                      TaskStatus.completed,
+                      TaskStatus.cancelled,
+                    ]
+                    .map(
+                      (value) => DropdownMenuItem(
+                        value: value,
+                        child: Text(value.displayName),
+                      ),
+                    )
+                    .toList(),
+            onChanged: (value) =>
+                setDialogState(() => status = value ?? status),
           ),
-          content: const Text('You can only update the progress of tasks assigned directly to you.'),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('OK'),
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: const Text('Cancel'),
             ),
-          ],
-        ),
-      );
-      return;
-    }
-
-    double localProgress = task.progress.toDouble();
-    showDialog(
-      context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setDialogState) => AlertDialog(
-          title: Text('Update Progress: ${task.title}'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text('Current Progress: ${localProgress.toInt()}%'),
-              const SizedBox(height: 12),
-              Slider(
-                value: localProgress,
-                min: 0,
-                max: 100,
-                divisions: 10,
-                label: '${localProgress.toInt()}%',
-                onChanged: (val) => setDialogState(() => localProgress = val),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
             FilledButton(
-              onPressed: () async {
-                final core = Provider.of<CoreProvider>(context, listen: false);
-                final taskProvider = Provider.of<TaskProvider>(context, listen: false);
-                final success = await taskProvider.updateTaskProgress(task.id, localProgress.toInt(), core);
-                
-                if (context.mounted) {
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(success ? 'Progress updated successfully!' : 'Failed: Unauthorized to update this task.'),
-                      backgroundColor: success ? Colors.green : Colors.red,
-                      behavior: SnackBarBehavior.floating,
-                    ),
-                  );
-                }
-              }, 
-              child: const Text('Save')
+              onPressed: () => Navigator.pop(dialogContext, true),
+              child: const Text('Save'),
             ),
           ],
         ),
       ),
     );
+    if (save != true) return;
+    if (!mounted) return;
+    final success = await taskProvider.updateTaskStatus(task.id, status);
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(success ? 'Task status updated.' : 'Not authorized.'),
+        ),
+      );
+    }
+  }
+
+  Future<void> _editTask(ErpTask task) async {
+    final taskProvider = context.read<TaskProvider>();
+    final title = TextEditingController(text: task.title);
+    final description = TextEditingController(text: task.description);
+    var priority = task.priority;
+    var dueDate = task.dueDate;
+    final save = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: const Text('Edit task'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: title,
+                  decoration: const InputDecoration(labelText: 'Title'),
+                ),
+                const SizedBox(height: 10),
+                TextField(
+                  controller: description,
+                  maxLines: 3,
+                  decoration: const InputDecoration(labelText: 'Description'),
+                ),
+                const SizedBox(height: 10),
+                DropdownButtonFormField<TaskPriority>(
+                  initialValue: priority,
+                  decoration: const InputDecoration(labelText: 'Priority'),
+                  items: TaskPriority.values
+                      .map(
+                        (value) => DropdownMenuItem(
+                          value: value,
+                          child: Text(value.displayName),
+                        ),
+                      )
+                      .toList(),
+                  onChanged: (value) =>
+                      setDialogState(() => priority = value ?? priority),
+                ),
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text('Due date'),
+                  subtitle: Text(dueDate.toString().split(' ').first),
+                  trailing: const Icon(Icons.calendar_month),
+                  onTap: () async {
+                    final value = await showDatePicker(
+                      context: context,
+                      initialDate: dueDate.isBefore(DateTime.now())
+                          ? DateTime.now()
+                          : dueDate,
+                      firstDate: DateTime.now(),
+                      lastDate: DateTime.now().add(const Duration(days: 1095)),
+                    );
+                    if (value != null) setDialogState(() => dueDate = value);
+                  },
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(dialogContext, true),
+              child: const Text('Save'),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (!mounted) return;
+    if (save == true && title.text.trim().isNotEmpty) {
+      await taskProvider.updateTask(
+        task,
+        title: title.text.trim(),
+        description: description.text.trim(),
+        priority: priority,
+        dueDate: dueDate,
+      );
+    }
+    title.dispose();
+    description.dispose();
+  }
+
+  Future<void> _deleteTask(ErpTask task) async {
+    final taskProvider = context.read<TaskProvider>();
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Delete task?'),
+        content: Text('Delete “${task.title}”?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+    if (!mounted) return;
+    if (confirmed == true) {
+      await taskProvider.deleteTask(task.id);
+    }
   }
 
   Future<void> _finishTask(ErpTask task) async {
@@ -112,11 +205,15 @@ class _TasksListScreenState extends State<TasksListScreen> with SingleTickerProv
     final taskProvider = context.read<TaskProvider>();
     final success = await taskProvider.updateTaskProgress(task.id, 100, core);
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(success ? 'Task marked as finished.' : 'Could not finish this task.'),
-      backgroundColor: success ? Colors.green : Colors.red,
-      behavior: SnackBarBehavior.floating,
-    ));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          success ? 'Task marked as finished.' : 'Could not finish this task.',
+        ),
+        backgroundColor: success ? Colors.green : Colors.red,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
   }
 
   @override
@@ -128,8 +225,10 @@ class _TasksListScreenState extends State<TasksListScreen> with SingleTickerProv
 
     // Isolated lists based on tab filter
     final allTasks = taskProvider.tasks;
-    final myTasks = taskProvider.tasks.where((t) => t.assignedToId == currentUserId).toList();
-    
+    final myTasks = taskProvider.tasks
+        .where((t) => t.assignedToId == currentUserId)
+        .toList();
+
     final dueSoonTasks = taskProvider.tasks.where((t) {
       if (t.status == TaskStatus.completed) return false;
       final diff = t.dueDate.difference(DateTime.now()).inDays;
@@ -166,12 +265,12 @@ class _TasksListScreenState extends State<TasksListScreen> with SingleTickerProv
                 _buildTaskList(overdueTasks, theme),
               ],
       ),
-      floatingActionButton: AuthService.hasPermission('manageTasks') 
-        ? FloatingActionButton(
-            onPressed: () => Navigator.pushNamed(context, '/assign-task'),
-            child: const Icon(Icons.add),
-          ) 
-        : null,
+      floatingActionButton: AuthService.hasPermission('manageTasks')
+          ? FloatingActionButton(
+              onPressed: () => Navigator.pushNamed(context, '/assign-task'),
+              child: const Icon(Icons.add),
+            )
+          : null,
     );
   }
 
@@ -186,7 +285,7 @@ class _TasksListScreenState extends State<TasksListScreen> with SingleTickerProv
       itemBuilder: (context, index) {
         final task = taskList[index];
         final isOverdue = task.isOverdue;
-        
+
         Color priorityColor = Colors.green;
         if (task.priority == TaskPriority.high) priorityColor = Colors.orange;
         if (task.priority == TaskPriority.urgent) priorityColor = Colors.red;
@@ -203,39 +302,60 @@ class _TasksListScreenState extends State<TasksListScreen> with SingleTickerProv
                   children: [
                     // Priority tag
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: priorityColor.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
                         task.priority.displayName.toUpperCase(),
-                        style: TextStyle(color: priorityColor, fontWeight: FontWeight.bold, fontSize: 10),
+                        style: TextStyle(
+                          color: priorityColor,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 10,
+                        ),
                       ),
                     ),
-                    
+
                     // Overdue / Status tags
                     Row(
                       children: [
                         if (isOverdue)
                           const Chip(
-                            label: Text('OVERDUE', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+                            label: Text(
+                              'OVERDUE',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                             backgroundColor: Colors.red,
                             visualDensity: VisualDensity.compact,
                           ),
                         const SizedBox(width: 4),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
                           decoration: BoxDecoration(
-                            color: task.status == TaskStatus.completed ? Colors.green.shade50 : Colors.blue.shade50,
+                            color: task.status == TaskStatus.completed
+                                ? Colors.green.shade50
+                                : Colors.blue.shade50,
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Text(
                             task.status.displayName,
                             style: TextStyle(
-                              color: task.status == TaskStatus.completed ? Colors.green.shade700 : Colors.blue.shade700, 
-                              fontWeight: FontWeight.bold, 
-                              fontSize: 10
+                              color: task.status == TaskStatus.completed
+                                  ? Colors.green.shade700
+                                  : Colors.blue.shade700,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 10,
                             ),
                           ),
                         ),
@@ -244,59 +364,91 @@ class _TasksListScreenState extends State<TasksListScreen> with SingleTickerProv
                   ],
                 ),
                 const SizedBox(height: 12),
-                
+
                 Text(
-                  task.title, 
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  task.title,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
                 ),
                 const SizedBox(height: 6),
-                Text(task.description, style: const TextStyle(color: Colors.black54)),
+                Text(
+                  task.description,
+                  style: const TextStyle(color: Colors.black54),
+                ),
                 const SizedBox(height: 12),
-                
+
                 Row(
                   children: [
-                    const Icon(Icons.person_outline, size: 14, color: Colors.grey),
+                    const Icon(
+                      Icons.person_outline,
+                      size: 14,
+                      color: Colors.grey,
+                    ),
                     const SizedBox(width: 4),
-                    Text('Assigned to: ${task.assignedToName}', style: const TextStyle(fontSize: 12, color: Colors.grey)),
-                    const Spacer(),
-                    Text('Progress: ${task.progress}%', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                    Text(
+                      'Assigned to: ${task.assignedToName}',
+                      style: const TextStyle(fontSize: 12, color: Colors.grey),
+                    ),
                   ],
                 ),
-                const SizedBox(height: 6),
-                LinearProgressIndicator(
-                  value: task.progress / 100,
-                  backgroundColor: Colors.grey.shade200,
-                  color: isOverdue ? Colors.red : Colors.blue,
-                  borderRadius: BorderRadius.circular(4),
-                ),
                 const SizedBox(height: 16),
-                
+
                 Row(
                   children: [
-                    Icon(Icons.calendar_today, size: 14, color: isOverdue ? Colors.red : Colors.grey),
+                    Icon(
+                      Icons.calendar_today,
+                      size: 14,
+                      color: isOverdue ? Colors.red : Colors.grey,
+                    ),
                     const SizedBox(width: 4),
                     Text(
                       'Due: ${task.dueDate.toString().split(' ')[0]}',
-                      style: TextStyle(fontSize: 12, fontWeight: isOverdue ? FontWeight.bold : FontWeight.normal, color: isOverdue ? Colors.red : Colors.black87),
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: isOverdue
+                            ? FontWeight.bold
+                            : FontWeight.normal,
+                        color: isOverdue ? Colors.red : Colors.black87,
+                      ),
                     ),
                     const Spacer(),
-                    
-                    OutlinedButton.icon(
-                      onPressed: task.status == TaskStatus.completed
-                          ? null
-                          : () => AuthService.currentUser?.role == UserRole.staff
-                              ? _finishTask(task)
-                              : _updateProgress(task),
-                      icon: Icon(AuthService.currentUser?.role == UserRole.staff ? Icons.done_all : Icons.edit, size: 14),
-                      label: Text(
-                        AuthService.currentUser?.role == UserRole.staff ? 'Finished' : 'Update Progress',
-                        style: const TextStyle(fontSize: 11),
+
+                    if (AuthService.hasPermission('manageTasks'))
+                      PopupMenuButton<String>(
+                        onSelected: (value) => value == 'edit'
+                            ? _editTask(task)
+                            : value == 'status'
+                            ? _updateStatus(task)
+                            : _deleteTask(task),
+                        itemBuilder: (_) => const [
+                          PopupMenuItem(value: 'edit', child: Text('Edit')),
+                          PopupMenuItem(
+                            value: 'status',
+                            child: Text('Change status'),
+                          ),
+                          PopupMenuItem(value: 'delete', child: Text('Delete')),
+                        ],
+                      )
+                    else
+                      OutlinedButton.icon(
+                        onPressed: task.status == TaskStatus.completed
+                            ? null
+                            : () => _finishTask(task),
+                        icon: Icon(Icons.done_all, size: 14),
+                        label: const Text(
+                          'Finished',
+                          style: TextStyle(fontSize: 11),
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 0,
+                          ),
+                          minimumSize: const Size(80, 32),
+                        ),
                       ),
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
-                        minimumSize: const Size(80, 32),
-                      ),
-                    ),
                   ],
                 ),
               ],

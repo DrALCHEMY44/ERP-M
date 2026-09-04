@@ -1,11 +1,7 @@
 import { NextResponse } from "next/server"
 
-import { adminDataConnect } from "@/lib/server/firebase-token"
 import { db } from "@/lib/server/neon"
-import {
-  isAuthorizedReconciliationRequest,
-  reconcileOutbox,
-} from "../../../../../scripts/reconcile-outbox-core.mjs"
+import { isAuthorizedReconciliationRequest } from "../../../../../scripts/reconcile-outbox-core.mjs"
 
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
@@ -15,14 +11,15 @@ async function handle(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
   try {
-    const summary = await reconcileOutbox({ dc: adminDataConnect(), sql: db(), now: () => new Date() })
-    return NextResponse.json({ status: summary.failed ? "partial" : "ok", ...summary }, {
-      status: summary.failed ? 503 : 200,
+    const rows = await db()`SELECT status,COUNT(*)::integer AS count,
+      MIN(created_at) AS oldest FROM integration_outbox GROUP BY status ORDER BY status`
+    return NextResponse.json({ status: "ok", events: rows }, {
+      status: 200,
       headers: { "Cache-Control": "no-store" },
     })
   } catch (error) {
-    console.error("Outbox reconciliation failed", error)
-    return NextResponse.json({ error: "Reconciliation failed" }, { status: 500 })
+    console.error("Neon outbox inspection failed", error)
+    return NextResponse.json({ error: "Outbox inspection failed" }, { status: 500 })
   }
 }
 

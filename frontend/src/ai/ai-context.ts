@@ -1,9 +1,9 @@
 /**
  * @fileOverview RBAC-filtered tenant context fetcher for the AI assistant.
  *
- * Queries the Firebase Data Connect PostgreSQL database for real business data,
+ * Queries the Neon PostgreSQL database for real business data,
  * then filters the results based on the user's role before injecting into the
- * Gemma 4 system prompt. This ensures the LLM never sees data the user is not
+ * OpenRouter system prompt. This ensures the LLM never sees data the user is not
  * authorized to access.
  *
  * SECURITY: This module runs server-side only. It must never be imported from
@@ -13,25 +13,22 @@
  * before being placed in the context to prevent floating-point formatting anomalies.
  */
 
-import type { Role } from '@/lib/types';
-// Side-effect import: ensures Firebase initializeApp() has been called
-// before any Data Connect SDK queries execute in this server-side context.
-import '@/lib/firebase';
-import { adminDataConnect } from '@/lib/server/firebase-token';
+import { adminDatabase } from '@/lib/server/auth';
 import { listOperationalProducts, listOperationalTransactions } from '@/lib/server/operational-data';
+import { externalReference, redactForExternalModel } from '@/lib/server/ai-safety';
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
-/** The structured context object injected into the Gemma 4 system prompt. */
+/** The structured context object injected into the OpenRouter system prompt. */
 export interface TenantContext {
   meta: {
-    tenantId: string;
-    businessId: string;
     userRole: string;
     generatedAt: string;
     currency: 'FCFA';
+    unavailableModules: string[];
+    truncatedModules: string[];
   };
   products?: ProductSummary[];
   inventory?: InventorySummary;
@@ -43,10 +40,18 @@ export interface TenantContext {
   tasks?: TaskSummary[];
   activityLogs?: ActivityLogEntry[];
   documents?: DocumentSummary[];
+  documentEvidence?: DocumentEvidence[];
+}
+
+interface DocumentEvidence {
+  citation: string;
+  title: string;
+  classification: string;
+  content: string;
+  relevance: number;
 }
 
 interface ProductSummary {
-  id: string;
   name: string;
   category: string | null;
   quantity: number;
@@ -69,36 +74,34 @@ interface FinancialSummary {
   transactionCount: number;
   salesCount: number;
   expenseCount: number;
+  currentMonth: {
+    totalSales: number;
+    totalExpenses: number;
+    netProfit: number;
+    transactionCount: number;
+  };
 }
 
 interface TransactionRecord {
-  id: string;
   type: string;
   amount: number; // integer FCFA
   date: string;
   category: string | null;
-  recordedBy: string;
 }
 
 interface CustomerSummary {
-  id: string;
-  name: string;
-  phone: string | null;
+  reference: string;
   location: string | null;
   totalOrders: number | null;
   totalSpent: number | null; // integer FCFA
 }
 
 interface SupplierSummary {
-  id: string;
-  name: string;
-  phone: string | null;
-  email: string | null;
+  reference: string;
 }
 
 interface EmployeeSummary {
-  id: string;
-  fullName: string;
+  reference: string;
   position: string;
   department: string | null;
   status: string | null;
@@ -106,16 +109,14 @@ interface EmployeeSummary {
 }
 
 interface TaskSummary {
-  id: string;
+  reference: string;
   title: string;
   status: string;
   priority: string | null;
   dueDate: string;
-  assignedTo: string | null;
 }
 
 interface ActivityLogEntry {
-  userName: string;
   actionType: string;
   module: string;
   description: string | null;
@@ -125,7 +126,6 @@ interface ActivityLogEntry {
 interface DocumentSummary {
   title: string;
   documentType: string;
-  uploadedBy: string;
   uploadedAt: string;
 }
 
@@ -177,7 +177,7 @@ function fcfa(value: number | null | undefined): number {
 
 /**
  * Fetches all authorized business data for a given tenant/business/role
- * from Firebase Data Connect and returns a structured context object.
+ * from Neon and returns a structured context object.
  *
  * This function makes parallel database queries and filters the results
  * by the user's RBAC role before returning.
@@ -186,14 +186,15 @@ export async function fetchTenantContext(
   tenantId: string,
   businessId: string,
   role: string,
+  userId: string,
 ): Promise<TenantContext> {
   const context: TenantContext = {
     meta: {
-      tenantId,
-      businessId,
       userRole: role,
       generatedAt: new Date().toISOString(),
       currency: 'FCFA',
+      unavailableModules: [],
+      truncatedModules: [],
     },
   };
 
@@ -203,8 +204,16 @@ export async function fetchTenantContext(
   }
 
   const vars = { tenantId, businessId };
-  const dc = adminDataConnect();
-  const query = (name: string): Promise<any> => dc.executeQuery(name, vars);
+  const database = adminDatabase();
+  const query = (name: string, input: Record<string, string> = vars): Promise<any> =>
+    database.executeQuery(name, input);
+  const taskQuery = () => ['Staff', 'Viewer'].includes(role)
+    ? query('listTasksAssignedToUser', { ...vars, userId })
+    : query('listTasksByBusiness');
+  const bounded = <T>(module: string, values: T[], maximum: number) => {
+    if (values.length > maximum) context.meta.truncatedModules.push(module);
+    return values.slice(0, maximum);
+  };
 
   // Fire all authorized queries in parallel for performance
   const [
@@ -224,19 +233,34 @@ export async function fetchTenantContext(
     canAccess(role, 'customers') ? query('listCustomersByBusiness') : null,
     canAccess(role, 'suppliers') ? query('listSuppliersByBusiness') : null,
     canAccess(role, 'employees') ? query('listEmployeesByBusiness') : null,
-    canAccess(role, 'tasks') ? query('listTasksByBusiness') : null,
+    canAccess(role, 'tasks') ? taskQuery() : null,
     canAccess(role, 'activityLogs') ? query('listActivityLogsByBusiness') : null,
     canAccess(role, 'documents') ? query('listDocumentsByBusiness') : null,
   ]);
 
+  const settledModules = [
+    { names: ['products', 'inventory'].filter((name) => canAccess(role, name)), enabled: canAccess(role, 'products'), result: productsResult },
+    { names: ['transactions', 'financials'].filter((name) => canAccess(role, name)), enabled: canAccess(role, 'transactions') || canAccess(role, 'financials'), result: transactionsResult },
+    { names: ['customers'], enabled: canAccess(role, 'customers'), result: customersResult },
+    { names: ['suppliers'], enabled: canAccess(role, 'suppliers'), result: suppliersResult },
+    { names: ['employees'], enabled: canAccess(role, 'employees'), result: employeesResult },
+    { names: ['tasks'], enabled: canAccess(role, 'tasks'), result: tasksResult },
+    { names: ['activityLogs'], enabled: canAccess(role, 'activityLogs'), result: logsResult },
+    { names: ['documents'], enabled: canAccess(role, 'documents'), result: docsResult },
+  ];
+  for (const settledModule of settledModules) {
+    if (settledModule.enabled && settledModule.result.status === 'rejected') {
+      context.meta.unavailableModules.push(...settledModule.names);
+    }
+  }
+
   // --- Products & Inventory ---
   if (canAccess(role, 'products')) {
     const products = extractResult(productsResult)?.data?.products ?? [];
-    const showCost = canAccess(role, 'financials') || canAccess(role, 'transactions');
+    const showCost = canAccess(role, 'financials');
 
     const visibleProducts = products.map((p: any) => ({
-      id: p.id,
-      name: p.name,
+      name: redactForExternalModel(String(p.name)).slice(0, 160),
       category: p.category ?? null,
       quantity: p.quantity,
       sellingPrice: fcfa(p.sellingPrice),
@@ -244,7 +268,7 @@ export async function fetchTenantContext(
       lowStockLevel: p.lowStockLevel ?? null,
       isLowStock: p.lowStockLevel != null && p.quantity <= p.lowStockLevel,
     }));
-    context.products = visibleProducts;
+    context.products = bounded('products', visibleProducts, 200);
 
     if (canAccess(role, 'inventory')) {
       const lowStockCount = visibleProducts.filter((p: any) => p.isLowStock).length;
@@ -265,14 +289,15 @@ export async function fetchTenantContext(
     const transactions = extractResult(transactionsResult)?.data?.transactions ?? [];
 
     if (canAccess(role, 'transactions')) {
-      context.transactions = transactions.map((t: any) => ({
-        id: t.id,
+      const visibleTransactions = role === 'Manager'
+        ? transactions.filter((transaction: any) => transaction.type === 'SALE')
+        : transactions;
+      context.transactions = bounded('transactions', visibleTransactions.map((t: any) => ({
         type: t.type,
         amount: fcfa(t.amount),
         date: t.date,
-        category: t.category ?? null,
-        recordedBy: t.recordedBy,
-      }));
+        category: t.category ? redactForExternalModel(String(t.category)).slice(0, 120) : null,
+      })), 100);
     }
 
     if (canAccess(role, 'financials')) {
@@ -280,6 +305,18 @@ export async function fetchTenantContext(
       const expenses = transactions.filter((t: any) => t.type === 'EXPENSE');
       const totalSales = sales.reduce((s: number, t: any) => s + fcfa(t.amount), 0);
       const totalExpenses = expenses.reduce((s: number, t: any) => s + fcfa(t.amount), 0);
+      const currentMonthStart = new Date();
+      currentMonthStart.setUTCDate(1);
+      currentMonthStart.setUTCHours(0, 0, 0, 0);
+      const currentMonthTransactions = transactions.filter(
+        (transaction: any) => new Date(transaction.date) >= currentMonthStart,
+      );
+      const currentMonthSales = currentMonthTransactions
+        .filter((transaction: any) => transaction.type === 'SALE')
+        .reduce((sum: number, transaction: any) => sum + fcfa(transaction.amount), 0);
+      const currentMonthExpenses = currentMonthTransactions
+        .filter((transaction: any) => transaction.type === 'EXPENSE')
+        .reduce((sum: number, transaction: any) => sum + fcfa(transaction.amount), 0);
 
       context.financials = {
         totalSales,
@@ -288,6 +325,12 @@ export async function fetchTenantContext(
         transactionCount: transactions.length,
         salesCount: sales.length,
         expenseCount: expenses.length,
+        currentMonth: {
+          totalSales: currentMonthSales,
+          totalExpenses: currentMonthExpenses,
+          netProfit: currentMonthSales - currentMonthExpenses,
+          transactionCount: currentMonthTransactions.length,
+        },
       };
     }
   }
@@ -295,25 +338,20 @@ export async function fetchTenantContext(
   // --- Customers ---
   if (canAccess(role, 'customers')) {
     const customers = extractResult(customersResult)?.data?.customers ?? [];
-    context.customers = customers.map((c: any) => ({
-      id: c.id,
-      name: c.customerName,
-      phone: c.phoneNumber ?? null,
-      location: c.location ?? null,
+    context.customers = bounded('customers', customers.map((c: any) => ({
+      reference: externalReference('CUSTOMER', businessId, c.id),
+      location: c.location ? redactForExternalModel(String(c.location)).slice(0, 120) : null,
       totalOrders: c.totalOrders ?? null,
       totalSpent: c.totalSpent != null ? fcfa(c.totalSpent) : null,
-    }));
+    })), 100);
   }
 
   // --- Suppliers ---
   if (canAccess(role, 'suppliers')) {
     const suppliers = extractResult(suppliersResult)?.data?.suppliers ?? [];
-    context.suppliers = suppliers.map((s: any) => ({
-      id: s.id,
-      name: s.supplierName,
-      phone: s.phoneNumber ?? null,
-      email: s.email ?? null,
-    }));
+    context.suppliers = bounded('suppliers', suppliers.map((s: any) => ({
+      reference: externalReference('SUPPLIER', businessId, s.id),
+    })), 100);
   }
 
   // --- Employees ---
@@ -321,27 +359,25 @@ export async function fetchTenantContext(
     const employees = extractResult(employeesResult)?.data?.employees ?? [];
     const showSalary = canAccess(role, 'salaries');
 
-    context.employees = employees.map((e: any) => ({
-      id: e.id,
-      fullName: e.fullName,
-      position: e.position,
-      department: e.department ?? null,
+    context.employees = bounded('employees', employees.map((e: any) => ({
+      reference: externalReference('EMPLOYEE', businessId, e.id),
+      position: redactForExternalModel(String(e.position)).slice(0, 120),
+      department: e.department ? redactForExternalModel(String(e.department)).slice(0, 120) : null,
       status: e.status ?? null,
       ...(showSalary ? { salary: fcfa(e.salary) } : {}),
-    }));
+    })), 100);
   }
 
   // --- Tasks ---
   if (canAccess(role, 'tasks')) {
     const tasks = extractResult(tasksResult)?.data?.tasks ?? [];
-    context.tasks = tasks.map((t: any) => ({
-      id: t.id,
-      title: t.title,
+    context.tasks = bounded('tasks', tasks.map((t: any) => ({
+      reference: externalReference('TASK', businessId, t.id),
+      title: redactForExternalModel(String(t.title)).slice(0, 240),
       status: t.status,
       priority: t.priority ?? null,
       dueDate: t.dueDate,
-      assignedTo: t.assignedTo?.fullName ?? null,
-    }));
+    })), 100);
   }
 
   // --- Activity Logs ---
@@ -349,10 +385,9 @@ export async function fetchTenantContext(
     const logs = extractResult(logsResult)?.data?.activityLogs ?? [];
     // Limit to most recent 50 to avoid bloating the prompt
     context.activityLogs = logs.slice(0, 50).map((l: any) => ({
-      userName: l.userName,
       actionType: l.actionType,
       module: l.module,
-      description: l.description ?? null,
+      description: l.description ? redactForExternalModel(String(l.description)).slice(0, 500) : null,
       timestamp: l.timestamp,
     }));
   }
@@ -360,12 +395,11 @@ export async function fetchTenantContext(
   // --- Documents ---
   if (canAccess(role, 'documents')) {
     const docs = extractResult(docsResult)?.data?.documents ?? [];
-    context.documents = docs.map((d: any) => ({
-      title: d.title,
+    context.documents = bounded('documents', docs.map((d: any) => ({
+      title: redactForExternalModel(String(d.title)).slice(0, 240),
       documentType: d.documentType,
-      uploadedBy: d.uploadedBy,
       uploadedAt: d.uploadedAt,
-    }));
+    })), 50);
   }
 
   return context;

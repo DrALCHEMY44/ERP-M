@@ -9,22 +9,20 @@ An AI-powered Enterprise Resource Planning platform for SMEs in Cameroon.
 .
 ├── frontend/   # Next.js web application and server-side API routes
 ├── mobile/     # Flutter application
-├── backend/    # Firebase configuration, Data Connect schema and operations
+├── backend/    # Archived Firebase/Data Connect migration source
 └── docs/       # Product and architecture documentation
 ```
 
 The Next.js runtime is the trusted service boundary for web and mobile clients.
-It verifies Firebase ID tokens, loads the server-side company profile, applies
+It verifies Neon sessions, loads the company profile from Neon, applies
 RBAC, and overwrites all tenant/business/actor identifiers before accessing
-data. Data Connect operations are `NO_ACCESS` to ordinary clients and are
-called through the Firebase Admin SDK.
+data. Clients never connect directly to PostgreSQL.
 
-Firebase Data Connect remains authoritative for identity profiles, companies,
-tasks, people, documents and audit records. Neon is authoritative for inventory,
-sales, expenses, inventory movement history and document-search indexes because
-these workflows require row locks and multi-statement transactions. The durable
-Data Connect outbox mirrors non-operational records into an idempotent raw Neon
-mirror; `npm --prefix frontend run db:reconcile:outbox` retries failures.
+Neon is the sole relational system of record for identity profiles, companies,
+settings, tasks, people, HR history, payroll, double-entry journals, open items,
+bank reconciliation, documents, audit history, inventory, sales, expenses,
+inventory movements, document-search indexes, and authentication. Firebase is
+retained only as guarded migration history for the completed Data Connect import.
 
 OpenRouter is called only from Next.js routes. It provides model routing for the
 assistant, extraction and embeddings; it is not part of the transactional ERP
@@ -41,10 +39,6 @@ npm run frontend:build
 npm --prefix frontend run lint
 npm --prefix frontend test
 
-# Firebase emulators and Data Connect SDK generation
-npm run backend:emulators
-npm run backend:generate
-
 # Flutter application
 cd mobile
 flutter pub get
@@ -55,27 +49,31 @@ flutter test
 
 ## Deployment order
 
-1. Back up both PostgreSQL services and verify Firebase Admin credentials.
-2. Deploy the backward-compatible Data Connect schema, then run
-   `npm --prefix frontend run security:backfill-access-codes`; verify zero
-   plaintext codes before removing the transitional column in a later release.
-3. Apply `frontend/migrations/004_security_transactional_integrity.sql` with
-   `npm --prefix frontend run db:migrate:neon` after reviewing the generated SKU
-   backfill and constraints against production data.
-4. Run `db:backfill:neon`, deploy the Next.js service, schedule
-   `db:reconcile:outbox`, then deploy the generated clients.
-5. Deploy Firestore rules and verify them in a Firebase project with Java 21+
-   before enabling clients. Documents use private S3-compatible storage;
-   Firebase Storage is not part of the active application architecture.
+1. Provision Neon Auth, Neon PostgreSQL, and a private S3-compatible bucket.
+2. Apply Neon migrations `001` through `011`, then run the guarded final Data
+   Connect import while the source Cloud SQL service is still readable.
+3. Verify source/target counts, freeze old writes, rerun the idempotent import,
+   and cut over the web/API deployment to Neon.
+4. Configure all variables in `frontend/.env.example`, run `env:check`, deploy
+   the Next.js service, and require `/api/health` to return `ready` before DNS
+   cutover.
+5. Activate existing users with Neon password-reset links, configure a private
+   Android upload key, and build Flutter with the verified HTTPS API URL.
+
+See [DEPLOYMENT.md](./DEPLOYMENT.md) for the complete production runbook,
+rollback gates, and commands.
+See [docs/FIREBASE_TO_NEON_MIGRATION.md](./docs/FIREBASE_TO_NEON_MIGRATION.md)
+for the full Firebase service, schema, operation, SDK and cutover audit.
 
 Required server variables are documented in `frontend/.env.example`. Never put
-Firebase Admin, Neon, S3 or OpenRouter secrets in Flutter or `NEXT_PUBLIC_*`.
+Neon database, cookie, S3 or OpenRouter secrets in Flutter or `NEXT_PUBLIC_*`.
 
 
 ## Core features
 
 - Multi-tenant SaaS data model
-- Sales, inventory, finance, HR, tasks, documents, and reporting
-- Firebase Data Connect/PostgreSQL relational backend
+- Sales, inventory, HR/leave/attendance, controlled payroll, double-entry
+  accounting, tasks, documents, and reporting
+- Neon PostgreSQL with Neon Auth and Neon-backed employee sessions
 - OpenRouter-powered, context-aware AI assistant
 - Next.js web and Flutter mobile clients

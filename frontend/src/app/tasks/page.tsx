@@ -2,7 +2,7 @@
 "use client"
 
 import * as React from "react"
-import { Plus, Search, CheckCircle2, Clock, AlertCircle, Filter, Calendar as CalendarIcon, Loader2, Trash2, LogIn } from "lucide-react"
+import { Plus, Search, Clock, AlertCircle, Calendar as CalendarIcon, Loader2, Trash2, LogIn } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -11,38 +11,47 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { TaskDialog } from "@/components/tasks/task-dialog"
 import { Task, TaskStatus } from "@/lib/types"
-import { useDataConnect } from "@/hooks/use-dataconnect"
+import { useNeonData } from "@/hooks/use-neon-data"
 import { useToast } from "@/hooks/use-toast"
-import { listTasksByBusinessQuery, listUsersByBusinessQuery, createTaskMutation, updateTaskMutation, deleteTaskMutation } from "@/lib/data-service"
+import {
+  completeAssignedTaskMutation,
+  createTaskMutation,
+  deleteTaskMutation,
+  listTaskAssigneesByBusinessQuery,
+  listTasksByBusinessQuery,
+  updateTaskMutation,
+} from "@/lib/data-service"
 import { startOfDay, parseISO, isBefore } from "date-fns"
 import { createNotification } from "@/lib/notifications"
 import { useTranslation } from "@/components/language-provider"
-import { TaskStatus as DbTaskStatus, TaskPriority as DbTaskPriority } from "@dataconnect/generated"
 import { useAuth } from "@/hooks/use-auth"
+
+type DbTaskStatus = "PENDING" | "ONGOING" | "COMPLETED" | "LATE"
+type DbTaskPriority = "LOW" | "MEDIUM" | "HIGH"
 
 const mapStatusToDb = (status: TaskStatus | undefined): DbTaskStatus => {
   switch (status) {
-    case 'Completed': return DbTaskStatus.COMPLETED;
-    case 'Ongoing': return DbTaskStatus.ONGOING;
+    case 'Completed': return "COMPLETED";
+    case 'Ongoing': return "ONGOING";
     case 'Late':
     case 'Overdue':
-      return DbTaskStatus.LATE;
+      return "LATE";
     case 'Pending':
     default:
-      return DbTaskStatus.PENDING;
+      return "PENDING";
   }
 };
 
 const mapPriorityToDb = (priority: string | undefined | null): DbTaskPriority | null => {
   if (!priority) return null;
   switch (priority) {
-    case 'Medium': return DbTaskPriority.MEDIUM;
+    case 'Medium': return "MEDIUM";
     case 'High':
     case 'Urgent':
-      return DbTaskPriority.HIGH;
+      return "HIGH";
     case 'Low':
     default:
-      return DbTaskPriority.LOW;
+      return "LOW";
   }
 };
 
@@ -70,18 +79,9 @@ const mapPriorityFromDb = (dbPriority: string | undefined | null): string => {
 export default function TasksPage() {
   const { t } = useTranslation();
   const { profile, user } = useAuth();
-  const { data: tasksData, loading, unauthenticated, refetch } = useDataConnect({ 
-    query: listTasksByBusinessQuery, 
-    variables: { 
-      tenantId: profile?.tenantId || "", 
-      businessId: profile?.businessId || "" 
-    },
-    skip: !profile || !profile.tenantId || !profile.businessId,
-    refreshInterval: 5000
-  });
-
-  const { data: usersData } = useDataConnect({
-    query: listUsersByBusinessQuery,
+  const canManageTasks = Boolean(profile && ["Business Owner", "Manager", "HR Officer"].includes(profile.role))
+  const { data: tasksData, loading, unauthenticated, refetch } = useNeonData({
+    query: listTasksByBusinessQuery,
     variables: {
       tenantId: profile?.tenantId || "",
       businessId: profile?.businessId || ""
@@ -89,7 +89,17 @@ export default function TasksPage() {
     skip: !profile || !profile.tenantId || !profile.businessId,
     refreshInterval: 5000
   });
-  
+
+  const { data: usersData } = useNeonData({
+    query: listTaskAssigneesByBusinessQuery,
+    variables: {
+      tenantId: profile?.tenantId || "",
+      businessId: profile?.businessId || ""
+    },
+    skip: !canManageTasks || !profile?.tenantId || !profile.businessId,
+    refreshInterval: 5000
+  });
+
   const tasks = React.useMemo(() => {
     const rawTasks = (tasksData?.tasks || []) as any[];
     return rawTasks.map(t => ({
@@ -105,37 +115,37 @@ export default function TasksPage() {
   const [isDialogOpen, setIsDialogOpen] = React.useState(false)
   const [selectedTask, setSelectedTask] = React.useState<Task | null>(null)
   const [searchQuery, setSearchQuery] = React.useState("")
- 
+
   // Automatic overdue detection logic
   const getTaskStatus = (task: Task): TaskStatus => {
     if (task.status === 'Completed') return 'Completed';
     if (task.status === 'Cancelled') return 'Cancelled';
-    
+
     const today = startOfDay(new Date());
     const dueDate = startOfDay(parseISO(task.dueDate));
-    
+
     if (isBefore(dueDate, today)) {
       return 'Overdue';
     }
     return task.status;
   };
- 
+
   const processedTasks = React.useMemo(() => {
     return tasks.map(task => {
       return {
         ...task,
         displayStatus: getTaskStatus(task)
       }
-    }).filter(task => 
+    }).filter(task =>
       task.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       task.assignedToName?.toLowerCase().includes(searchQuery.toLowerCase())
     ).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   }, [tasks, searchQuery]);
- 
+
   // Effect to trigger overdue notifications once
   React.useEffect(() => {
     const checkOverdue = async () => {
-      const overdueTasks = processedTasks.filter(t => t.displayStatus === 'Overdue' && t.status !== 'Overdue');
+      const overdueTasks = processedTasks.filter(t => t.displayStatus === 'Overdue' && t.status !== 'Late');
       for (const t of overdueTasks) {
         await createNotification({
           title: "Task Overdue",
@@ -147,32 +157,34 @@ export default function TasksPage() {
           link: "/tasks"
         });
         // We update the status in DB to prevent multiple notifications
-        await updateTaskMutation({ id: t.id, status: DbTaskStatus.LATE });
+        await updateTaskMutation({ id: t.id, status: "LATE" });
       }
     };
-    if (processedTasks.length > 0) checkOverdue();
-  }, [processedTasks]);
- 
+    if (canManageTasks && processedTasks.length > 0) {
+      void checkOverdue().catch((error) => console.error("Failed to mark overdue tasks", error));
+    }
+  }, [canManageTasks, processedTasks]);
+
   const stats = React.useMemo(() => {
     const total = processedTasks.length;
     const pending = processedTasks.filter(t => t.displayStatus === 'Pending').length;
     const ongoing = processedTasks.filter(t => t.displayStatus === 'Ongoing').length;
     const completed = processedTasks.filter(t => t.displayStatus === 'Completed').length;
     const overdue = processedTasks.filter(t => t.displayStatus === 'Overdue').length;
-    
+
     return { total, pending, ongoing, completed, overdue };
   }, [processedTasks]);
- 
+
   const handleEdit = (task: Task) => {
     setSelectedTask(task)
     setIsDialogOpen(true)
   }
- 
+
   const handleAddNew = () => {
     setSelectedTask(null)
     setIsDialogOpen(true)
   }
- 
+
   const handleSave = async (taskData: Partial<Task>) => {
     if (!profile?.tenantId || !profile?.businessId) {
       toast({
@@ -183,8 +195,8 @@ export default function TasksPage() {
       return;
     }
 
-    // Format dueDate to ISO-8601 Timestamp format required by Data Connect
-    const formattedDueDate = taskData.dueDate 
+    // Format dueDate as an ISO-8601 timestamp for the API.
+    const formattedDueDate = taskData.dueDate
       ? (taskData.dueDate.includes('T') ? taskData.dueDate : new Date(taskData.dueDate).toISOString())
       : new Date().toISOString();
 
@@ -203,7 +215,7 @@ export default function TasksPage() {
         toast({ title: "Task Updated", description: "Operational tracking updated successfully." });
       } else {
         if (!user) return;
-        const result = await createTaskMutation({
+        await createTaskMutation({
           tenantId: profile.tenantId,
           businessId: profile.businessId,
           title: taskData.title || '',
@@ -215,7 +227,7 @@ export default function TasksPage() {
           createdBy: user.uid
         });
         await refetch();
-        
+
         // Notify assignee
         await createNotification({
           title: "New Task Assigned",
@@ -229,7 +241,7 @@ export default function TasksPage() {
             businessId: profile.businessId
           }
         });
- 
+
         toast({ title: "Task Created", description: "Assignment has been sent to the cloud." });
       }
     } catch (e) {
@@ -244,9 +256,23 @@ export default function TasksPage() {
         await deleteTaskMutation({ id });
         await refetch();
         toast({ title: "Task Deleted", description: "Record removed from workspace." });
-      } catch (e) {
+      } catch {
         toast({ variant: "destructive", title: "Error", description: "Could not delete task." });
       }
+    }
+  }
+
+  const handleComplete = async (id: string) => {
+    try {
+      await completeAssignedTaskMutation({ taskId: id })
+      await refetch()
+      toast({ title: "Task Completed", description: "Your assigned task was marked complete." })
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Task Not Updated",
+        description: error instanceof Error ? error.message : "Could not complete this task.",
+      })
     }
   }
 
@@ -264,11 +290,11 @@ export default function TasksPage() {
             <p className="text-sm text-muted-foreground">
               Please sign in to view your tasks. All operations require an authenticated session.
             </p>
-            <Link href="/login">
-              <Button className="bg-primary hover:bg-primary/90 text-white font-bold uppercase text-xs tracking-widest">
+            <Button asChild className="bg-primary hover:bg-primary/90 text-white font-bold uppercase text-xs tracking-widest">
+              <Link href="/login">
                 <LogIn className="size-4 mr-2" /> Sign In
-              </Button>
-            </Link>
+              </Link>
+            </Button>
           </CardContent>
         </Card>
       </div>
@@ -290,9 +316,11 @@ export default function TasksPage() {
           <h1 className="text-2xl md:text-3xl font-bold tracking-tight">{t('tasks.title')}</h1>
           <p className="text-sm text-muted-foreground">{t('tasks.subtitle')}</p>
         </div>
-        <Button onClick={handleAddNew} className="bg-primary hover:bg-primary/90 text-white font-bold uppercase text-xs tracking-widest shadow-lg">
-          <Plus className="size-4 mr-2" /> {t('tasks.assignTask')}
-        </Button>
+        {canManageTasks && (
+          <Button onClick={handleAddNew} className="bg-primary hover:bg-primary/90 text-white font-bold uppercase text-xs tracking-widest shadow-lg">
+            <Plus className="size-4 mr-2" /> {t('tasks.assignTask')}
+          </Button>
+        )}
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -344,7 +372,7 @@ export default function TasksPage() {
         <div className="p-4 border-b flex flex-col md:flex-row gap-4 items-center">
           <div className="relative w-full md:w-96">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-            <Input 
+            <Input
               placeholder={t('tasks.searchPlaceholder')}
               className="pl-9 bg-muted/20"
               value={searchQuery}
@@ -388,7 +416,7 @@ export default function TasksPage() {
                     </TableCell>
                     <TableCell>
                       <Badge variant={
-                        task.priority === 'Urgent' ? 'destructive' : 
+                        task.priority === 'Urgent' ? 'destructive' :
                         task.priority === 'High' ? 'default' : 'secondary'
                       } className="text-[9px] uppercase tracking-tighter font-bold">
                         {task.priority}
@@ -412,10 +440,20 @@ export default function TasksPage() {
                     </TableCell>
                     <TableCell className="text-right">
                        <div className="flex items-center justify-end gap-1">
-                        <Button variant="ghost" size="sm" onClick={() => handleEdit(task)} className="text-[10px] uppercase font-bold tracking-widest">Edit</Button>
-                        <Button variant="ghost" size="icon" onClick={() => handleDelete(task.id!)} className="h-8 w-8 text-destructive">
-                          <Trash2 className="size-4" />
-                        </Button>
+                        {canManageTasks ? (
+                          <>
+                            <Button variant="ghost" size="sm" onClick={() => handleEdit(task)} className="text-[10px] uppercase font-bold tracking-widest">Edit</Button>
+                            <Button variant="ghost" size="icon" onClick={() => handleDelete(task.id!)} className="h-8 w-8 text-destructive" aria-label={`Delete ${task.title}`}>
+                              <Trash2 className="size-4" />
+                            </Button>
+                          </>
+                        ) : profile?.role === "Staff" && task.assignedTo === user?.uid && task.displayStatus !== "Completed" ? (
+                          <Button variant="outline" size="sm" onClick={() => handleComplete(task.id!)} className="text-[10px] uppercase font-bold tracking-widest">
+                            Mark Complete
+                          </Button>
+                        ) : (
+                          <span className="text-[10px] font-medium uppercase text-muted-foreground">Read only</span>
+                        )}
                        </div>
                     </TableCell>
                   </TableRow>
@@ -432,13 +470,15 @@ export default function TasksPage() {
         </div>
       </div>
 
-      <TaskDialog 
-        task={selectedTask}
-        open={isDialogOpen}
-        onOpenChange={setIsDialogOpen}
-        onSave={handleSave}
-        users={usersData?.users || []}
-      />
+      {canManageTasks && (
+        <TaskDialog
+          task={selectedTask}
+          open={isDialogOpen}
+          onOpenChange={setIsDialogOpen}
+          onSave={handleSave}
+          users={usersData?.users || []}
+        />
+      )}
     </div>
   )
 }

@@ -1,5 +1,8 @@
 # External deployment go/no-go
 
+> Historical checkpoint from 11 August 2026. It is superseded by
+> `IMPLEMENTATION_STATUS.md` and the Neon-only `DEPLOYMENT.md` runbook.
+
 Assessment date: 2026-08-11. Decision: **NO-GO** until dedicated cloud targets exist and are reviewed. No cloud resource, deployment, secret, seed, database migration or release APK was created during local verification.
 
 | Gate | Result |

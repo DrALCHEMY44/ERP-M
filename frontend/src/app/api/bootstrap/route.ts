@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server"
 import { z } from "zod"
-import { adminDataConnect, profileForIdentity, verifyRequestIdentity } from "@/lib/server/firebase-token"
+import { randomUUID } from "crypto"
+import { adminDatabase, claimPlatformWorkspaceInvite, profileForIdentity, verifyRequestIdentity } from "@/lib/server/auth"
+import { requireTrustedMutationOrigin } from "@/lib/server/origin"
 
 export const runtime = "nodejs"
 
@@ -10,41 +12,37 @@ const schema = z.object({
   businessSector: z.string().trim().min(2).max(120),
   location: z.string().trim().min(2).max(200),
   region: z.string().trim().min(2).max(120),
+  invitationToken: z.string().min(20).max(200).optional(),
 })
 
 export async function POST(request: Request) {
   try {
     const identity = await verifyRequestIdentity(request)
+    requireTrustedMutationOrigin(request)
+    const input = schema.parse(await request.json())
     if (!identity.email) return NextResponse.json({ error: "A verified email identity is required" }, { status: 400 })
     if (await profileForIdentity(identity)) return NextResponse.json({ error: "Account already has a company" }, { status: 409 })
-    const input = schema.parse(await request.json())
-    const dc = adminDataConnect()
-    const tenant = await dc.executeMutation<{ tenant_insert: { id: string } }, Record<string, unknown>>("CreateTenant", {
-      name: input.businessName,
-      businessSector: input.businessSector,
-      location: input.location,
-      ownerEmail: identity.email.toLowerCase(),
-      subscriptionTier: "Basic",
-      status: "Active",
-    })
-    const tenantId = tenant.data.tenant_insert.id
+    if (input.invitationToken) {
+      const invited = await claimPlatformWorkspaceInvite(identity, input.invitationToken)
+      if (!invited) return NextResponse.json({ error: "This invitation is invalid, expired, or belongs to another email" }, { status: 403 })
+      return NextResponse.json({ tenantId: invited.tenantId, businessId: invited.businessId, claimedInvite: true })
+    }
+    const database = adminDatabase()
+    const tenantId = randomUUID()
+    const businessId = randomUUID()
     const normalized = input.businessName.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "")
-    const business = await dc.executeMutation<{ business_insert: { id: string } }, Record<string, unknown>>("CreateBusiness", {
-      tenantId,
-      name: input.businessName,
-      location: input.location,
-      businessType: input.businessSector,
-      region: input.region,
-      code: `${normalized}_${tenantId.slice(0, 8)}`,
-    })
-    const businessId = business.data.business_insert.id
-    await dc.executeMutation("CreateUser", {
-      id: identity.uid,
+    await database.executeMutation("BootstrapWorkspace", {
       tenantId,
       businessId,
-      email: identity.email.toLowerCase(),
-      role: "Business Owner",
+      userId: identity.uid,
+      authUserId: identity.uid,
+      name: input.businessName,
       fullName: input.fullName,
+      ownerEmail: identity.email.toLowerCase(),
+      location: input.location,
+      businessSector: input.businessSector,
+      region: input.region,
+      code: `${normalized}_${tenantId.slice(0, 8)}`,
     })
     return NextResponse.json({ tenantId, businessId })
   } catch (error) {

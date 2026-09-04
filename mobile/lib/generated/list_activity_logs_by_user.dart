@@ -6,16 +6,35 @@ class ListActivityLogsByUserVariablesBuilder {
   String userId;
 
   final FirebaseDataConnect _dataConnect;
-  ListActivityLogsByUserVariablesBuilder(this._dataConnect, {required  this.tenantId,required  this.businessId,required  this.userId,});
-  Deserializer<ListActivityLogsByUserData> dataDeserializer = (dynamic json)  => ListActivityLogsByUserData.fromJson(jsonDecode(json));
-  Serializer<ListActivityLogsByUserVariables> varsSerializer = (ListActivityLogsByUserVariables vars) => jsonEncode(vars.toJson());
-  Future<QueryResult<ListActivityLogsByUserData, ListActivityLogsByUserVariables>> execute({QueryFetchPolicy fetchPolicy = QueryFetchPolicy.preferCache}) {
+  ListActivityLogsByUserVariablesBuilder(
+    this._dataConnect, {
+    required this.tenantId,
+    required this.businessId,
+    required this.userId,
+  });
+  Deserializer<ListActivityLogsByUserData> dataDeserializer = (dynamic json) =>
+      ListActivityLogsByUserData.fromJson(jsonDecode(json));
+  Serializer<ListActivityLogsByUserVariables> varsSerializer =
+      (ListActivityLogsByUserVariables vars) => jsonEncode(vars.toJson());
+  Future<
+    QueryResult<ListActivityLogsByUserData, ListActivityLogsByUserVariables>
+  >
+  execute({QueryFetchPolicy fetchPolicy = QueryFetchPolicy.preferCache}) {
     return ref().execute(fetchPolicy: fetchPolicy);
   }
 
   QueryRef<ListActivityLogsByUserData, ListActivityLogsByUserVariables> ref() {
-    ListActivityLogsByUserVariables vars= ListActivityLogsByUserVariables(tenantId: tenantId,businessId: businessId,userId: userId,);
-    return _dataConnect.query("listActivityLogsByUser", dataDeserializer, varsSerializer, vars);
+    ListActivityLogsByUserVariables vars = ListActivityLogsByUserVariables(
+      tenantId: tenantId,
+      businessId: businessId,
+      userId: userId,
+    );
+    return _dataConnect.query(
+      "listActivityLogsByUser",
+      dataDeserializer,
+      varsSerializer,
+      vars,
+    );
   }
 }
 
@@ -31,43 +50,57 @@ class ListActivityLogsByUserActivityLogs {
   final String? description;
   final String? recordId;
   final Timestamp timestamp;
-  ListActivityLogsByUserActivityLogs.fromJson(dynamic json):
-  
-  id = nativeFromJson<String>(json['id']),
-  tenantId = nativeFromJson<String>(json['tenantId']),
-  businessId = nativeFromJson<String>(json['businessId']),
-  userId = nativeFromJson<String>(json['userId']),
-  userName = nativeFromJson<String>(json['userName']),
-  actionType = nativeFromJson<String>(json['actionType']),
-  module = nativeFromJson<String>(json['module']),
-  description = json['description'] == null ? null : nativeFromJson<String>(json['description']),
-  recordId = json['recordId'] == null ? null : nativeFromJson<String>(json['recordId']),
-  timestamp = Timestamp.fromJson(json['timestamp']);
+  ListActivityLogsByUserActivityLogs.fromJson(dynamic json)
+    : id = nativeFromJson<String>(json['id']),
+      tenantId = nativeFromJson<String>(json['tenantId']),
+      businessId = nativeFromJson<String>(json['businessId']),
+      userId = nativeFromJson<String>(json['userId']),
+      userName = nativeFromJson<String>(json['userName']),
+      actionType = nativeFromJson<String>(json['actionType']),
+      module = nativeFromJson<String>(json['module']),
+      description = json['description'] == null
+          ? null
+          : nativeFromJson<String>(json['description']),
+      recordId = json['recordId'] == null
+          ? null
+          : nativeFromJson<String>(json['recordId']),
+      timestamp = Timestamp.fromJson(json['timestamp']);
   @override
   bool operator ==(Object other) {
-    if(identical(this, other)) {
+    if (identical(this, other)) {
       return true;
     }
-    if(other.runtimeType != runtimeType) {
+    if (other.runtimeType != runtimeType) {
       return false;
     }
 
-    final ListActivityLogsByUserActivityLogs otherTyped = other as ListActivityLogsByUserActivityLogs;
-    return id == otherTyped.id && 
-    tenantId == otherTyped.tenantId && 
-    businessId == otherTyped.businessId && 
-    userId == otherTyped.userId && 
-    userName == otherTyped.userName && 
-    actionType == otherTyped.actionType && 
-    module == otherTyped.module && 
-    description == otherTyped.description && 
-    recordId == otherTyped.recordId && 
-    timestamp == otherTyped.timestamp;
-    
+    final ListActivityLogsByUserActivityLogs otherTyped =
+        other as ListActivityLogsByUserActivityLogs;
+    return id == otherTyped.id &&
+        tenantId == otherTyped.tenantId &&
+        businessId == otherTyped.businessId &&
+        userId == otherTyped.userId &&
+        userName == otherTyped.userName &&
+        actionType == otherTyped.actionType &&
+        module == otherTyped.module &&
+        description == otherTyped.description &&
+        recordId == otherTyped.recordId &&
+        timestamp == otherTyped.timestamp;
   }
+
   @override
-  int get hashCode => Object.hashAll([id.hashCode, tenantId.hashCode, businessId.hashCode, userId.hashCode, userName.hashCode, actionType.hashCode, module.hashCode, description.hashCode, recordId.hashCode, timestamp.hashCode]);
-  
+  int get hashCode => Object.hashAll([
+    id.hashCode,
+    tenantId.hashCode,
+    businessId.hashCode,
+    userId.hashCode,
+    userName.hashCode,
+    actionType.hashCode,
+    module.hashCode,
+    description.hashCode,
+    recordId.hashCode,
+    timestamp.hashCode,
+  ]);
 
   Map<String, dynamic> toJson() {
     Map<String, dynamic> json = {};
@@ -105,27 +138,26 @@ class ListActivityLogsByUserActivityLogs {
 @immutable
 class ListActivityLogsByUserData {
   final List<ListActivityLogsByUserActivityLogs> activityLogs;
-  ListActivityLogsByUserData.fromJson(dynamic json):
-  
-  activityLogs = (json['activityLogs'] as List<dynamic>)
-        .map((e) => ListActivityLogsByUserActivityLogs.fromJson(e))
-        .toList();
+  ListActivityLogsByUserData.fromJson(dynamic json)
+    : activityLogs = (json['activityLogs'] as List<dynamic>)
+          .map((e) => ListActivityLogsByUserActivityLogs.fromJson(e))
+          .toList();
   @override
   bool operator ==(Object other) {
-    if(identical(this, other)) {
+    if (identical(this, other)) {
       return true;
     }
-    if(other.runtimeType != runtimeType) {
+    if (other.runtimeType != runtimeType) {
       return false;
     }
 
-    final ListActivityLogsByUserData otherTyped = other as ListActivityLogsByUserData;
+    final ListActivityLogsByUserData otherTyped =
+        other as ListActivityLogsByUserData;
     return activityLogs == otherTyped.activityLogs;
-    
   }
+
   @override
   int get hashCode => activityLogs.hashCode;
-  
 
   Map<String, dynamic> toJson() {
     Map<String, dynamic> json = {};
@@ -133,9 +165,7 @@ class ListActivityLogsByUserData {
     return json;
   }
 
-  ListActivityLogsByUserData({
-    required this.activityLogs,
-  });
+  ListActivityLogsByUserData({required this.activityLogs});
 }
 
 @immutable
@@ -143,30 +173,32 @@ class ListActivityLogsByUserVariables {
   final String tenantId;
   final String businessId;
   final String userId;
-  @Deprecated('fromJson is deprecated for Variable classes as they are no longer required for deserialization.')
-  ListActivityLogsByUserVariables.fromJson(Map<String, dynamic> json):
-  
-  tenantId = nativeFromJson<String>(json['tenantId']),
-  businessId = nativeFromJson<String>(json['businessId']),
-  userId = nativeFromJson<String>(json['userId']);
+  @Deprecated(
+    'fromJson is deprecated for Variable classes as they are no longer required for deserialization.',
+  )
+  ListActivityLogsByUserVariables.fromJson(Map<String, dynamic> json)
+    : tenantId = nativeFromJson<String>(json['tenantId']),
+      businessId = nativeFromJson<String>(json['businessId']),
+      userId = nativeFromJson<String>(json['userId']);
   @override
   bool operator ==(Object other) {
-    if(identical(this, other)) {
+    if (identical(this, other)) {
       return true;
     }
-    if(other.runtimeType != runtimeType) {
+    if (other.runtimeType != runtimeType) {
       return false;
     }
 
-    final ListActivityLogsByUserVariables otherTyped = other as ListActivityLogsByUserVariables;
-    return tenantId == otherTyped.tenantId && 
-    businessId == otherTyped.businessId && 
-    userId == otherTyped.userId;
-    
+    final ListActivityLogsByUserVariables otherTyped =
+        other as ListActivityLogsByUserVariables;
+    return tenantId == otherTyped.tenantId &&
+        businessId == otherTyped.businessId &&
+        userId == otherTyped.userId;
   }
+
   @override
-  int get hashCode => Object.hashAll([tenantId.hashCode, businessId.hashCode, userId.hashCode]);
-  
+  int get hashCode =>
+      Object.hashAll([tenantId.hashCode, businessId.hashCode, userId.hashCode]);
 
   Map<String, dynamic> toJson() {
     Map<String, dynamic> json = {};
@@ -182,4 +214,3 @@ class ListActivityLogsByUserVariables {
     required this.userId,
   });
 }
-

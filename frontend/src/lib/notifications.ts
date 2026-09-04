@@ -1,41 +1,30 @@
+import type { Role } from "./types"
 
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from './firebase';
-import { AppNotification, Role } from './types';
-
-/**
- * Creates a notification in the cloud database.
- */
 export async function createNotification(params: {
-  title: string;
-  message: string;
-  type: 'info' | 'warning' | 'error' | 'success';
-  module: string;
-  targetUserId?: string;
-  targetRoles?: Role[];
-  link?: string;
-  userProfile?: {
-    tenantId: string;
-    businessId: string;
-  };
+  title: string
+  message: string
+  type: "info" | "warning" | "error" | "success"
+  module: "Inventory" | "Tasks"
+  targetUserId?: string
+  targetRoles?: Role[]
+  link?: string
+  userProfile?: { tenantId: string; businessId: string }
 }) {
-  if (!params.userProfile) throw new Error('Authenticated tenant profile is required')
-  const notificationData: Omit<AppNotification, 'id'> = {
-      tenantId: params.userProfile.tenantId,
-      businessId: params.userProfile.businessId,
-      targetUserId: params.targetUserId,
-      targetRoles: params.targetRoles,
+  const response = await fetch("/api/notifications", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
       title: params.title,
       message: params.message,
       type: params.type,
       module: params.module,
-      readBy: [],
-      createdAt: new Date().toISOString(),
+      targetUserId: params.targetUserId,
+      targetRoles: params.targetRoles,
       link: params.link,
-    };
-
-  await addDoc(collection(db, 'notifications'), {
-    ...notificationData,
-    serverTimestamp: serverTimestamp(),
-  });
+    }),
+  })
+  const body = await response.json()
+  if (!response.ok) throw new Error(body.error || "Notification delivery failed")
+  window.dispatchEvent(new Event("smarterp:announcement"))
+  return body
 }

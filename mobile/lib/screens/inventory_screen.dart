@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../providers/inventory_provider.dart';
+
+import '../models/inventory_item.dart';
 import '../providers/core_provider.dart';
+import '../providers/inventory_provider.dart';
 import '../services/auth_service.dart';
+import '../services/export_service.dart';
 import '../widgets/app_drawer.dart';
+import 'barcode_scanner_screen.dart';
 
 class InventoryScreen extends StatefulWidget {
   const InventoryScreen({super.key});
@@ -13,6 +17,20 @@ class InventoryScreen extends StatefulWidget {
 }
 
 class _InventoryScreenState extends State<InventoryScreen> {
+  static const _baseUnits = ['piece', 'bottle', 'kilogram', 'liter', 'meter'];
+  static const _scanUnits = [
+    'piece',
+    'bottle',
+    'pack',
+    'box',
+    'carton',
+    'bag',
+    'kilogram',
+    'liter',
+    'meter',
+    'roll',
+  ];
+
   final _searchController = TextEditingController();
   String _searchQuery = '';
   String _selectedCategory = 'All';
@@ -21,9 +39,9 @@ class _InventoryScreenState extends State<InventoryScreen> {
   void initState() {
     super.initState();
     _searchController.addListener(() {
-      setState(() {
-        _searchQuery = _searchController.text.toLowerCase();
-      });
+      if (mounted) {
+        setState(() => _searchQuery = _searchController.text.toLowerCase());
+      }
     });
   }
 
@@ -33,23 +51,150 @@ class _InventoryScreenState extends State<InventoryScreen> {
     super.dispose();
   }
 
-  void _showAddProductDialog() {
-    final nameCtrl = TextEditingController();
-    final catCtrl = TextEditingController(text: 'Food');
-    final stockCtrl = TextEditingController();
-    final unitCtrl = TextEditingController(text: 'Units');
-    final costCtrl = TextEditingController();
-    final priceCtrl = TextEditingController();
-    final thresholdCtrl = TextEditingController(text: '10');
+  void _message(String text, {bool error = false}) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(text),
+        backgroundColor: error ? Colors.red : Colors.green,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
 
+  Future<void> _scanForStock() async {
+    final barcode = await Navigator.of(context).push<String>(
+      MaterialPageRoute(
+        builder: (_) => const BarcodeScannerScreen(title: 'Receive stock'),
+      ),
+    );
+    if (!mounted || barcode == null) return;
+    try {
+      final match = await context.read<InventoryProvider>().lookupBarcode(
+        barcode,
+      );
+      if (!mounted) return;
+      if (match == null) {
+        _message(
+          'Barcode not registered. Create the product to link it.',
+          error: true,
+        );
+        await _showAddProductDialog(initialBarcode: barcode);
+        return;
+      }
+      await _showReceiveDialog(barcode, match);
+    } catch (error) {
+      _message(error.toString().replaceFirst('Exception: ', ''), error: true);
+    }
+  }
+
+  Future<void> _showReceiveDialog(
+    String barcode,
+    BarcodeProductMatch match,
+  ) async {
+    final quantity = TextEditingController(text: '1');
     final formKey = GlobalKey<FormState>();
-
-    showDialog(
+    await showDialog<void>(
       context: context,
-      builder: (context) {
-        final theme = Theme.of(context);
-        return AlertDialog(
-          title: const Text('Add Inventory Product'),
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Receive scanned stock'),
+        content: Form(
+          key: formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                match.product.name,
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              const SizedBox(height: 6),
+              Text(
+                '1 ${match.unit.unitName} = '
+                '${match.unit.conversionFactor} ${match.product.unit}',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: quantity,
+                autofocus: true,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  labelText: 'Number of ${match.unit.unitName}s received',
+                  border: const OutlineInputBorder(),
+                ),
+                validator: (value) {
+                  final parsed = int.tryParse(value ?? '');
+                  return parsed == null || parsed <= 0
+                      ? 'Enter a positive whole number'
+                      : null;
+                },
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () async {
+              if (!formKey.currentState!.validate()) return;
+              try {
+                final count = int.parse(quantity.text);
+                final added = await context
+                    .read<InventoryProvider>()
+                    .receiveByBarcode(barcode, count);
+                if (!dialogContext.mounted) return;
+                Navigator.pop(dialogContext);
+                _message(
+                  'Received $count ${match.unit.unitName}(s): '
+                  '$added ${match.product.unit} added.',
+                );
+              } catch (error) {
+                if (dialogContext.mounted) {
+                  ScaffoldMessenger.of(dialogContext).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        error.toString().replaceFirst('Exception: ', ''),
+                      ),
+                    ),
+                  );
+                }
+              }
+            },
+            child: const Text('Add to stock'),
+          ),
+        ],
+      ),
+    );
+    quantity.dispose();
+  }
+
+  Future<void> _showAddProductDialog({String initialBarcode = ''}) async {
+    final name = TextEditingController();
+    final category = TextEditingController(text: 'Food');
+    final stock = TextEditingController(text: '0');
+    final cost = TextEditingController();
+    final price = TextEditingController();
+    final threshold = TextEditingController(text: '10');
+    final barcode = TextEditingController(text: initialBarcode);
+    final factor = TextEditingController(text: '1');
+    final packagePrice = TextEditingController();
+    final formKey = GlobalKey<FormState>();
+    var baseUnit = 'piece';
+    var scanUnit = 'piece';
+
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: Text(
+            initialBarcode.isEmpty
+                ? 'Add inventory product'
+                : 'Register scanned product',
+          ),
           content: SingleChildScrollView(
             child: Form(
               key: formKey,
@@ -57,301 +202,568 @@ class _InventoryScreenState extends State<InventoryScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   TextFormField(
-                    controller: nameCtrl,
-                    decoration: const InputDecoration(labelText: 'Product Name'),
-                    validator: (v) => v == null || v.isEmpty ? 'Name is required' : null,
+                    controller: name,
+                    decoration: const InputDecoration(
+                      labelText: 'Product name',
+                    ),
+                    validator: (value) => value == null || value.trim().isEmpty
+                        ? 'Name is required'
+                        : null,
                   ),
                   const SizedBox(height: 12),
                   DropdownButtonFormField<String>(
-                    value: catCtrl.text,
+                    initialValue: category.text,
                     decoration: const InputDecoration(labelText: 'Category'),
-                    items: const [
-                      DropdownMenuItem(value: 'Food', child: Text('Food')),
-                      DropdownMenuItem(value: 'Cleaning', child: Text('Cleaning')),
-                      DropdownMenuItem(value: 'Beverages', child: Text('Beverages')),
-                      DropdownMenuItem(value: 'Utilities', child: Text('Utilities')),
-                      DropdownMenuItem(value: 'Services', child: Text('Services')),
-                      DropdownMenuItem(value: 'General', child: Text('General')),
-                    ],
-                    onChanged: (v) => catCtrl.text = v ?? 'General',
+                    items:
+                        [
+                              'Food',
+                              'Cleaning',
+                              'Beverages',
+                              'Utilities',
+                              'Services',
+                              'General',
+                            ]
+                            .map(
+                              (value) => DropdownMenuItem(
+                                value: value,
+                                child: Text(value),
+                              ),
+                            )
+                            .toList(),
+                    onChanged: (value) => category.text = value ?? 'General',
                   ),
                   const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: TextFormField(
-                          controller: stockCtrl,
-                          decoration: const InputDecoration(labelText: 'Stock Level'),
-                          keyboardType: TextInputType.number,
-                          validator: (v) => v == null || int.tryParse(v) == null ? 'Invalid' : null,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: TextFormField(
-                          controller: unitCtrl,
-                          decoration: const InputDecoration(labelText: 'Unit (e.g. Bags)'),
-                          validator: (v) => v == null || v.isEmpty ? 'Required' : null,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: TextFormField(
-                          controller: costCtrl,
-                          decoration: const InputDecoration(labelText: 'Cost Price'),
-                          keyboardType: TextInputType.number,
-                          validator: (v) => v == null || double.tryParse(v) == null ? 'Invalid' : null,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: TextFormField(
-                          controller: priceCtrl,
-                          decoration: const InputDecoration(labelText: 'Selling Price'),
-                          keyboardType: TextInputType.number,
-                          validator: (v) => v == null || double.tryParse(v) == null ? 'Invalid' : null,
-                        ),
-                      ),
-                    ],
+                  DropdownButtonFormField<String>(
+                    initialValue: baseUnit,
+                    decoration: const InputDecoration(
+                      labelText: 'Base stock unit',
+                    ),
+                    items: _baseUnits
+                        .map(
+                          (value) => DropdownMenuItem(
+                            value: value,
+                            child: Text(value),
+                          ),
+                        )
+                        .toList(),
+                    onChanged: (value) => setDialogState(() {
+                      baseUnit = value ?? 'piece';
+                    }),
                   ),
                   const SizedBox(height: 12),
                   TextFormField(
-                    controller: thresholdCtrl,
-                    decoration: const InputDecoration(labelText: 'Low Stock Threshold'),
+                    controller: stock,
+                    decoration: InputDecoration(
+                      labelText: 'Opening stock (in $baseUnit)',
+                    ),
                     keyboardType: TextInputType.number,
-                    validator: (v) => v == null || int.tryParse(v) == null ? 'Invalid' : null,
+                    validator: (value) {
+                      final parsed = int.tryParse(value ?? '');
+                      return parsed == null || parsed < 0
+                          ? 'Enter zero or more'
+                          : null;
+                    },
+                  ),
+                  const Divider(height: 28),
+                  TextFormField(
+                    controller: barcode,
+                    decoration: const InputDecoration(
+                      labelText: 'Barcode (optional)',
+                      prefixIcon: Icon(Icons.qr_code_2),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  DropdownButtonFormField<String>(
+                    initialValue: scanUnit,
+                    decoration: const InputDecoration(
+                      labelText: 'Unit represented by barcode',
+                    ),
+                    items: _scanUnits
+                        .map(
+                          (value) => DropdownMenuItem(
+                            value: value,
+                            child: Text(value),
+                          ),
+                        )
+                        .toList(),
+                    onChanged: (value) => setDialogState(() {
+                      scanUnit = value ?? baseUnit;
+                      if (scanUnit == baseUnit) factor.text = '1';
+                    }),
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: factor,
+                    enabled: scanUnit != baseUnit,
+                    decoration: InputDecoration(
+                      labelText: '$baseUnit units in one $scanUnit',
+                      helperText: 'Example: one carton may contain 24 bottles.',
+                    ),
+                    keyboardType: TextInputType.number,
+                    validator: (value) {
+                      final parsed = int.tryParse(value ?? '');
+                      return parsed == null || parsed <= 0
+                          ? 'Enter at least 1'
+                          : null;
+                    },
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextFormField(
+                          controller: cost,
+                          decoration: InputDecoration(
+                            labelText: 'Cost / $baseUnit',
+                          ),
+                          keyboardType: TextInputType.number,
+                          validator: _validPrice,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: TextFormField(
+                          controller: price,
+                          decoration: InputDecoration(
+                            labelText: 'Sale / $baseUnit',
+                          ),
+                          keyboardType: TextInputType.number,
+                          validator: _validPrice,
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (scanUnit != baseUnit) ...[
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: packagePrice,
+                      decoration: InputDecoration(
+                        labelText: 'Sale price per $scanUnit (optional)',
+                        helperText: 'Leave empty to multiply the base price.',
+                      ),
+                      keyboardType: TextInputType.number,
+                    ),
+                  ],
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: threshold,
+                    decoration: InputDecoration(
+                      labelText: 'Low-stock alert (in $baseUnit)',
+                    ),
+                    keyboardType: TextInputType.number,
+                    validator: (value) {
+                      final parsed = int.tryParse(value ?? '');
+                      return parsed == null || parsed < 0
+                          ? 'Enter zero or more'
+                          : null;
+                    },
                   ),
                 ],
               ),
             ),
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('Cancel'),
+            ),
             FilledButton(
               onPressed: () async {
-                if (formKey.currentState!.validate()) {
-                  final inventory = Provider.of<InventoryProvider>(context, listen: false);
-                  final core = Provider.of<CoreProvider>(context, listen: false);
-                  final success = await inventory.addProduct(
-                    nameCtrl.text,
-                    catCtrl.text,
-                    int.parse(stockCtrl.text),
-                    unitCtrl.text,
-                    double.parse(costCtrl.text),
-                    double.parse(priceCtrl.text),
-                    int.parse(thresholdCtrl.text),
-                    core
+                if (!formKey.currentState!.validate()) return;
+                try {
+                  final success = await context
+                      .read<InventoryProvider>()
+                      .addProduct(
+                        name.text.trim(),
+                        category.text,
+                        int.parse(stock.text),
+                        baseUnit,
+                        double.parse(cost.text),
+                        double.parse(price.text),
+                        int.parse(threshold.text),
+                        context.read<CoreProvider>(),
+                        barcode: barcode.text.trim().isEmpty
+                            ? null
+                            : barcode.text.trim(),
+                        scanUnit: scanUnit,
+                        conversionFactor: scanUnit == baseUnit
+                            ? 1
+                            : int.parse(factor.text),
+                        scanSellingPrice: packagePrice.text.trim().isEmpty
+                            ? null
+                            : double.tryParse(packagePrice.text),
+                      );
+                  if (!dialogContext.mounted) return;
+                  Navigator.pop(dialogContext);
+                  _message(
+                    success
+                        ? 'Product added successfully.'
+                        : 'You are not allowed to add products.',
+                    error: !success,
                   );
-
-                  if (context.mounted) {
-                    Navigator.pop(context);
-                    ScaffoldMessenger.of(context).showSnackBar(
+                } catch (error) {
+                  if (dialogContext.mounted) {
+                    ScaffoldMessenger.of(dialogContext).showSnackBar(
                       SnackBar(
-                        content: Text(success ? 'Product added successfully!' : 'Unauthorized/Failed to add product.'),
-                        backgroundColor: success ? Colors.green : Colors.red,
-                        behavior: SnackBarBehavior.floating,
+                        content: Text(
+                          error.toString().replaceFirst('Exception: ', ''),
+                        ),
                       ),
                     );
                   }
                 }
               },
-              child: const Text('Add Product'),
+              child: const Text('Save product'),
             ),
           ],
-        );
-      },
+        ),
+      ),
     );
+
+    for (final controller in [
+      name,
+      category,
+      stock,
+      cost,
+      price,
+      threshold,
+      barcode,
+      factor,
+      packagePrice,
+    ]) {
+      controller.dispose();
+    }
+  }
+
+  static String? _validPrice(String? value) {
+    final parsed = double.tryParse(value ?? '');
+    return parsed == null || parsed < 0 ? 'Invalid price' : null;
+  }
+
+  Future<void> _editProduct(InventoryItem item) async {
+    final inventoryProvider = context.read<InventoryProvider>();
+    final name = TextEditingController(text: item.name);
+    final category = TextEditingController(text: item.category);
+    final quantity = TextEditingController(text: item.stockLevel.toString());
+    final cost = TextEditingController(text: item.costPrice.toString());
+    final price = TextEditingController(text: item.price.toString());
+    final threshold = TextEditingController(
+      text: item.lowStockLevel.toString(),
+    );
+    final formKey = GlobalKey<FormState>();
+    final save = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Edit product'),
+        content: SingleChildScrollView(
+          child: Form(
+            key: formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextFormField(
+                  controller: name,
+                  decoration: const InputDecoration(labelText: 'Product name'),
+                  validator: (value) =>
+                      value == null || value.trim().isEmpty ? 'Required' : null,
+                ),
+                const SizedBox(height: 10),
+                TextFormField(
+                  controller: category,
+                  decoration: const InputDecoration(labelText: 'Category'),
+                ),
+                const SizedBox(height: 10),
+                TextFormField(
+                  controller: quantity,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    labelText: 'Stock (${item.unit})',
+                  ),
+                  validator: (value) => int.tryParse(value ?? '') == null
+                      ? 'Enter a whole number'
+                      : null,
+                ),
+                const SizedBox(height: 10),
+                TextFormField(
+                  controller: cost,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(labelText: 'Cost price'),
+                  validator: _validPrice,
+                ),
+                const SizedBox(height: 10),
+                TextFormField(
+                  controller: price,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(labelText: 'Selling price'),
+                  validator: _validPrice,
+                ),
+                const SizedBox(height: 10),
+                TextFormField(
+                  controller: threshold,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    labelText: 'Low-stock threshold',
+                  ),
+                  validator: (value) => int.tryParse(value ?? '') == null
+                      ? 'Enter a whole number'
+                      : null,
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  'Barcode units are adjusted through scan receiving and remain linked to this product.',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ],
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () {
+              if (formKey.currentState!.validate()) {
+                Navigator.pop(dialogContext, true);
+              }
+            },
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+    if (!mounted) return;
+    if (save == true) {
+      try {
+        await inventoryProvider.updateProduct(item.id, {
+          'name': name.text.trim(),
+          'category': category.text.trim(),
+          'quantity': int.parse(quantity.text),
+          'costPrice': double.parse(cost.text),
+          'sellingPrice': double.parse(price.text),
+          'lowStockLevel': int.parse(threshold.text),
+        });
+        _message('Product updated.');
+      } catch (error) {
+        _message(error.toString(), error: true);
+      }
+    }
+    for (final controller in [
+      name,
+      category,
+      quantity,
+      cost,
+      price,
+      threshold,
+    ]) {
+      controller.dispose();
+    }
+  }
+
+  Future<void> _deleteProduct(InventoryItem item) async {
+    final inventoryProvider = context.read<InventoryProvider>();
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Delete product?'),
+        content: Text(
+          'Delete “${item.name}”? Products referenced by sales may be protected.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+    if (!mounted) return;
+    if (confirmed != true) return;
+    try {
+      await inventoryProvider.deleteProduct(item.id);
+      _message('Product deleted.');
+    } catch (error) {
+      _message(error.toString(), error: true);
+    }
+  }
+
+  Future<void> _export(List<InventoryItem> items) async {
+    await ExportService.saveCsv('smarterp_inventory.csv', [
+      [
+        'Product',
+        'Category',
+        'Stock',
+        'Base unit',
+        'Cost price',
+        'Selling price',
+        'Low stock threshold',
+        'Barcode',
+      ],
+      ...items.map(
+        (item) => [
+          item.name,
+          item.category,
+          item.stockLevel,
+          item.unit,
+          item.costPrice,
+          item.price,
+          item.lowStockLevel,
+          item.barcode,
+        ],
+      ),
+    ]);
+    _message('Inventory export saved.');
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final inventoryProvider = Provider.of<InventoryProvider>(context);
-    final coreProvider = Provider.of<CoreProvider>(context, listen: false);
-
-    // Categories list for filtering
-    final categories = ['All', ...inventoryProvider.inventory.map((item) => item.category).toSet()];
-
-    // Filter items
-    final items = inventoryProvider.inventory.where((item) {
-      final matchesSearch = item.name.toLowerCase().contains(_searchQuery) ||
-          item.category.toLowerCase().contains(_searchQuery);
-      final matchesCategory = _selectedCategory == 'All' || item.category == _selectedCategory;
-      return matchesSearch && matchesCategory;
+    final inventory = context.watch<InventoryProvider>();
+    final categories = [
+      'All',
+      ...inventory.inventory.map((item) => item.category).toSet(),
+    ];
+    final items = inventory.inventory.where((item) {
+      final matchesSearch =
+          item.name.toLowerCase().contains(_searchQuery) ||
+          item.category.toLowerCase().contains(_searchQuery) ||
+          (item.barcode?.toLowerCase().contains(_searchQuery) ?? false);
+      return matchesSearch &&
+          (_selectedCategory == 'All' || item.category == _selectedCategory);
     }).toList();
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Inventory Registry'),
+        actions: [
+          IconButton(
+            tooltip: 'Export inventory',
+            onPressed: () => _export(inventory.inventory),
+            icon: const Icon(Icons.download_outlined),
+          ),
+          if (AuthService.hasPermission('manageInventory'))
+            IconButton(
+              tooltip: 'Scan to receive stock',
+              onPressed: _scanForStock,
+              icon: const Icon(Icons.qr_code_scanner),
+            ),
+        ],
       ),
       drawer: const AppDrawer(currentRoute: '/inventory'),
       body: Column(
         children: [
-          // Search & Filter Header
           Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.all(16),
             child: Column(
               children: [
                 TextField(
                   controller: _searchController,
                   decoration: InputDecoration(
-                    labelText: 'Search Products',
+                    labelText: 'Search products or barcode',
                     prefixIcon: const Icon(Icons.search),
                     suffixIcon: _searchController.text.isNotEmpty
-                        ? IconButton(icon: const Icon(Icons.clear), onPressed: () => _searchController.clear())
+                        ? IconButton(
+                            icon: const Icon(Icons.clear),
+                            onPressed: _searchController.clear,
+                          )
                         : null,
                   ),
                 ),
                 const SizedBox(height: 12),
                 SizedBox(
                   height: 36,
-                  child: ListView.builder(
+                  child: ListView(
                     scrollDirection: Axis.horizontal,
-                    itemCount: categories.length,
-                    itemBuilder: (context, index) {
-                      final cat = categories[index];
-                      final isSelected = cat == _selectedCategory;
+                    children: categories.map((category) {
                       return Padding(
-                        padding: const EdgeInsets.only(right: 8.0),
+                        padding: const EdgeInsets.only(right: 8),
                         child: ChoiceChip(
-                          label: Text(cat),
-                          selected: isSelected,
-                          onSelected: (val) {
-                            setState(() {
-                              _selectedCategory = cat;
-                            });
-                          },
+                          label: Text(category),
+                          selected: category == _selectedCategory,
+                          onSelected: (_) =>
+                              setState(() => _selectedCategory = category),
                         ),
                       );
-                    },
+                    }).toList(),
                   ),
                 ),
               ],
             ),
           ),
-
-          // Inventory List
           Expanded(
             child: items.isEmpty
                 ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.inventory_2_outlined, size: 64, color: Colors.grey.shade400),
-                        const SizedBox(height: 16),
-                        Text('No products matching filters.', style: theme.textTheme.bodyLarge?.copyWith(color: Colors.grey.shade600)),
-                      ],
+                    child: Text(
+                      'No products matching filters.',
+                      style: theme.textTheme.bodyLarge?.copyWith(
+                        color: Colors.grey.shade600,
+                      ),
                     ),
                   )
-                : ListView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    itemCount: items.length,
-                    itemBuilder: (context, index) {
-                      final item = items[index];
-                      final isLowStock = item.stockLevel <= item.lowStockLevel;
-                      
-                      return Card(
-                        margin: const EdgeInsets.only(bottom: 12),
-                        child: Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Row(
-                            children: [
-                              // Status color indicator
-                              Container(
-                                width: 4,
-                                height: 50,
-                                decoration: BoxDecoration(
-                                  color: isLowStock ? Colors.red : Colors.green,
-                                  borderRadius: BorderRadius.circular(2),
-                                ),
+                : RefreshIndicator(
+                    onRefresh: inventory.loadData,
+                    child: ListView.builder(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      itemCount: items.length,
+                      itemBuilder: (context, index) {
+                        final item = items[index];
+                        final low = item.stockLevel <= item.lowStockLevel;
+                        return Card(
+                          margin: const EdgeInsets.only(bottom: 12),
+                          child: ListTile(
+                            isThreeLine: true,
+                            leading: Icon(
+                              low
+                                  ? Icons.warning_amber_rounded
+                                  : Icons.inventory_2_outlined,
+                              color: low ? Colors.red : Colors.green,
+                            ),
+                            title: Text(
+                              item.name,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
                               ),
-                              const SizedBox(width: 16),
-                              
-                              // Product Details
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      item.name,
-                                      style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-                                    ),
-                                    Text(
-                                      'Category: ${item.category} • Cost: FCFA ${item.costPrice.toInt()}',
-                                      style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey.shade600),
-                                    ),
-                                    const SizedBox(height: 8),
-                                    Row(
-                                      children: [
-                                        Text(
-                                          'Stock: ${item.stockLevel} ${item.unit}',
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            color: isLowStock ? Colors.red : theme.colorScheme.onSurface,
-                                            fontSize: 13,
-                                          ),
-                                        ),
-                                        const SizedBox(width: 8),
-                                        if (isLowStock)
-                                          Container(
-                                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                            decoration: BoxDecoration(
-                                              color: Colors.red.withOpacity(0.1),
-                                              borderRadius: BorderRadius.circular(4),
-                                              border: Border.all(color: Colors.red.withOpacity(0.3)),
-                                            ),
-                                            child: const Text(
-                                              'LOW STOCK',
-                                              style: TextStyle(color: Colors.red, fontSize: 9, fontWeight: FontWeight.bold),
-                                            ),
-                                          ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              
-                              // Action Panel
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  Text(
-                                    'FCFA ${item.price.toInt()}',
-                                    style: theme.textTheme.titleMedium?.copyWith(
+                            ),
+                            subtitle: Text(
+                              '${item.category} • '
+                              '${item.stockLevel} ${item.unit}\n'
+                              'FCFA ${item.price.toInt()} / ${item.unit} • ${item.barcode == null ? 'No barcode' : 'Barcode: ${item.barcode}'}',
+                            ),
+                            trailing:
+                                AuthService.hasPermission('manageInventory')
+                                ? PopupMenuButton<String>(
+                                    onSelected: (value) => value == 'edit'
+                                        ? _editProduct(item)
+                                        : _deleteProduct(item),
+                                    itemBuilder: (_) => const [
+                                      PopupMenuItem(
+                                        value: 'edit',
+                                        child: Text('Edit'),
+                                      ),
+                                      PopupMenuItem(
+                                        value: 'delete',
+                                        child: Text('Delete'),
+                                      ),
+                                    ],
+                                  )
+                                : low
+                                ? const Text(
+                                    'LOW',
+                                    style: TextStyle(
+                                      color: Colors.red,
                                       fontWeight: FontWeight.bold,
-                                      color: theme.colorScheme.primary,
                                     ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  OutlinedButton.icon(
-                                    onPressed: () {
-                                      inventoryProvider.reorderProduct(item.id, coreProvider);
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(
-                                          content: Text('Supplier Order Placed: Restocked 50 ${item.unit} for ${item.name}'),
-                                          behavior: SnackBarBehavior.floating,
-                                        ),
-                                      );
-                                    },
-                                    icon: const Icon(Icons.refresh, size: 14),
-                                    label: const Text('Reorder', style: TextStyle(fontSize: 12)),
-                                    style: OutlinedButton.styleFrom(
-                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
-                                      minimumSize: const Size(80, 32),
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
+                                  )
+                                : null,
                           ),
-                        ),
-                      );
-                    },
+                        );
+                      },
+                    ),
                   ),
           ),
         ],

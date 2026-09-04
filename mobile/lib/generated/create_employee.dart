@@ -7,71 +7,141 @@ class CreateEmployeeVariablesBuilder {
   String position;
   Optional<String> _role = Optional.optional(nativeFromJson, nativeToJson);
   Optional<double> _salary = Optional.optional(nativeFromJson, nativeToJson);
-  Optional<String> _department = Optional.optional(nativeFromJson, nativeToJson);
-  Optional<DateTime> _startDate = Optional.optional(nativeFromJson, nativeToJson);
+  Optional<String> _department = Optional.optional(
+    nativeFromJson,
+    nativeToJson,
+  );
+  Optional<String> _email = Optional.optional(nativeFromJson, nativeToJson);
+  Optional<String> _contact = Optional.optional(nativeFromJson, nativeToJson);
+  Optional<DateTime> _startDate = Optional.optional(
+    nativeFromJson,
+    nativeToJson,
+  );
   Optional<String> _status = Optional.optional(nativeFromJson, nativeToJson);
+  Optional<double> _attendance = Optional.optional(
+    nativeFromJson,
+    nativeToJson,
+  );
+  Optional<String> _salaryPaymentStatus = Optional.optional(
+    nativeFromJson,
+    nativeToJson,
+  );
   Optional<String> _code = Optional.optional(nativeFromJson, nativeToJson);
 
-  final FirebaseDataConnect _dataConnect;  CreateEmployeeVariablesBuilder role(String? t) {
-   _role.value = t;
-   return this;
-  }
-  CreateEmployeeVariablesBuilder salary(double? t) {
-   _salary.value = t;
-   return this;
-  }
-  CreateEmployeeVariablesBuilder department(String? t) {
-   _department.value = t;
-   return this;
-  }
-  CreateEmployeeVariablesBuilder startDate(DateTime? t) {
-   _startDate.value = t;
-   return this;
-  }
-  CreateEmployeeVariablesBuilder status(String? t) {
-   _status.value = t;
-   return this;
-  }
-  CreateEmployeeVariablesBuilder code(String? t) {
-   _code.value = t;
-   return this;
+  final FirebaseDataConnect _dataConnect;
+  CreateEmployeeVariablesBuilder role(String? t) {
+    _role.value = t;
+    return this;
   }
 
-  CreateEmployeeVariablesBuilder(this._dataConnect, {required  this.tenantId,required  this.businessId,required  this.fullName,required  this.position,});
-  Deserializer<CreateEmployeeData> dataDeserializer = (dynamic json)  => CreateEmployeeData.fromJson(jsonDecode(json));
-  Serializer<CreateEmployeeVariables> varsSerializer = (CreateEmployeeVariables vars) => jsonEncode(vars.toJson());
-  Future<OperationResult<CreateEmployeeData, CreateEmployeeVariables>> execute() {
+  CreateEmployeeVariablesBuilder salary(double? t) {
+    _salary.value = t;
+    return this;
+  }
+
+  CreateEmployeeVariablesBuilder department(String? t) {
+    _department.value = t;
+    return this;
+  }
+
+  CreateEmployeeVariablesBuilder email(String? t) {
+    _email.value = t;
+    return this;
+  }
+
+  CreateEmployeeVariablesBuilder contact(String? t) {
+    _contact.value = t;
+    return this;
+  }
+
+  CreateEmployeeVariablesBuilder startDate(DateTime? t) {
+    _startDate.value = t;
+    return this;
+  }
+
+  CreateEmployeeVariablesBuilder status(String? t) {
+    _status.value = t;
+    return this;
+  }
+
+  CreateEmployeeVariablesBuilder attendance(double? t) {
+    _attendance.value = t;
+    return this;
+  }
+
+  CreateEmployeeVariablesBuilder salaryPaymentStatus(String? t) {
+    _salaryPaymentStatus.value = t;
+    return this;
+  }
+
+  CreateEmployeeVariablesBuilder code(String? t) {
+    _code.value = t;
+    return this;
+  }
+
+  CreateEmployeeVariablesBuilder(
+    this._dataConnect, {
+    required this.tenantId,
+    required this.businessId,
+    required this.fullName,
+    required this.position,
+  });
+  Deserializer<CreateEmployeeData> dataDeserializer = (dynamic json) =>
+      CreateEmployeeData.fromJson(jsonDecode(json));
+  Serializer<CreateEmployeeVariables> varsSerializer =
+      (CreateEmployeeVariables vars) => jsonEncode(vars.toJson());
+  Future<OperationResult<CreateEmployeeData, CreateEmployeeVariables>>
+  execute() {
     return ref().execute();
   }
 
   MutationRef<CreateEmployeeData, CreateEmployeeVariables> ref() {
-    CreateEmployeeVariables vars= CreateEmployeeVariables(tenantId: tenantId,businessId: businessId,fullName: fullName,position: position,role: _role,salary: _salary,department: _department,startDate: _startDate,status: _status,code: _code,);
-    return _dataConnect.mutation("CreateEmployee", dataDeserializer, varsSerializer, vars);
+    CreateEmployeeVariables vars = CreateEmployeeVariables(
+      tenantId: tenantId,
+      businessId: businessId,
+      fullName: fullName,
+      position: position,
+      role: _role,
+      salary: _salary,
+      department: _department,
+      email: _email,
+      contact: _contact,
+      startDate: _startDate,
+      status: _status,
+      attendance: _attendance,
+      salaryPaymentStatus: _salaryPaymentStatus,
+      code: _code,
+    );
+    return _dataConnect.mutation(
+      "CreateEmployee",
+      dataDeserializer,
+      varsSerializer,
+      vars,
+    );
   }
 }
 
 @immutable
 class CreateEmployeeEmployeeInsert {
   final String id;
-  CreateEmployeeEmployeeInsert.fromJson(dynamic json):
-  
-  id = nativeFromJson<String>(json['id']);
+  CreateEmployeeEmployeeInsert.fromJson(dynamic json)
+    : id = nativeFromJson<String>(json['id']);
   @override
   bool operator ==(Object other) {
-    if(identical(this, other)) {
+    if (identical(this, other)) {
       return true;
     }
-    if(other.runtimeType != runtimeType) {
+    if (other.runtimeType != runtimeType) {
       return false;
     }
 
-    final CreateEmployeeEmployeeInsert otherTyped = other as CreateEmployeeEmployeeInsert;
+    final CreateEmployeeEmployeeInsert otherTyped =
+        other as CreateEmployeeEmployeeInsert;
     return id == otherTyped.id;
-    
   }
+
   @override
   int get hashCode => id.hashCode;
-  
 
   Map<String, dynamic> toJson() {
     Map<String, dynamic> json = {};
@@ -79,33 +149,31 @@ class CreateEmployeeEmployeeInsert {
     return json;
   }
 
-  CreateEmployeeEmployeeInsert({
-    required this.id,
-  });
+  CreateEmployeeEmployeeInsert({required this.id});
 }
 
 @immutable
 class CreateEmployeeData {
   final CreateEmployeeEmployeeInsert employee_insert;
-  CreateEmployeeData.fromJson(dynamic json):
-  
-  employee_insert = CreateEmployeeEmployeeInsert.fromJson(json['employee_insert']);
+  CreateEmployeeData.fromJson(dynamic json)
+    : employee_insert = CreateEmployeeEmployeeInsert.fromJson(
+        json['employee_insert'],
+      );
   @override
   bool operator ==(Object other) {
-    if(identical(this, other)) {
+    if (identical(this, other)) {
       return true;
     }
-    if(other.runtimeType != runtimeType) {
+    if (other.runtimeType != runtimeType) {
       return false;
     }
 
     final CreateEmployeeData otherTyped = other as CreateEmployeeData;
     return employee_insert == otherTyped.employee_insert;
-    
   }
+
   @override
   int get hashCode => employee_insert.hashCode;
-  
 
   Map<String, dynamic> toJson() {
     Map<String, dynamic> json = {};
@@ -113,9 +181,7 @@ class CreateEmployeeData {
     return json;
   }
 
-  CreateEmployeeData({
-    required this.employee_insert,
-  });
+  CreateEmployeeData({required this.employee_insert});
 }
 
 @immutable
@@ -124,74 +190,117 @@ class CreateEmployeeVariables {
   final String businessId;
   final String fullName;
   final String position;
-  late final Optional<String>role;
-  late final Optional<double>salary;
-  late final Optional<String>department;
-  late final Optional<DateTime>startDate;
-  late final Optional<String>status;
-  late final Optional<String>code;
-  @Deprecated('fromJson is deprecated for Variable classes as they are no longer required for deserialization.')
-  CreateEmployeeVariables.fromJson(Map<String, dynamic> json):
-  
-  tenantId = nativeFromJson<String>(json['tenantId']),
-  businessId = nativeFromJson<String>(json['businessId']),
-  fullName = nativeFromJson<String>(json['fullName']),
-  position = nativeFromJson<String>(json['position']) {
-  
-  
-  
-  
-  
-  
+  late final Optional<String> role;
+  late final Optional<double> salary;
+  late final Optional<String> department;
+  late final Optional<String> email;
+  late final Optional<String> contact;
+  late final Optional<DateTime> startDate;
+  late final Optional<String> status;
+  late final Optional<double> attendance;
+  late final Optional<String> salaryPaymentStatus;
+  late final Optional<String> code;
+  @Deprecated(
+    'fromJson is deprecated for Variable classes as they are no longer required for deserialization.',
+  )
+  CreateEmployeeVariables.fromJson(Map<String, dynamic> json)
+    : tenantId = nativeFromJson<String>(json['tenantId']),
+      businessId = nativeFromJson<String>(json['businessId']),
+      fullName = nativeFromJson<String>(json['fullName']),
+      position = nativeFromJson<String>(json['position']) {
     role = Optional.optional(nativeFromJson, nativeToJson);
-    role.value = json['role'] == null ? null : nativeFromJson<String>(json['role']);
-  
-  
+    role.value = json['role'] == null
+        ? null
+        : nativeFromJson<String>(json['role']);
+
     salary = Optional.optional(nativeFromJson, nativeToJson);
-    salary.value = json['salary'] == null ? null : nativeFromJson<double>(json['salary']);
-  
-  
+    salary.value = json['salary'] == null
+        ? null
+        : nativeFromJson<double>(json['salary']);
+
     department = Optional.optional(nativeFromJson, nativeToJson);
-    department.value = json['department'] == null ? null : nativeFromJson<String>(json['department']);
-  
-  
+    department.value = json['department'] == null
+        ? null
+        : nativeFromJson<String>(json['department']);
+
+    email = Optional.optional(nativeFromJson, nativeToJson);
+    email.value = json['email'] == null
+        ? null
+        : nativeFromJson<String>(json['email']);
+
+    contact = Optional.optional(nativeFromJson, nativeToJson);
+    contact.value = json['contact'] == null
+        ? null
+        : nativeFromJson<String>(json['contact']);
+
     startDate = Optional.optional(nativeFromJson, nativeToJson);
-    startDate.value = json['startDate'] == null ? null : nativeFromJson<DateTime>(json['startDate']);
-  
-  
+    startDate.value = json['startDate'] == null
+        ? null
+        : nativeFromJson<DateTime>(json['startDate']);
+
     status = Optional.optional(nativeFromJson, nativeToJson);
-    status.value = json['status'] == null ? null : nativeFromJson<String>(json['status']);
-  
-  
+    status.value = json['status'] == null
+        ? null
+        : nativeFromJson<String>(json['status']);
+
+    attendance = Optional.optional(nativeFromJson, nativeToJson);
+    attendance.value = json['attendance'] == null
+        ? null
+        : nativeFromJson<double>(json['attendance']);
+
+    salaryPaymentStatus = Optional.optional(nativeFromJson, nativeToJson);
+    salaryPaymentStatus.value = json['salaryPaymentStatus'] == null
+        ? null
+        : nativeFromJson<String>(json['salaryPaymentStatus']);
+
     code = Optional.optional(nativeFromJson, nativeToJson);
-    code.value = json['code'] == null ? null : nativeFromJson<String>(json['code']);
-  
+    code.value = json['code'] == null
+        ? null
+        : nativeFromJson<String>(json['code']);
   }
   @override
   bool operator ==(Object other) {
-    if(identical(this, other)) {
+    if (identical(this, other)) {
       return true;
     }
-    if(other.runtimeType != runtimeType) {
+    if (other.runtimeType != runtimeType) {
       return false;
     }
 
     final CreateEmployeeVariables otherTyped = other as CreateEmployeeVariables;
-    return tenantId == otherTyped.tenantId && 
-    businessId == otherTyped.businessId && 
-    fullName == otherTyped.fullName && 
-    position == otherTyped.position && 
-    role == otherTyped.role && 
-    salary == otherTyped.salary && 
-    department == otherTyped.department && 
-    startDate == otherTyped.startDate && 
-    status == otherTyped.status && 
-    code == otherTyped.code;
-    
+    return tenantId == otherTyped.tenantId &&
+        businessId == otherTyped.businessId &&
+        fullName == otherTyped.fullName &&
+        position == otherTyped.position &&
+        role == otherTyped.role &&
+        salary == otherTyped.salary &&
+        department == otherTyped.department &&
+        email == otherTyped.email &&
+        contact == otherTyped.contact &&
+        startDate == otherTyped.startDate &&
+        status == otherTyped.status &&
+        attendance == otherTyped.attendance &&
+        salaryPaymentStatus == otherTyped.salaryPaymentStatus &&
+        code == otherTyped.code;
   }
+
   @override
-  int get hashCode => Object.hashAll([tenantId.hashCode, businessId.hashCode, fullName.hashCode, position.hashCode, role.hashCode, salary.hashCode, department.hashCode, startDate.hashCode, status.hashCode, code.hashCode]);
-  
+  int get hashCode => Object.hashAll([
+    tenantId.hashCode,
+    businessId.hashCode,
+    fullName.hashCode,
+    position.hashCode,
+    role.hashCode,
+    salary.hashCode,
+    department.hashCode,
+    email.hashCode,
+    contact.hashCode,
+    startDate.hashCode,
+    status.hashCode,
+    attendance.hashCode,
+    salaryPaymentStatus.hashCode,
+    code.hashCode,
+  ]);
 
   Map<String, dynamic> toJson() {
     Map<String, dynamic> json = {};
@@ -199,22 +308,34 @@ class CreateEmployeeVariables {
     json['businessId'] = nativeToJson<String>(businessId);
     json['fullName'] = nativeToJson<String>(fullName);
     json['position'] = nativeToJson<String>(position);
-    if(role.state == OptionalState.set) {
+    if (role.state == OptionalState.set) {
       json['role'] = role.toJson();
     }
-    if(salary.state == OptionalState.set) {
+    if (salary.state == OptionalState.set) {
       json['salary'] = salary.toJson();
     }
-    if(department.state == OptionalState.set) {
+    if (department.state == OptionalState.set) {
       json['department'] = department.toJson();
     }
-    if(startDate.state == OptionalState.set) {
+    if (email.state == OptionalState.set) {
+      json['email'] = email.toJson();
+    }
+    if (contact.state == OptionalState.set) {
+      json['contact'] = contact.toJson();
+    }
+    if (startDate.state == OptionalState.set) {
       json['startDate'] = startDate.toJson();
     }
-    if(status.state == OptionalState.set) {
+    if (status.state == OptionalState.set) {
       json['status'] = status.toJson();
     }
-    if(code.state == OptionalState.set) {
+    if (attendance.state == OptionalState.set) {
+      json['attendance'] = attendance.toJson();
+    }
+    if (salaryPaymentStatus.state == OptionalState.set) {
+      json['salaryPaymentStatus'] = salaryPaymentStatus.toJson();
+    }
+    if (code.state == OptionalState.set) {
       json['code'] = code.toJson();
     }
     return json;
@@ -228,9 +349,12 @@ class CreateEmployeeVariables {
     required this.role,
     required this.salary,
     required this.department,
+    required this.email,
+    required this.contact,
     required this.startDate,
     required this.status,
+    required this.attendance,
+    required this.salaryPaymentStatus,
     required this.code,
   });
 }
-

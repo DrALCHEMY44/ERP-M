@@ -5,16 +5,34 @@ class ListDocumentsByBusinessVariablesBuilder {
   String businessId;
 
   final FirebaseDataConnect _dataConnect;
-  ListDocumentsByBusinessVariablesBuilder(this._dataConnect, {required  this.tenantId,required  this.businessId,});
-  Deserializer<ListDocumentsByBusinessData> dataDeserializer = (dynamic json)  => ListDocumentsByBusinessData.fromJson(jsonDecode(json));
-  Serializer<ListDocumentsByBusinessVariables> varsSerializer = (ListDocumentsByBusinessVariables vars) => jsonEncode(vars.toJson());
-  Future<QueryResult<ListDocumentsByBusinessData, ListDocumentsByBusinessVariables>> execute({QueryFetchPolicy fetchPolicy = QueryFetchPolicy.preferCache}) {
+  ListDocumentsByBusinessVariablesBuilder(
+    this._dataConnect, {
+    required this.tenantId,
+    required this.businessId,
+  });
+  Deserializer<ListDocumentsByBusinessData> dataDeserializer = (dynamic json) =>
+      ListDocumentsByBusinessData.fromJson(jsonDecode(json));
+  Serializer<ListDocumentsByBusinessVariables> varsSerializer =
+      (ListDocumentsByBusinessVariables vars) => jsonEncode(vars.toJson());
+  Future<
+    QueryResult<ListDocumentsByBusinessData, ListDocumentsByBusinessVariables>
+  >
+  execute({QueryFetchPolicy fetchPolicy = QueryFetchPolicy.preferCache}) {
     return ref().execute(fetchPolicy: fetchPolicy);
   }
 
-  QueryRef<ListDocumentsByBusinessData, ListDocumentsByBusinessVariables> ref() {
-    ListDocumentsByBusinessVariables vars= ListDocumentsByBusinessVariables(tenantId: tenantId,businessId: businessId,);
-    return _dataConnect.query("listDocumentsByBusiness", dataDeserializer, varsSerializer, vars);
+  QueryRef<ListDocumentsByBusinessData, ListDocumentsByBusinessVariables>
+  ref() {
+    ListDocumentsByBusinessVariables vars = ListDocumentsByBusinessVariables(
+      tenantId: tenantId,
+      businessId: businessId,
+    );
+    return _dataConnect.query(
+      "listDocumentsByBusiness",
+      dataDeserializer,
+      varsSerializer,
+      vars,
+    );
   }
 }
 
@@ -24,43 +42,57 @@ class ListDocumentsByBusinessDocuments {
   final String title;
   final String documentType;
   final String fileUrl;
+  final String? description;
   final String uploadedBy;
   final Timestamp uploadedAt;
   final String tenantId;
   final String businessId;
-  ListDocumentsByBusinessDocuments.fromJson(dynamic json):
-  
-  id = nativeFromJson<String>(json['id']),
-  title = nativeFromJson<String>(json['title']),
-  documentType = nativeFromJson<String>(json['documentType']),
-  fileUrl = nativeFromJson<String>(json['fileUrl']),
-  uploadedBy = nativeFromJson<String>(json['uploadedBy']),
-  uploadedAt = Timestamp.fromJson(json['uploadedAt']),
-  tenantId = nativeFromJson<String>(json['tenantId']),
-  businessId = nativeFromJson<String>(json['businessId']);
+  ListDocumentsByBusinessDocuments.fromJson(dynamic json)
+    : id = nativeFromJson<String>(json['id']),
+      title = nativeFromJson<String>(json['title']),
+      documentType = nativeFromJson<String>(json['documentType']),
+      fileUrl = nativeFromJson<String>(json['fileUrl']),
+      description = json['description'] == null
+          ? null
+          : nativeFromJson<String>(json['description']),
+      uploadedBy = nativeFromJson<String>(json['uploadedBy']),
+      uploadedAt = Timestamp.fromJson(json['uploadedAt']),
+      tenantId = nativeFromJson<String>(json['tenantId']),
+      businessId = nativeFromJson<String>(json['businessId']);
   @override
   bool operator ==(Object other) {
-    if(identical(this, other)) {
+    if (identical(this, other)) {
       return true;
     }
-    if(other.runtimeType != runtimeType) {
+    if (other.runtimeType != runtimeType) {
       return false;
     }
 
-    final ListDocumentsByBusinessDocuments otherTyped = other as ListDocumentsByBusinessDocuments;
-    return id == otherTyped.id && 
-    title == otherTyped.title && 
-    documentType == otherTyped.documentType && 
-    fileUrl == otherTyped.fileUrl && 
-    uploadedBy == otherTyped.uploadedBy && 
-    uploadedAt == otherTyped.uploadedAt && 
-    tenantId == otherTyped.tenantId && 
-    businessId == otherTyped.businessId;
-    
+    final ListDocumentsByBusinessDocuments otherTyped =
+        other as ListDocumentsByBusinessDocuments;
+    return id == otherTyped.id &&
+        title == otherTyped.title &&
+        documentType == otherTyped.documentType &&
+        fileUrl == otherTyped.fileUrl &&
+        description == otherTyped.description &&
+        uploadedBy == otherTyped.uploadedBy &&
+        uploadedAt == otherTyped.uploadedAt &&
+        tenantId == otherTyped.tenantId &&
+        businessId == otherTyped.businessId;
   }
+
   @override
-  int get hashCode => Object.hashAll([id.hashCode, title.hashCode, documentType.hashCode, fileUrl.hashCode, uploadedBy.hashCode, uploadedAt.hashCode, tenantId.hashCode, businessId.hashCode]);
-  
+  int get hashCode => Object.hashAll([
+    id.hashCode,
+    title.hashCode,
+    documentType.hashCode,
+    fileUrl.hashCode,
+    description.hashCode,
+    uploadedBy.hashCode,
+    uploadedAt.hashCode,
+    tenantId.hashCode,
+    businessId.hashCode,
+  ]);
 
   Map<String, dynamic> toJson() {
     Map<String, dynamic> json = {};
@@ -68,6 +100,9 @@ class ListDocumentsByBusinessDocuments {
     json['title'] = nativeToJson<String>(title);
     json['documentType'] = nativeToJson<String>(documentType);
     json['fileUrl'] = nativeToJson<String>(fileUrl);
+    if (description != null) {
+      json['description'] = nativeToJson<String?>(description);
+    }
     json['uploadedBy'] = nativeToJson<String>(uploadedBy);
     json['uploadedAt'] = uploadedAt.toJson();
     json['tenantId'] = nativeToJson<String>(tenantId);
@@ -80,6 +115,7 @@ class ListDocumentsByBusinessDocuments {
     required this.title,
     required this.documentType,
     required this.fileUrl,
+    this.description,
     required this.uploadedBy,
     required this.uploadedAt,
     required this.tenantId,
@@ -90,27 +126,26 @@ class ListDocumentsByBusinessDocuments {
 @immutable
 class ListDocumentsByBusinessData {
   final List<ListDocumentsByBusinessDocuments> documents;
-  ListDocumentsByBusinessData.fromJson(dynamic json):
-  
-  documents = (json['documents'] as List<dynamic>)
-        .map((e) => ListDocumentsByBusinessDocuments.fromJson(e))
-        .toList();
+  ListDocumentsByBusinessData.fromJson(dynamic json)
+    : documents = (json['documents'] as List<dynamic>)
+          .map((e) => ListDocumentsByBusinessDocuments.fromJson(e))
+          .toList();
   @override
   bool operator ==(Object other) {
-    if(identical(this, other)) {
+    if (identical(this, other)) {
       return true;
     }
-    if(other.runtimeType != runtimeType) {
+    if (other.runtimeType != runtimeType) {
       return false;
     }
 
-    final ListDocumentsByBusinessData otherTyped = other as ListDocumentsByBusinessData;
+    final ListDocumentsByBusinessData otherTyped =
+        other as ListDocumentsByBusinessData;
     return documents == otherTyped.documents;
-    
   }
+
   @override
   int get hashCode => documents.hashCode;
-  
 
   Map<String, dynamic> toJson() {
     Map<String, dynamic> json = {};
@@ -118,37 +153,36 @@ class ListDocumentsByBusinessData {
     return json;
   }
 
-  ListDocumentsByBusinessData({
-    required this.documents,
-  });
+  ListDocumentsByBusinessData({required this.documents});
 }
 
 @immutable
 class ListDocumentsByBusinessVariables {
   final String tenantId;
   final String businessId;
-  @Deprecated('fromJson is deprecated for Variable classes as they are no longer required for deserialization.')
-  ListDocumentsByBusinessVariables.fromJson(Map<String, dynamic> json):
-  
-  tenantId = nativeFromJson<String>(json['tenantId']),
-  businessId = nativeFromJson<String>(json['businessId']);
+  @Deprecated(
+    'fromJson is deprecated for Variable classes as they are no longer required for deserialization.',
+  )
+  ListDocumentsByBusinessVariables.fromJson(Map<String, dynamic> json)
+    : tenantId = nativeFromJson<String>(json['tenantId']),
+      businessId = nativeFromJson<String>(json['businessId']);
   @override
   bool operator ==(Object other) {
-    if(identical(this, other)) {
+    if (identical(this, other)) {
       return true;
     }
-    if(other.runtimeType != runtimeType) {
+    if (other.runtimeType != runtimeType) {
       return false;
     }
 
-    final ListDocumentsByBusinessVariables otherTyped = other as ListDocumentsByBusinessVariables;
-    return tenantId == otherTyped.tenantId && 
-    businessId == otherTyped.businessId;
-    
+    final ListDocumentsByBusinessVariables otherTyped =
+        other as ListDocumentsByBusinessVariables;
+    return tenantId == otherTyped.tenantId &&
+        businessId == otherTyped.businessId;
   }
+
   @override
   int get hashCode => Object.hashAll([tenantId.hashCode, businessId.hashCode]);
-  
 
   Map<String, dynamic> toJson() {
     Map<String, dynamic> json = {};
@@ -162,4 +196,3 @@ class ListDocumentsByBusinessVariables {
     required this.businessId,
   });
 }
-

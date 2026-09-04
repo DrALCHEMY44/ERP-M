@@ -23,12 +23,16 @@ You can also follow the instructions from the [Data Connect documentation](https
   - [*ListBusinesses*](#listbusinesses)
   - [*getUserByEmail*](#getuserbyemail)
   - [*getBusinessById*](#getbusinessbyid)
+  - [*getBusinessSettings*](#getbusinesssettings)
   - [*getBusinessByCode*](#getbusinessbycode)
   - [*getBusinessesByName*](#getbusinessesbyname)
   - [*verifyEmployeeAccess*](#verifyemployeeaccess)
   - [*verifyUserLogin*](#verifyuserlogin)
   - [*listProductsByBusiness*](#listproductsbybusiness)
   - [*listCustomersByBusiness*](#listcustomersbybusiness)
+  - [*getCustomerForCompany*](#getcustomerforcompany)
+  - [*listSaleCustomersByBusiness*](#listsalecustomersbybusiness)
+  - [*listTaskAssigneesByBusiness*](#listtaskassigneesbybusiness)
   - [*listUsersByBusiness*](#listusersbybusiness)
   - [*listSuppliersByBusiness*](#listsuppliersbybusiness)
   - [*listTasksByBusiness*](#listtasksbybusiness)
@@ -43,6 +47,7 @@ You can also follow the instructions from the [Data Connect documentation](https
   - [*listNotifications*](#listnotifications)
   - [*ListPendingMirrorOutbox*](#listpendingmirroroutbox)
 - [**Mutations**](#mutations)
+  - [*BootstrapWorkspace*](#bootstrapworkspace)
   - [*CreateTenant*](#createtenant)
   - [*UpdateTenant*](#updatetenant)
   - [*DeleteTenant*](#deletetenant)
@@ -52,6 +57,7 @@ You can also follow the instructions from the [Data Connect documentation](https
   - [*ClearLegacyAccessCode*](#clearlegacyaccesscode)
   - [*CreateBusiness*](#createbusiness)
   - [*UpdateBusiness*](#updatebusiness)
+  - [*UpsertBusinessSettings*](#upsertbusinesssettings)
   - [*DeleteBusiness*](#deletebusiness)
   - [*ProvisionEmployeeUser*](#provisionemployeeuser)
   - [*CompleteAssignedTask*](#completeassignedtask)
@@ -64,6 +70,9 @@ You can also follow the instructions from the [Data Connect documentation](https
   - [*CreateTaskComment*](#createtaskcomment)
   - [*UpdateTaskComment*](#updatetaskcomment)
   - [*DeleteTaskComment*](#deletetaskcomment)
+  - [*CreateEmployeeWithAccess*](#createemployeewithaccess)
+  - [*UpdateEmployeeWithAccess*](#updateemployeewithaccess)
+  - [*DeleteEmployeeWithAccess*](#deleteemployeewithaccess)
   - [*CreateEmployee*](#createemployee)
   - [*UpdateEmployee*](#updateemployee)
   - [*DeleteEmployee*](#deleteemployee)
@@ -449,7 +458,7 @@ import { useListBusinesses } from '@dataconnect/generated/react'
 export default function ListBusinessesComponent() {
   // The `useListBusinesses` Query hook requires an argument of type `ListBusinessesVariables`:
   const listBusinessesVars: ListBusinessesVariables = {
-    tenantId: ..., 
+    tenantId: ...,
   };
 
   // You don't have to do anything to "execute" the Query.
@@ -541,7 +550,7 @@ import { useGetUserByEmail } from '@dataconnect/generated/react'
 export default function GetUserByEmailComponent() {
   // The `useGetUserByEmail` Query hook requires an argument of type `GetUserByEmailVariables`:
   const getUserByEmailVars: GetUserByEmailVariables = {
-    email: ..., 
+    email: ...,
   };
 
   // You don't have to do anything to "execute" the Query.
@@ -611,6 +620,16 @@ export interface GetBusinessByIdData {
     id: string;
     tenantId: string;
     name: string;
+    location: string;
+    businessType?: string | null;
+    entityType?: string | null;
+    city?: string | null;
+    region?: string | null;
+    phone?: string | null;
+    email?: string | null;
+    taxId?: string | null;
+    description?: string | null;
+    logoUrl?: string | null;
     createdAt: TimestampString;
     code: string;
   } & Business_Key;
@@ -629,7 +648,7 @@ import { useGetBusinessById } from '@dataconnect/generated/react'
 export default function GetBusinessByIdComponent() {
   // The `useGetBusinessById` Query hook requires an argument of type `GetBusinessByIdVariables`:
   const getBusinessByIdVars: GetBusinessByIdVariables = {
-    id: ..., 
+    id: ...,
   };
 
   // You don't have to do anything to "execute" the Query.
@@ -663,6 +682,99 @@ export default function GetBusinessByIdComponent() {
   // If the Query is successful, you can access the data returned using the `UseQueryResult.data` field.
   if (query.isSuccess) {
     console.log(query.data.business);
+  }
+  return <div>Query execution {query.isSuccess ? 'successful' : 'failed'}!</div>;
+}
+```
+
+## getBusinessSettings
+You can execute the `getBusinessSettings` Query using the following Query hook function, which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts):
+
+```javascript
+useGetBusinessSettings(dc: DataConnect, vars: GetBusinessSettingsVariables, options?: useDataConnectQueryOptions<GetBusinessSettingsData>): UseDataConnectQueryResult<GetBusinessSettingsData, GetBusinessSettingsVariables>;
+```
+You can also pass in a `DataConnect` instance to the Query hook function.
+```javascript
+useGetBusinessSettings(vars: GetBusinessSettingsVariables, options?: useDataConnectQueryOptions<GetBusinessSettingsData>): UseDataConnectQueryResult<GetBusinessSettingsData, GetBusinessSettingsVariables>;
+```
+
+### Variables
+The `getBusinessSettings` Query requires an argument of type `GetBusinessSettingsVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+
+```javascript
+export interface GetBusinessSettingsVariables {
+  tenantId: string;
+  businessId: string;
+}
+```
+### Return Type
+Recall that calling the `getBusinessSettings` Query hook function returns a `UseQueryResult` object. This object holds the state of your Query, including whether the Query is loading, has completed, or has succeeded/failed, and any data returned by the Query, among other things.
+
+To check the status of a Query, use the `UseQueryResult.status` field. You can also check for pending / success / error status using the `UseQueryResult.isPending`, `UseQueryResult.isSuccess`, and `UseQueryResult.isError` fields.
+
+To access the data returned by a Query, use the `UseQueryResult.data` field. The data for the `getBusinessSettings` Query is of type `GetBusinessSettingsData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+```javascript
+export interface GetBusinessSettingsData {
+  businessSettings: ({
+    businessId: string;
+    tenantId: string;
+    currency: string;
+    timezone: string;
+    fiscalYearStart: string;
+    taxRate: number;
+    lowStockThreshold: number;
+    updatedAt: TimestampString;
+  } & BusinessSetting_Key)[];
+}
+```
+
+To learn more about the `UseQueryResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useQuery).
+
+### Using `getBusinessSettings`'s Query hook function
+
+```javascript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, GetBusinessSettingsVariables } from '@dataconnect/generated';
+import { useGetBusinessSettings } from '@dataconnect/generated/react'
+
+export default function GetBusinessSettingsComponent() {
+  // The `useGetBusinessSettings` Query hook requires an argument of type `GetBusinessSettingsVariables`:
+  const getBusinessSettingsVars: GetBusinessSettingsVariables = {
+    tenantId: ...,
+    businessId: ...,
+  };
+
+  // You don't have to do anything to "execute" the Query.
+  // Call the Query hook function to get a `UseQueryResult` object which holds the state of your Query.
+  const query = useGetBusinessSettings(getBusinessSettingsVars);
+  // Variables can be defined inline as well.
+  const query = useGetBusinessSettings({ tenantId: ..., businessId: ..., });
+
+  // You can also pass in a `DataConnect` instance to the Query hook function.
+  const dataConnect = getDataConnect(connectorConfig);
+  const query = useGetBusinessSettings(dataConnect, getBusinessSettingsVars);
+
+  // You can also pass in a `useDataConnectQueryOptions` object to the Query hook function.
+  const options = { staleTime: 5 * 1000 };
+  const query = useGetBusinessSettings(getBusinessSettingsVars, options);
+
+  // You can also pass both a `DataConnect` instance and a `useDataConnectQueryOptions` object.
+  const dataConnect = getDataConnect(connectorConfig);
+  const options = { staleTime: 5 * 1000 };
+  const query = useGetBusinessSettings(dataConnect, getBusinessSettingsVars, options);
+
+  // Then, you can render your component dynamically based on the status of the Query.
+  if (query.isPending) {
+    return <div>Loading...</div>;
+  }
+
+  if (query.isError) {
+    return <div>Error: {query.error.message}</div>;
+  }
+
+  // If the Query is successful, you can access the data returned using the `UseQueryResult.data` field.
+  if (query.isSuccess) {
+    console.log(query.data.businessSettings);
   }
   return <div>Query execution {query.isSuccess ? 'successful' : 'failed'}!</div>;
 }
@@ -715,7 +827,7 @@ import { useGetBusinessByCode } from '@dataconnect/generated/react'
 export default function GetBusinessByCodeComponent() {
   // The `useGetBusinessByCode` Query hook requires an argument of type `GetBusinessByCodeVariables`:
   const getBusinessByCodeVars: GetBusinessByCodeVariables = {
-    code: ..., 
+    code: ...,
   };
 
   // You don't have to do anything to "execute" the Query.
@@ -802,7 +914,7 @@ import { useGetBusinessesByName } from '@dataconnect/generated/react'
 export default function GetBusinessesByNameComponent() {
   // The `useGetBusinessesByName` Query hook requires an argument of type `GetBusinessesByNameVariables`:
   const getBusinessesByNameVars: GetBusinessesByNameVariables = {
-    name: ..., 
+    name: ...,
   };
 
   // You don't have to do anything to "execute" the Query.
@@ -895,11 +1007,11 @@ import { useVerifyEmployeeAccess } from '@dataconnect/generated/react'
 export default function VerifyEmployeeAccessComponent() {
   // The `useVerifyEmployeeAccess` Query hook requires an argument of type `VerifyEmployeeAccessVariables`:
   const verifyEmployeeAccessVars: VerifyEmployeeAccessVariables = {
-    fullName: ..., 
-    role: ..., 
-    accessCodeHash: ..., 
-    tenantId: ..., 
-    businessId: ..., 
+    fullName: ...,
+    role: ...,
+    accessCodeHash: ...,
+    tenantId: ...,
+    businessId: ...,
   };
 
   // You don't have to do anything to "execute" the Query.
@@ -993,12 +1105,12 @@ import { useVerifyUserLogin } from '@dataconnect/generated/react'
 export default function VerifyUserLoginComponent() {
   // The `useVerifyUserLogin` Query hook requires an argument of type `VerifyUserLoginVariables`:
   const verifyUserLoginVars: VerifyUserLoginVariables = {
-    email: ..., 
-    fullName: ..., 
-    role: ..., 
-    accessCodeHash: ..., 
-    tenantId: ..., 
-    businessId: ..., 
+    email: ...,
+    fullName: ...,
+    role: ...,
+    accessCodeHash: ...,
+    tenantId: ...,
+    businessId: ...,
   };
 
   // You don't have to do anything to "execute" the Query.
@@ -1074,6 +1186,7 @@ export interface ListProductsByBusinessData {
     sellingPrice: number;
     expiryDate?: DateString | null;
     lowStockLevel?: number | null;
+    status?: string | null;
     createdBy: string;
     createdAt: TimestampString;
     updatedAt?: TimestampString | null;
@@ -1095,8 +1208,8 @@ import { useListProductsByBusiness } from '@dataconnect/generated/react'
 export default function ListProductsByBusinessComponent() {
   // The `useListProductsByBusiness` Query hook requires an argument of type `ListProductsByBusinessVariables`:
   const listProductsByBusinessVars: ListProductsByBusinessVariables = {
-    tenantId: ..., 
-    businessId: ..., 
+    tenantId: ...,
+    businessId: ...,
   };
 
   // You don't have to do anything to "execute" the Query.
@@ -1171,6 +1284,7 @@ export interface ListCustomersByBusinessData {
     location?: string | null;
     totalOrders?: number | null;
     totalSpent?: number | null;
+    notes?: string | null;
     createdAt: TimestampString;
     tenantId: string;
     businessId: string;
@@ -1190,8 +1304,8 @@ import { useListCustomersByBusiness } from '@dataconnect/generated/react'
 export default function ListCustomersByBusinessComponent() {
   // The `useListCustomersByBusiness` Query hook requires an argument of type `ListCustomersByBusinessVariables`:
   const listCustomersByBusinessVars: ListCustomersByBusinessVariables = {
-    tenantId: ..., 
-    businessId: ..., 
+    tenantId: ...,
+    businessId: ...,
   };
 
   // You don't have to do anything to "execute" the Query.
@@ -1225,6 +1339,275 @@ export default function ListCustomersByBusinessComponent() {
   // If the Query is successful, you can access the data returned using the `UseQueryResult.data` field.
   if (query.isSuccess) {
     console.log(query.data.customers);
+  }
+  return <div>Query execution {query.isSuccess ? 'successful' : 'failed'}!</div>;
+}
+```
+
+## getCustomerForCompany
+You can execute the `getCustomerForCompany` Query using the following Query hook function, which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts):
+
+```javascript
+useGetCustomerForCompany(dc: DataConnect, vars: GetCustomerForCompanyVariables, options?: useDataConnectQueryOptions<GetCustomerForCompanyData>): UseDataConnectQueryResult<GetCustomerForCompanyData, GetCustomerForCompanyVariables>;
+```
+You can also pass in a `DataConnect` instance to the Query hook function.
+```javascript
+useGetCustomerForCompany(vars: GetCustomerForCompanyVariables, options?: useDataConnectQueryOptions<GetCustomerForCompanyData>): UseDataConnectQueryResult<GetCustomerForCompanyData, GetCustomerForCompanyVariables>;
+```
+
+### Variables
+The `getCustomerForCompany` Query requires an argument of type `GetCustomerForCompanyVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+
+```javascript
+export interface GetCustomerForCompanyVariables {
+  id: string;
+  tenantId: string;
+  businessId: string;
+}
+```
+### Return Type
+Recall that calling the `getCustomerForCompany` Query hook function returns a `UseQueryResult` object. This object holds the state of your Query, including whether the Query is loading, has completed, or has succeeded/failed, and any data returned by the Query, among other things.
+
+To check the status of a Query, use the `UseQueryResult.status` field. You can also check for pending / success / error status using the `UseQueryResult.isPending`, `UseQueryResult.isSuccess`, and `UseQueryResult.isError` fields.
+
+To access the data returned by a Query, use the `UseQueryResult.data` field. The data for the `getCustomerForCompany` Query is of type `GetCustomerForCompanyData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+```javascript
+export interface GetCustomerForCompanyData {
+  customer?: {
+    id: string;
+  } & Customer_Key;
+}
+```
+
+To learn more about the `UseQueryResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useQuery).
+
+### Using `getCustomerForCompany`'s Query hook function
+
+```javascript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, GetCustomerForCompanyVariables } from '@dataconnect/generated';
+import { useGetCustomerForCompany } from '@dataconnect/generated/react'
+
+export default function GetCustomerForCompanyComponent() {
+  // The `useGetCustomerForCompany` Query hook requires an argument of type `GetCustomerForCompanyVariables`:
+  const getCustomerForCompanyVars: GetCustomerForCompanyVariables = {
+    id: ...,
+    tenantId: ...,
+    businessId: ...,
+  };
+
+  // You don't have to do anything to "execute" the Query.
+  // Call the Query hook function to get a `UseQueryResult` object which holds the state of your Query.
+  const query = useGetCustomerForCompany(getCustomerForCompanyVars);
+  // Variables can be defined inline as well.
+  const query = useGetCustomerForCompany({ id: ..., tenantId: ..., businessId: ..., });
+
+  // You can also pass in a `DataConnect` instance to the Query hook function.
+  const dataConnect = getDataConnect(connectorConfig);
+  const query = useGetCustomerForCompany(dataConnect, getCustomerForCompanyVars);
+
+  // You can also pass in a `useDataConnectQueryOptions` object to the Query hook function.
+  const options = { staleTime: 5 * 1000 };
+  const query = useGetCustomerForCompany(getCustomerForCompanyVars, options);
+
+  // You can also pass both a `DataConnect` instance and a `useDataConnectQueryOptions` object.
+  const dataConnect = getDataConnect(connectorConfig);
+  const options = { staleTime: 5 * 1000 };
+  const query = useGetCustomerForCompany(dataConnect, getCustomerForCompanyVars, options);
+
+  // Then, you can render your component dynamically based on the status of the Query.
+  if (query.isPending) {
+    return <div>Loading...</div>;
+  }
+
+  if (query.isError) {
+    return <div>Error: {query.error.message}</div>;
+  }
+
+  // If the Query is successful, you can access the data returned using the `UseQueryResult.data` field.
+  if (query.isSuccess) {
+    console.log(query.data.customer);
+  }
+  return <div>Query execution {query.isSuccess ? 'successful' : 'failed'}!</div>;
+}
+```
+
+## listSaleCustomersByBusiness
+You can execute the `listSaleCustomersByBusiness` Query using the following Query hook function, which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts):
+
+```javascript
+useListSaleCustomersByBusiness(dc: DataConnect, vars: ListSaleCustomersByBusinessVariables, options?: useDataConnectQueryOptions<ListSaleCustomersByBusinessData>): UseDataConnectQueryResult<ListSaleCustomersByBusinessData, ListSaleCustomersByBusinessVariables>;
+```
+You can also pass in a `DataConnect` instance to the Query hook function.
+```javascript
+useListSaleCustomersByBusiness(vars: ListSaleCustomersByBusinessVariables, options?: useDataConnectQueryOptions<ListSaleCustomersByBusinessData>): UseDataConnectQueryResult<ListSaleCustomersByBusinessData, ListSaleCustomersByBusinessVariables>;
+```
+
+### Variables
+The `listSaleCustomersByBusiness` Query requires an argument of type `ListSaleCustomersByBusinessVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+
+```javascript
+export interface ListSaleCustomersByBusinessVariables {
+  tenantId: string;
+  businessId: string;
+}
+```
+### Return Type
+Recall that calling the `listSaleCustomersByBusiness` Query hook function returns a `UseQueryResult` object. This object holds the state of your Query, including whether the Query is loading, has completed, or has succeeded/failed, and any data returned by the Query, among other things.
+
+To check the status of a Query, use the `UseQueryResult.status` field. You can also check for pending / success / error status using the `UseQueryResult.isPending`, `UseQueryResult.isSuccess`, and `UseQueryResult.isError` fields.
+
+To access the data returned by a Query, use the `UseQueryResult.data` field. The data for the `listSaleCustomersByBusiness` Query is of type `ListSaleCustomersByBusinessData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+```javascript
+export interface ListSaleCustomersByBusinessData {
+  customers: ({
+    id: string;
+    customerName: string;
+    tenantId: string;
+    businessId: string;
+  } & Customer_Key)[];
+}
+```
+
+To learn more about the `UseQueryResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useQuery).
+
+### Using `listSaleCustomersByBusiness`'s Query hook function
+
+```javascript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, ListSaleCustomersByBusinessVariables } from '@dataconnect/generated';
+import { useListSaleCustomersByBusiness } from '@dataconnect/generated/react'
+
+export default function ListSaleCustomersByBusinessComponent() {
+  // The `useListSaleCustomersByBusiness` Query hook requires an argument of type `ListSaleCustomersByBusinessVariables`:
+  const listSaleCustomersByBusinessVars: ListSaleCustomersByBusinessVariables = {
+    tenantId: ...,
+    businessId: ...,
+  };
+
+  // You don't have to do anything to "execute" the Query.
+  // Call the Query hook function to get a `UseQueryResult` object which holds the state of your Query.
+  const query = useListSaleCustomersByBusiness(listSaleCustomersByBusinessVars);
+  // Variables can be defined inline as well.
+  const query = useListSaleCustomersByBusiness({ tenantId: ..., businessId: ..., });
+
+  // You can also pass in a `DataConnect` instance to the Query hook function.
+  const dataConnect = getDataConnect(connectorConfig);
+  const query = useListSaleCustomersByBusiness(dataConnect, listSaleCustomersByBusinessVars);
+
+  // You can also pass in a `useDataConnectQueryOptions` object to the Query hook function.
+  const options = { staleTime: 5 * 1000 };
+  const query = useListSaleCustomersByBusiness(listSaleCustomersByBusinessVars, options);
+
+  // You can also pass both a `DataConnect` instance and a `useDataConnectQueryOptions` object.
+  const dataConnect = getDataConnect(connectorConfig);
+  const options = { staleTime: 5 * 1000 };
+  const query = useListSaleCustomersByBusiness(dataConnect, listSaleCustomersByBusinessVars, options);
+
+  // Then, you can render your component dynamically based on the status of the Query.
+  if (query.isPending) {
+    return <div>Loading...</div>;
+  }
+
+  if (query.isError) {
+    return <div>Error: {query.error.message}</div>;
+  }
+
+  // If the Query is successful, you can access the data returned using the `UseQueryResult.data` field.
+  if (query.isSuccess) {
+    console.log(query.data.customers);
+  }
+  return <div>Query execution {query.isSuccess ? 'successful' : 'failed'}!</div>;
+}
+```
+
+## listTaskAssigneesByBusiness
+You can execute the `listTaskAssigneesByBusiness` Query using the following Query hook function, which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts):
+
+```javascript
+useListTaskAssigneesByBusiness(dc: DataConnect, vars: ListTaskAssigneesByBusinessVariables, options?: useDataConnectQueryOptions<ListTaskAssigneesByBusinessData>): UseDataConnectQueryResult<ListTaskAssigneesByBusinessData, ListTaskAssigneesByBusinessVariables>;
+```
+You can also pass in a `DataConnect` instance to the Query hook function.
+```javascript
+useListTaskAssigneesByBusiness(vars: ListTaskAssigneesByBusinessVariables, options?: useDataConnectQueryOptions<ListTaskAssigneesByBusinessData>): UseDataConnectQueryResult<ListTaskAssigneesByBusinessData, ListTaskAssigneesByBusinessVariables>;
+```
+
+### Variables
+The `listTaskAssigneesByBusiness` Query requires an argument of type `ListTaskAssigneesByBusinessVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+
+```javascript
+export interface ListTaskAssigneesByBusinessVariables {
+  tenantId: string;
+  businessId: string;
+}
+```
+### Return Type
+Recall that calling the `listTaskAssigneesByBusiness` Query hook function returns a `UseQueryResult` object. This object holds the state of your Query, including whether the Query is loading, has completed, or has succeeded/failed, and any data returned by the Query, among other things.
+
+To check the status of a Query, use the `UseQueryResult.status` field. You can also check for pending / success / error status using the `UseQueryResult.isPending`, `UseQueryResult.isSuccess`, and `UseQueryResult.isError` fields.
+
+To access the data returned by a Query, use the `UseQueryResult.data` field. The data for the `listTaskAssigneesByBusiness` Query is of type `ListTaskAssigneesByBusinessData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+```javascript
+export interface ListTaskAssigneesByBusinessData {
+  users: ({
+    id: string;
+    email: string;
+    role: string;
+    fullName?: string | null;
+    department?: string | null;
+    tenantId: string;
+    businessId: string;
+  } & User_Key)[];
+}
+```
+
+To learn more about the `UseQueryResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useQuery).
+
+### Using `listTaskAssigneesByBusiness`'s Query hook function
+
+```javascript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, ListTaskAssigneesByBusinessVariables } from '@dataconnect/generated';
+import { useListTaskAssigneesByBusiness } from '@dataconnect/generated/react'
+
+export default function ListTaskAssigneesByBusinessComponent() {
+  // The `useListTaskAssigneesByBusiness` Query hook requires an argument of type `ListTaskAssigneesByBusinessVariables`:
+  const listTaskAssigneesByBusinessVars: ListTaskAssigneesByBusinessVariables = {
+    tenantId: ...,
+    businessId: ...,
+  };
+
+  // You don't have to do anything to "execute" the Query.
+  // Call the Query hook function to get a `UseQueryResult` object which holds the state of your Query.
+  const query = useListTaskAssigneesByBusiness(listTaskAssigneesByBusinessVars);
+  // Variables can be defined inline as well.
+  const query = useListTaskAssigneesByBusiness({ tenantId: ..., businessId: ..., });
+
+  // You can also pass in a `DataConnect` instance to the Query hook function.
+  const dataConnect = getDataConnect(connectorConfig);
+  const query = useListTaskAssigneesByBusiness(dataConnect, listTaskAssigneesByBusinessVars);
+
+  // You can also pass in a `useDataConnectQueryOptions` object to the Query hook function.
+  const options = { staleTime: 5 * 1000 };
+  const query = useListTaskAssigneesByBusiness(listTaskAssigneesByBusinessVars, options);
+
+  // You can also pass both a `DataConnect` instance and a `useDataConnectQueryOptions` object.
+  const dataConnect = getDataConnect(connectorConfig);
+  const options = { staleTime: 5 * 1000 };
+  const query = useListTaskAssigneesByBusiness(dataConnect, listTaskAssigneesByBusinessVars, options);
+
+  // Then, you can render your component dynamically based on the status of the Query.
+  if (query.isPending) {
+    return <div>Loading...</div>;
+  }
+
+  if (query.isError) {
+    return <div>Error: {query.error.message}</div>;
+  }
+
+  // If the Query is successful, you can access the data returned using the `UseQueryResult.data` field.
+  if (query.isSuccess) {
+    console.log(query.data.users);
   }
   return <div>Query execution {query.isSuccess ? 'successful' : 'failed'}!</div>;
 }
@@ -1285,8 +1668,8 @@ import { useListUsersByBusiness } from '@dataconnect/generated/react'
 export default function ListUsersByBusinessComponent() {
   // The `useListUsersByBusiness` Query hook requires an argument of type `ListUsersByBusinessVariables`:
   const listUsersByBusinessVars: ListUsersByBusinessVariables = {
-    tenantId: ..., 
-    businessId: ..., 
+    tenantId: ...,
+    businessId: ...,
   };
 
   // You don't have to do anything to "execute" the Query.
@@ -1358,6 +1741,10 @@ export interface ListSuppliersByBusinessData {
     supplierName: string;
     phoneNumber?: string | null;
     email?: string | null;
+    location?: string | null;
+    productsSupplied?: string | null;
+    paymentStatus?: string | null;
+    notes?: string | null;
     createdAt: TimestampString;
     tenantId: string;
     businessId: string;
@@ -1377,8 +1764,8 @@ import { useListSuppliersByBusiness } from '@dataconnect/generated/react'
 export default function ListSuppliersByBusinessComponent() {
   // The `useListSuppliersByBusiness` Query hook requires an argument of type `ListSuppliersByBusinessVariables`:
   const listSuppliersByBusinessVars: ListSuppliersByBusinessVariables = {
-    tenantId: ..., 
-    businessId: ..., 
+    tenantId: ...,
+    businessId: ...,
   };
 
   // You don't have to do anything to "execute" the Query.
@@ -1457,6 +1844,7 @@ export interface ListTasksByBusinessData {
       email: string;
       role: string;
       fullName?: string | null;
+      department?: string | null;
     } & User_Key;
     createdBy: string;
     createdAt: TimestampString;
@@ -1479,8 +1867,8 @@ import { useListTasksByBusiness } from '@dataconnect/generated/react'
 export default function ListTasksByBusinessComponent() {
   // The `useListTasksByBusiness` Query hook requires an argument of type `ListTasksByBusinessVariables`:
   const listTasksByBusinessVars: ListTasksByBusinessVariables = {
-    tenantId: ..., 
-    businessId: ..., 
+    tenantId: ...,
+    businessId: ...,
   };
 
   // You don't have to do anything to "execute" the Query.
@@ -1560,6 +1948,7 @@ export interface ListTasksAssignedToUserData {
       email: string;
       role: string;
       fullName?: string | null;
+      department?: string | null;
     } & User_Key;
     createdBy: string;
     createdAt: TimestampString;
@@ -1582,9 +1971,9 @@ import { useListTasksAssignedToUser } from '@dataconnect/generated/react'
 export default function ListTasksAssignedToUserComponent() {
   // The `useListTasksAssignedToUser` Query hook requires an argument of type `ListTasksAssignedToUserVariables`:
   const listTasksAssignedToUserVars: ListTasksAssignedToUserVariables = {
-    tenantId: ..., 
-    businessId: ..., 
-    userId: ..., 
+    tenantId: ...,
+    businessId: ...,
+    userId: ...,
   };
 
   // You don't have to do anything to "execute" the Query.
@@ -1657,6 +2046,7 @@ export interface ListTransactionsByBusinessData {
     amount: number;
     date: TimestampString;
     category?: string | null;
+    description?: string | null;
     receiptUrl?: string | null;
     recordedBy: string;
     createdAt: TimestampString;
@@ -1678,8 +2068,8 @@ import { useListTransactionsByBusiness } from '@dataconnect/generated/react'
 export default function ListTransactionsByBusinessComponent() {
   // The `useListTransactionsByBusiness` Query hook requires an argument of type `ListTransactionsByBusinessVariables`:
   const listTransactionsByBusinessVars: ListTransactionsByBusinessVariables = {
-    tenantId: ..., 
-    businessId: ..., 
+    tenantId: ...,
+    businessId: ...,
   };
 
   // You don't have to do anything to "execute" the Query.
@@ -1753,6 +2143,7 @@ export interface ListTransactionsByTypeData {
     amount: number;
     date: TimestampString;
     category?: string | null;
+    description?: string | null;
     receiptUrl?: string | null;
     recordedBy: string;
     createdAt: TimestampString;
@@ -1774,9 +2165,9 @@ import { useListTransactionsByType } from '@dataconnect/generated/react'
 export default function ListTransactionsByTypeComponent() {
   // The `useListTransactionsByType` Query hook requires an argument of type `ListTransactionsByTypeVariables`:
   const listTransactionsByTypeVars: ListTransactionsByTypeVariables = {
-    tenantId: ..., 
-    businessId: ..., 
-    type: ..., 
+    tenantId: ...,
+    businessId: ...,
+    type: ...,
   };
 
   // You don't have to do anything to "execute" the Query.
@@ -1850,12 +2241,15 @@ export interface ListEmployeesByBusinessData {
     role?: string | null;
     salary?: number | null;
     department?: string | null;
+    email?: string | null;
+    contact?: string | null;
     startDate?: DateString | null;
     status?: string | null;
+    attendance?: number | null;
+    salaryPaymentStatus?: string | null;
     createdAt: TimestampString;
     tenantId: string;
     businessId: string;
-    code?: string | null;
   } & Employee_Key)[];
 }
 ```
@@ -1872,8 +2266,8 @@ import { useListEmployeesByBusiness } from '@dataconnect/generated/react'
 export default function ListEmployeesByBusinessComponent() {
   // The `useListEmployeesByBusiness` Query hook requires an argument of type `ListEmployeesByBusinessVariables`:
   const listEmployeesByBusinessVars: ListEmployeesByBusinessVariables = {
-    tenantId: ..., 
-    businessId: ..., 
+    tenantId: ...,
+    businessId: ...,
   };
 
   // You don't have to do anything to "execute" the Query.
@@ -1945,6 +2339,7 @@ export interface ListDocumentsByBusinessData {
     title: string;
     documentType: string;
     fileUrl: string;
+    description?: string | null;
     uploadedBy: string;
     uploadedAt: TimestampString;
     tenantId: string;
@@ -1965,8 +2360,8 @@ import { useListDocumentsByBusiness } from '@dataconnect/generated/react'
 export default function ListDocumentsByBusinessComponent() {
   // The `useListDocumentsByBusiness` Query hook requires an argument of type `ListDocumentsByBusinessVariables`:
   const listDocumentsByBusinessVars: ListDocumentsByBusinessVariables = {
-    tenantId: ..., 
-    businessId: ..., 
+    tenantId: ...,
+    businessId: ...,
   };
 
   // You don't have to do anything to "execute" the Query.
@@ -2061,9 +2456,9 @@ import { useListActivityLogsByUser } from '@dataconnect/generated/react'
 export default function ListActivityLogsByUserComponent() {
   // The `useListActivityLogsByUser` Query hook requires an argument of type `ListActivityLogsByUserVariables`:
   const listActivityLogsByUserVars: ListActivityLogsByUserVariables = {
-    tenantId: ..., 
-    businessId: ..., 
-    userId: ..., 
+    tenantId: ...,
+    businessId: ...,
+    userId: ...,
   };
 
   // You don't have to do anything to "execute" the Query.
@@ -2157,8 +2552,8 @@ import { useListActivityLogsByBusiness } from '@dataconnect/generated/react'
 export default function ListActivityLogsByBusinessComponent() {
   // The `useListActivityLogsByBusiness` Query hook requires an argument of type `ListActivityLogsByBusinessVariables`:
   const listActivityLogsByBusinessVars: ListActivityLogsByBusinessVariables = {
-    tenantId: ..., 
-    businessId: ..., 
+    tenantId: ...,
+    businessId: ...,
   };
 
   // You don't have to do anything to "execute" the Query.
@@ -2250,7 +2645,7 @@ import { useGetUserById } from '@dataconnect/generated/react'
 export default function GetUserByIdComponent() {
   // The `useGetUserById` Query hook requires an argument of type `GetUserByIdVariables`:
   const getUserByIdVars: GetUserByIdVariables = {
-    id: ..., 
+    id: ...,
   };
 
   // You don't have to do anything to "execute" the Query.
@@ -2342,9 +2737,9 @@ import { useListNotifications } from '@dataconnect/generated/react'
 export default function ListNotificationsComponent() {
   // The `useListNotifications` Query hook requires an argument of type `ListNotificationsVariables`:
   const listNotificationsVars: ListNotificationsVariables = {
-    tenantId: ..., 
-    businessId: ..., 
-    userId: ..., 
+    tenantId: ...,
+    businessId: ...,
+    userId: ...,
   };
 
   // You don't have to do anything to "execute" the Query.
@@ -2490,6 +2885,124 @@ Here's a general overview of how to use the generated Mutation hooks in your cod
 
 Below are examples of how to use the `example` connector's generated Mutation hook functions to execute each Mutation. You can also follow the examples from the [Data Connect documentation](https://firebase.google.com/docs/data-connect/web-sdk#operations-react-angular).
 
+## BootstrapWorkspace
+You can execute the `BootstrapWorkspace` Mutation using the `UseMutationResult` object returned by the following Mutation hook function (which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts)):
+```javascript
+useBootstrapWorkspace(options?: useDataConnectMutationOptions<BootstrapWorkspaceData, FirebaseError, BootstrapWorkspaceVariables>): UseDataConnectMutationResult<BootstrapWorkspaceData, BootstrapWorkspaceVariables>;
+```
+You can also pass in a `DataConnect` instance to the Mutation hook function.
+```javascript
+useBootstrapWorkspace(dc: DataConnect, options?: useDataConnectMutationOptions<BootstrapWorkspaceData, FirebaseError, BootstrapWorkspaceVariables>): UseDataConnectMutationResult<BootstrapWorkspaceData, BootstrapWorkspaceVariables>;
+```
+
+### Variables
+The `BootstrapWorkspace` Mutation requires an argument of type `BootstrapWorkspaceVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+
+```javascript
+export interface BootstrapWorkspaceVariables {
+  tenantId: string;
+  businessId: string;
+  userId: string;
+  name: string;
+  businessSector: string;
+  location: string;
+  region: string;
+  ownerEmail: string;
+  fullName: string;
+  code: string;
+}
+```
+### Return Type
+Recall that calling the `BootstrapWorkspace` Mutation hook function returns a `UseMutationResult` object. This object holds the state of your Mutation, including whether the Mutation is loading, has completed, or has succeeded/failed, among other things.
+
+To check the status of a Mutation, use the `UseMutationResult.status` field. You can also check for pending / success / error status using the `UseMutationResult.isPending`, `UseMutationResult.isSuccess`, and `UseMutationResult.isError` fields.
+
+To execute the Mutation, call `UseMutationResult.mutate()`. This function executes the Mutation, but does not return the data from the Mutation.
+
+To access the data returned by a Mutation, use the `UseMutationResult.data` field. The data for the `BootstrapWorkspace` Mutation is of type `BootstrapWorkspaceData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+```javascript
+export interface BootstrapWorkspaceData {
+  tenant_insert: Tenant_Key;
+  business_insert: Business_Key;
+  businessSetting_insert: BusinessSetting_Key;
+  user_insert: User_Key;
+}
+```
+
+To learn more about the `UseMutationResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useMutation).
+
+### Using `BootstrapWorkspace`'s Mutation hook function
+
+```javascript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, BootstrapWorkspaceVariables } from '@dataconnect/generated';
+import { useBootstrapWorkspace } from '@dataconnect/generated/react'
+
+export default function BootstrapWorkspaceComponent() {
+  // Call the Mutation hook function to get a `UseMutationResult` object which holds the state of your Mutation.
+  const mutation = useBootstrapWorkspace();
+
+  // You can also pass in a `DataConnect` instance to the Mutation hook function.
+  const dataConnect = getDataConnect(connectorConfig);
+  const mutation = useBootstrapWorkspace(dataConnect);
+
+  // You can also pass in a `useDataConnectMutationOptions` object to the Mutation hook function.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useBootstrapWorkspace(options);
+
+  // You can also pass both a `DataConnect` instance and a `useDataConnectMutationOptions` object.
+  const dataConnect = getDataConnect(connectorConfig);
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useBootstrapWorkspace(dataConnect, options);
+
+  // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
+  // The `useBootstrapWorkspace` Mutation requires an argument of type `BootstrapWorkspaceVariables`:
+  const bootstrapWorkspaceVars: BootstrapWorkspaceVariables = {
+    tenantId: ...,
+    businessId: ...,
+    userId: ...,
+    name: ...,
+    businessSector: ...,
+    location: ...,
+    region: ...,
+    ownerEmail: ...,
+    fullName: ...,
+    code: ...,
+  };
+  mutation.mutate(bootstrapWorkspaceVars);
+  // Variables can be defined inline as well.
+  mutation.mutate({ tenantId: ..., businessId: ..., userId: ..., name: ..., businessSector: ..., location: ..., region: ..., ownerEmail: ..., fullName: ..., code: ..., });
+
+  // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  mutation.mutate(bootstrapWorkspaceVars, options);
+
+  // Then, you can render your component dynamically based on the status of the Mutation.
+  if (mutation.isPending) {
+    return <div>Loading...</div>;
+  }
+
+  if (mutation.isError) {
+    return <div>Error: {mutation.error.message}</div>;
+  }
+
+  // If the Mutation is successful, you can access the data returned using the `UseMutationResult.data` field.
+  if (mutation.isSuccess) {
+    console.log(mutation.data.tenant_insert);
+    console.log(mutation.data.business_insert);
+    console.log(mutation.data.businessSetting_insert);
+    console.log(mutation.data.user_insert);
+  }
+  return <div>Mutation execution {mutation.isSuccess ? 'successful' : 'failed'}!</div>;
+}
+```
+
 ## CreateTenant
 You can execute the `CreateTenant` Mutation using the `UseMutationResult` object returned by the following Mutation hook function (which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts)):
 ```javascript
@@ -2562,10 +3075,10 @@ export default function CreateTenantComponent() {
   // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
   // The `useCreateTenant` Mutation requires an argument of type `CreateTenantVariables`:
   const createTenantVars: CreateTenantVariables = {
-    name: ..., 
-    businessSector: ..., 
-    location: ..., 
-    ownerEmail: ..., 
+    name: ...,
+    businessSector: ...,
+    location: ...,
+    ownerEmail: ...,
     taxId: ..., // optional
     logoUrl: ..., // optional
     subscriptionTier: ..., // optional
@@ -2671,7 +3184,7 @@ export default function UpdateTenantComponent() {
   // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
   // The `useUpdateTenant` Mutation requires an argument of type `UpdateTenantVariables`:
   const updateTenantVars: UpdateTenantVariables = {
-    id: ..., 
+    id: ...,
     name: ..., // optional
     businessSector: ..., // optional
     location: ..., // optional
@@ -2773,7 +3286,7 @@ export default function DeleteTenantComponent() {
   // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
   // The `useDeleteTenant` Mutation requires an argument of type `DeleteTenantVariables`:
   const deleteTenantVars: DeleteTenantVariables = {
-    id: ..., 
+    id: ...,
   };
   mutation.mutate(deleteTenantVars);
   // Variables can be defined inline as well.
@@ -2875,11 +3388,11 @@ export default function CreateUserComponent() {
   // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
   // The `useCreateUser` Mutation requires an argument of type `CreateUserVariables`:
   const createUserVars: CreateUserVariables = {
-    id: ..., 
-    tenantId: ..., 
-    businessId: ..., 
-    email: ..., 
-    role: ..., 
+    id: ...,
+    tenantId: ...,
+    businessId: ...,
+    email: ...,
+    role: ...,
     fullName: ..., // optional
     department: ..., // optional
     phoneNumber: ..., // optional
@@ -2985,7 +3498,7 @@ export default function UpdateUserComponent() {
   // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
   // The `useUpdateUser` Mutation requires an argument of type `UpdateUserVariables`:
   const updateUserVars: UpdateUserVariables = {
-    id: ..., 
+    id: ...,
     tenantId: ..., // optional
     businessId: ..., // optional
     email: ..., // optional
@@ -3087,7 +3600,7 @@ export default function DeleteUserComponent() {
   // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
   // The `useDeleteUser` Mutation requires an argument of type `DeleteUserVariables`:
   const deleteUserVars: DeleteUserVariables = {
-    id: ..., 
+    id: ...,
   };
   mutation.mutate(deleteUserVars);
   // Variables can be defined inline as well.
@@ -3181,7 +3694,7 @@ export default function ClearLegacyAccessCodeComponent() {
   // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
   // The `useClearLegacyAccessCode` Mutation requires an argument of type `ClearLegacyAccessCodeVariables`:
   const clearLegacyAccessCodeVars: ClearLegacyAccessCodeVariables = {
-    id: ..., 
+    id: ...,
   };
   mutation.mutate(clearLegacyAccessCodeVars);
   // Variables can be defined inline as well.
@@ -3280,12 +3793,12 @@ export default function CreateBusinessComponent() {
   // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
   // The `useCreateBusiness` Mutation requires an argument of type `CreateBusinessVariables`:
   const createBusinessVars: CreateBusinessVariables = {
-    tenantId: ..., 
-    name: ..., 
-    location: ..., 
+    tenantId: ...,
+    name: ...,
+    location: ...,
     businessType: ..., // optional
     region: ..., // optional
-    code: ..., 
+    code: ...,
   };
   mutation.mutate(createBusinessVars);
   // Variables can be defined inline as well.
@@ -3334,7 +3847,14 @@ export interface UpdateBusinessVariables {
   name?: string | null;
   location?: string | null;
   businessType?: string | null;
+  entityType?: string | null;
+  city?: string | null;
   region?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  taxId?: string | null;
+  description?: string | null;
+  logoUrl?: string | null;
   code?: string | null;
 }
 ```
@@ -3385,17 +3905,24 @@ export default function UpdateBusinessComponent() {
   // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
   // The `useUpdateBusiness` Mutation requires an argument of type `UpdateBusinessVariables`:
   const updateBusinessVars: UpdateBusinessVariables = {
-    id: ..., 
+    id: ...,
     tenantId: ..., // optional
     name: ..., // optional
     location: ..., // optional
     businessType: ..., // optional
+    entityType: ..., // optional
+    city: ..., // optional
     region: ..., // optional
+    phone: ..., // optional
+    email: ..., // optional
+    taxId: ..., // optional
+    description: ..., // optional
+    logoUrl: ..., // optional
     code: ..., // optional
   };
   mutation.mutate(updateBusinessVars);
   // Variables can be defined inline as well.
-  mutation.mutate({ id: ..., tenantId: ..., name: ..., location: ..., businessType: ..., region: ..., code: ..., });
+  mutation.mutate({ id: ..., tenantId: ..., name: ..., location: ..., businessType: ..., entityType: ..., city: ..., region: ..., phone: ..., email: ..., taxId: ..., description: ..., logoUrl: ..., code: ..., });
 
   // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
   const options = {
@@ -3415,6 +3942,112 @@ export default function UpdateBusinessComponent() {
   // If the Mutation is successful, you can access the data returned using the `UseMutationResult.data` field.
   if (mutation.isSuccess) {
     console.log(mutation.data.business_update);
+  }
+  return <div>Mutation execution {mutation.isSuccess ? 'successful' : 'failed'}!</div>;
+}
+```
+
+## UpsertBusinessSettings
+You can execute the `UpsertBusinessSettings` Mutation using the `UseMutationResult` object returned by the following Mutation hook function (which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts)):
+```javascript
+useUpsertBusinessSettings(options?: useDataConnectMutationOptions<UpsertBusinessSettingsData, FirebaseError, UpsertBusinessSettingsVariables>): UseDataConnectMutationResult<UpsertBusinessSettingsData, UpsertBusinessSettingsVariables>;
+```
+You can also pass in a `DataConnect` instance to the Mutation hook function.
+```javascript
+useUpsertBusinessSettings(dc: DataConnect, options?: useDataConnectMutationOptions<UpsertBusinessSettingsData, FirebaseError, UpsertBusinessSettingsVariables>): UseDataConnectMutationResult<UpsertBusinessSettingsData, UpsertBusinessSettingsVariables>;
+```
+
+### Variables
+The `UpsertBusinessSettings` Mutation requires an argument of type `UpsertBusinessSettingsVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+
+```javascript
+export interface UpsertBusinessSettingsVariables {
+  tenantId: string;
+  businessId: string;
+  currency: string;
+  timezone: string;
+  fiscalYearStart: string;
+  taxRate: number;
+  lowStockThreshold: number;
+}
+```
+### Return Type
+Recall that calling the `UpsertBusinessSettings` Mutation hook function returns a `UseMutationResult` object. This object holds the state of your Mutation, including whether the Mutation is loading, has completed, or has succeeded/failed, among other things.
+
+To check the status of a Mutation, use the `UseMutationResult.status` field. You can also check for pending / success / error status using the `UseMutationResult.isPending`, `UseMutationResult.isSuccess`, and `UseMutationResult.isError` fields.
+
+To execute the Mutation, call `UseMutationResult.mutate()`. This function executes the Mutation, but does not return the data from the Mutation.
+
+To access the data returned by a Mutation, use the `UseMutationResult.data` field. The data for the `UpsertBusinessSettings` Mutation is of type `UpsertBusinessSettingsData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+```javascript
+export interface UpsertBusinessSettingsData {
+  businessSetting_upsert: BusinessSetting_Key;
+}
+```
+
+To learn more about the `UseMutationResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useMutation).
+
+### Using `UpsertBusinessSettings`'s Mutation hook function
+
+```javascript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, UpsertBusinessSettingsVariables } from '@dataconnect/generated';
+import { useUpsertBusinessSettings } from '@dataconnect/generated/react'
+
+export default function UpsertBusinessSettingsComponent() {
+  // Call the Mutation hook function to get a `UseMutationResult` object which holds the state of your Mutation.
+  const mutation = useUpsertBusinessSettings();
+
+  // You can also pass in a `DataConnect` instance to the Mutation hook function.
+  const dataConnect = getDataConnect(connectorConfig);
+  const mutation = useUpsertBusinessSettings(dataConnect);
+
+  // You can also pass in a `useDataConnectMutationOptions` object to the Mutation hook function.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useUpsertBusinessSettings(options);
+
+  // You can also pass both a `DataConnect` instance and a `useDataConnectMutationOptions` object.
+  const dataConnect = getDataConnect(connectorConfig);
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useUpsertBusinessSettings(dataConnect, options);
+
+  // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
+  // The `useUpsertBusinessSettings` Mutation requires an argument of type `UpsertBusinessSettingsVariables`:
+  const upsertBusinessSettingsVars: UpsertBusinessSettingsVariables = {
+    tenantId: ...,
+    businessId: ...,
+    currency: ...,
+    timezone: ...,
+    fiscalYearStart: ...,
+    taxRate: ...,
+    lowStockThreshold: ...,
+  };
+  mutation.mutate(upsertBusinessSettingsVars);
+  // Variables can be defined inline as well.
+  mutation.mutate({ tenantId: ..., businessId: ..., currency: ..., timezone: ..., fiscalYearStart: ..., taxRate: ..., lowStockThreshold: ..., });
+
+  // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  mutation.mutate(upsertBusinessSettingsVars, options);
+
+  // Then, you can render your component dynamically based on the status of the Mutation.
+  if (mutation.isPending) {
+    return <div>Loading...</div>;
+  }
+
+  if (mutation.isError) {
+    return <div>Error: {mutation.error.message}</div>;
+  }
+
+  // If the Mutation is successful, you can access the data returned using the `UseMutationResult.data` field.
+  if (mutation.isSuccess) {
+    console.log(mutation.data.businessSetting_upsert);
   }
   return <div>Mutation execution {mutation.isSuccess ? 'successful' : 'failed'}!</div>;
 }
@@ -3485,7 +4118,7 @@ export default function DeleteBusinessComponent() {
   // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
   // The `useDeleteBusiness` Mutation requires an argument of type `DeleteBusinessVariables`:
   const deleteBusinessVars: DeleteBusinessVariables = {
-    id: ..., 
+    id: ...,
   };
   mutation.mutate(deleteBusinessVars);
   // Variables can be defined inline as well.
@@ -3586,14 +4219,14 @@ export default function ProvisionEmployeeUserComponent() {
   // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
   // The `useProvisionEmployeeUser` Mutation requires an argument of type `ProvisionEmployeeUserVariables`:
   const provisionEmployeeUserVars: ProvisionEmployeeUserVariables = {
-    tenantId: ..., 
-    businessId: ..., 
-    email: ..., 
-    role: ..., 
-    fullName: ..., 
+    tenantId: ...,
+    businessId: ...,
+    email: ...,
+    role: ...,
+    fullName: ...,
     department: ..., // optional
     phoneNumber: ..., // optional
-    accessCodeHash: ..., 
+    accessCodeHash: ...,
   };
   mutation.mutate(provisionEmployeeUserVars);
   // Variables can be defined inline as well.
@@ -3639,6 +4272,8 @@ The `CompleteAssignedTask` Mutation requires an argument of type `CompleteAssign
 export interface CompleteAssignedTaskVariables {
   taskId: string;
   userId: string;
+  tenantId: string;
+  businessId: string;
 }
 ```
 ### Return Type
@@ -3688,12 +4323,14 @@ export default function CompleteAssignedTaskComponent() {
   // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
   // The `useCompleteAssignedTask` Mutation requires an argument of type `CompleteAssignedTaskVariables`:
   const completeAssignedTaskVars: CompleteAssignedTaskVariables = {
-    taskId: ..., 
-    userId: ..., 
+    taskId: ...,
+    userId: ...,
+    tenantId: ...,
+    businessId: ...,
   };
   mutation.mutate(completeAssignedTaskVars);
   // Variables can be defined inline as well.
-  mutation.mutate({ taskId: ..., userId: ..., });
+  mutation.mutate({ taskId: ..., userId: ..., tenantId: ..., businessId: ..., });
 
   // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
   const options = {
@@ -3742,6 +4379,7 @@ export interface CreateProductVariables {
   sellingPrice: number;
   expiryDate?: DateString | null;
   lowStockLevel?: number | null;
+  status?: string | null;
   createdBy: string;
 }
 ```
@@ -3792,20 +4430,21 @@ export default function CreateProductComponent() {
   // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
   // The `useCreateProduct` Mutation requires an argument of type `CreateProductVariables`:
   const createProductVars: CreateProductVariables = {
-    tenantId: ..., 
-    businessId: ..., 
-    name: ..., 
+    tenantId: ...,
+    businessId: ...,
+    name: ...,
     category: ..., // optional
-    quantity: ..., 
+    quantity: ...,
     costPrice: ..., // optional
-    sellingPrice: ..., 
+    sellingPrice: ...,
     expiryDate: ..., // optional
     lowStockLevel: ..., // optional
-    createdBy: ..., 
+    status: ..., // optional
+    createdBy: ...,
   };
   mutation.mutate(createProductVars);
   // Variables can be defined inline as well.
-  mutation.mutate({ tenantId: ..., businessId: ..., name: ..., category: ..., quantity: ..., costPrice: ..., sellingPrice: ..., expiryDate: ..., lowStockLevel: ..., createdBy: ..., });
+  mutation.mutate({ tenantId: ..., businessId: ..., name: ..., category: ..., quantity: ..., costPrice: ..., sellingPrice: ..., expiryDate: ..., lowStockLevel: ..., status: ..., createdBy: ..., });
 
   // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
   const options = {
@@ -3855,6 +4494,7 @@ export interface UpdateProductVariables {
   sellingPrice?: number | null;
   expiryDate?: DateString | null;
   lowStockLevel?: number | null;
+  status?: string | null;
   createdBy?: string | null;
 }
 ```
@@ -3905,7 +4545,7 @@ export default function UpdateProductComponent() {
   // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
   // The `useUpdateProduct` Mutation requires an argument of type `UpdateProductVariables`:
   const updateProductVars: UpdateProductVariables = {
-    id: ..., 
+    id: ...,
     tenantId: ..., // optional
     businessId: ..., // optional
     name: ..., // optional
@@ -3915,11 +4555,12 @@ export default function UpdateProductComponent() {
     sellingPrice: ..., // optional
     expiryDate: ..., // optional
     lowStockLevel: ..., // optional
+    status: ..., // optional
     createdBy: ..., // optional
   };
   mutation.mutate(updateProductVars);
   // Variables can be defined inline as well.
-  mutation.mutate({ id: ..., tenantId: ..., businessId: ..., name: ..., category: ..., quantity: ..., costPrice: ..., sellingPrice: ..., expiryDate: ..., lowStockLevel: ..., createdBy: ..., });
+  mutation.mutate({ id: ..., tenantId: ..., businessId: ..., name: ..., category: ..., quantity: ..., costPrice: ..., sellingPrice: ..., expiryDate: ..., lowStockLevel: ..., status: ..., createdBy: ..., });
 
   // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
   const options = {
@@ -4009,7 +4650,7 @@ export default function DeleteProductComponent() {
   // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
   // The `useDeleteProduct` Mutation requires an argument of type `DeleteProductVariables`:
   const deleteProductVars: DeleteProductVariables = {
-    id: ..., 
+    id: ...,
   };
   mutation.mutate(deleteProductVars);
   // Variables can be defined inline as well.
@@ -4059,6 +4700,7 @@ export interface CreateTransactionVariables {
   amount: number;
   date: TimestampString;
   category?: string | null;
+  description?: string | null;
   receiptUrl?: string | null;
   recordedBy: string;
 }
@@ -4110,18 +4752,19 @@ export default function CreateTransactionComponent() {
   // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
   // The `useCreateTransaction` Mutation requires an argument of type `CreateTransactionVariables`:
   const createTransactionVars: CreateTransactionVariables = {
-    tenantId: ..., 
-    businessId: ..., 
-    type: ..., 
-    amount: ..., 
-    date: ..., 
+    tenantId: ...,
+    businessId: ...,
+    type: ...,
+    amount: ...,
+    date: ...,
     category: ..., // optional
+    description: ..., // optional
     receiptUrl: ..., // optional
-    recordedBy: ..., 
+    recordedBy: ...,
   };
   mutation.mutate(createTransactionVars);
   // Variables can be defined inline as well.
-  mutation.mutate({ tenantId: ..., businessId: ..., type: ..., amount: ..., date: ..., category: ..., receiptUrl: ..., recordedBy: ..., });
+  mutation.mutate({ tenantId: ..., businessId: ..., type: ..., amount: ..., date: ..., category: ..., description: ..., receiptUrl: ..., recordedBy: ..., });
 
   // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
   const options = {
@@ -4168,6 +4811,7 @@ export interface UpdateTransactionVariables {
   amount?: number | null;
   date?: TimestampString | null;
   category?: string | null;
+  description?: string | null;
   receiptUrl?: string | null;
   recordedBy?: string | null;
 }
@@ -4219,19 +4863,20 @@ export default function UpdateTransactionComponent() {
   // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
   // The `useUpdateTransaction` Mutation requires an argument of type `UpdateTransactionVariables`:
   const updateTransactionVars: UpdateTransactionVariables = {
-    id: ..., 
+    id: ...,
     tenantId: ..., // optional
     businessId: ..., // optional
     type: ..., // optional
     amount: ..., // optional
     date: ..., // optional
     category: ..., // optional
+    description: ..., // optional
     receiptUrl: ..., // optional
     recordedBy: ..., // optional
   };
   mutation.mutate(updateTransactionVars);
   // Variables can be defined inline as well.
-  mutation.mutate({ id: ..., tenantId: ..., businessId: ..., type: ..., amount: ..., date: ..., category: ..., receiptUrl: ..., recordedBy: ..., });
+  mutation.mutate({ id: ..., tenantId: ..., businessId: ..., type: ..., amount: ..., date: ..., category: ..., description: ..., receiptUrl: ..., recordedBy: ..., });
 
   // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
   const options = {
@@ -4321,7 +4966,7 @@ export default function DeleteTransactionComponent() {
   // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
   // The `useDeleteTransaction` Mutation requires an argument of type `DeleteTransactionVariables`:
   const deleteTransactionVars: DeleteTransactionVariables = {
-    id: ..., 
+    id: ...,
   };
   mutation.mutate(deleteTransactionVars);
   // Variables can be defined inline as well.
@@ -4419,11 +5064,11 @@ export default function CreateTaskCommentComponent() {
   // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
   // The `useCreateTaskComment` Mutation requires an argument of type `CreateTaskCommentVariables`:
   const createTaskCommentVars: CreateTaskCommentVariables = {
-    tenantId: ..., 
-    businessId: ..., 
-    taskId: ..., 
-    userId: ..., 
-    content: ..., 
+    tenantId: ...,
+    businessId: ...,
+    taskId: ...,
+    userId: ...,
+    content: ...,
   };
   mutation.mutate(createTaskCommentVars);
   // Variables can be defined inline as well.
@@ -4522,7 +5167,7 @@ export default function UpdateTaskCommentComponent() {
   // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
   // The `useUpdateTaskComment` Mutation requires an argument of type `UpdateTaskCommentVariables`:
   const updateTaskCommentVars: UpdateTaskCommentVariables = {
-    id: ..., 
+    id: ...,
     tenantId: ..., // optional
     businessId: ..., // optional
     taskId: ..., // optional
@@ -4621,7 +5266,7 @@ export default function DeleteTaskCommentComponent() {
   // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
   // The `useDeleteTaskComment` Mutation requires an argument of type `DeleteTaskCommentVariables`:
   const deleteTaskCommentVars: DeleteTaskCommentVariables = {
-    id: ..., 
+    id: ...,
   };
   mutation.mutate(deleteTaskCommentVars);
   // Variables can be defined inline as well.
@@ -4650,6 +5295,358 @@ export default function DeleteTaskCommentComponent() {
 }
 ```
 
+## CreateEmployeeWithAccess
+You can execute the `CreateEmployeeWithAccess` Mutation using the `UseMutationResult` object returned by the following Mutation hook function (which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts)):
+```javascript
+useCreateEmployeeWithAccess(options?: useDataConnectMutationOptions<CreateEmployeeWithAccessData, FirebaseError, CreateEmployeeWithAccessVariables>): UseDataConnectMutationResult<CreateEmployeeWithAccessData, CreateEmployeeWithAccessVariables>;
+```
+You can also pass in a `DataConnect` instance to the Mutation hook function.
+```javascript
+useCreateEmployeeWithAccess(dc: DataConnect, options?: useDataConnectMutationOptions<CreateEmployeeWithAccessData, FirebaseError, CreateEmployeeWithAccessVariables>): UseDataConnectMutationResult<CreateEmployeeWithAccessData, CreateEmployeeWithAccessVariables>;
+```
+
+### Variables
+The `CreateEmployeeWithAccess` Mutation requires an argument of type `CreateEmployeeWithAccessVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+
+```javascript
+export interface CreateEmployeeWithAccessVariables {
+  tenantId: string;
+  businessId: string;
+  fullName: string;
+  position: string;
+  role?: string | null;
+  userRole: string;
+  salary?: number | null;
+  department?: string | null;
+  email: string;
+  contact?: string | null;
+  startDate?: DateString | null;
+  status?: string | null;
+  attendance?: number | null;
+  salaryPaymentStatus?: string | null;
+  accessCodeHash: string;
+}
+```
+### Return Type
+Recall that calling the `CreateEmployeeWithAccess` Mutation hook function returns a `UseMutationResult` object. This object holds the state of your Mutation, including whether the Mutation is loading, has completed, or has succeeded/failed, among other things.
+
+To check the status of a Mutation, use the `UseMutationResult.status` field. You can also check for pending / success / error status using the `UseMutationResult.isPending`, `UseMutationResult.isSuccess`, and `UseMutationResult.isError` fields.
+
+To execute the Mutation, call `UseMutationResult.mutate()`. This function executes the Mutation, but does not return the data from the Mutation.
+
+To access the data returned by a Mutation, use the `UseMutationResult.data` field. The data for the `CreateEmployeeWithAccess` Mutation is of type `CreateEmployeeWithAccessData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+```javascript
+export interface CreateEmployeeWithAccessData {
+  employee_insert: Employee_Key;
+  user_insert: User_Key;
+}
+```
+
+To learn more about the `UseMutationResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useMutation).
+
+### Using `CreateEmployeeWithAccess`'s Mutation hook function
+
+```javascript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, CreateEmployeeWithAccessVariables } from '@dataconnect/generated';
+import { useCreateEmployeeWithAccess } from '@dataconnect/generated/react'
+
+export default function CreateEmployeeWithAccessComponent() {
+  // Call the Mutation hook function to get a `UseMutationResult` object which holds the state of your Mutation.
+  const mutation = useCreateEmployeeWithAccess();
+
+  // You can also pass in a `DataConnect` instance to the Mutation hook function.
+  const dataConnect = getDataConnect(connectorConfig);
+  const mutation = useCreateEmployeeWithAccess(dataConnect);
+
+  // You can also pass in a `useDataConnectMutationOptions` object to the Mutation hook function.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useCreateEmployeeWithAccess(options);
+
+  // You can also pass both a `DataConnect` instance and a `useDataConnectMutationOptions` object.
+  const dataConnect = getDataConnect(connectorConfig);
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useCreateEmployeeWithAccess(dataConnect, options);
+
+  // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
+  // The `useCreateEmployeeWithAccess` Mutation requires an argument of type `CreateEmployeeWithAccessVariables`:
+  const createEmployeeWithAccessVars: CreateEmployeeWithAccessVariables = {
+    tenantId: ...,
+    businessId: ...,
+    fullName: ...,
+    position: ...,
+    role: ..., // optional
+    userRole: ...,
+    salary: ..., // optional
+    department: ..., // optional
+    email: ...,
+    contact: ..., // optional
+    startDate: ..., // optional
+    status: ..., // optional
+    attendance: ..., // optional
+    salaryPaymentStatus: ..., // optional
+    accessCodeHash: ...,
+  };
+  mutation.mutate(createEmployeeWithAccessVars);
+  // Variables can be defined inline as well.
+  mutation.mutate({ tenantId: ..., businessId: ..., fullName: ..., position: ..., role: ..., userRole: ..., salary: ..., department: ..., email: ..., contact: ..., startDate: ..., status: ..., attendance: ..., salaryPaymentStatus: ..., accessCodeHash: ..., });
+
+  // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  mutation.mutate(createEmployeeWithAccessVars, options);
+
+  // Then, you can render your component dynamically based on the status of the Mutation.
+  if (mutation.isPending) {
+    return <div>Loading...</div>;
+  }
+
+  if (mutation.isError) {
+    return <div>Error: {mutation.error.message}</div>;
+  }
+
+  // If the Mutation is successful, you can access the data returned using the `UseMutationResult.data` field.
+  if (mutation.isSuccess) {
+    console.log(mutation.data.employee_insert);
+    console.log(mutation.data.user_insert);
+  }
+  return <div>Mutation execution {mutation.isSuccess ? 'successful' : 'failed'}!</div>;
+}
+```
+
+## UpdateEmployeeWithAccess
+You can execute the `UpdateEmployeeWithAccess` Mutation using the `UseMutationResult` object returned by the following Mutation hook function (which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts)):
+```javascript
+useUpdateEmployeeWithAccess(options?: useDataConnectMutationOptions<UpdateEmployeeWithAccessData, FirebaseError, UpdateEmployeeWithAccessVariables>): UseDataConnectMutationResult<UpdateEmployeeWithAccessData, UpdateEmployeeWithAccessVariables>;
+```
+You can also pass in a `DataConnect` instance to the Mutation hook function.
+```javascript
+useUpdateEmployeeWithAccess(dc: DataConnect, options?: useDataConnectMutationOptions<UpdateEmployeeWithAccessData, FirebaseError, UpdateEmployeeWithAccessVariables>): UseDataConnectMutationResult<UpdateEmployeeWithAccessData, UpdateEmployeeWithAccessVariables>;
+```
+
+### Variables
+The `UpdateEmployeeWithAccess` Mutation requires an argument of type `UpdateEmployeeWithAccessVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+
+```javascript
+export interface UpdateEmployeeWithAccessVariables {
+  id: string;
+  tenantId: string;
+  businessId: string;
+  currentEmail: string;
+  fullName: string;
+  position: string;
+  role?: string | null;
+  userRole: string;
+  salary?: number | null;
+  department?: string | null;
+  email: string;
+  contact?: string | null;
+  startDate?: DateString | null;
+  status?: string | null;
+  attendance?: number | null;
+  salaryPaymentStatus?: string | null;
+}
+```
+### Return Type
+Recall that calling the `UpdateEmployeeWithAccess` Mutation hook function returns a `UseMutationResult` object. This object holds the state of your Mutation, including whether the Mutation is loading, has completed, or has succeeded/failed, among other things.
+
+To check the status of a Mutation, use the `UseMutationResult.status` field. You can also check for pending / success / error status using the `UseMutationResult.isPending`, `UseMutationResult.isSuccess`, and `UseMutationResult.isError` fields.
+
+To execute the Mutation, call `UseMutationResult.mutate()`. This function executes the Mutation, but does not return the data from the Mutation.
+
+To access the data returned by a Mutation, use the `UseMutationResult.data` field. The data for the `UpdateEmployeeWithAccess` Mutation is of type `UpdateEmployeeWithAccessData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+```javascript
+export interface UpdateEmployeeWithAccessData {
+  employee_update?: Employee_Key | null;
+  user_updateMany: number;
+}
+```
+
+To learn more about the `UseMutationResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useMutation).
+
+### Using `UpdateEmployeeWithAccess`'s Mutation hook function
+
+```javascript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, UpdateEmployeeWithAccessVariables } from '@dataconnect/generated';
+import { useUpdateEmployeeWithAccess } from '@dataconnect/generated/react'
+
+export default function UpdateEmployeeWithAccessComponent() {
+  // Call the Mutation hook function to get a `UseMutationResult` object which holds the state of your Mutation.
+  const mutation = useUpdateEmployeeWithAccess();
+
+  // You can also pass in a `DataConnect` instance to the Mutation hook function.
+  const dataConnect = getDataConnect(connectorConfig);
+  const mutation = useUpdateEmployeeWithAccess(dataConnect);
+
+  // You can also pass in a `useDataConnectMutationOptions` object to the Mutation hook function.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useUpdateEmployeeWithAccess(options);
+
+  // You can also pass both a `DataConnect` instance and a `useDataConnectMutationOptions` object.
+  const dataConnect = getDataConnect(connectorConfig);
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useUpdateEmployeeWithAccess(dataConnect, options);
+
+  // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
+  // The `useUpdateEmployeeWithAccess` Mutation requires an argument of type `UpdateEmployeeWithAccessVariables`:
+  const updateEmployeeWithAccessVars: UpdateEmployeeWithAccessVariables = {
+    id: ...,
+    tenantId: ...,
+    businessId: ...,
+    currentEmail: ...,
+    fullName: ...,
+    position: ...,
+    role: ..., // optional
+    userRole: ...,
+    salary: ..., // optional
+    department: ..., // optional
+    email: ...,
+    contact: ..., // optional
+    startDate: ..., // optional
+    status: ..., // optional
+    attendance: ..., // optional
+    salaryPaymentStatus: ..., // optional
+  };
+  mutation.mutate(updateEmployeeWithAccessVars);
+  // Variables can be defined inline as well.
+  mutation.mutate({ id: ..., tenantId: ..., businessId: ..., currentEmail: ..., fullName: ..., position: ..., role: ..., userRole: ..., salary: ..., department: ..., email: ..., contact: ..., startDate: ..., status: ..., attendance: ..., salaryPaymentStatus: ..., });
+
+  // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  mutation.mutate(updateEmployeeWithAccessVars, options);
+
+  // Then, you can render your component dynamically based on the status of the Mutation.
+  if (mutation.isPending) {
+    return <div>Loading...</div>;
+  }
+
+  if (mutation.isError) {
+    return <div>Error: {mutation.error.message}</div>;
+  }
+
+  // If the Mutation is successful, you can access the data returned using the `UseMutationResult.data` field.
+  if (mutation.isSuccess) {
+    console.log(mutation.data.employee_update);
+    console.log(mutation.data.user_updateMany);
+  }
+  return <div>Mutation execution {mutation.isSuccess ? 'successful' : 'failed'}!</div>;
+}
+```
+
+## DeleteEmployeeWithAccess
+You can execute the `DeleteEmployeeWithAccess` Mutation using the `UseMutationResult` object returned by the following Mutation hook function (which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts)):
+```javascript
+useDeleteEmployeeWithAccess(options?: useDataConnectMutationOptions<DeleteEmployeeWithAccessData, FirebaseError, DeleteEmployeeWithAccessVariables>): UseDataConnectMutationResult<DeleteEmployeeWithAccessData, DeleteEmployeeWithAccessVariables>;
+```
+You can also pass in a `DataConnect` instance to the Mutation hook function.
+```javascript
+useDeleteEmployeeWithAccess(dc: DataConnect, options?: useDataConnectMutationOptions<DeleteEmployeeWithAccessData, FirebaseError, DeleteEmployeeWithAccessVariables>): UseDataConnectMutationResult<DeleteEmployeeWithAccessData, DeleteEmployeeWithAccessVariables>;
+```
+
+### Variables
+The `DeleteEmployeeWithAccess` Mutation requires an argument of type `DeleteEmployeeWithAccessVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+
+```javascript
+export interface DeleteEmployeeWithAccessVariables {
+  id: string;
+  tenantId: string;
+  businessId: string;
+  currentEmail: string;
+}
+```
+### Return Type
+Recall that calling the `DeleteEmployeeWithAccess` Mutation hook function returns a `UseMutationResult` object. This object holds the state of your Mutation, including whether the Mutation is loading, has completed, or has succeeded/failed, among other things.
+
+To check the status of a Mutation, use the `UseMutationResult.status` field. You can also check for pending / success / error status using the `UseMutationResult.isPending`, `UseMutationResult.isSuccess`, and `UseMutationResult.isError` fields.
+
+To execute the Mutation, call `UseMutationResult.mutate()`. This function executes the Mutation, but does not return the data from the Mutation.
+
+To access the data returned by a Mutation, use the `UseMutationResult.data` field. The data for the `DeleteEmployeeWithAccess` Mutation is of type `DeleteEmployeeWithAccessData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+```javascript
+export interface DeleteEmployeeWithAccessData {
+  employee_delete?: Employee_Key | null;
+  user_deleteMany: number;
+}
+```
+
+To learn more about the `UseMutationResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useMutation).
+
+### Using `DeleteEmployeeWithAccess`'s Mutation hook function
+
+```javascript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, DeleteEmployeeWithAccessVariables } from '@dataconnect/generated';
+import { useDeleteEmployeeWithAccess } from '@dataconnect/generated/react'
+
+export default function DeleteEmployeeWithAccessComponent() {
+  // Call the Mutation hook function to get a `UseMutationResult` object which holds the state of your Mutation.
+  const mutation = useDeleteEmployeeWithAccess();
+
+  // You can also pass in a `DataConnect` instance to the Mutation hook function.
+  const dataConnect = getDataConnect(connectorConfig);
+  const mutation = useDeleteEmployeeWithAccess(dataConnect);
+
+  // You can also pass in a `useDataConnectMutationOptions` object to the Mutation hook function.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useDeleteEmployeeWithAccess(options);
+
+  // You can also pass both a `DataConnect` instance and a `useDataConnectMutationOptions` object.
+  const dataConnect = getDataConnect(connectorConfig);
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useDeleteEmployeeWithAccess(dataConnect, options);
+
+  // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
+  // The `useDeleteEmployeeWithAccess` Mutation requires an argument of type `DeleteEmployeeWithAccessVariables`:
+  const deleteEmployeeWithAccessVars: DeleteEmployeeWithAccessVariables = {
+    id: ...,
+    tenantId: ...,
+    businessId: ...,
+    currentEmail: ...,
+  };
+  mutation.mutate(deleteEmployeeWithAccessVars);
+  // Variables can be defined inline as well.
+  mutation.mutate({ id: ..., tenantId: ..., businessId: ..., currentEmail: ..., });
+
+  // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  mutation.mutate(deleteEmployeeWithAccessVars, options);
+
+  // Then, you can render your component dynamically based on the status of the Mutation.
+  if (mutation.isPending) {
+    return <div>Loading...</div>;
+  }
+
+  if (mutation.isError) {
+    return <div>Error: {mutation.error.message}</div>;
+  }
+
+  // If the Mutation is successful, you can access the data returned using the `UseMutationResult.data` field.
+  if (mutation.isSuccess) {
+    console.log(mutation.data.employee_delete);
+    console.log(mutation.data.user_deleteMany);
+  }
+  return <div>Mutation execution {mutation.isSuccess ? 'successful' : 'failed'}!</div>;
+}
+```
+
 ## CreateEmployee
 You can execute the `CreateEmployee` Mutation using the `UseMutationResult` object returned by the following Mutation hook function (which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts)):
 ```javascript
@@ -4672,8 +5669,12 @@ export interface CreateEmployeeVariables {
   role?: string | null;
   salary?: number | null;
   department?: string | null;
+  email?: string | null;
+  contact?: string | null;
   startDate?: DateString | null;
   status?: string | null;
+  attendance?: number | null;
+  salaryPaymentStatus?: string | null;
   code?: string | null;
 }
 ```
@@ -4724,20 +5725,24 @@ export default function CreateEmployeeComponent() {
   // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
   // The `useCreateEmployee` Mutation requires an argument of type `CreateEmployeeVariables`:
   const createEmployeeVars: CreateEmployeeVariables = {
-    tenantId: ..., 
-    businessId: ..., 
-    fullName: ..., 
-    position: ..., 
+    tenantId: ...,
+    businessId: ...,
+    fullName: ...,
+    position: ...,
     role: ..., // optional
     salary: ..., // optional
     department: ..., // optional
+    email: ..., // optional
+    contact: ..., // optional
     startDate: ..., // optional
     status: ..., // optional
+    attendance: ..., // optional
+    salaryPaymentStatus: ..., // optional
     code: ..., // optional
   };
   mutation.mutate(createEmployeeVars);
   // Variables can be defined inline as well.
-  mutation.mutate({ tenantId: ..., businessId: ..., fullName: ..., position: ..., role: ..., salary: ..., department: ..., startDate: ..., status: ..., code: ..., });
+  mutation.mutate({ tenantId: ..., businessId: ..., fullName: ..., position: ..., role: ..., salary: ..., department: ..., email: ..., contact: ..., startDate: ..., status: ..., attendance: ..., salaryPaymentStatus: ..., code: ..., });
 
   // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
   const options = {
@@ -4785,8 +5790,12 @@ export interface UpdateEmployeeVariables {
   role?: string | null;
   salary?: number | null;
   department?: string | null;
+  email?: string | null;
+  contact?: string | null;
   startDate?: DateString | null;
   status?: string | null;
+  attendance?: number | null;
+  salaryPaymentStatus?: string | null;
 }
 ```
 ### Return Type
@@ -4836,7 +5845,7 @@ export default function UpdateEmployeeComponent() {
   // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
   // The `useUpdateEmployee` Mutation requires an argument of type `UpdateEmployeeVariables`:
   const updateEmployeeVars: UpdateEmployeeVariables = {
-    id: ..., 
+    id: ...,
     tenantId: ..., // optional
     businessId: ..., // optional
     fullName: ..., // optional
@@ -4844,12 +5853,16 @@ export default function UpdateEmployeeComponent() {
     role: ..., // optional
     salary: ..., // optional
     department: ..., // optional
+    email: ..., // optional
+    contact: ..., // optional
     startDate: ..., // optional
     status: ..., // optional
+    attendance: ..., // optional
+    salaryPaymentStatus: ..., // optional
   };
   mutation.mutate(updateEmployeeVars);
   // Variables can be defined inline as well.
-  mutation.mutate({ id: ..., tenantId: ..., businessId: ..., fullName: ..., position: ..., role: ..., salary: ..., department: ..., startDate: ..., status: ..., });
+  mutation.mutate({ id: ..., tenantId: ..., businessId: ..., fullName: ..., position: ..., role: ..., salary: ..., department: ..., email: ..., contact: ..., startDate: ..., status: ..., attendance: ..., salaryPaymentStatus: ..., });
 
   // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
   const options = {
@@ -4939,7 +5952,7 @@ export default function DeleteEmployeeComponent() {
   // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
   // The `useDeleteEmployee` Mutation requires an argument of type `DeleteEmployeeVariables`:
   const deleteEmployeeVars: DeleteEmployeeVariables = {
-    id: ..., 
+    id: ...,
   };
   mutation.mutate(deleteEmployeeVars);
   // Variables can be defined inline as well.
@@ -4989,8 +6002,7 @@ export interface CreateCustomerVariables {
   phoneNumber?: string | null;
   email?: string | null;
   location?: string | null;
-  totalOrders?: number | null;
-  totalSpent?: number | null;
+  notes?: string | null;
 }
 ```
 ### Return Type
@@ -5040,18 +6052,17 @@ export default function CreateCustomerComponent() {
   // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
   // The `useCreateCustomer` Mutation requires an argument of type `CreateCustomerVariables`:
   const createCustomerVars: CreateCustomerVariables = {
-    tenantId: ..., 
-    businessId: ..., 
-    customerName: ..., 
+    tenantId: ...,
+    businessId: ...,
+    customerName: ...,
     phoneNumber: ..., // optional
     email: ..., // optional
     location: ..., // optional
-    totalOrders: ..., // optional
-    totalSpent: ..., // optional
+    notes: ..., // optional
   };
   mutation.mutate(createCustomerVars);
   // Variables can be defined inline as well.
-  mutation.mutate({ tenantId: ..., businessId: ..., customerName: ..., phoneNumber: ..., email: ..., location: ..., totalOrders: ..., totalSpent: ..., });
+  mutation.mutate({ tenantId: ..., businessId: ..., customerName: ..., phoneNumber: ..., email: ..., location: ..., notes: ..., });
 
   // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
   const options = {
@@ -5098,8 +6109,7 @@ export interface UpdateCustomerVariables {
   phoneNumber?: string | null;
   email?: string | null;
   location?: string | null;
-  totalOrders?: number | null;
-  totalSpent?: number | null;
+  notes?: string | null;
 }
 ```
 ### Return Type
@@ -5149,19 +6159,18 @@ export default function UpdateCustomerComponent() {
   // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
   // The `useUpdateCustomer` Mutation requires an argument of type `UpdateCustomerVariables`:
   const updateCustomerVars: UpdateCustomerVariables = {
-    id: ..., 
+    id: ...,
     tenantId: ..., // optional
     businessId: ..., // optional
     customerName: ..., // optional
     phoneNumber: ..., // optional
     email: ..., // optional
     location: ..., // optional
-    totalOrders: ..., // optional
-    totalSpent: ..., // optional
+    notes: ..., // optional
   };
   mutation.mutate(updateCustomerVars);
   // Variables can be defined inline as well.
-  mutation.mutate({ id: ..., tenantId: ..., businessId: ..., customerName: ..., phoneNumber: ..., email: ..., location: ..., totalOrders: ..., totalSpent: ..., });
+  mutation.mutate({ id: ..., tenantId: ..., businessId: ..., customerName: ..., phoneNumber: ..., email: ..., location: ..., notes: ..., });
 
   // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
   const options = {
@@ -5251,7 +6260,7 @@ export default function DeleteCustomerComponent() {
   // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
   // The `useDeleteCustomer` Mutation requires an argument of type `DeleteCustomerVariables`:
   const deleteCustomerVars: DeleteCustomerVariables = {
-    id: ..., 
+    id: ...,
   };
   mutation.mutate(deleteCustomerVars);
   // Variables can be defined inline as well.
@@ -5300,6 +6309,10 @@ export interface CreateSupplierVariables {
   supplierName: string;
   phoneNumber?: string | null;
   email?: string | null;
+  location?: string | null;
+  productsSupplied?: string | null;
+  paymentStatus?: string | null;
+  notes?: string | null;
 }
 ```
 ### Return Type
@@ -5349,15 +6362,19 @@ export default function CreateSupplierComponent() {
   // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
   // The `useCreateSupplier` Mutation requires an argument of type `CreateSupplierVariables`:
   const createSupplierVars: CreateSupplierVariables = {
-    tenantId: ..., 
-    businessId: ..., 
-    supplierName: ..., 
+    tenantId: ...,
+    businessId: ...,
+    supplierName: ...,
     phoneNumber: ..., // optional
     email: ..., // optional
+    location: ..., // optional
+    productsSupplied: ..., // optional
+    paymentStatus: ..., // optional
+    notes: ..., // optional
   };
   mutation.mutate(createSupplierVars);
   // Variables can be defined inline as well.
-  mutation.mutate({ tenantId: ..., businessId: ..., supplierName: ..., phoneNumber: ..., email: ..., });
+  mutation.mutate({ tenantId: ..., businessId: ..., supplierName: ..., phoneNumber: ..., email: ..., location: ..., productsSupplied: ..., paymentStatus: ..., notes: ..., });
 
   // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
   const options = {
@@ -5403,6 +6420,10 @@ export interface UpdateSupplierVariables {
   supplierName?: string | null;
   phoneNumber?: string | null;
   email?: string | null;
+  location?: string | null;
+  productsSupplied?: string | null;
+  paymentStatus?: string | null;
+  notes?: string | null;
 }
 ```
 ### Return Type
@@ -5452,16 +6473,20 @@ export default function UpdateSupplierComponent() {
   // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
   // The `useUpdateSupplier` Mutation requires an argument of type `UpdateSupplierVariables`:
   const updateSupplierVars: UpdateSupplierVariables = {
-    id: ..., 
+    id: ...,
     tenantId: ..., // optional
     businessId: ..., // optional
     supplierName: ..., // optional
     phoneNumber: ..., // optional
     email: ..., // optional
+    location: ..., // optional
+    productsSupplied: ..., // optional
+    paymentStatus: ..., // optional
+    notes: ..., // optional
   };
   mutation.mutate(updateSupplierVars);
   // Variables can be defined inline as well.
-  mutation.mutate({ id: ..., tenantId: ..., businessId: ..., supplierName: ..., phoneNumber: ..., email: ..., });
+  mutation.mutate({ id: ..., tenantId: ..., businessId: ..., supplierName: ..., phoneNumber: ..., email: ..., location: ..., productsSupplied: ..., paymentStatus: ..., notes: ..., });
 
   // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
   const options = {
@@ -5551,7 +6576,7 @@ export default function DeleteSupplierComponent() {
   // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
   // The `useDeleteSupplier` Mutation requires an argument of type `DeleteSupplierVariables`:
   const deleteSupplierVars: DeleteSupplierVariables = {
-    id: ..., 
+    id: ...,
   };
   mutation.mutate(deleteSupplierVars);
   // Variables can be defined inline as well.
@@ -5600,6 +6625,7 @@ export interface CreateDocumentVariables {
   title: string;
   documentType: string;
   fileUrl: string;
+  description?: string | null;
   uploadedBy: string;
 }
 ```
@@ -5650,16 +6676,17 @@ export default function CreateDocumentComponent() {
   // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
   // The `useCreateDocument` Mutation requires an argument of type `CreateDocumentVariables`:
   const createDocumentVars: CreateDocumentVariables = {
-    tenantId: ..., 
-    businessId: ..., 
-    title: ..., 
-    documentType: ..., 
-    fileUrl: ..., 
-    uploadedBy: ..., 
+    tenantId: ...,
+    businessId: ...,
+    title: ...,
+    documentType: ...,
+    fileUrl: ...,
+    description: ..., // optional
+    uploadedBy: ...,
   };
   mutation.mutate(createDocumentVars);
   // Variables can be defined inline as well.
-  mutation.mutate({ tenantId: ..., businessId: ..., title: ..., documentType: ..., fileUrl: ..., uploadedBy: ..., });
+  mutation.mutate({ tenantId: ..., businessId: ..., title: ..., documentType: ..., fileUrl: ..., description: ..., uploadedBy: ..., });
 
   // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
   const options = {
@@ -5705,6 +6732,7 @@ export interface UpdateDocumentVariables {
   title?: string | null;
   documentType?: string | null;
   fileUrl?: string | null;
+  description?: string | null;
   uploadedBy?: string | null;
 }
 ```
@@ -5755,17 +6783,18 @@ export default function UpdateDocumentComponent() {
   // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
   // The `useUpdateDocument` Mutation requires an argument of type `UpdateDocumentVariables`:
   const updateDocumentVars: UpdateDocumentVariables = {
-    id: ..., 
+    id: ...,
     tenantId: ..., // optional
     businessId: ..., // optional
     title: ..., // optional
     documentType: ..., // optional
     fileUrl: ..., // optional
+    description: ..., // optional
     uploadedBy: ..., // optional
   };
   mutation.mutate(updateDocumentVars);
   // Variables can be defined inline as well.
-  mutation.mutate({ id: ..., tenantId: ..., businessId: ..., title: ..., documentType: ..., fileUrl: ..., uploadedBy: ..., });
+  mutation.mutate({ id: ..., tenantId: ..., businessId: ..., title: ..., documentType: ..., fileUrl: ..., description: ..., uploadedBy: ..., });
 
   // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
   const options = {
@@ -5855,7 +6884,7 @@ export default function DeleteDocumentComponent() {
   // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
   // The `useDeleteDocument` Mutation requires an argument of type `DeleteDocumentVariables`:
   const deleteDocumentVars: DeleteDocumentVariables = {
-    id: ..., 
+    id: ...,
   };
   mutation.mutate(deleteDocumentVars);
   // Variables can be defined inline as well.
@@ -5956,12 +6985,12 @@ export default function CreateActivityLogComponent() {
   // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
   // The `useCreateActivityLog` Mutation requires an argument of type `CreateActivityLogVariables`:
   const createActivityLogVars: CreateActivityLogVariables = {
-    tenantId: ..., 
-    businessId: ..., 
-    userId: ..., 
-    userName: ..., 
-    actionType: ..., 
-    module: ..., 
+    tenantId: ...,
+    businessId: ...,
+    userId: ...,
+    userName: ...,
+    actionType: ...,
+    module: ...,
     description: ..., // optional
     recordId: ..., // optional
   };
@@ -6061,10 +7090,10 @@ export default function CreateAiQueryComponent() {
   // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
   // The `useCreateAiQuery` Mutation requires an argument of type `CreateAiQueryVariables`:
   const createAiQueryVars: CreateAiQueryVariables = {
-    tenantId: ..., 
-    businessId: ..., 
-    userId: ..., 
-    queryText: ..., 
+    tenantId: ...,
+    businessId: ...,
+    userId: ...,
+    queryText: ...,
     response: ..., // optional
   };
   mutation.mutate(createAiQueryVars);
@@ -6164,7 +7193,7 @@ export default function UpdateAiQueryComponent() {
   // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
   // The `useUpdateAiQuery` Mutation requires an argument of type `UpdateAiQueryVariables`:
   const updateAiQueryVars: UpdateAiQueryVariables = {
-    id: ..., 
+    id: ...,
     tenantId: ..., // optional
     businessId: ..., // optional
     userId: ..., // optional
@@ -6263,7 +7292,7 @@ export default function DeleteAiQueryComponent() {
   // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
   // The `useDeleteAiQuery` Mutation requires an argument of type `DeleteAiQueryVariables`:
   const deleteAiQueryVars: DeleteAiQueryVariables = {
-    id: ..., 
+    id: ...,
   };
   mutation.mutate(deleteAiQueryVars);
   // Variables can be defined inline as well.
@@ -6361,11 +7390,11 @@ export default function CreateNotificationComponent() {
   // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
   // The `useCreateNotification` Mutation requires an argument of type `CreateNotificationVariables`:
   const createNotificationVars: CreateNotificationVariables = {
-    tenantId: ..., 
-    businessId: ..., 
-    userId: ..., 
-    message: ..., 
-    isRead: ..., 
+    tenantId: ...,
+    businessId: ...,
+    userId: ...,
+    message: ...,
+    isRead: ...,
   };
   mutation.mutate(createNotificationVars);
   // Variables can be defined inline as well.
@@ -6464,7 +7493,7 @@ export default function UpdateNotificationComponent() {
   // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
   // The `useUpdateNotification` Mutation requires an argument of type `UpdateNotificationVariables`:
   const updateNotificationVars: UpdateNotificationVariables = {
-    id: ..., 
+    id: ...,
     tenantId: ..., // optional
     businessId: ..., // optional
     userId: ..., // optional
@@ -6563,7 +7592,7 @@ export default function DeleteNotificationComponent() {
   // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
   // The `useDeleteNotification` Mutation requires an argument of type `DeleteNotificationVariables`:
   const deleteNotificationVars: DeleteNotificationVariables = {
-    id: ..., 
+    id: ...,
   };
   mutation.mutate(deleteNotificationVars);
   // Variables can be defined inline as well.
@@ -6665,15 +7694,15 @@ export default function CreateTaskComponent() {
   // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
   // The `useCreateTask` Mutation requires an argument of type `CreateTaskVariables`:
   const createTaskVars: CreateTaskVariables = {
-    tenantId: ..., 
-    businessId: ..., 
-    title: ..., 
+    tenantId: ...,
+    businessId: ...,
+    title: ...,
     description: ..., // optional
-    status: ..., 
+    status: ...,
     priority: ..., // optional
-    dueDate: ..., 
+    dueDate: ...,
     assignedToId: ..., // optional
-    createdBy: ..., 
+    createdBy: ...,
   };
   mutation.mutate(createTaskVars);
   // Variables can be defined inline as well.
@@ -6773,7 +7802,7 @@ export default function UpdateTaskComponent() {
   // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
   // The `useUpdateTask` Mutation requires an argument of type `UpdateTaskVariables`:
   const updateTaskVars: UpdateTaskVariables = {
-    id: ..., 
+    id: ...,
     title: ..., // optional
     description: ..., // optional
     status: ..., // optional
@@ -6873,7 +7902,7 @@ export default function DeleteTaskComponent() {
   // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
   // The `useDeleteTask` Mutation requires an argument of type `DeleteTaskVariables`:
   const deleteTaskVars: DeleteTaskVariables = {
-    id: ..., 
+    id: ...,
   };
   mutation.mutate(deleteTaskVars);
   // Variables can be defined inline as well.
@@ -6972,12 +8001,12 @@ export default function CreateMirrorOutboxComponent() {
   // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
   // The `useCreateMirrorOutbox` Mutation requires an argument of type `CreateMirrorOutboxVariables`:
   const createMirrorOutboxVars: CreateMirrorOutboxVariables = {
-    tenantId: ..., 
-    businessId: ..., 
-    entityType: ..., 
-    operation: ..., 
-    recordId: ..., 
-    payload: ..., 
+    tenantId: ...,
+    businessId: ...,
+    entityType: ...,
+    operation: ...,
+    recordId: ...,
+    payload: ...,
   };
   mutation.mutate(createMirrorOutboxVars);
   // Variables can be defined inline as well.
@@ -7076,10 +8105,10 @@ export default function UpdateMirrorOutboxComponent() {
   // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
   // The `useUpdateMirrorOutbox` Mutation requires an argument of type `UpdateMirrorOutboxVariables`:
   const updateMirrorOutboxVars: UpdateMirrorOutboxVariables = {
-    id: ..., 
-    status: ..., 
-    attempts: ..., 
-    nextAttemptAt: ..., 
+    id: ...,
+    status: ...,
+    attempts: ...,
+    nextAttemptAt: ...,
     lastError: ..., // optional
     deliveredAt: ..., // optional
   };

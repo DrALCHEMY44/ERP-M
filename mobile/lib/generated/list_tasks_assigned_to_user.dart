@@ -6,16 +6,36 @@ class ListTasksAssignedToUserVariablesBuilder {
   String userId;
 
   final FirebaseDataConnect _dataConnect;
-  ListTasksAssignedToUserVariablesBuilder(this._dataConnect, {required  this.tenantId,required  this.businessId,required  this.userId,});
-  Deserializer<ListTasksAssignedToUserData> dataDeserializer = (dynamic json)  => ListTasksAssignedToUserData.fromJson(jsonDecode(json));
-  Serializer<ListTasksAssignedToUserVariables> varsSerializer = (ListTasksAssignedToUserVariables vars) => jsonEncode(vars.toJson());
-  Future<QueryResult<ListTasksAssignedToUserData, ListTasksAssignedToUserVariables>> execute({QueryFetchPolicy fetchPolicy = QueryFetchPolicy.preferCache}) {
+  ListTasksAssignedToUserVariablesBuilder(
+    this._dataConnect, {
+    required this.tenantId,
+    required this.businessId,
+    required this.userId,
+  });
+  Deserializer<ListTasksAssignedToUserData> dataDeserializer = (dynamic json) =>
+      ListTasksAssignedToUserData.fromJson(jsonDecode(json));
+  Serializer<ListTasksAssignedToUserVariables> varsSerializer =
+      (ListTasksAssignedToUserVariables vars) => jsonEncode(vars.toJson());
+  Future<
+    QueryResult<ListTasksAssignedToUserData, ListTasksAssignedToUserVariables>
+  >
+  execute({QueryFetchPolicy fetchPolicy = QueryFetchPolicy.preferCache}) {
     return ref().execute(fetchPolicy: fetchPolicy);
   }
 
-  QueryRef<ListTasksAssignedToUserData, ListTasksAssignedToUserVariables> ref() {
-    ListTasksAssignedToUserVariables vars= ListTasksAssignedToUserVariables(tenantId: tenantId,businessId: businessId,userId: userId,);
-    return _dataConnect.query("listTasksAssignedToUser", dataDeserializer, varsSerializer, vars);
+  QueryRef<ListTasksAssignedToUserData, ListTasksAssignedToUserVariables>
+  ref() {
+    ListTasksAssignedToUserVariables vars = ListTasksAssignedToUserVariables(
+      tenantId: tenantId,
+      businessId: businessId,
+      userId: userId,
+    );
+    return _dataConnect.query(
+      "listTasksAssignedToUser",
+      dataDeserializer,
+      varsSerializer,
+      vars,
+    );
   }
 }
 
@@ -33,47 +53,67 @@ class ListTasksAssignedToUserTasks {
   final Timestamp? updatedAt;
   final String tenantId;
   final String businessId;
-  ListTasksAssignedToUserTasks.fromJson(dynamic json):
-  
-  id = nativeFromJson<String>(json['id']),
-  title = nativeFromJson<String>(json['title']),
-  description = json['description'] == null ? null : nativeFromJson<String>(json['description']),
-  status = taskStatusDeserializer(json['status']),
-  priority = json['priority'] == null ? null : taskPriorityDeserializer(json['priority']),
-  dueDate = Timestamp.fromJson(json['dueDate']),
-  assignedTo = json['assignedTo'] == null ? null : ListTasksAssignedToUserTasksAssignedTo.fromJson(json['assignedTo']),
-  createdBy = nativeFromJson<String>(json['createdBy']),
-  createdAt = Timestamp.fromJson(json['createdAt']),
-  updatedAt = json['updatedAt'] == null ? null : Timestamp.fromJson(json['updatedAt']),
-  tenantId = nativeFromJson<String>(json['tenantId']),
-  businessId = nativeFromJson<String>(json['businessId']);
+  ListTasksAssignedToUserTasks.fromJson(dynamic json)
+    : id = nativeFromJson<String>(json['id']),
+      title = nativeFromJson<String>(json['title']),
+      description = json['description'] == null
+          ? null
+          : nativeFromJson<String>(json['description']),
+      status = taskStatusDeserializer(json['status']),
+      priority = json['priority'] == null
+          ? null
+          : taskPriorityDeserializer(json['priority']),
+      dueDate = Timestamp.fromJson(json['dueDate']),
+      assignedTo = json['assignedTo'] == null
+          ? null
+          : ListTasksAssignedToUserTasksAssignedTo.fromJson(json['assignedTo']),
+      createdBy = nativeFromJson<String>(json['createdBy']),
+      createdAt = Timestamp.fromJson(json['createdAt']),
+      updatedAt = json['updatedAt'] == null
+          ? null
+          : Timestamp.fromJson(json['updatedAt']),
+      tenantId = nativeFromJson<String>(json['tenantId']),
+      businessId = nativeFromJson<String>(json['businessId']);
   @override
   bool operator ==(Object other) {
-    if(identical(this, other)) {
+    if (identical(this, other)) {
       return true;
     }
-    if(other.runtimeType != runtimeType) {
+    if (other.runtimeType != runtimeType) {
       return false;
     }
 
-    final ListTasksAssignedToUserTasks otherTyped = other as ListTasksAssignedToUserTasks;
-    return id == otherTyped.id && 
-    title == otherTyped.title && 
-    description == otherTyped.description && 
-    status == otherTyped.status && 
-    priority == otherTyped.priority && 
-    dueDate == otherTyped.dueDate && 
-    assignedTo == otherTyped.assignedTo && 
-    createdBy == otherTyped.createdBy && 
-    createdAt == otherTyped.createdAt && 
-    updatedAt == otherTyped.updatedAt && 
-    tenantId == otherTyped.tenantId && 
-    businessId == otherTyped.businessId;
-    
+    final ListTasksAssignedToUserTasks otherTyped =
+        other as ListTasksAssignedToUserTasks;
+    return id == otherTyped.id &&
+        title == otherTyped.title &&
+        description == otherTyped.description &&
+        status == otherTyped.status &&
+        priority == otherTyped.priority &&
+        dueDate == otherTyped.dueDate &&
+        assignedTo == otherTyped.assignedTo &&
+        createdBy == otherTyped.createdBy &&
+        createdAt == otherTyped.createdAt &&
+        updatedAt == otherTyped.updatedAt &&
+        tenantId == otherTyped.tenantId &&
+        businessId == otherTyped.businessId;
   }
+
   @override
-  int get hashCode => Object.hashAll([id.hashCode, title.hashCode, description.hashCode, status.hashCode, priority.hashCode, dueDate.hashCode, assignedTo.hashCode, createdBy.hashCode, createdAt.hashCode, updatedAt.hashCode, tenantId.hashCode, businessId.hashCode]);
-  
+  int get hashCode => Object.hashAll([
+    id.hashCode,
+    title.hashCode,
+    description.hashCode,
+    status.hashCode,
+    priority.hashCode,
+    dueDate.hashCode,
+    assignedTo.hashCode,
+    createdBy.hashCode,
+    createdAt.hashCode,
+    updatedAt.hashCode,
+    tenantId.hashCode,
+    businessId.hashCode,
+  ]);
 
   Map<String, dynamic> toJson() {
     Map<String, dynamic> json = {};
@@ -82,13 +122,9 @@ class ListTasksAssignedToUserTasks {
     if (description != null) {
       json['description'] = nativeToJson<String?>(description);
     }
-    json['status'] = 
-    taskStatusSerializer(status)
-    ;
+    json['status'] = taskStatusSerializer(status);
     if (priority != null) {
-      json['priority'] = 
-    taskPrioritySerializer(priority!)
-    ;
+      json['priority'] = taskPrioritySerializer(priority!);
     }
     json['dueDate'] = dueDate.toJson();
     if (assignedTo != null) {
@@ -126,31 +162,43 @@ class ListTasksAssignedToUserTasksAssignedTo {
   final String email;
   final String role;
   final String? fullName;
-  ListTasksAssignedToUserTasksAssignedTo.fromJson(dynamic json):
-  
-  id = nativeFromJson<String>(json['id']),
-  email = nativeFromJson<String>(json['email']),
-  role = nativeFromJson<String>(json['role']),
-  fullName = json['fullName'] == null ? null : nativeFromJson<String>(json['fullName']);
+  final String? department;
+  ListTasksAssignedToUserTasksAssignedTo.fromJson(dynamic json)
+    : id = nativeFromJson<String>(json['id']),
+      email = nativeFromJson<String>(json['email']),
+      role = nativeFromJson<String>(json['role']),
+      fullName = json['fullName'] == null
+          ? null
+          : nativeFromJson<String>(json['fullName']),
+      department = json['department'] == null
+          ? null
+          : nativeFromJson<String>(json['department']);
   @override
   bool operator ==(Object other) {
-    if(identical(this, other)) {
+    if (identical(this, other)) {
       return true;
     }
-    if(other.runtimeType != runtimeType) {
+    if (other.runtimeType != runtimeType) {
       return false;
     }
 
-    final ListTasksAssignedToUserTasksAssignedTo otherTyped = other as ListTasksAssignedToUserTasksAssignedTo;
-    return id == otherTyped.id && 
-    email == otherTyped.email && 
-    role == otherTyped.role && 
-    fullName == otherTyped.fullName;
-    
+    final ListTasksAssignedToUserTasksAssignedTo otherTyped =
+        other as ListTasksAssignedToUserTasksAssignedTo;
+    return id == otherTyped.id &&
+        email == otherTyped.email &&
+        role == otherTyped.role &&
+        fullName == otherTyped.fullName &&
+        department == otherTyped.department;
   }
+
   @override
-  int get hashCode => Object.hashAll([id.hashCode, email.hashCode, role.hashCode, fullName.hashCode]);
-  
+  int get hashCode => Object.hashAll([
+    id.hashCode,
+    email.hashCode,
+    role.hashCode,
+    fullName.hashCode,
+    department.hashCode,
+  ]);
 
   Map<String, dynamic> toJson() {
     Map<String, dynamic> json = {};
@@ -160,6 +208,9 @@ class ListTasksAssignedToUserTasksAssignedTo {
     if (fullName != null) {
       json['fullName'] = nativeToJson<String?>(fullName);
     }
+    if (department != null) {
+      json['department'] = nativeToJson<String?>(department);
+    }
     return json;
   }
 
@@ -168,33 +219,33 @@ class ListTasksAssignedToUserTasksAssignedTo {
     required this.email,
     required this.role,
     this.fullName,
+    this.department,
   });
 }
 
 @immutable
 class ListTasksAssignedToUserData {
   final List<ListTasksAssignedToUserTasks> tasks;
-  ListTasksAssignedToUserData.fromJson(dynamic json):
-  
-  tasks = (json['tasks'] as List<dynamic>)
-        .map((e) => ListTasksAssignedToUserTasks.fromJson(e))
-        .toList();
+  ListTasksAssignedToUserData.fromJson(dynamic json)
+    : tasks = (json['tasks'] as List<dynamic>)
+          .map((e) => ListTasksAssignedToUserTasks.fromJson(e))
+          .toList();
   @override
   bool operator ==(Object other) {
-    if(identical(this, other)) {
+    if (identical(this, other)) {
       return true;
     }
-    if(other.runtimeType != runtimeType) {
+    if (other.runtimeType != runtimeType) {
       return false;
     }
 
-    final ListTasksAssignedToUserData otherTyped = other as ListTasksAssignedToUserData;
+    final ListTasksAssignedToUserData otherTyped =
+        other as ListTasksAssignedToUserData;
     return tasks == otherTyped.tasks;
-    
   }
+
   @override
   int get hashCode => tasks.hashCode;
-  
 
   Map<String, dynamic> toJson() {
     Map<String, dynamic> json = {};
@@ -202,9 +253,7 @@ class ListTasksAssignedToUserData {
     return json;
   }
 
-  ListTasksAssignedToUserData({
-    required this.tasks,
-  });
+  ListTasksAssignedToUserData({required this.tasks});
 }
 
 @immutable
@@ -212,30 +261,32 @@ class ListTasksAssignedToUserVariables {
   final String tenantId;
   final String businessId;
   final String userId;
-  @Deprecated('fromJson is deprecated for Variable classes as they are no longer required for deserialization.')
-  ListTasksAssignedToUserVariables.fromJson(Map<String, dynamic> json):
-  
-  tenantId = nativeFromJson<String>(json['tenantId']),
-  businessId = nativeFromJson<String>(json['businessId']),
-  userId = nativeFromJson<String>(json['userId']);
+  @Deprecated(
+    'fromJson is deprecated for Variable classes as they are no longer required for deserialization.',
+  )
+  ListTasksAssignedToUserVariables.fromJson(Map<String, dynamic> json)
+    : tenantId = nativeFromJson<String>(json['tenantId']),
+      businessId = nativeFromJson<String>(json['businessId']),
+      userId = nativeFromJson<String>(json['userId']);
   @override
   bool operator ==(Object other) {
-    if(identical(this, other)) {
+    if (identical(this, other)) {
       return true;
     }
-    if(other.runtimeType != runtimeType) {
+    if (other.runtimeType != runtimeType) {
       return false;
     }
 
-    final ListTasksAssignedToUserVariables otherTyped = other as ListTasksAssignedToUserVariables;
-    return tenantId == otherTyped.tenantId && 
-    businessId == otherTyped.businessId && 
-    userId == otherTyped.userId;
-    
+    final ListTasksAssignedToUserVariables otherTyped =
+        other as ListTasksAssignedToUserVariables;
+    return tenantId == otherTyped.tenantId &&
+        businessId == otherTyped.businessId &&
+        userId == otherTyped.userId;
   }
+
   @override
-  int get hashCode => Object.hashAll([tenantId.hashCode, businessId.hashCode, userId.hashCode]);
-  
+  int get hashCode =>
+      Object.hashAll([tenantId.hashCode, businessId.hashCode, userId.hashCode]);
 
   Map<String, dynamic> toJson() {
     Map<String, dynamic> json = {};
@@ -251,4 +302,3 @@ class ListTasksAssignedToUserVariables {
     required this.userId,
   });
 }
-

@@ -41,6 +41,15 @@ const productSchema = z.object({
   supplierId: z.string().optional(),
   expiryDate: z.string().optional(),
   status: z.enum(["active", "inactive"]),
+  baseUnit: z.string().min(1, "Select a base unit"),
+  scanUnit: z.string().min(1, "Select a barcode unit"),
+  conversionFactor: z.coerce.number().int().min(1, "Must contain at least one base unit"),
+  barcode: z.string().trim().max(128, "Barcode is too long").optional(),
+  scanSellingPrice: z.preprocess(
+    (value) => value === "" ? undefined : value,
+    z.coerce.number().min(0, "Price cannot be negative").optional(),
+  ),
+  scanUnitId: z.string().optional(),
 })
 
 type ProductFormValues = z.infer<typeof productSchema>
@@ -65,11 +74,18 @@ export function ProductDialog({ product, open, onOpenChange, onSave }: ProductDi
       supplierId: "",
       expiryDate: "",
       status: "active",
+      baseUnit: "piece",
+      scanUnit: "piece",
+      conversionFactor: 1,
+      barcode: "",
+      scanSellingPrice: undefined,
+      scanUnitId: "",
     },
   })
 
   React.useEffect(() => {
     if (product) {
+      const barcodeUnit = product.units?.find((unit) => unit.barcode) ?? product.units?.find((unit) => unit.isBase)
       form.reset({
         name: product.name,
         category: product.category,
@@ -80,6 +96,12 @@ export function ProductDialog({ product, open, onOpenChange, onSave }: ProductDi
         supplierId: product.supplierId || "",
         expiryDate: product.expiryDate || "",
         status: product.status,
+        baseUnit: product.baseUnit || "piece",
+        scanUnit: barcodeUnit?.unitName || product.baseUnit || "piece",
+        conversionFactor: barcodeUnit?.conversionFactor || 1,
+        barcode: barcodeUnit?.barcode || "",
+        scanSellingPrice: barcodeUnit && !barcodeUnit.isBase ? barcodeUnit.sellingPrice ?? undefined : undefined,
+        scanUnitId: barcodeUnit?.id || "",
       })
     } else {
       form.reset({
@@ -92,6 +114,12 @@ export function ProductDialog({ product, open, onOpenChange, onSave }: ProductDi
         supplierId: "",
         expiryDate: "",
         status: "active",
+        baseUnit: "piece",
+        scanUnit: "piece",
+        conversionFactor: 1,
+        barcode: "",
+        scanSellingPrice: undefined,
+        scanUnitId: "",
       })
     }
   }, [product, open, form])
@@ -99,6 +127,7 @@ export function ProductDialog({ product, open, onOpenChange, onSave }: ProductDi
   const onSubmit = (values: ProductFormValues) => {
     onSave({
       ...values,
+      conversionFactor: values.scanUnit === values.baseUnit ? 1 : values.conversionFactor,
     })
     onOpenChange(false)
   }
@@ -111,7 +140,7 @@ export function ProductDialog({ product, open, onOpenChange, onSave }: ProductDi
             <DialogHeader>
               <DialogTitle className="font-headline font-bold text-xl">{product ? "Edit Product" : "New Inventory Item"}</DialogTitle>
               <DialogDescription>
-                Sync with Cloud Firestore database.
+                Stock is synchronized with the business workspace in Neon.
               </DialogDescription>
             </DialogHeader>
 
@@ -176,6 +205,83 @@ export function ProductDialog({ product, open, onOpenChange, onSave }: ProductDi
                     </FormItem>
                   )}
                 />
+              </div>
+
+              <div className="rounded-lg border bg-muted/20 p-3 space-y-3">
+                <div>
+                  <p className="text-xs font-bold">Barcode &amp; units</p>
+                  <p className="text-[11px] text-muted-foreground">Keep stock in the smallest unit, then define what one scan represents.</p>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="baseUnit"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-[10px] font-bold uppercase tracking-widest">Base stock unit</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
+                          <SelectContent>
+                            {['piece', 'bottle', 'kilogram', 'liter', 'meter'].map((unit) => <SelectItem key={unit} value={unit}>{unit}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="scanUnit"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-[10px] font-bold uppercase tracking-widest">Unit represented by barcode</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
+                          <SelectContent>
+                            {['piece', 'bottle', 'pack', 'box', 'carton', 'bag', 'kilogram', 'liter', 'meter', 'roll'].map((unit) => <SelectItem key={unit} value={unit}>{unit}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="barcode"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-[10px] font-bold uppercase tracking-widest">Barcode</FormLabel>
+                        <FormControl><Input inputMode="numeric" placeholder="Scan or enter code" {...field} /></FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="conversionFactor"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-[10px] font-bold uppercase tracking-widest">Base units per scan</FormLabel>
+                        <FormControl><Input type="number" min="1" {...field} /></FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                <FormField
+                  control={form.control}
+                  name="scanSellingPrice"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-[10px] font-bold uppercase tracking-widest">Package selling price (optional)</FormLabel>
+                      <FormControl><Input type="number" min="0" placeholder="Defaults to base price × units" {...field} value={field.value ?? ''} /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <input type="hidden" {...form.register("scanUnitId")} />
               </div>
 
               <div className="grid grid-cols-2 gap-4">

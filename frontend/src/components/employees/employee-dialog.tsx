@@ -5,13 +5,13 @@ import * as React from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogDescription, 
-  DialogFooter, 
-  DialogHeader, 
-  DialogTitle 
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import {
@@ -35,7 +35,7 @@ import { Employee } from "@/lib/types"
 const employeeSchema = z.object({
   fullName: z.string().min(2, "Name must be at least 2 characters"),
   position: z.string().min(2, "Position is required"),
-  role: z.enum(["Administrator", "Manager", "Employee"]),
+  role: z.enum(["Manager", "Employee"]),
   department: z.string().min(2, "Department is required"),
   salary: z.coerce.number().min(0, "Salary cannot be negative"),
   contact: z.string().min(8, "Contact number is required"),
@@ -43,6 +43,7 @@ const employeeSchema = z.object({
   startDate: z.string().min(1, "Start date is required"),
   employmentStatus: z.enum(["Active", "On Leave", "Suspended", "Terminated"]),
   salaryPaymentStatus: z.enum(["Paid", "Pending", "Partial", "Overdue"]),
+  attendance: z.coerce.number().min(0).max(100),
 })
 
 type EmployeeFormValues = z.infer<typeof employeeSchema>
@@ -52,9 +53,10 @@ interface EmployeeDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   onSave: (employee: Partial<Employee>) => void
+  allowManagerRole?: boolean
 }
 
-export function EmployeeDialog({ employee, open, onOpenChange, onSave }: EmployeeDialogProps) {
+export function EmployeeDialog({ employee, open, onOpenChange, onSave, allowManagerRole = false }: EmployeeDialogProps) {
   const form = useForm<EmployeeFormValues>({
     resolver: zodResolver(employeeSchema),
     defaultValues: {
@@ -68,6 +70,7 @@ export function EmployeeDialog({ employee, open, onOpenChange, onSave }: Employe
       startDate: new Date().toISOString().split('T')[0],
       employmentStatus: "Active",
       salaryPaymentStatus: "Paid",
+      attendance: 0,
     },
   })
 
@@ -76,7 +79,7 @@ export function EmployeeDialog({ employee, open, onOpenChange, onSave }: Employe
       form.reset({
         fullName: employee.fullName || "",
         position: employee.position || "",
-        role: (employee.role as "Administrator" | "Manager" | "Employee") || "Employee",
+        role: employee.role === "Manager" && allowManagerRole ? "Manager" : "Employee",
         department: employee.department || "",
         salary: employee.salary || 0,
         contact: employee.contact || "",
@@ -84,6 +87,7 @@ export function EmployeeDialog({ employee, open, onOpenChange, onSave }: Employe
         startDate: employee.startDate || new Date().toISOString().split('T')[0],
         employmentStatus: employee.employmentStatus || "Active",
         salaryPaymentStatus: employee.salaryPaymentStatus || "Paid",
+        attendance: employee.attendance || 0,
       })
     } else {
       form.reset({
@@ -97,15 +101,15 @@ export function EmployeeDialog({ employee, open, onOpenChange, onSave }: Employe
         startDate: new Date().toISOString().split('T')[0],
         employmentStatus: "Active",
         salaryPaymentStatus: "Paid",
+        attendance: 0,
       })
     }
-  }, [employee, open, form])
+  }, [employee, open, form, allowManagerRole])
 
   const onSubmit = (values: EmployeeFormValues) => {
     onSave({
       ...values,
-      employeeId: employee?.employeeId || `EMP-${Math.random().toString(36).substr(2, 6).toUpperCase()}`,
-      attendance: employee?.attendance || 100,
+      employeeId: employee?.employeeId || "",
     } as Employee)
     onOpenChange(false)
   }
@@ -118,13 +122,7 @@ export function EmployeeDialog({ employee, open, onOpenChange, onSave }: Employe
             <DialogHeader>
               <DialogTitle className="font-headline font-bold text-xl">{employee ? "Edit Employee" : "Register New Employee"}</DialogTitle>
               <DialogDescription>
-                {employee?.code ? (
-                  <span className="block mt-1 font-mono text-xs font-semibold text-primary">
-                    Employee Code: {employee.code}
-                  </span>
-                ) : (
-                  "Manage your SME workforce data according to OHADA standards."
-                )}
+                Create the employee record and workspace access together.
               </DialogDescription>
             </DialogHeader>
 
@@ -144,6 +142,17 @@ export function EmployeeDialog({ employee, open, onOpenChange, onSave }: Employe
               />
 
               <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="attendance"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-[10px] font-bold uppercase tracking-widest">30-day Attendance (%)</FormLabel>
+                      <FormControl><Input type="number" min={0} max={100} {...field} /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
                 <FormField
                   control={form.control}
                   name="email"
@@ -199,8 +208,7 @@ export function EmployeeDialog({ employee, open, onOpenChange, onSave }: Employe
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="Administrator">Administrator</SelectItem>
-                          <SelectItem value="Manager">Manager</SelectItem>
+                          {allowManagerRole && <SelectItem value="Manager">Manager</SelectItem>}
                           <SelectItem value="Employee">Employee</SelectItem>
                         </SelectContent>
                       </Select>

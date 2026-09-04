@@ -7,6 +7,9 @@ class Sale {
   final double totalAmount;
   final DateTime date;
   final String recordedBy;
+  final String paymentMethod;
+  final String? customerId;
+  final List<SaleLine> items;
 
   Sale({
     required this.id,
@@ -17,5 +20,28 @@ class Sale {
     required this.totalAmount,
     required this.date,
     required this.recordedBy,
+    this.paymentMethod = 'Cash',
+    this.customerId,
+    this.items = const [],
+  });
+}
+
+class SaleLine {
+  final String productId;
+  final String productName;
+  final int quantity;
+  final double priceAtSale;
+  final String? unitId;
+  final String? unitName;
+  final int conversionFactor;
+
+  const SaleLine({
+    required this.productId,
+    required this.productName,
+    required this.quantity,
+    required this.priceAtSale,
+    this.unitId,
+    this.unitName,
+    this.conversionFactor = 1,
   });
 }

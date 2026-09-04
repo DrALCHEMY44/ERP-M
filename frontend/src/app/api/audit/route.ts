@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { z } from "zod"
 
-import { adminDataConnect, authorizeRequest } from "@/lib/server/firebase-token"
+import { adminDatabase, authorizeRequest } from "@/lib/server/auth"
 
 const schema = z.object({
   actionType: z.string().min(1).max(80),
@@ -14,7 +14,7 @@ export async function POST(request: Request) {
   try {
     const profile = await authorizeRequest(request)
     const input = schema.parse(await request.json())
-    const result = await adminDataConnect().executeMutation("CreateActivityLog", {
+    const result = await adminDatabase().executeMutation("CreateActivityLog", {
       tenantId: profile.tenantId,
       businessId: profile.businessId,
       userId: profile.uid,

@@ -16,53 +16,70 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { SaleDialog } from "@/components/sales/sale-dialog"
 import { ReceiptDialog } from "@/components/sales/receipt-dialog"
-import { Sale, Product } from "@/lib/types"
-import { useDataConnect } from "@/hooks/use-dataconnect"
-import { 
-  listTransactionsByBusinessQuery,
-  listProductsByBusinessQuery,
+import { Customer, Product, Sale } from "@/lib/types"
+import { useNeonData } from "@/hooks/use-neon-data"
+import {
+  getSalesQuery,
+  getBusinessByIdQuery,
+  getBusinessSettingsQuery,
+  listSaleCustomersByBusinessQuery,
+  listSaleProductsByBusinessQuery,
 } from "@/lib/data-service"
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/hooks/use-auth"
+import { downloadCsv } from "@/lib/csv"
 
 export default function SalesPage() {
   const { profile, user } = useAuth();
-  const { data: transactionsData, loading: salesLoading, unauthenticated, refetch: refetchSales } = useDataConnect({ 
-    query: listTransactionsByBusinessQuery, 
-    variables: { tenantId: profile?.tenantId || "", businessId: profile?.businessId || "" },
+  const canRecordSales = Boolean(profile && ["Business Owner", "Manager", "Accountant"].includes(profile.role));
+  const { data: salesData, loading: salesLoading, unauthenticated, refetch: refetchSales } = useNeonData({
+    query: getSalesQuery,
     skip: !profile || !profile.tenantId || !profile.businessId,
     refreshInterval: 5000
   });
-  const { data: productsData, loading: productsLoading, refetch: refetchProducts } = useDataConnect({ 
-    query: listProductsByBusinessQuery, 
+  const { data: productsData, loading: productsLoading, refetch: refetchProducts } = useNeonData({
+    query: listSaleProductsByBusinessQuery,
     variables: { tenantId: profile?.tenantId || "", businessId: profile?.businessId || "" },
-    skip: !profile || !profile.tenantId || !profile.businessId,
+    skip: !canRecordSales || !profile?.tenantId || !profile.businessId,
     refreshInterval: 5000
+  });
+  const { data: customersData, loading: customersLoading } = useNeonData({
+    query: listSaleCustomersByBusinessQuery,
+    variables: { tenantId: profile?.tenantId || "", businessId: profile?.businessId || "" },
+    skip: !canRecordSales || !profile?.tenantId || !profile.businessId,
+    refreshInterval: 15000,
+  });
+  const { data: businessData } = useNeonData({
+    query: getBusinessByIdQuery,
+    variables: { id: profile?.businessId || "" },
+    skip: !profile?.businessId,
+    refreshInterval: 60000,
+  });
+  const { data: settingsData } = useNeonData({
+    query: getBusinessSettingsQuery,
+    variables: { tenantId: profile?.tenantId || "", businessId: profile?.businessId || "" },
+    skip: !profile?.tenantId || !profile?.businessId,
+    refreshInterval: 60000,
   });
   const { toast } = useToast();
-  
-  // Note: we'll have to deal with the mutations to record the sale, but for now we replace the list
+
   const sales = React.useMemo(() => {
-    return (transactionsData?.transactions || [])
-      .filter((t: any) => t.type?.toUpperCase() === 'SALE')
-      .map((t: any) => ({
-        id: t.id,
-        tenantId: t.tenantId,
-        businessId: t.businessId,
-        totalAmount: t.amount,
-        saleDate: t.date,
-        recordedBy: t.recordedBy,
-        createdAt: t.createdAt,
-        paymentMethod: 'Cash',
-        productsSold: []
-      })) as unknown as Sale[];
-  }, [transactionsData]);
+    return (salesData?.sales || []) as Sale[];
+  }, [salesData]);
   const products = React.useMemo(() => {
     if (!profile?.tenantId || !profile.businessId) return [];
     return (productsData?.products || []).filter((product: any) =>
       product.tenantId === profile.tenantId && product.businessId === profile.businessId
     ) as unknown as Product[];
   }, [productsData, profile?.tenantId, profile?.businessId]);
+  const customers = React.useMemo(() => {
+    if (!profile?.tenantId || !profile.businessId) return [];
+    return (customersData?.customers || []).filter((customer: Customer) =>
+      customer.tenantId === profile.tenantId && customer.businessId === profile.businessId
+    ) as Customer[];
+  }, [customersData, profile?.tenantId, profile?.businessId]);
+  const business = businessData?.business;
+  const businessSettings = settingsData?.businessSettings?.[0];
 
   const [isDialogOpen, setIsDialogOpen] = React.useState(false)
   const [searchQuery, setSearchQuery] = React.useState("")
@@ -75,11 +92,20 @@ export default function SalesPage() {
   }, 0)
 
   const momoSales = sales.filter(s => s.paymentMethod === 'Mobile Money').length
-  
-  const filteredSales = sales.filter(s => 
+
+  const filteredSales = sales.filter(s =>
     s.id?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     (s.paymentMethod && s.paymentMethod.toLowerCase().includes(searchQuery.toLowerCase()))
   ).sort((a, b) => new Date(b.saleDate).getTime() - new Date(a.saleDate).getTime())
+
+  const exportSales = () => {
+    const date = new Date().toISOString().slice(0, 10)
+    downloadCsv(`sales-${date}.csv`, [
+      ["Sale ID", "Date", "Payment method", "Products", "Total amount", "Recorded by"],
+      ...filteredSales.map((sale) => [sale.id, sale.saleDate, sale.paymentMethod,
+        sale.productsSold.map((item) => `${item.productId} x${item.quantity}`).join("; "), sale.totalAmount, sale.recordedBy]),
+    ])
+  }
 
   const handleNewSale = async (saleData: Partial<Sale>) => {
     if (!profile?.tenantId || !profile?.businessId || !user) {
@@ -91,14 +117,15 @@ export default function SalesPage() {
       return;
     }
     try {
-      const token = await user.getIdToken()
+      const selectedPaymentMethod = saleData.paymentMethod || "Cash"
+      if (selectedPaymentMethod === "Unknown") throw new Error("Select a payment method for the new sale")
       const paymentMethod = ({
         Cash: "CASH", "Mobile Money": "MOBILE_MONEY",
         "Bank Transfer": "BANK_TRANSFER", Credit: "CREDIT",
-      } as const)[saleData.paymentMethod || "Cash"]
+      } as const)[selectedPaymentMethod]
       const response = await fetch("/api/sales", {
         method: "POST",
-        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           idempotencyKey: crypto.randomUUID(),
           customerId: saleData.customerId || undefined,
@@ -111,7 +138,7 @@ export default function SalesPage() {
       toast({ title: "Sale Recorded", description: `Transaction for ${saleData.totalAmount?.toLocaleString()} FCFA recorded.` });
       refetchSales();
       refetchProducts();
-    } catch (e) {
+    } catch {
       toast({ variant: "destructive", title: "Error", description: "Could not record sale. Please try again." });
     }
   }
@@ -130,11 +157,11 @@ export default function SalesPage() {
             <p className="text-sm text-muted-foreground">
               Please sign in to view your sales data. All operations require an authenticated session.
             </p>
-            <Link href="/login">
-              <Button className="bg-primary hover:bg-primary/90 text-white font-bold uppercase text-xs tracking-widest">
+            <Button asChild className="bg-primary hover:bg-primary/90 text-white font-bold uppercase text-xs tracking-widest">
+              <Link href="/login">
                 <LogIn className="size-4 mr-2" /> Sign In
-              </Button>
-            </Link>
+              </Link>
+            </Button>
           </CardContent>
         </Card>
       </div>
@@ -154,15 +181,17 @@ export default function SalesPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="space-y-1">
           <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Sales & Transactions</h1>
-          <p className="text-sm text-muted-foreground">Monitor revenue and record customer payments (Douala Hub).</p>
+          <p className="text-sm text-muted-foreground">Monitor revenue and record customer payments for your business.</p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" className="hidden sm:flex text-[10px] font-bold uppercase">
+          <Button variant="outline" size="sm" className="hidden sm:flex text-[10px] font-bold uppercase" onClick={exportSales}>
             <Download className="size-4 mr-2" /> Export
           </Button>
-          <Button onClick={() => setIsDialogOpen(true)} className="bg-emerald-600 hover:bg-emerald-700 text-white w-full sm:w-auto font-bold uppercase text-xs tracking-widest shadow-lg">
-            <Plus className="size-4 mr-2" /> New Sale
-          </Button>
+          {canRecordSales && (
+            <Button onClick={() => setIsDialogOpen(true)} className="bg-emerald-600 hover:bg-emerald-700 text-white w-full sm:w-auto font-bold uppercase text-xs tracking-widest shadow-lg">
+              <Plus className="size-4 mr-2" /> New Sale
+            </Button>
+          )}
         </div>
       </div>
 
@@ -198,11 +227,11 @@ export default function SalesPage() {
         </Card>
         <Card className="border-t-4 border-[#ef4444] shadow-md bg-red-50/10">
           <CardHeader className="pb-2 p-4">
-            <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Customer Credits</CardTitle>
+            <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Credit Sales</CardTitle>
           </CardHeader>
           <CardContent className="p-4 pt-0">
-            <div className="text-xl md:text-2xl font-bold text-red-600">{sales.filter(s => s.paymentMethod === 'Credit').length} Pending</div>
-            <p className="text-[10px] text-muted-foreground mt-1 uppercase font-bold tracking-tighter">Outstanding Store Credit</p>
+            <div className="text-xl md:text-2xl font-bold text-red-600">{sales.filter(s => s.paymentMethod === 'Credit').length} Recorded</div>
+            <p className="text-[10px] text-muted-foreground mt-1 uppercase font-bold tracking-tighter">Transactions recorded on store credit</p>
           </CardContent>
         </Card>
       </div>
@@ -211,8 +240,8 @@ export default function SalesPage() {
         <div className="p-4 border-b">
           <div className="relative max-w-sm">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-            <input 
-              placeholder="Search by Payment Method..." 
+            <input
+              placeholder="Search by Payment Method..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-9 pr-4 py-2 bg-muted/20 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
@@ -256,10 +285,10 @@ export default function SalesPage() {
                       {sale.totalAmount.toLocaleString()} FCFA
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button 
+                      <Button
                         onClick={() => { setSelectedReceipt(sale); setIsReceiptOpen(true); }}
-                        variant="ghost" 
-                        size="sm" 
+                        variant="ghost"
+                        size="sm"
                         className="text-[10px] uppercase font-bold text-primary hover:text-primary-foreground hover:bg-primary"
                       >
                         Print Receipt
@@ -279,19 +308,32 @@ export default function SalesPage() {
         </div>
       </div>
 
-      <SaleDialog 
-        open={isDialogOpen}
-        onOpenChange={setIsDialogOpen}
-        onSave={handleNewSale}
-        products={products}
-        productsLoading={productsLoading}
-      />
+      {canRecordSales && (
+        <SaleDialog
+          open={isDialogOpen}
+          onOpenChange={setIsDialogOpen}
+          onSave={handleNewSale}
+          products={products}
+          customers={customers}
+          productsLoading={productsLoading}
+          customersLoading={customersLoading}
+        />
+      )}
 
-      <ReceiptDialog 
+      <ReceiptDialog
         sale={selectedReceipt}
         open={isReceiptOpen}
         onOpenChange={setIsReceiptOpen}
         allProducts={products}
+        businessName={business?.name}
+        businessAddress={[business?.location, business?.city, business?.region].filter(Boolean).join(", ")}
+        businessPhone={business?.phone}
+        taxId={business?.taxId}
+        taxRatePercent={businessSettings?.taxRate ?? 0}
+        currency={businessSettings?.currency || "FCFA"}
+        recordedByName={selectedReceipt?.recordedBy === user?.uid
+          ? profile?.fullName || profile?.email
+          : selectedReceipt?.recordedBy ? `User ${selectedReceipt.recordedBy.slice(0, 8)}` : undefined}
       />
     </div>
   )

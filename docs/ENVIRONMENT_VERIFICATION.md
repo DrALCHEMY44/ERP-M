@@ -1,5 +1,8 @@
 # Local environment verification
 
+> Historical checkpoint from 11 August 2026. Current Neon release verification
+> is recorded in `IMPLEMENTATION_STATUS.md`.
+
 Verification date: 2026-08-11.
 
 | Check | Result | Evidence/limitation |

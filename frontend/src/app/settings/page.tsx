@@ -2,40 +2,42 @@
 "use client"
 
 import * as React from "react"
-import { 
-  Settings, 
-  Globe, 
-  Wallet, 
-  Users, 
-  ShieldCheck, 
-  Save, 
-  Loader2, 
-  Plus, 
-  Mail, 
-  Trash2,
+import Link from "next/link"
+import {
+  Settings,
+  Globe,
+  Wallet,
+  Users,
+  ShieldCheck,
+  Save,
+  Loader2,
+  Plus,
   CheckCircle2
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { Switch } from "@/components/ui/switch"
-import { useFirestore } from "@/hooks/use-firestore"
 import { useAuth } from "@/hooks/use-auth"
-import { useDataConnect } from "@/hooks/use-dataconnect"
-import { listUsersByBusinessQuery } from "@/lib/data-service"
+import { useNeonData } from "@/hooks/use-neon-data"
+import { getBusinessSettingsQuery, listUsersByBusinessQuery, upsertBusinessSettingsMutation } from "@/lib/data-service"
 import { BusinessSettings, UserProfile } from "@/lib/types"
 import { useToast } from "@/hooks/use-toast"
 
 export default function SettingsPage() {
   const { toast } = useToast()
   const { profile } = useAuth()
-  const { data: settingsList, updateRecord, addRecord, loading: settingsLoading } = useFirestore<BusinessSettings>('settings')
-  
-  const { data: usersData, loading: usersLoading } = useDataConnect({
+  const { data: settingsData, loading: settingsLoading, refetch: refetchSettings } = useNeonData({
+    query: getBusinessSettingsQuery,
+    variables: { tenantId: profile?.tenantId || "", businessId: profile?.businessId || "" },
+    skip: !profile?.tenantId || !profile?.businessId,
+  })
+
+  const { data: usersData, loading: usersLoading } = useNeonData({
     query: listUsersByBusinessQuery,
     variables: {
       tenantId: profile?.tenantId || "",
@@ -57,15 +59,15 @@ export default function SettingsPage() {
       permissions: []
     })) as UserProfile[];
   }, [usersData]);
-  
+
   const [isSaving, setIsSaving] = React.useState(false)
-  const settings = settingsList[0] // Should be unique per business
+  const settings = settingsData?.businessSettings?.[0] as BusinessSettings | undefined
 
   const [formData, setFormData] = React.useState<Partial<BusinessSettings>>({
     currency: "FCFA",
     timezone: "Africa/Douala",
     fiscalYearStart: "01-01",
-    taxRate: 19.25,
+    taxRate: 0,
     lowStockThreshold: 10,
   })
 
@@ -76,13 +78,25 @@ export default function SettingsPage() {
   }, [settings])
 
   const handleSave = async () => {
+    if (!profile?.tenantId || !profile.businessId) return
+    const taxRate = Number(formData.taxRate)
+    const lowStockThreshold = Number(formData.lowStockThreshold)
+    if (!Number.isFinite(taxRate) || taxRate < 0 || taxRate > 100 || !Number.isInteger(lowStockThreshold) || lowStockThreshold < 0) {
+      toast({ variant: "destructive", title: "Invalid settings", description: "Tax must be 0–100% and stock threshold must be a non-negative whole number." })
+      return
+    }
     setIsSaving(true)
     try {
-      if (settings?.id) {
-        await updateRecord(settings.id, formData)
-      } else {
-        await addRecord(formData as Omit<BusinessSettings, 'id'>)
-      }
+      await upsertBusinessSettingsMutation({
+        tenantId: profile.tenantId,
+        businessId: profile.businessId,
+        currency: formData.currency || "FCFA",
+        timezone: formData.timezone || "Africa/Douala",
+        fiscalYearStart: formData.fiscalYearStart || "01-01",
+        taxRate,
+        lowStockThreshold,
+      })
+      await refetchSettings()
       toast({
         title: "Settings Saved",
         description: "Your business configuration has been updated across the tenant.",
@@ -91,7 +105,7 @@ export default function SettingsPage() {
       toast({
         variant: "destructive",
         title: "Save Failed",
-        description: "An error occurred while synchronizing settings.",
+        description: error instanceof Error ? error.message : "An error occurred while synchronizing settings.",
       })
     } finally {
       setIsSaving(false)
@@ -145,10 +159,10 @@ export default function SettingsPage() {
                 <div className="space-y-2">
                   <Label htmlFor="lowStock">Default Low Stock Level</Label>
                   <div className="flex items-center gap-3">
-                    <Input 
-                      id="lowStock" 
-                      type="number" 
-                      value={formData.lowStockThreshold} 
+                    <Input
+                      id="lowStock"
+                      type="number"
+                      value={formData.lowStockThreshold}
                       onChange={(e) => setFormData({...formData, lowStockThreshold: parseInt(e.target.value)})}
                     />
                     <Badge variant="outline">Units</Badge>
@@ -170,8 +184,8 @@ export default function SettingsPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <Label>Primary Currency</Label>
-                  <Select 
-                    value={formData.currency} 
+                  <Select
+                    value={formData.currency}
                     onValueChange={(val) => setFormData({...formData, currency: val})}
                   >
                     <SelectTrigger>
@@ -186,8 +200,8 @@ export default function SettingsPage() {
                 </div>
                 <div className="space-y-2">
                   <Label>Business Timezone</Label>
-                  <Select 
-                    value={formData.timezone} 
+                  <Select
+                    value={formData.timezone}
                     onValueChange={(val) => setFormData({...formData, timezone: val})}
                   >
                     <SelectTrigger>
@@ -208,32 +222,32 @@ export default function SettingsPage() {
         <TabsContent value="finance" className="space-y-4">
           <Card className="shadow-sm">
             <CardHeader>
-              <CardTitle>Accounting Standards</CardTitle>
-              <CardDescription>SYCOHADA financial configurations and tax rules.</CardDescription>
+              <CardTitle>Finance Configuration</CardTitle>
+              <CardDescription>Business tax and fiscal-reporting preferences.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <Label>Standard Tax Rate (TVA)</Label>
+                  <Label>Receipt Tax Rate</Label>
                   <div className="flex items-center gap-3">
-                    <Input 
-                      type="number" 
+                    <Input
+                      type="number"
                       step="0.01"
-                      value={formData.taxRate} 
+                      value={formData.taxRate}
                       onChange={(e) => setFormData({...formData, taxRate: parseFloat(e.target.value)})}
                     />
                     <Badge variant="outline">%</Badge>
                   </div>
-                  <p className="text-[10px] text-muted-foreground font-bold uppercase">Standard Cameroon TVA: 19.25%</p>
+                  <p className="text-[10px] text-muted-foreground font-bold uppercase">Configure the rate applicable to your business and confirm it with a qualified accountant.</p>
                 </div>
                 <div className="space-y-2">
                   <Label>Fiscal Year Start</Label>
-                  <Input 
-                    placeholder="e.g. 01-01" 
+                  <Input
+                    placeholder="e.g. 01-01"
                     value={formData.fiscalYearStart}
                     onChange={(e) => setFormData({...formData, fiscalYearStart: e.target.value})}
                   />
-                  <p className="text-[10px] text-muted-foreground font-bold uppercase">Format: MM-DD (Default SYCOHADA is Jan 1st)</p>
+                  <p className="text-[10px] text-muted-foreground font-bold uppercase">Format: MM-DD (for example, 01-01)</p>
                 </div>
               </div>
             </CardContent>
@@ -247,8 +261,8 @@ export default function SettingsPage() {
                 <CardTitle>Workspace Members</CardTitle>
                 <CardDescription>Manage user roles and tenant invitations.</CardDescription>
               </div>
-              <Button size="sm" className="text-[10px] font-bold uppercase tracking-widest">
-                <Plus className="size-3 mr-2" /> Invite Member
+              <Button asChild size="sm" className="text-[10px] font-bold uppercase tracking-widest">
+                <Link href="/employees"><Plus className="size-3 mr-2" /> Add Team Member</Link>
               </Button>
             </CardHeader>
             <CardContent>
@@ -271,9 +285,6 @@ export default function SettingsPage() {
                         <Badge variant="secondary" className="text-[10px] font-bold uppercase tracking-widest">
                           {user.role}
                         </Badge>
-                        <Button variant="ghost" size="icon" className="text-destructive h-8 w-8">
-                          <Trash2 className="size-4" />
-                        </Button>
                       </div>
                     </div>
                   ))
@@ -292,19 +303,19 @@ export default function SettingsPage() {
             <CardContent className="space-y-6">
               <div className="flex items-center justify-between space-y-0 p-4 border rounded-xl">
                 <div className="space-y-1">
-                  <h4 className="text-sm font-bold uppercase">Mandatory Two-Factor (2FA)</h4>
-                  <p className="text-xs text-muted-foreground font-medium">Require all staff members to use 2FA for workspace access.</p>
+                  <h4 className="text-sm font-bold uppercase">Multi-Factor Authentication (MFA)</h4>
+                  <p className="text-xs text-muted-foreground font-medium">Enable and enforce MFA in the production Neon Auth configuration.</p>
                 </div>
-                <Switch checked={true} />
+                <Switch checked={false} disabled aria-label="MFA is configured in Neon Auth" />
               </div>
               <div className="flex items-center justify-between space-y-0 p-4 border rounded-xl bg-emerald-50/20 border-emerald-100">
                 <div className="space-y-1">
                   <h4 className="text-sm font-bold uppercase text-emerald-700 flex items-center gap-2">
-                    <CheckCircle2 className="size-4" /> Immutable Audit Trail
+                    <CheckCircle2 className="size-4" /> Scoped Audit Logging
                   </h4>
-                  <p className="text-xs text-muted-foreground font-medium">All record changes are cryptographically signed and archived for 10 years.</p>
+                  <p className="text-xs text-muted-foreground font-medium">Trusted mutations append actor-scoped audit records; retention follows the configured deployment policy.</p>
                 </div>
-                <Badge className="bg-emerald-100 text-emerald-700 text-[10px] font-bold uppercase">Locked</Badge>
+                <Badge className="bg-emerald-100 text-emerald-700 text-[10px] font-bold uppercase">Active</Badge>
               </div>
             </CardContent>
           </Card>
@@ -315,12 +326,12 @@ export default function SettingsPage() {
         <div className="flex items-center gap-2">
           <ShieldCheck className="size-5 text-primary opacity-50" />
           <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">
-            Tenant: {profile?.tenantId || "Loading..."} • Multi-Tenant Encryption Active
+            Tenant: {profile?.tenantId || "Loading..."} • Tenant-scoped access active
           </p>
         </div>
-        <Button 
-          onClick={handleSave} 
-          disabled={isSaving}
+        <Button
+          onClick={handleSave}
+          disabled={isSaving || settingsLoading || !profile}
           className="bg-primary hover:bg-primary/90 font-bold uppercase tracking-widest text-xs h-11 px-10 shadow-lg"
         >
           {isSaving ? <Loader2 className="size-4 mr-2 animate-spin" /> : <Save className="size-4 mr-2" />}

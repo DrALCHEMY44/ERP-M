@@ -1,10 +1,9 @@
 "use client"
 
 import * as React from "react"
-import { Plus, Search, Filter, AlertTriangle, Package, Download, Loader2, Trash2, LogIn } from "lucide-react"
+import { Plus, Search, Filter, AlertTriangle, Download, Loader2, Trash2, LogIn } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import {
   Table,
   TableBody,
@@ -17,8 +16,8 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ProductDialog } from "@/components/inventory/product-dialog"
 import { Product } from "@/lib/types"
-import { useDataConnect } from "@/hooks/use-dataconnect"
-import { 
+import { useNeonData } from "@/hooks/use-neon-data"
+import {
   listProductsByBusinessQuery,
   createProductMutation,
   updateProductMutation,
@@ -29,34 +28,48 @@ import { logActivity } from "@/lib/audit-logger"
 import { createNotification } from "@/lib/notifications"
 import { useAuth } from "@/hooks/use-auth"
 import { useTranslation } from "@/components/language-provider"
+import { downloadCsv } from "@/lib/csv"
 
 export default function InventoryPage() {
   const { user, profile } = useAuth();
+  const canManageInventory = Boolean(profile && ["Business Owner", "Manager"].includes(profile.role));
   const { t } = useTranslation();
-  const { data: productsData, loading, unauthenticated, refetch } = useDataConnect({
-    query: listProductsByBusinessQuery, 
-    variables: { 
+  const { data: productsData, loading, unauthenticated, refetch } = useNeonData({
+    query: listProductsByBusinessQuery,
+    variables: {
       tenantId: profile?.tenantId || "",
-      businessId: profile?.businessId || "" 
+      businessId: profile?.businessId || ""
     },
     skip: !profile || !profile.tenantId || !profile.businessId,
     refreshInterval: 5000
   });
   const { toast } = useToast();
-  
+
   const products = React.useMemo(() => (productsData?.products || []) as unknown as Product[], [productsData]);
 
   const [isDialogOpen, setIsDialogOpen] = React.useState(false)
   const [selectedProduct, setSelectedProduct] = React.useState<Product | null>(null)
   const [searchQuery, setSearchQuery] = React.useState("")
+  const [lowStockOnly, setLowStockOnly] = React.useState(false)
 
-  const filteredProducts = products.filter(p => 
-    (p.name && p.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
-    (p.category && p.category.toLowerCase().includes(searchQuery.toLowerCase()))
-  )
+  const filteredProducts = products.filter(p => {
+    const matchesSearch = (p.name && p.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (p.category && p.category.toLowerCase().includes(searchQuery.toLowerCase()))
+    return matchesSearch && (!lowStockOnly || p.quantity <= (p.lowStockLevel || 0))
+  })
 
   const lowStockItems = products.filter(p => p.quantity <= (p.lowStockLevel || 0))
   const totalValue = products.reduce((acc, p) => acc + (p.quantity * (p.costPrice || 0)), 0)
+  const activeProducts = products.filter((product) => product.status !== "inactive").length
+
+  const exportInventory = () => {
+    const date = new Date().toISOString().slice(0, 10)
+    downloadCsv(`inventory-${date}.csv`, [
+      ["Product ID", "Name", "Category", "Status", "Quantity", "Base unit", "Barcode", "Low-stock level", "Cost price", "Selling price", "Expiry date"],
+      ...filteredProducts.map((product) => [product.id, product.name, product.category, product.status,
+        product.quantity, product.baseUnit, product.barcode || "", product.lowStockLevel, product.costPrice, product.sellingPrice, product.expiryDate || ""]),
+    ])
+  }
 
   const handleEdit = (product: Product) => {
     setSelectedProduct(product)
@@ -89,7 +102,7 @@ export default function InventoryPage() {
           } : undefined
         });
         toast({ title: "Product Deleted", description: "Item has been removed from your inventory." });
-      } catch (e) {
+      } catch {
         toast({ variant: "destructive", title: "Error", description: "Could not delete product." });
       }
     }
@@ -113,7 +126,15 @@ export default function InventoryPage() {
           quantity: productData.quantity,
           costPrice: productData.costPrice,
           sellingPrice: productData.sellingPrice,
-          lowStockLevel: productData.lowStockLevel
+          lowStockLevel: productData.lowStockLevel,
+          expiryDate: productData.expiryDate || null,
+          status: productData.status || 'active',
+          baseUnit: productData.baseUnit,
+          scanUnit: productData.scanUnit,
+          conversionFactor: productData.conversionFactor,
+          barcode: productData.barcode,
+          scanSellingPrice: productData.scanSellingPrice,
+          scanUnitId: productData.scanUnitId,
         });
         await refetch();
         await logActivity({
@@ -131,7 +152,7 @@ export default function InventoryPage() {
             role: profile.role
           } : undefined
         });
-        
+
         // Low stock notification
         if (productData.quantity !== undefined && productData.quantity <= (productData.lowStockLevel || selectedProduct.lowStockLevel || 0)) {
           await createNotification({
@@ -159,6 +180,13 @@ export default function InventoryPage() {
           costPrice: productData.costPrice,
           sellingPrice: productData.sellingPrice || 0,
           lowStockLevel: productData.lowStockLevel,
+          expiryDate: productData.expiryDate || null,
+          status: productData.status || 'active',
+          baseUnit: productData.baseUnit || 'piece',
+          scanUnit: productData.scanUnit || productData.baseUnit || 'piece',
+          conversionFactor: productData.conversionFactor || 1,
+          barcode: productData.barcode || null,
+          scanSellingPrice: productData.scanSellingPrice,
           createdBy: user?.uid || "unknown"
         });
         await refetch();
@@ -179,7 +207,7 @@ export default function InventoryPage() {
         });
         toast({ title: "Product Added", description: `${productData.name} is now in your stock.` });
       }
-    } catch (e) {
+    } catch {
       toast({ variant: "destructive", title: "Save Failed", description: "Please check your database connection." });
     }
   }
@@ -198,11 +226,11 @@ export default function InventoryPage() {
             <p className="text-sm text-muted-foreground">
               Please sign in to view your inventory data. All operations require an authenticated session.
             </p>
-            <Link href="/login">
-              <Button className="bg-primary hover:bg-primary/90 text-white font-bold uppercase text-xs tracking-widest">
+            <Button asChild className="bg-primary hover:bg-primary/90 text-white font-bold uppercase text-xs tracking-widest">
+              <Link href="/login">
                 <LogIn className="size-4 mr-2" /> Sign In
-              </Button>
-            </Link>
+              </Link>
+            </Button>
           </CardContent>
         </Card>
       </div>
@@ -225,12 +253,14 @@ export default function InventoryPage() {
           <p className="text-sm text-muted-foreground">{t('inventory.subtitle')}</p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" className="hidden sm:flex uppercase font-bold text-[10px]">
+          <Button variant="outline" size="sm" className="hidden sm:flex uppercase font-bold text-[10px]" onClick={exportInventory}>
             <Download className="size-4 mr-2" /> {t('inventory.exportCsv')}
           </Button>
-          <Button onClick={handleAddNew} className="bg-primary hover:bg-primary/90 text-white w-full sm:w-auto font-bold uppercase text-xs tracking-widest shadow-lg">
-            <Plus className="size-4 mr-2" /> {t('inventory.addProduct')}
-          </Button>
+          {canManageInventory && (
+            <Button onClick={handleAddNew} className="bg-primary hover:bg-primary/90 text-white w-full sm:w-auto font-bold uppercase text-xs tracking-widest shadow-lg">
+              <Plus className="size-4 mr-2" /> {t('inventory.addProduct')}
+            </Button>
+          )}
         </div>
       </div>
 
@@ -261,7 +291,7 @@ export default function InventoryPage() {
             <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{t('inventory.activeProducts')}</CardTitle>
           </CardHeader>
           <CardContent className="p-4 pt-0">
-            <div className="text-xl md:text-2xl font-bold text-emerald-700">{products.length} Items</div>
+            <div className="text-xl md:text-2xl font-bold text-emerald-700">{activeProducts} Items</div>
             <p className="text-[10px] text-muted-foreground mt-1 uppercase font-bold tracking-tighter">{t('inventory.connectedToCloud')}</p>
           </CardContent>
         </Card>
@@ -271,15 +301,15 @@ export default function InventoryPage() {
         <div className="p-4 border-b flex flex-col md:flex-row gap-4 items-center">
           <div className="relative w-full md:w-96">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-            <input 
+            <input
               placeholder={t('inventory.searchPlaceholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-9 pr-4 py-2 bg-muted/20 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
-          <Button variant="ghost" size="sm" className="ml-auto text-[10px] uppercase font-bold">
-            <Filter className="size-4 mr-2" /> Filters
+          <Button variant={lowStockOnly ? "secondary" : "ghost"} size="sm" className="ml-auto text-[10px] uppercase font-bold" onClick={() => setLowStockOnly((value) => !value)}>
+            <Filter className="size-4 mr-2" /> {lowStockOnly ? "Low stock only" : "All stock"}
           </Button>
         </div>
 
@@ -292,7 +322,7 @@ export default function InventoryPage() {
                 <TableHead>{t('inventory.stockLevel')}</TableHead>
                 <TableHead>{t('inventory.priceSelling')}</TableHead>
                 <TableHead>{t('inventory.status')}</TableHead>
-                <TableHead className="text-right">{t('common.actions')}</TableHead>
+                {canManageInventory && <TableHead className="text-right">{t('common.actions')}</TableHead>}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -306,12 +336,13 @@ export default function InventoryPage() {
                     <TableCell>
                       <div className="flex flex-col">
                         <span className={`font-bold text-sm ${(product.quantity || 0) <= (product.lowStockLevel || 0) ? 'text-destructive' : 'text-foreground'}`}>
-                          {product.quantity || 0} units
+                          {product.quantity || 0} {product.baseUnit || 'piece'}
                         </span>
                         <span className="text-[9px] text-muted-foreground uppercase font-bold">Alert: {product.lowStockLevel || 0}</span>
+                        {product.barcode && <span className="text-[9px] text-muted-foreground">Barcode: {product.barcode}</span>}
                       </div>
                     </TableCell>
-                    <TableCell className="font-bold text-emerald-600 text-sm">{(product.sellingPrice || 0).toLocaleString()} FCFA</TableCell>
+                    <TableCell className="font-bold text-emerald-600 text-sm">{(product.sellingPrice || 0).toLocaleString()} FCFA / {product.baseUnit || 'piece'}</TableCell>
                     <TableCell>
                       {(product.quantity || 0) <= (product.lowStockLevel || 0) ? (
                         <Badge className="bg-destructive text-destructive-foreground text-[9px] uppercase font-bold">Low Stock</Badge>
@@ -319,19 +350,19 @@ export default function InventoryPage() {
                         <Badge className="bg-emerald-500 text-white text-[9px] uppercase font-bold">In Stock</Badge>
                       )}
                     </TableCell>
-                    <TableCell className="text-right">
+                    {canManageInventory && <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-1">
                         <Button variant="ghost" size="sm" onClick={() => handleEdit(product)} className="text-[10px] uppercase font-bold">Edit</Button>
-                        <Button variant="ghost" size="sm" onClick={() => handleDelete(product.id!)} className="text-destructive hover:text-destructive hover:bg-destructive/10">
+                        <Button variant="ghost" size="sm" onClick={() => handleDelete(product.id!)} className="text-destructive hover:text-destructive hover:bg-destructive/10" aria-label={`Delete ${product.name}`}>
                           <Trash2 className="size-4" />
                         </Button>
                       </div>
-                    </TableCell>
+                    </TableCell>}
                   </TableRow>
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
+                  <TableCell colSpan={canManageInventory ? 6 : 5} className="h-24 text-center text-muted-foreground">
                     {searchQuery ? "No matching products found." : "No products in your database yet."}
                   </TableCell>
                 </TableRow>
@@ -341,12 +372,14 @@ export default function InventoryPage() {
         </div>
       </div>
 
-      <ProductDialog 
-        product={selectedProduct}
-        open={isDialogOpen}
-        onOpenChange={setIsDialogOpen}
-        onSave={handleSave}
-      />
+      {canManageInventory && (
+        <ProductDialog
+          product={selectedProduct}
+          open={isDialogOpen}
+          onOpenChange={setIsDialogOpen}
+          onSave={handleSave}
+        />
+      )}
     </div>
   )
 }

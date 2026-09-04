@@ -1,5 +1,8 @@
 # Controlled deployment runbook
 
+> Historical Firebase/Data Connect runbook. Do not execute these steps for the
+> current release; follow the repository-root `DEPLOYMENT.md` instead.
+
 ## Preconditions
 
 - New project ID matching `smarterp-ai-defence-demo-<suffix>`; never select `studio-8058744913-5a601`.

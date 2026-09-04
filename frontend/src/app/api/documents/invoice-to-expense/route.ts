@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server"
 import { z } from "zod"
-import { neon } from "@neondatabase/serverless"
-import { authorizeRequest } from "@/lib/server/firebase-token"
+import { authorizeRequest } from "@/lib/server/auth"
 import { requirePermission } from "@/lib/server/authorization"
+import { db } from "@/lib/server/neon"
 import { executeOperationalOperation } from "@/lib/server/operational-data"
 
 export const runtime = "nodejs"
@@ -13,8 +13,7 @@ export async function POST(request: Request) {
     const profile = await authorizeRequest(request)
     requirePermission(profile, "expenses:write")
     const input = schema.parse(await request.json())
-    if (!process.env.DATABASE_URL) throw new Error("DATABASE_URL is not configured")
-    const sql = neon(process.env.DATABASE_URL)
+    const sql = db()
     const rows = await sql`SELECT classification,structured_data FROM document_intelligence
       WHERE document_id=${input.documentId} AND tenant_id=${profile.tenantId} AND business_id=${profile.businessId} AND status='READY'`
     if (!rows.length) return NextResponse.json({ error: "Processed invoice was not found" }, { status: 404 })

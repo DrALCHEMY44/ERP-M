@@ -1,9 +1,9 @@
 
 "use client"
 
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, ReactNode } from 'react';
+import { authClient } from '@/lib/auth/client';
+import { recoverAuthenticationSession } from '@/lib/auth/session-recovery';
 
 export interface AppUser {
   id: string;
@@ -16,59 +16,109 @@ export interface AppUser {
 }
 
 interface AuthContextType {
-  user: FirebaseUser | null;
+  user: AuthUser | null;
   profile: AppUser | null;
   loading: boolean;
   refetchProfile: () => Promise<void>;
 }
 
+export interface AuthUser {
+  id: string;
+  uid: string;
+  email: string;
+  displayName: string | null;
+  photoURL: string | null;
+  emailVerified: boolean;
+}
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<FirebaseUser | null>(null);
   const [profile, setProfile] = useState<AppUser | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [profileLoading, setProfileLoading] = useState(false);
+  const [profileResolved, setProfileResolved] = useState(false);
+  const session = authClient.useSession();
 
-  const fetchProfile = async (firebaseUser: FirebaseUser) => {
+  const user = useMemo<AuthUser | null>(() => {
+    const identity = session.data?.user;
+    if (!identity) return null;
+    return {
+      id: identity.id,
+      uid: identity.id,
+      email: identity.email,
+      displayName: identity.name || null,
+      photoURL: identity.image || null,
+      emailVerified: Boolean(identity.emailVerified),
+    };
+  }, [session.data?.user]);
+
+  const fetchProfile = useCallback(async (): Promise<"resolved" | "retry"> => {
     try {
-      const token = await firebaseUser.getIdToken();
-      const response = await fetch('/api/profile', { headers: { Authorization: `Bearer ${token}` } });
+      const response = await fetch('/api/profile', { cache: 'no-store' });
       const body = await response.json();
+      if (response.status === 404) {
+        setProfile(null);
+        setProfileResolved(true);
+        return "resolved";
+      }
+      if (response.status === 401 || response.status === 403) {
+        setProfile(null);
+        setProfileResolved(true);
+        await recoverAuthenticationSession();
+        return "resolved";
+      }
+      if (response.status === 503) return "retry";
       if (!response.ok) throw new Error(body.error || 'Profile lookup failed');
       setProfile(body.user);
+      setProfileResolved(true);
+      return "resolved";
     } catch (e) {
       console.error('Failed to fetch user profile:', e);
-      setProfile(null);
+      // A temporary database/network failure must not erase a valid session or
+      // redirect an authenticated user into registration. The effect retries.
+      return "retry";
     }
-  };
-
-  const refetchProfile = async () => {
-    if (auth.currentUser) {
-      setLoading(true);
-      await fetchProfile(auth.currentUser);
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      setUser(firebaseUser);
-
-      if (firebaseUser) {
-        setLoading(true);
-        await fetchProfile(firebaseUser);
-        setLoading(false);
-      } else {
-        setProfile(null);
-        setLoading(false);
-      }
-    });
-
-    return () => unsubscribe();
   }, []);
 
+  const refetchProfile = useCallback(async () => {
+    await session.refetch();
+    if (user) {
+      setProfileLoading(true);
+      await fetchProfile();
+      setProfileLoading(false);
+    }
+  }, [fetchProfile, session, user]);
+
+  useEffect(() => {
+    let active = true;
+    let retryTimer: ReturnType<typeof setTimeout> | undefined;
+    let attempt = 0;
+    const load = async () => {
+      if (!user) {
+        setProfile(null);
+        setProfileResolved(true);
+        return;
+      }
+      setProfileLoading(true);
+      const result = await fetchProfile();
+      if (!active) return;
+      setProfileLoading(false);
+      if (result === "retry") {
+        const delay = Math.min(30_000, 1_000 * 2 ** attempt);
+        attempt += 1;
+        retryTimer = setTimeout(() => { void load(); }, delay);
+      }
+    };
+    setProfileResolved(false);
+    void load();
+    return () => {
+      active = false;
+      if (retryTimer) clearTimeout(retryTimer);
+    };
+  }, [fetchProfile, user]);
+
   return (
-    <AuthContext.Provider value={{ user, profile, loading, refetchProfile }}>
+    <AuthContext.Provider value={{ user, profile, loading: session.isPending || profileLoading || Boolean(user && !profileResolved), refetchProfile }}>
       {children}
     </AuthContext.Provider>
   );

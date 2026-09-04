@@ -2,10 +2,10 @@
 
 import * as React from "react"
 import { StatCard } from "@/components/dashboard/stat-card"
-import { 
-  ShoppingCart, 
-  Receipt, 
-  TrendingUp, 
+import {
+  ShoppingCart,
+  Receipt,
+  TrendingUp,
   AlertTriangle,
   Users,
   UserCircle,
@@ -27,8 +27,9 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart"
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts"
-import { useDataConnect } from "@/hooks/use-dataconnect"
-import { 
+import { useNeonData } from "@/hooks/use-neon-data"
+import {
+  getSalesQuery,
   listTransactionsByBusinessQuery,
   listProductsByBusinessQuery,
   listTasksByBusinessQuery,
@@ -46,72 +47,66 @@ import { useAuth } from "@/hooks/use-auth"
 export default function DashboardPage() {
   const { t } = useTranslation();
   const { profile, user } = useAuth();
-  
-  const { data: salesDataResult, loading: salesLoading, unauthenticated } = useDataConnect({ 
-    query: listTransactionsByBusinessQuery, 
-    variables: { tenantId: profile?.tenantId || "", businessId: profile?.businessId || "" },
-    skip: !profile || !profile.tenantId || !profile.businessId,
+  const role = profile?.role;
+  const canReadSales = ["Business Owner", "Manager", "Accountant", "Staff", "Viewer"].includes(role || "");
+  const canReadExpenses = ["Business Owner", "Manager", "Accountant"].includes(role || "");
+  const canReadInventory = ["Business Owner", "Manager", "Staff", "Viewer"].includes(role || "");
+  const canReadTasks = ["Business Owner", "Manager", "HR Officer", "Staff", "Viewer"].includes(role || "");
+  const canReadCustomers = ["Business Owner", "Manager"].includes(role || "");
+  const canReadEmployees = ["Business Owner", "Manager", "HR Officer"].includes(role || "");
+  const canReadSuppliers = ["Business Owner", "Manager"].includes(role || "");
+  const canReadAudit = ["Business Owner", "Manager"].includes(role || "");
+
+  const { data: salesDataResult, loading: salesLoading, unauthenticated } = useNeonData({
+    query: getSalesQuery,
+    skip: !profile || !profile.tenantId || !profile.businessId || !canReadSales,
     refreshInterval: 5000
   });
-  const { data: productsData, loading: productsLoading } = useDataConnect({ 
-    query: listProductsByBusinessQuery, 
+  const { data: productsData, loading: productsLoading } = useNeonData({
+    query: listProductsByBusinessQuery,
     variables: { tenantId: profile?.tenantId || "", businessId: profile?.businessId || "" },
-    skip: !profile || !profile.tenantId || !profile.businessId,
+    skip: !profile || !profile.tenantId || !profile.businessId || !canReadInventory,
     refreshInterval: 5000
   });
-  // Note: Assuming transactions represent both sales and expenses. Filtering will be done client-side for now based on 'type'.
-  const { data: expensesDataResult, loading: expensesLoading } = useDataConnect({ 
-    query: listTransactionsByBusinessQuery, 
+  const { data: expensesDataResult, loading: expensesLoading } = useNeonData({
+    query: listTransactionsByBusinessQuery,
     variables: { tenantId: profile?.tenantId || "", businessId: profile?.businessId || "" },
-    skip: !profile || !profile.tenantId || !profile.businessId,
-    refreshInterval: 5000
-  }); 
-  const { data: tasksData, loading: tasksLoading } = useDataConnect({ 
-    query: listTasksByBusinessQuery, 
-    variables: { tenantId: profile?.tenantId || "", businessId: profile?.businessId || "" },
-    skip: !profile || !profile.tenantId || !profile.businessId,
+    skip: !profile || !profile.tenantId || !profile.businessId || !canReadExpenses,
     refreshInterval: 5000
   });
-  const { data: customersData, loading: customersLoading } = useDataConnect({ 
-    query: listCustomersByBusinessQuery, 
+  const { data: tasksData, loading: tasksLoading } = useNeonData({
+    query: listTasksByBusinessQuery,
     variables: { tenantId: profile?.tenantId || "", businessId: profile?.businessId || "" },
-    skip: !profile || !profile.tenantId || !profile.businessId,
+    skip: !profile || !profile.tenantId || !profile.businessId || !canReadTasks,
     refreshInterval: 5000
   });
-  const { data: logsData, loading: logsLoading } = useDataConnect({ 
-    query: listActivityLogsByUserQuery, 
+  const { data: customersData, loading: customersLoading } = useNeonData({
+    query: listCustomersByBusinessQuery,
+    variables: { tenantId: profile?.tenantId || "", businessId: profile?.businessId || "" },
+    skip: !profile || !profile.tenantId || !profile.businessId || !canReadCustomers,
+    refreshInterval: 5000
+  });
+  const { data: logsData, loading: logsLoading } = useNeonData({
+    query: listActivityLogsByUserQuery,
     variables: { tenantId: profile?.tenantId || "", businessId: profile?.businessId || "", userId: user?.uid || "" },
-    skip: !profile || !profile.tenantId || !profile.businessId || !user,
+    skip: !profile || !profile.tenantId || !profile.businessId || !user || !canReadAudit,
     refreshInterval: 5000
   });
-  const { data: employeesData, loading: employeesLoading } = useDataConnect({ 
-    query: listEmployeesByBusinessQuery, 
+  const { data: employeesData, loading: employeesLoading } = useNeonData({
+    query: listEmployeesByBusinessQuery,
     variables: { tenantId: profile?.tenantId || "", businessId: profile?.businessId || "" },
-    skip: !profile || !profile.tenantId || !profile.businessId,
+    skip: !profile || !profile.tenantId || !profile.businessId || !canReadEmployees,
     refreshInterval: 5000
   });
-  const { data: suppliersData, loading: suppliersLoading } = useDataConnect({ 
-    query: listSuppliersByBusinessQuery, 
+  const { data: suppliersData, loading: suppliersLoading } = useNeonData({
+    query: listSuppliersByBusinessQuery,
     variables: { tenantId: profile?.tenantId || "", businessId: profile?.businessId || "" },
-    skip: !profile || !profile.tenantId || !profile.businessId,
+    skip: !profile || !profile.tenantId || !profile.businessId || !canReadSuppliers,
     refreshInterval: 5000
   });
 
-  // Map generated types back to existing frontend types
   const sales = React.useMemo(() => {
-    return (salesDataResult?.transactions || [])
-      .filter((t: any) => t.type?.toUpperCase() === 'SALE')
-      .map((t: any) => ({
-        id: t.id,
-        tenantId: t.tenantId,
-        businessId: t.businessId,
-        totalAmount: t.amount,
-        saleDate: t.date,
-        recordedBy: t.recordedBy,
-        createdAt: t.createdAt,
-        paymentMethod: 'Cash',
-        productsSold: []
-      })) as unknown as Sale[];
+    return (salesDataResult?.sales || []) as Sale[];
   }, [salesDataResult]);
 
   const expenses = React.useMemo(() => {
@@ -165,20 +160,14 @@ export default function DashboardPage() {
     if (isAiLoading || !profile || !user) return;
     setIsAiLoading(true);
     try {
-      const token = await user.getIdToken();
       const response = await fetch('/api/ai/query', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           queryText: 'Give me a concise business performance summary for this month. Include total sales, expenses, net profit, low stock alerts, and any actionable insights. Format all amounts in FCFA.',
-          tenantId: profile.tenantId,
-          businessId: profile.businessId,
-          userId: profile.id,
-          role: profile.role,
-          userName: profile.fullName || profile.email,
+          purpose: 'dashboard',
         }),
       });
       const data = await response.json();
@@ -202,37 +191,25 @@ export default function DashboardPage() {
   }, [isSyncing, aiSummary, fetchAiSummary, profile, user]);
 
   const salesChartData = React.useMemo(() => {
-     // A very simple aggregation for the chart
      const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
      const data = days.map(day => ({ name: day, total: 0 }));
-     
+     const now = new Date();
+     const weekStart = new Date(now);
+     const daysSinceMonday = (now.getDay() + 6) % 7;
+     weekStart.setDate(now.getDate() - daysSinceMonday);
+     weekStart.setHours(0, 0, 0, 0);
+     const nextWeek = new Date(weekStart);
+     nextWeek.setDate(weekStart.getDate() + 7);
+
      sales.forEach(sale => {
          const date = new Date(sale.saleDate);
+         if (date < weekStart || date >= nextWeek) return;
          const dayIndex = date.getDay();
-         // Adjust Sunday from 0 to 6 to match array
          const adjustedIndex = dayIndex === 0 ? 6 : dayIndex - 1;
          if (data[adjustedIndex]) {
              data[adjustedIndex].total += sale.totalAmount;
          }
      });
-     let cumulativeTotal = 0;
-     data.forEach(point => {
-       cumulativeTotal += point.total;
-       point.total = cumulativeTotal;
-     });
-     
-     // Fallback to dummy data if no sales yet for visual demo
-     /*if (sales.length === 0) {
-        return [
-            { name: "Mon", total: 120000 },
-            { name: "Tue", total: 150000 },
-            { name: "Wed", total: 110000 },
-            { name: "Thu", total: 180000 },
-            { name: "Fri", total: 220000 },
-            { name: "Sat", total: 250000 },
-            { name: "Sun", total: 140000 },
-          ];
-     }*/
      return data;
   }, [sales]);
 
@@ -250,11 +227,11 @@ export default function DashboardPage() {
             <p className="text-sm text-muted-foreground">
               Please sign in to view your dashboard. All operations require an authenticated session.
             </p>
-            <Link href="/login">
-              <Button className="bg-primary hover:bg-primary/90 text-white font-bold uppercase text-xs tracking-widest">
+            <Button asChild className="bg-primary hover:bg-primary/90 text-white font-bold uppercase text-xs tracking-widest">
+              <Link href="/login">
                 <LogIn className="size-4 mr-2" /> Sign In
-              </Button>
-            </Link>
+              </Link>
+            </Button>
           </CardContent>
         </Card>
       </div>
@@ -291,41 +268,41 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           title={t('dashboard.totalSales')}
-          value={salesLoading ? "---" : `${stats.totalSalesAmount.toLocaleString()} FCFA`}
+          value={!canReadSales ? "Restricted" : salesLoading ? "---" : `${stats.totalSalesAmount.toLocaleString()} FCFA`}
           icon={ShoppingCart}
-          trend={{ value: 12, label: "Live synchronization", isPositive: true }}
+          description={canReadSales ? "All recorded sales" : "Not available to this role"}
           className="border-t-4 border-[#10b981] shadow-md"
         />
         <StatCard
           title={t('dashboard.totalExpenses')}
-          value={expensesLoading ? "---" : `${stats.totalExpensesAmount.toLocaleString()} FCFA`}
+          value={!canReadExpenses ? "Restricted" : expensesLoading ? "---" : `${stats.totalExpensesAmount.toLocaleString()} FCFA`}
           icon={Receipt}
-          trend={{ value: 4, label: "Live synchronization", isPositive: false }}
+          description={canReadExpenses ? "All recorded expenses" : "Not available to this role"}
           className="border-t-4 border-[#f59e0b] shadow-md"
         />
         <StatCard
           title={t('dashboard.netProfit')}
-          value={isSyncing ? "---" : `${stats.netProfit.toLocaleString()} FCFA`}
+          value={!canReadSales || !canReadExpenses ? "Restricted" : isSyncing ? "---" : `${stats.netProfit.toLocaleString()} FCFA`}
           icon={TrendingUp}
-          trend={{ value: 18, label: "Live synchronization", isPositive: true }}
+          description={canReadSales && canReadExpenses ? "Sales minus expenses" : "Requires sales and expense access"}
           className="border-t-4 border-[#3b82f6] shadow-md"
         />
         <StatCard
           title={t('dashboard.lowStock')}
-          value={productsLoading ? "---" : stats.lowStockCount}
+          value={!canReadInventory ? "Restricted" : productsLoading ? "---" : stats.lowStockCount}
           icon={AlertTriangle}
           className="border-t-4 border-[#ef4444] shadow-md"
-          description={`${products.length} ${t('common.inventory')}`}
+          description={canReadInventory ? `${products.length} ${t('common.inventory')}` : "Not available to this role"}
         />
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
         {[
-          { icon: Users, label: t('common.employees'), value: employeesCount, loading: employeesLoading },
-          { icon: UserCircle, label: t('common.customers'), value: customers.length, loading: customersLoading },
-          { icon: Truck, label: t('common.suppliers'), value: suppliersCount, loading: suppliersLoading },
-          { icon: Briefcase, label: t('common.tasks'), value: tasks.length, loading: tasksLoading },
-        ].map((item, idx) => (
+          { icon: Users, label: t('common.employees'), value: employeesCount, loading: employeesLoading, allowed: canReadEmployees },
+          { icon: UserCircle, label: t('common.customers'), value: customers.length, loading: customersLoading, allowed: canReadCustomers },
+          { icon: Truck, label: t('common.suppliers'), value: suppliersCount, loading: suppliersLoading, allowed: canReadSuppliers },
+          { icon: Briefcase, label: t('common.tasks'), value: tasks.length, loading: tasksLoading, allowed: canReadTasks },
+        ].filter((item) => item.allowed).map((item, idx) => (
           <div key={idx} className="bg-card border p-3 rounded-xl shadow-sm">
             <div className="flex items-center gap-2 mb-1">
               <item.icon className="size-3 text-muted-foreground" />
@@ -334,13 +311,13 @@ export default function DashboardPage() {
             <p className="text-lg font-bold">{item.loading ? "..." : item.value}</p>
           </div>
         ))}
-        <div className="bg-card border p-3 rounded-xl shadow-sm col-span-2 hidden lg:block">
+        {canReadTasks && <div className="bg-card border p-3 rounded-xl shadow-sm col-span-2 hidden lg:block">
            <div className="flex items-center gap-2 mb-1">
             <Briefcase className="size-3 text-muted-foreground" />
             <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">{t('dashboard.lateTasks')}</span>
           </div>
           <p className="text-lg font-bold text-destructive">{isSyncing ? "..." : stats.taskStats.overdue}</p>
-        </div>
+        </div>}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -371,9 +348,12 @@ export default function DashboardPage() {
           <Card className="shadow-sm">
             <CardHeader>
               <CardTitle className="text-lg font-bold">{t('dashboard.revenueTrend')}</CardTitle>
-              <CardDescription className="text-xs uppercase font-bold tracking-tighter">Daily Sales Volume (FCFA)</CardDescription>
+              <CardDescription className="text-xs uppercase font-bold tracking-tighter">Current-week daily sales (FCFA)</CardDescription>
             </CardHeader>
             <CardContent className="h-[300px] w-full">
+              {!canReadSales ? (
+                <div className="grid h-full place-items-center text-sm text-muted-foreground">Sales analytics are not available to this role.</div>
+              ) : (
                <ChartContainer
                   config={{
                     total: {
@@ -392,6 +372,7 @@ export default function DashboardPage() {
                     <Area type="monotone" dataKey="total" stroke="hsl(var(--primary))" strokeWidth={3} fill="url(#salesProgress)" dot={{ r: 3, fill: "hsl(var(--background))", strokeWidth: 2 }} activeDot={{ r: 6 }} />
                   </AreaChart>
                 </ChartContainer>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -400,13 +381,15 @@ export default function DashboardPage() {
           <Card className="shadow-sm h-fit">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-bold uppercase">{t('dashboard.recentSales')}</CardTitle>
-              <Link href="/sales">
-                <Button variant="ghost" size="icon" className="h-6 w-6"><ArrowRight className="size-4" /></Button>
-              </Link>
+              <Button asChild variant="ghost" size="icon" className="h-6 w-6">
+                <Link href="/sales" aria-label="View all sales"><ArrowRight className="size-4" /></Link>
+              </Button>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {salesLoading ? (
+                {!canReadSales ? (
+                  <p className="text-xs text-muted-foreground text-center py-6 italic">Sales records are not available to this role.</p>
+                ) : salesLoading ? (
                   Array(5).fill(0).map((_, i) => <Skeleton key={i} className="h-10 w-full" />)
                 ) : sales.length === 0 ? (
                   <p className="text-xs text-muted-foreground text-center py-6 italic">No transactions recorded yet.</p>
@@ -485,8 +468,8 @@ function AIInsightsRenderer({ content }: { content: string }) {
             <div
               key={idx}
               className={`grid grid-cols-2 gap-4 py-2 px-3 border-b border-primary/5 last:border-0 ${
-                isHeader 
-                  ? 'bg-primary/10 font-bold text-primary rounded-t-lg border-b-2 border-primary/20' 
+                isHeader
+                  ? 'bg-primary/10 font-bold text-primary rounded-t-lg border-b-2 border-primary/20'
                   : 'odd:bg-muted/30 even:bg-background'
               }`}
             >

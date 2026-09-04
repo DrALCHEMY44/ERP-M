@@ -3,12 +3,32 @@ const EMBEDDINGS_URL = "https://openrouter.ai/api/v1/embeddings"
 
 export const FREE_MODEL_PIPELINE = [
   "openrouter/free",
-  "openai/gpt-oss-120b:free",
-  "openai/gpt-oss-20b:free",
-  "deepseek/deepseek-r1-0528:free",
-  "qwen/qwen3-coder:free",
-  "meta-llama/llama-3.3-70b-instruct:free",
+  "google/gemma-4-31b-it:free",
+  "google/gemma-4-26b-a4b-it:free",
+  "z-ai/glm-5.2:free",
+  "minimax/minimax-m3:free",
+  "nvidia/nemotron-3-super-120b-a12b:free",
+  "nvidia/nemotron-3-ultra-550b-a55b:free",
+  "poolside/laguna-s-2.1:free",
 ] as const
+
+const MODEL_ID = /^[a-z0-9][a-z0-9._-]*\/[a-z0-9][a-z0-9._:-]*$/i
+
+export function getOpenRouterModelPipeline(source = process.env.OPENROUTER_MODELS) {
+  const configured = (source || "")
+    .split(",")
+    .map((model) => model.trim())
+    .filter((model) => MODEL_ID.test(model))
+  return [...new Set([...configured, ...FREE_MODEL_PIPELINE])].slice(0, 16)
+}
+
+function providerPreferences() {
+  return {
+    allow_fallbacks: true,
+    data_collection: process.env.OPENROUTER_DATA_COLLECTION === "allow" ? "allow" : "deny",
+    ...(process.env.OPENROUTER_REQUIRE_ZDR === "true" ? { zdr: true } : {}),
+  }
+}
 
 function headers() {
   const apiKey = process.env.OPENROUTER_API_KEY
@@ -26,9 +46,13 @@ export async function freeCompletion(input: {
   plugins?: unknown[]
   maxTokens?: number
   temperature?: number
+  totalTimeoutMs?: number
 }) {
   let lastError: Error | null = null
-  for (const model of FREE_MODEL_PIPELINE) {
+  const deadline = Date.now() + Math.min(Math.max(input.totalTimeoutMs ?? 50_000, 5_000), 55_000)
+  for (const model of getOpenRouterModelPipeline()) {
+    const remainingTime = deadline - Date.now()
+    if (remainingTime < 1_000) break
     try {
       const response = await fetch(CHAT_URL, {
         method: "POST",
@@ -37,10 +61,11 @@ export async function freeCompletion(input: {
           model,
           messages: input.messages,
           plugins: input.plugins,
+          provider: providerPreferences(),
           temperature: input.temperature ?? 0,
           max_tokens: input.maxTokens ?? 4000,
         }),
-        signal: AbortSignal.timeout(30_000),
+        signal: AbortSignal.timeout(Math.min(12_000, remainingTime)),
       })
       if (!response.ok) {
         lastError = new Error(`${model} returned ${response.status}`)
@@ -67,7 +92,13 @@ export async function createEmbeddings(inputs: string[]): Promise<number[][] | n
     const response = await fetch(EMBEDDINGS_URL, {
       method: "POST",
       headers: headers(),
-      body: JSON.stringify({ model, input: inputs, dimensions: 384, input_type: "search_document" }),
+      body: JSON.stringify({
+        model,
+        input: inputs,
+        dimensions: 384,
+        input_type: "search_document",
+        provider: providerPreferences(),
+      }),
       signal: AbortSignal.timeout(20_000),
     })
     if (!response.ok) return null

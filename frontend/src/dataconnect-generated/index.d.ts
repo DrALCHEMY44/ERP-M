@@ -39,6 +39,31 @@ export interface AiQuery_Key {
   __typename?: 'AiQuery_Key';
 }
 
+export interface BootstrapWorkspaceData {
+  tenant_insert: Tenant_Key;
+  business_insert: Business_Key;
+  businessSetting_insert: BusinessSetting_Key;
+  user_insert: User_Key;
+}
+
+export interface BootstrapWorkspaceVariables {
+  tenantId: string;
+  businessId: string;
+  userId: string;
+  name: string;
+  businessSector: string;
+  location: string;
+  region: string;
+  ownerEmail: string;
+  fullName: string;
+  code: string;
+}
+
+export interface BusinessSetting_Key {
+  businessId: string;
+  __typename?: 'BusinessSetting_Key';
+}
+
 export interface Business_Key {
   id: string;
   __typename?: 'Business_Key';
@@ -59,6 +84,8 @@ export interface CompleteAssignedTaskData {
 export interface CompleteAssignedTaskVariables {
   taskId: string;
   userId: string;
+  tenantId: string;
+  businessId: string;
 }
 
 export interface CreateActivityLogData {
@@ -112,8 +139,7 @@ export interface CreateCustomerVariables {
   phoneNumber?: string | null;
   email?: string | null;
   location?: string | null;
-  totalOrders?: number | null;
-  totalSpent?: number | null;
+  notes?: string | null;
 }
 
 export interface CreateDocumentData {
@@ -126,6 +152,7 @@ export interface CreateDocumentVariables {
   title: string;
   documentType: string;
   fileUrl: string;
+  description?: string | null;
   uploadedBy: string;
 }
 
@@ -141,9 +168,36 @@ export interface CreateEmployeeVariables {
   role?: string | null;
   salary?: number | null;
   department?: string | null;
+  email?: string | null;
+  contact?: string | null;
   startDate?: DateString | null;
   status?: string | null;
+  attendance?: number | null;
+  salaryPaymentStatus?: string | null;
   code?: string | null;
+}
+
+export interface CreateEmployeeWithAccessData {
+  employee_insert: Employee_Key;
+  user_insert: User_Key;
+}
+
+export interface CreateEmployeeWithAccessVariables {
+  tenantId: string;
+  businessId: string;
+  fullName: string;
+  position: string;
+  role?: string | null;
+  userRole: string;
+  salary?: number | null;
+  department?: string | null;
+  email: string;
+  contact?: string | null;
+  startDate?: DateString | null;
+  status?: string | null;
+  attendance?: number | null;
+  salaryPaymentStatus?: string | null;
+  accessCodeHash: string;
 }
 
 export interface CreateMirrorOutboxData {
@@ -185,6 +239,7 @@ export interface CreateProductVariables {
   sellingPrice: number;
   expiryDate?: DateString | null;
   lowStockLevel?: number | null;
+  status?: string | null;
   createdBy: string;
 }
 
@@ -198,6 +253,10 @@ export interface CreateSupplierVariables {
   supplierName: string;
   phoneNumber?: string | null;
   email?: string | null;
+  location?: string | null;
+  productsSupplied?: string | null;
+  paymentStatus?: string | null;
+  notes?: string | null;
 }
 
 export interface CreateTaskCommentData {
@@ -254,6 +313,7 @@ export interface CreateTransactionVariables {
   amount: number;
   date: TimestampString;
   category?: string | null;
+  description?: string | null;
   receiptUrl?: string | null;
   recordedBy: string;
 }
@@ -317,6 +377,18 @@ export interface DeleteEmployeeData {
 
 export interface DeleteEmployeeVariables {
   id: string;
+}
+
+export interface DeleteEmployeeWithAccessData {
+  employee_delete?: Employee_Key | null;
+  user_deleteMany: number;
+}
+
+export interface DeleteEmployeeWithAccessVariables {
+  id: string;
+  tenantId: string;
+  businessId: string;
+  currentEmail: string;
 }
 
 export interface DeleteNotificationData {
@@ -410,6 +482,16 @@ export interface GetBusinessByIdData {
     id: string;
     tenantId: string;
     name: string;
+    location: string;
+    businessType?: string | null;
+    entityType?: string | null;
+    city?: string | null;
+    region?: string | null;
+    phone?: string | null;
+    email?: string | null;
+    taxId?: string | null;
+    description?: string | null;
+    logoUrl?: string | null;
     createdAt: TimestampString;
     code: string;
   } & Business_Key;
@@ -417,6 +499,24 @@ export interface GetBusinessByIdData {
 
 export interface GetBusinessByIdVariables {
   id: string;
+}
+
+export interface GetBusinessSettingsData {
+  businessSettings: ({
+    businessId: string;
+    tenantId: string;
+    currency: string;
+    timezone: string;
+    fiscalYearStart: string;
+    taxRate: number;
+    lowStockThreshold: number;
+    updatedAt: TimestampString;
+  } & BusinessSetting_Key)[];
+}
+
+export interface GetBusinessSettingsVariables {
+  tenantId: string;
+  businessId: string;
 }
 
 export interface GetBusinessesByNameData {
@@ -430,6 +530,18 @@ export interface GetBusinessesByNameData {
 
 export interface GetBusinessesByNameVariables {
   name: string;
+}
+
+export interface GetCustomerForCompanyData {
+  customer?: {
+    id: string;
+  } & Customer_Key;
+}
+
+export interface GetCustomerForCompanyVariables {
+  id: string;
+  tenantId: string;
+  businessId: string;
 }
 
 export interface GetUserByEmailData {
@@ -530,6 +642,7 @@ export interface ListCustomersByBusinessData {
     location?: string | null;
     totalOrders?: number | null;
     totalSpent?: number | null;
+    notes?: string | null;
     createdAt: TimestampString;
     tenantId: string;
     businessId: string;
@@ -547,6 +660,7 @@ export interface ListDocumentsByBusinessData {
     title: string;
     documentType: string;
     fileUrl: string;
+    description?: string | null;
     uploadedBy: string;
     uploadedAt: TimestampString;
     tenantId: string;
@@ -567,12 +681,15 @@ export interface ListEmployeesByBusinessData {
     role?: string | null;
     salary?: number | null;
     department?: string | null;
+    email?: string | null;
+    contact?: string | null;
     startDate?: DateString | null;
     status?: string | null;
+    attendance?: number | null;
+    salaryPaymentStatus?: string | null;
     createdAt: TimestampString;
     tenantId: string;
     businessId: string;
-    code?: string | null;
   } & Employee_Key)[];
 }
 
@@ -633,6 +750,7 @@ export interface ListProductsByBusinessData {
     sellingPrice: number;
     expiryDate?: DateString | null;
     lowStockLevel?: number | null;
+    status?: string | null;
     createdBy: string;
     createdAt: TimestampString;
     updatedAt?: TimestampString | null;
@@ -646,12 +764,30 @@ export interface ListProductsByBusinessVariables {
   businessId: string;
 }
 
+export interface ListSaleCustomersByBusinessData {
+  customers: ({
+    id: string;
+    customerName: string;
+    tenantId: string;
+    businessId: string;
+  } & Customer_Key)[];
+}
+
+export interface ListSaleCustomersByBusinessVariables {
+  tenantId: string;
+  businessId: string;
+}
+
 export interface ListSuppliersByBusinessData {
   suppliers: ({
     id: string;
     supplierName: string;
     phoneNumber?: string | null;
     email?: string | null;
+    location?: string | null;
+    productsSupplied?: string | null;
+    paymentStatus?: string | null;
+    notes?: string | null;
     createdAt: TimestampString;
     tenantId: string;
     businessId: string;
@@ -659,6 +795,23 @@ export interface ListSuppliersByBusinessData {
 }
 
 export interface ListSuppliersByBusinessVariables {
+  tenantId: string;
+  businessId: string;
+}
+
+export interface ListTaskAssigneesByBusinessData {
+  users: ({
+    id: string;
+    email: string;
+    role: string;
+    fullName?: string | null;
+    department?: string | null;
+    tenantId: string;
+    businessId: string;
+  } & User_Key)[];
+}
+
+export interface ListTaskAssigneesByBusinessVariables {
   tenantId: string;
   businessId: string;
 }
@@ -676,6 +829,7 @@ export interface ListTasksAssignedToUserData {
       email: string;
       role: string;
       fullName?: string | null;
+      department?: string | null;
     } & User_Key;
     createdBy: string;
     createdAt: TimestampString;
@@ -704,6 +858,7 @@ export interface ListTasksByBusinessData {
       email: string;
       role: string;
       fullName?: string | null;
+      department?: string | null;
     } & User_Key;
     createdBy: string;
     createdAt: TimestampString;
@@ -740,6 +895,7 @@ export interface ListTransactionsByBusinessData {
     amount: number;
     date: TimestampString;
     category?: string | null;
+    description?: string | null;
     receiptUrl?: string | null;
     recordedBy: string;
     createdAt: TimestampString;
@@ -760,6 +916,7 @@ export interface ListTransactionsByTypeData {
     amount: number;
     date: TimestampString;
     category?: string | null;
+    description?: string | null;
     receiptUrl?: string | null;
     recordedBy: string;
     createdAt: TimestampString;
@@ -878,7 +1035,14 @@ export interface UpdateBusinessVariables {
   name?: string | null;
   location?: string | null;
   businessType?: string | null;
+  entityType?: string | null;
+  city?: string | null;
   region?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  taxId?: string | null;
+  description?: string | null;
+  logoUrl?: string | null;
   code?: string | null;
 }
 
@@ -894,8 +1058,7 @@ export interface UpdateCustomerVariables {
   phoneNumber?: string | null;
   email?: string | null;
   location?: string | null;
-  totalOrders?: number | null;
-  totalSpent?: number | null;
+  notes?: string | null;
 }
 
 export interface UpdateDocumentData {
@@ -909,6 +1072,7 @@ export interface UpdateDocumentVariables {
   title?: string | null;
   documentType?: string | null;
   fileUrl?: string | null;
+  description?: string | null;
   uploadedBy?: string | null;
 }
 
@@ -925,8 +1089,36 @@ export interface UpdateEmployeeVariables {
   role?: string | null;
   salary?: number | null;
   department?: string | null;
+  email?: string | null;
+  contact?: string | null;
   startDate?: DateString | null;
   status?: string | null;
+  attendance?: number | null;
+  salaryPaymentStatus?: string | null;
+}
+
+export interface UpdateEmployeeWithAccessData {
+  employee_update?: Employee_Key | null;
+  user_updateMany: number;
+}
+
+export interface UpdateEmployeeWithAccessVariables {
+  id: string;
+  tenantId: string;
+  businessId: string;
+  currentEmail: string;
+  fullName: string;
+  position: string;
+  role?: string | null;
+  userRole: string;
+  salary?: number | null;
+  department?: string | null;
+  email: string;
+  contact?: string | null;
+  startDate?: DateString | null;
+  status?: string | null;
+  attendance?: number | null;
+  salaryPaymentStatus?: string | null;
 }
 
 export interface UpdateMirrorOutboxData {
@@ -970,6 +1162,7 @@ export interface UpdateProductVariables {
   sellingPrice?: number | null;
   expiryDate?: DateString | null;
   lowStockLevel?: number | null;
+  status?: string | null;
   createdBy?: string | null;
 }
 
@@ -984,6 +1177,10 @@ export interface UpdateSupplierVariables {
   supplierName?: string | null;
   phoneNumber?: string | null;
   email?: string | null;
+  location?: string | null;
+  productsSupplied?: string | null;
+  paymentStatus?: string | null;
+  notes?: string | null;
 }
 
 export interface UpdateTaskCommentData {
@@ -1041,6 +1238,7 @@ export interface UpdateTransactionVariables {
   amount?: number | null;
   date?: TimestampString | null;
   category?: string | null;
+  description?: string | null;
   receiptUrl?: string | null;
   recordedBy?: string | null;
 }
@@ -1059,6 +1257,20 @@ export interface UpdateUserVariables {
   department?: string | null;
   phoneNumber?: string | null;
   accessCodeHash?: string | null;
+}
+
+export interface UpsertBusinessSettingsData {
+  businessSetting_upsert: BusinessSetting_Key;
+}
+
+export interface UpsertBusinessSettingsVariables {
+  tenantId: string;
+  businessId: string;
+  currency: string;
+  timezone: string;
+  fiscalYearStart: string;
+  taxRate: number;
+  lowStockThreshold: number;
 }
 
 export interface User_Key {
@@ -1104,6 +1316,18 @@ export interface VerifyUserLoginVariables {
   tenantId: string;
   businessId: string;
 }
+
+interface BootstrapWorkspaceRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: BootstrapWorkspaceVariables): MutationRef<BootstrapWorkspaceData, BootstrapWorkspaceVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: BootstrapWorkspaceVariables): MutationRef<BootstrapWorkspaceData, BootstrapWorkspaceVariables>;
+  operationName: string;
+}
+export const bootstrapWorkspaceRef: BootstrapWorkspaceRef;
+
+export function bootstrapWorkspace(vars: BootstrapWorkspaceVariables): MutationPromise<BootstrapWorkspaceData, BootstrapWorkspaceVariables>;
+export function bootstrapWorkspace(dc: DataConnect, vars: BootstrapWorkspaceVariables): MutationPromise<BootstrapWorkspaceData, BootstrapWorkspaceVariables>;
 
 interface CreateTenantRef {
   /* Allow users to create refs without passing in DataConnect */
@@ -1212,6 +1436,18 @@ export const updateBusinessRef: UpdateBusinessRef;
 
 export function updateBusiness(vars: UpdateBusinessVariables): MutationPromise<UpdateBusinessData, UpdateBusinessVariables>;
 export function updateBusiness(dc: DataConnect, vars: UpdateBusinessVariables): MutationPromise<UpdateBusinessData, UpdateBusinessVariables>;
+
+interface UpsertBusinessSettingsRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: UpsertBusinessSettingsVariables): MutationRef<UpsertBusinessSettingsData, UpsertBusinessSettingsVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: UpsertBusinessSettingsVariables): MutationRef<UpsertBusinessSettingsData, UpsertBusinessSettingsVariables>;
+  operationName: string;
+}
+export const upsertBusinessSettingsRef: UpsertBusinessSettingsRef;
+
+export function upsertBusinessSettings(vars: UpsertBusinessSettingsVariables): MutationPromise<UpsertBusinessSettingsData, UpsertBusinessSettingsVariables>;
+export function upsertBusinessSettings(dc: DataConnect, vars: UpsertBusinessSettingsVariables): MutationPromise<UpsertBusinessSettingsData, UpsertBusinessSettingsVariables>;
 
 interface DeleteBusinessRef {
   /* Allow users to create refs without passing in DataConnect */
@@ -1356,6 +1592,42 @@ export const deleteTaskCommentRef: DeleteTaskCommentRef;
 
 export function deleteTaskComment(vars: DeleteTaskCommentVariables): MutationPromise<DeleteTaskCommentData, DeleteTaskCommentVariables>;
 export function deleteTaskComment(dc: DataConnect, vars: DeleteTaskCommentVariables): MutationPromise<DeleteTaskCommentData, DeleteTaskCommentVariables>;
+
+interface CreateEmployeeWithAccessRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: CreateEmployeeWithAccessVariables): MutationRef<CreateEmployeeWithAccessData, CreateEmployeeWithAccessVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: CreateEmployeeWithAccessVariables): MutationRef<CreateEmployeeWithAccessData, CreateEmployeeWithAccessVariables>;
+  operationName: string;
+}
+export const createEmployeeWithAccessRef: CreateEmployeeWithAccessRef;
+
+export function createEmployeeWithAccess(vars: CreateEmployeeWithAccessVariables): MutationPromise<CreateEmployeeWithAccessData, CreateEmployeeWithAccessVariables>;
+export function createEmployeeWithAccess(dc: DataConnect, vars: CreateEmployeeWithAccessVariables): MutationPromise<CreateEmployeeWithAccessData, CreateEmployeeWithAccessVariables>;
+
+interface UpdateEmployeeWithAccessRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: UpdateEmployeeWithAccessVariables): MutationRef<UpdateEmployeeWithAccessData, UpdateEmployeeWithAccessVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: UpdateEmployeeWithAccessVariables): MutationRef<UpdateEmployeeWithAccessData, UpdateEmployeeWithAccessVariables>;
+  operationName: string;
+}
+export const updateEmployeeWithAccessRef: UpdateEmployeeWithAccessRef;
+
+export function updateEmployeeWithAccess(vars: UpdateEmployeeWithAccessVariables): MutationPromise<UpdateEmployeeWithAccessData, UpdateEmployeeWithAccessVariables>;
+export function updateEmployeeWithAccess(dc: DataConnect, vars: UpdateEmployeeWithAccessVariables): MutationPromise<UpdateEmployeeWithAccessData, UpdateEmployeeWithAccessVariables>;
+
+interface DeleteEmployeeWithAccessRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: DeleteEmployeeWithAccessVariables): MutationRef<DeleteEmployeeWithAccessData, DeleteEmployeeWithAccessVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: DeleteEmployeeWithAccessVariables): MutationRef<DeleteEmployeeWithAccessData, DeleteEmployeeWithAccessVariables>;
+  operationName: string;
+}
+export const deleteEmployeeWithAccessRef: DeleteEmployeeWithAccessRef;
+
+export function deleteEmployeeWithAccess(vars: DeleteEmployeeWithAccessVariables): MutationPromise<DeleteEmployeeWithAccessData, DeleteEmployeeWithAccessVariables>;
+export function deleteEmployeeWithAccess(dc: DataConnect, vars: DeleteEmployeeWithAccessVariables): MutationPromise<DeleteEmployeeWithAccessData, DeleteEmployeeWithAccessVariables>;
 
 interface CreateEmployeeRef {
   /* Allow users to create refs without passing in DataConnect */
@@ -1717,6 +1989,18 @@ export const getBusinessByIdRef: GetBusinessByIdRef;
 export function getBusinessById(vars: GetBusinessByIdVariables, options?: ExecuteQueryOptions): QueryPromise<GetBusinessByIdData, GetBusinessByIdVariables>;
 export function getBusinessById(dc: DataConnect, vars: GetBusinessByIdVariables, options?: ExecuteQueryOptions): QueryPromise<GetBusinessByIdData, GetBusinessByIdVariables>;
 
+interface GetBusinessSettingsRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: GetBusinessSettingsVariables): QueryRef<GetBusinessSettingsData, GetBusinessSettingsVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: GetBusinessSettingsVariables): QueryRef<GetBusinessSettingsData, GetBusinessSettingsVariables>;
+  operationName: string;
+}
+export const getBusinessSettingsRef: GetBusinessSettingsRef;
+
+export function getBusinessSettings(vars: GetBusinessSettingsVariables, options?: ExecuteQueryOptions): QueryPromise<GetBusinessSettingsData, GetBusinessSettingsVariables>;
+export function getBusinessSettings(dc: DataConnect, vars: GetBusinessSettingsVariables, options?: ExecuteQueryOptions): QueryPromise<GetBusinessSettingsData, GetBusinessSettingsVariables>;
+
 interface GetBusinessByCodeRef {
   /* Allow users to create refs without passing in DataConnect */
   (vars: GetBusinessByCodeVariables): QueryRef<GetBusinessByCodeData, GetBusinessByCodeVariables>;
@@ -1788,6 +2072,42 @@ export const listCustomersByBusinessRef: ListCustomersByBusinessRef;
 
 export function listCustomersByBusiness(vars: ListCustomersByBusinessVariables, options?: ExecuteQueryOptions): QueryPromise<ListCustomersByBusinessData, ListCustomersByBusinessVariables>;
 export function listCustomersByBusiness(dc: DataConnect, vars: ListCustomersByBusinessVariables, options?: ExecuteQueryOptions): QueryPromise<ListCustomersByBusinessData, ListCustomersByBusinessVariables>;
+
+interface GetCustomerForCompanyRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: GetCustomerForCompanyVariables): QueryRef<GetCustomerForCompanyData, GetCustomerForCompanyVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: GetCustomerForCompanyVariables): QueryRef<GetCustomerForCompanyData, GetCustomerForCompanyVariables>;
+  operationName: string;
+}
+export const getCustomerForCompanyRef: GetCustomerForCompanyRef;
+
+export function getCustomerForCompany(vars: GetCustomerForCompanyVariables, options?: ExecuteQueryOptions): QueryPromise<GetCustomerForCompanyData, GetCustomerForCompanyVariables>;
+export function getCustomerForCompany(dc: DataConnect, vars: GetCustomerForCompanyVariables, options?: ExecuteQueryOptions): QueryPromise<GetCustomerForCompanyData, GetCustomerForCompanyVariables>;
+
+interface ListSaleCustomersByBusinessRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: ListSaleCustomersByBusinessVariables): QueryRef<ListSaleCustomersByBusinessData, ListSaleCustomersByBusinessVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: ListSaleCustomersByBusinessVariables): QueryRef<ListSaleCustomersByBusinessData, ListSaleCustomersByBusinessVariables>;
+  operationName: string;
+}
+export const listSaleCustomersByBusinessRef: ListSaleCustomersByBusinessRef;
+
+export function listSaleCustomersByBusiness(vars: ListSaleCustomersByBusinessVariables, options?: ExecuteQueryOptions): QueryPromise<ListSaleCustomersByBusinessData, ListSaleCustomersByBusinessVariables>;
+export function listSaleCustomersByBusiness(dc: DataConnect, vars: ListSaleCustomersByBusinessVariables, options?: ExecuteQueryOptions): QueryPromise<ListSaleCustomersByBusinessData, ListSaleCustomersByBusinessVariables>;
+
+interface ListTaskAssigneesByBusinessRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: ListTaskAssigneesByBusinessVariables): QueryRef<ListTaskAssigneesByBusinessData, ListTaskAssigneesByBusinessVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: ListTaskAssigneesByBusinessVariables): QueryRef<ListTaskAssigneesByBusinessData, ListTaskAssigneesByBusinessVariables>;
+  operationName: string;
+}
+export const listTaskAssigneesByBusinessRef: ListTaskAssigneesByBusinessRef;
+
+export function listTaskAssigneesByBusiness(vars: ListTaskAssigneesByBusinessVariables, options?: ExecuteQueryOptions): QueryPromise<ListTaskAssigneesByBusinessData, ListTaskAssigneesByBusinessVariables>;
+export function listTaskAssigneesByBusiness(dc: DataConnect, vars: ListTaskAssigneesByBusinessVariables, options?: ExecuteQueryOptions): QueryPromise<ListTaskAssigneesByBusinessData, ListTaskAssigneesByBusinessVariables>;
 
 interface ListUsersByBusinessRef {
   /* Allow users to create refs without passing in DataConnect */

@@ -1,8 +1,11 @@
 library dataconnect_generated;
+
 import 'package:firebase_data_connect/firebase_data_connect.dart';
 import 'package:flutter/foundation.dart';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
+
+part 'bootstrap_workspace.dart';
 
 part 'create_tenant.dart';
 
@@ -21,6 +24,8 @@ part 'clear_legacy_access_code.dart';
 part 'create_business.dart';
 
 part 'update_business.dart';
+
+part 'upsert_business_settings.dart';
 
 part 'delete_business.dart';
 
@@ -45,6 +50,12 @@ part 'create_task_comment.dart';
 part 'update_task_comment.dart';
 
 part 'delete_task_comment.dart';
+
+part 'create_employee_with_access.dart';
+
+part 'update_employee_with_access.dart';
+
+part 'delete_employee_with_access.dart';
 
 part 'create_employee.dart';
 
@@ -106,6 +117,8 @@ part 'get_user_by_email.dart';
 
 part 'get_business_by_id.dart';
 
+part 'get_business_settings.dart';
+
 part 'get_business_by_code.dart';
 
 part 'get_businesses_by_name.dart';
@@ -117,6 +130,12 @@ part 'verify_user_login.dart';
 part 'list_products_by_business.dart';
 
 part 'list_customers_by_business.dart';
+
+part 'get_customer_for_company.dart';
+
+part 'list_sale_customers_by_business.dart';
+
+part 'list_task_assignees_by_business.dart';
 
 part 'list_users_by_business.dart';
 
@@ -144,115 +163,80 @@ part 'list_notifications.dart';
 
 part 'list_pending_mirror_outbox.dart';
 
+enum TaskPriority { LOW, MEDIUM, HIGH }
 
+String taskPrioritySerializer(EnumValue<TaskPriority> e) {
+  return e.stringValue;
+}
 
-  enum TaskPriority {
-    
-      LOW,
-    
-      MEDIUM,
-    
-      HIGH,
-    
-  }
-  
-  String taskPrioritySerializer(EnumValue<TaskPriority> e) {
-    return e.stringValue;
-  }
-  EnumValue<TaskPriority> taskPriorityDeserializer(dynamic data) {
-    switch (data) {
-      
-      case 'LOW':
-        return const Known(TaskPriority.LOW);
-      
-      case 'MEDIUM':
-        return const Known(TaskPriority.MEDIUM);
-      
-      case 'HIGH':
-        return const Known(TaskPriority.HIGH);
-      
-      default:
-        return Unknown(data);
-    }
-  }
-  
+EnumValue<TaskPriority> taskPriorityDeserializer(dynamic data) {
+  switch (data) {
+    case 'LOW':
+      return const Known(TaskPriority.LOW);
 
-  enum TaskStatus {
-    
-      PENDING,
-    
-      ONGOING,
-    
-      COMPLETED,
-    
-      LATE,
-    
-  }
-  
-  String taskStatusSerializer(EnumValue<TaskStatus> e) {
-    return e.stringValue;
-  }
-  EnumValue<TaskStatus> taskStatusDeserializer(dynamic data) {
-    switch (data) {
-      
-      case 'PENDING':
-        return const Known(TaskStatus.PENDING);
-      
-      case 'ONGOING':
-        return const Known(TaskStatus.ONGOING);
-      
-      case 'COMPLETED':
-        return const Known(TaskStatus.COMPLETED);
-      
-      case 'LATE':
-        return const Known(TaskStatus.LATE);
-      
-      default:
-        return Unknown(data);
-    }
-  }
-  
+    case 'MEDIUM':
+      return const Known(TaskPriority.MEDIUM);
 
-  enum TransactionType {
-    
-      SALE,
-    
-      EXPENSE,
-    
-  }
-  
-  String transactionTypeSerializer(EnumValue<TransactionType> e) {
-    return e.stringValue;
-  }
-  EnumValue<TransactionType> transactionTypeDeserializer(dynamic data) {
-    switch (data) {
-      
-      case 'SALE':
-        return const Known(TransactionType.SALE);
-      
-      case 'EXPENSE':
-        return const Known(TransactionType.EXPENSE);
-      
-      default:
-        return Unknown(data);
-    }
-  }
-  
+    case 'HIGH':
+      return const Known(TaskPriority.HIGH);
 
+    default:
+      return Unknown(data);
+  }
+}
 
+enum TaskStatus { PENDING, ONGOING, COMPLETED, LATE }
+
+String taskStatusSerializer(EnumValue<TaskStatus> e) {
+  return e.stringValue;
+}
+
+EnumValue<TaskStatus> taskStatusDeserializer(dynamic data) {
+  switch (data) {
+    case 'PENDING':
+      return const Known(TaskStatus.PENDING);
+
+    case 'ONGOING':
+      return const Known(TaskStatus.ONGOING);
+
+    case 'COMPLETED':
+      return const Known(TaskStatus.COMPLETED);
+
+    case 'LATE':
+      return const Known(TaskStatus.LATE);
+
+    default:
+      return Unknown(data);
+  }
+}
+
+enum TransactionType { SALE, EXPENSE }
+
+String transactionTypeSerializer(EnumValue<TransactionType> e) {
+  return e.stringValue;
+}
+
+EnumValue<TransactionType> transactionTypeDeserializer(dynamic data) {
+  switch (data) {
+    case 'SALE':
+      return const Known(TransactionType.SALE);
+
+    case 'EXPENSE':
+      return const Known(TransactionType.EXPENSE);
+
+    default:
+      return Unknown(data);
+  }
+}
 
 String enumSerializer(Enum e) {
   return e.name;
 }
 
-
-
 /// A sealed class representing either a known enum value or an unknown string value.
 @immutable
 sealed class EnumValue<T extends Enum> {
   const EnumValue();
-
-  
 
   /// The string representation of the value.
   String get stringValue;
@@ -277,6 +261,7 @@ class Known<T extends Enum> extends EnumValue<T> {
     return "Known($stringValue)";
   }
 }
+
 /// Represents an unknown or unrecognized enum value.
 class Unknown extends EnumValue<Never> {
   /// The raw string value that couldn't be mapped to a known enum.
@@ -291,357 +276,797 @@ class Unknown extends EnumValue<Never> {
 }
 
 class ExampleConnector {
-  
-  
-  CreateTenantVariablesBuilder createTenant ({required String name, required String businessSector, required String location, required String ownerEmail, }) {
-    return CreateTenantVariablesBuilder(dataConnect, name: name,businessSector: businessSector,location: location,ownerEmail: ownerEmail,);
-  }
-  
-  
-  UpdateTenantVariablesBuilder updateTenant ({required String id, }) {
-    return UpdateTenantVariablesBuilder(dataConnect, id: id,);
-  }
-  
-  
-  DeleteTenantVariablesBuilder deleteTenant ({required String id, }) {
-    return DeleteTenantVariablesBuilder(dataConnect, id: id,);
-  }
-  
-  
-  CreateUserVariablesBuilder createUser ({required String id, required String tenantId, required String businessId, required String email, required String role, }) {
-    return CreateUserVariablesBuilder(dataConnect, id: id,tenantId: tenantId,businessId: businessId,email: email,role: role,);
-  }
-  
-  
-  UpdateUserVariablesBuilder updateUser ({required String id, }) {
-    return UpdateUserVariablesBuilder(dataConnect, id: id,);
-  }
-  
-  
-  DeleteUserVariablesBuilder deleteUser ({required String id, }) {
-    return DeleteUserVariablesBuilder(dataConnect, id: id,);
-  }
-  
-  
-  ClearLegacyAccessCodeVariablesBuilder clearLegacyAccessCode ({required String id, }) {
-    return ClearLegacyAccessCodeVariablesBuilder(dataConnect, id: id,);
-  }
-  
-  
-  CreateBusinessVariablesBuilder createBusiness ({required String tenantId, required String name, required String location, required String code, }) {
-    return CreateBusinessVariablesBuilder(dataConnect, tenantId: tenantId,name: name,location: location,code: code,);
-  }
-  
-  
-  UpdateBusinessVariablesBuilder updateBusiness ({required String id, }) {
-    return UpdateBusinessVariablesBuilder(dataConnect, id: id,);
-  }
-  
-  
-  DeleteBusinessVariablesBuilder deleteBusiness ({required String id, }) {
-    return DeleteBusinessVariablesBuilder(dataConnect, id: id,);
-  }
-  
-  
-  ProvisionEmployeeUserVariablesBuilder provisionEmployeeUser ({required String tenantId, required String businessId, required String email, required String role, required String fullName, required String accessCodeHash, }) {
-    return ProvisionEmployeeUserVariablesBuilder(dataConnect, tenantId: tenantId,businessId: businessId,email: email,role: role,fullName: fullName,accessCodeHash: accessCodeHash,);
-  }
-  
-  
-  CompleteAssignedTaskVariablesBuilder completeAssignedTask ({required String taskId, required String userId, }) {
-    return CompleteAssignedTaskVariablesBuilder(dataConnect, taskId: taskId,userId: userId,);
-  }
-  
-  
-  CreateProductVariablesBuilder createProduct ({required String tenantId, required String businessId, required String name, required int quantity, required double sellingPrice, required String createdBy, }) {
-    return CreateProductVariablesBuilder(dataConnect, tenantId: tenantId,businessId: businessId,name: name,quantity: quantity,sellingPrice: sellingPrice,createdBy: createdBy,);
-  }
-  
-  
-  UpdateProductVariablesBuilder updateProduct ({required String id, }) {
-    return UpdateProductVariablesBuilder(dataConnect, id: id,);
-  }
-  
-  
-  DeleteProductVariablesBuilder deleteProduct ({required String id, }) {
-    return DeleteProductVariablesBuilder(dataConnect, id: id,);
-  }
-  
-  
-  CreateTransactionVariablesBuilder createTransaction ({required String tenantId, required String businessId, required TransactionType type, required double amount, required Timestamp date, required String recordedBy, }) {
-    return CreateTransactionVariablesBuilder(dataConnect, tenantId: tenantId,businessId: businessId,type: type,amount: amount,date: date,recordedBy: recordedBy,);
-  }
-  
-  
-  UpdateTransactionVariablesBuilder updateTransaction ({required String id, }) {
-    return UpdateTransactionVariablesBuilder(dataConnect, id: id,);
-  }
-  
-  
-  DeleteTransactionVariablesBuilder deleteTransaction ({required String id, }) {
-    return DeleteTransactionVariablesBuilder(dataConnect, id: id,);
-  }
-  
-  
-  CreateTaskCommentVariablesBuilder createTaskComment ({required String tenantId, required String businessId, required String taskId, required String userId, required String content, }) {
-    return CreateTaskCommentVariablesBuilder(dataConnect, tenantId: tenantId,businessId: businessId,taskId: taskId,userId: userId,content: content,);
-  }
-  
-  
-  UpdateTaskCommentVariablesBuilder updateTaskComment ({required String id, }) {
-    return UpdateTaskCommentVariablesBuilder(dataConnect, id: id,);
-  }
-  
-  
-  DeleteTaskCommentVariablesBuilder deleteTaskComment ({required String id, }) {
-    return DeleteTaskCommentVariablesBuilder(dataConnect, id: id,);
-  }
-  
-  
-  CreateEmployeeVariablesBuilder createEmployee ({required String tenantId, required String businessId, required String fullName, required String position, }) {
-    return CreateEmployeeVariablesBuilder(dataConnect, tenantId: tenantId,businessId: businessId,fullName: fullName,position: position,);
-  }
-  
-  
-  UpdateEmployeeVariablesBuilder updateEmployee ({required String id, }) {
-    return UpdateEmployeeVariablesBuilder(dataConnect, id: id,);
-  }
-  
-  
-  DeleteEmployeeVariablesBuilder deleteEmployee ({required String id, }) {
-    return DeleteEmployeeVariablesBuilder(dataConnect, id: id,);
-  }
-  
-  
-  CreateCustomerVariablesBuilder createCustomer ({required String tenantId, required String businessId, required String customerName, }) {
-    return CreateCustomerVariablesBuilder(dataConnect, tenantId: tenantId,businessId: businessId,customerName: customerName,);
-  }
-  
-  
-  UpdateCustomerVariablesBuilder updateCustomer ({required String id, }) {
-    return UpdateCustomerVariablesBuilder(dataConnect, id: id,);
-  }
-  
-  
-  DeleteCustomerVariablesBuilder deleteCustomer ({required String id, }) {
-    return DeleteCustomerVariablesBuilder(dataConnect, id: id,);
-  }
-  
-  
-  CreateSupplierVariablesBuilder createSupplier ({required String tenantId, required String businessId, required String supplierName, }) {
-    return CreateSupplierVariablesBuilder(dataConnect, tenantId: tenantId,businessId: businessId,supplierName: supplierName,);
-  }
-  
-  
-  UpdateSupplierVariablesBuilder updateSupplier ({required String id, }) {
-    return UpdateSupplierVariablesBuilder(dataConnect, id: id,);
-  }
-  
-  
-  DeleteSupplierVariablesBuilder deleteSupplier ({required String id, }) {
-    return DeleteSupplierVariablesBuilder(dataConnect, id: id,);
-  }
-  
-  
-  CreateDocumentVariablesBuilder createDocument ({required String tenantId, required String businessId, required String title, required String documentType, required String fileUrl, required String uploadedBy, }) {
-    return CreateDocumentVariablesBuilder(dataConnect, tenantId: tenantId,businessId: businessId,title: title,documentType: documentType,fileUrl: fileUrl,uploadedBy: uploadedBy,);
-  }
-  
-  
-  UpdateDocumentVariablesBuilder updateDocument ({required String id, }) {
-    return UpdateDocumentVariablesBuilder(dataConnect, id: id,);
-  }
-  
-  
-  DeleteDocumentVariablesBuilder deleteDocument ({required String id, }) {
-    return DeleteDocumentVariablesBuilder(dataConnect, id: id,);
-  }
-  
-  
-  CreateActivityLogVariablesBuilder createActivityLog ({required String tenantId, required String businessId, required String userId, required String userName, required String actionType, required String module, }) {
-    return CreateActivityLogVariablesBuilder(dataConnect, tenantId: tenantId,businessId: businessId,userId: userId,userName: userName,actionType: actionType,module: module,);
-  }
-  
-  
-  CreateAiQueryVariablesBuilder createAiQuery ({required String tenantId, required String businessId, required String userId, required String queryText, }) {
-    return CreateAiQueryVariablesBuilder(dataConnect, tenantId: tenantId,businessId: businessId,userId: userId,queryText: queryText,);
-  }
-  
-  
-  UpdateAiQueryVariablesBuilder updateAiQuery ({required String id, }) {
-    return UpdateAiQueryVariablesBuilder(dataConnect, id: id,);
-  }
-  
-  
-  DeleteAiQueryVariablesBuilder deleteAiQuery ({required String id, }) {
-    return DeleteAiQueryVariablesBuilder(dataConnect, id: id,);
-  }
-  
-  
-  CreateNotificationVariablesBuilder createNotification ({required String tenantId, required String businessId, required String userId, required String message, required bool isRead, }) {
-    return CreateNotificationVariablesBuilder(dataConnect, tenantId: tenantId,businessId: businessId,userId: userId,message: message,isRead: isRead,);
-  }
-  
-  
-  UpdateNotificationVariablesBuilder updateNotification ({required String id, }) {
-    return UpdateNotificationVariablesBuilder(dataConnect, id: id,);
-  }
-  
-  
-  DeleteNotificationVariablesBuilder deleteNotification ({required String id, }) {
-    return DeleteNotificationVariablesBuilder(dataConnect, id: id,);
-  }
-  
-  
-  CreateTaskVariablesBuilder createTask ({required String tenantId, required String businessId, required String title, required TaskStatus status, required Timestamp dueDate, required String createdBy, }) {
-    return CreateTaskVariablesBuilder(dataConnect, tenantId: tenantId,businessId: businessId,title: title,status: status,dueDate: dueDate,createdBy: createdBy,);
-  }
-  
-  
-  UpdateTaskVariablesBuilder updateTask ({required String id, }) {
-    return UpdateTaskVariablesBuilder(dataConnect, id: id,);
-  }
-  
-  
-  DeleteTaskVariablesBuilder deleteTask ({required String id, }) {
-    return DeleteTaskVariablesBuilder(dataConnect, id: id,);
-  }
-  
-  
-  CreateMirrorOutboxVariablesBuilder createMirrorOutbox ({required String tenantId, required String businessId, required String entityType, required String operation, required String recordId, required dynamic payload, }) {
-    return CreateMirrorOutboxVariablesBuilder(dataConnect, tenantId: tenantId,businessId: businessId,entityType: entityType,operation: operation,recordId: recordId,payload: payload,);
-  }
-  
-  
-  UpdateMirrorOutboxVariablesBuilder updateMirrorOutbox ({required String id, required String status, required int attempts, required Timestamp nextAttemptAt, }) {
-    return UpdateMirrorOutboxVariablesBuilder(dataConnect, id: id,status: status,attempts: attempts,nextAttemptAt: nextAttemptAt,);
-  }
-  
-  
-  ListTenantsVariablesBuilder listTenants () {
-    return ListTenantsVariablesBuilder(dataConnect, );
-  }
-  
-  
-  ListUsersVariablesBuilder listUsers () {
-    return ListUsersVariablesBuilder(dataConnect, );
-  }
-  
-  
-  ListLegacyAccessCodesVariablesBuilder listLegacyAccessCodes () {
-    return ListLegacyAccessCodesVariablesBuilder(dataConnect, );
-  }
-  
-  
-  ListBusinessesVariablesBuilder listBusinesses ({required String tenantId, }) {
-    return ListBusinessesVariablesBuilder(dataConnect, tenantId: tenantId,);
-  }
-  
-  
-  GetUserByEmailVariablesBuilder getUserByEmail ({required String email, }) {
-    return GetUserByEmailVariablesBuilder(dataConnect, email: email,);
-  }
-  
-  
-  GetBusinessByIdVariablesBuilder getBusinessById ({required String id, }) {
-    return GetBusinessByIdVariablesBuilder(dataConnect, id: id,);
-  }
-  
-  
-  GetBusinessByCodeVariablesBuilder getBusinessByCode ({required String code, }) {
-    return GetBusinessByCodeVariablesBuilder(dataConnect, code: code,);
-  }
-  
-  
-  GetBusinessesByNameVariablesBuilder getBusinessesByName ({required String name, }) {
-    return GetBusinessesByNameVariablesBuilder(dataConnect, name: name,);
-  }
-  
-  
-  VerifyEmployeeAccessVariablesBuilder verifyEmployeeAccess ({required String fullName, required String role, required String accessCodeHash, required String tenantId, required String businessId, }) {
-    return VerifyEmployeeAccessVariablesBuilder(dataConnect, fullName: fullName,role: role,accessCodeHash: accessCodeHash,tenantId: tenantId,businessId: businessId,);
-  }
-  
-  
-  VerifyUserLoginVariablesBuilder verifyUserLogin ({required String email, required String fullName, required String role, required String accessCodeHash, required String tenantId, required String businessId, }) {
-    return VerifyUserLoginVariablesBuilder(dataConnect, email: email,fullName: fullName,role: role,accessCodeHash: accessCodeHash,tenantId: tenantId,businessId: businessId,);
-  }
-  
-  
-  ListProductsByBusinessVariablesBuilder listProductsByBusiness ({required String tenantId, required String businessId, }) {
-    return ListProductsByBusinessVariablesBuilder(dataConnect, tenantId: tenantId,businessId: businessId,);
-  }
-  
-  
-  ListCustomersByBusinessVariablesBuilder listCustomersByBusiness ({required String tenantId, required String businessId, }) {
-    return ListCustomersByBusinessVariablesBuilder(dataConnect, tenantId: tenantId,businessId: businessId,);
-  }
-  
-  
-  ListUsersByBusinessVariablesBuilder listUsersByBusiness ({required String tenantId, required String businessId, }) {
-    return ListUsersByBusinessVariablesBuilder(dataConnect, tenantId: tenantId,businessId: businessId,);
-  }
-  
-  
-  ListSuppliersByBusinessVariablesBuilder listSuppliersByBusiness ({required String tenantId, required String businessId, }) {
-    return ListSuppliersByBusinessVariablesBuilder(dataConnect, tenantId: tenantId,businessId: businessId,);
-  }
-  
-  
-  ListTasksByBusinessVariablesBuilder listTasksByBusiness ({required String tenantId, required String businessId, }) {
-    return ListTasksByBusinessVariablesBuilder(dataConnect, tenantId: tenantId,businessId: businessId,);
-  }
-  
-  
-  ListTasksAssignedToUserVariablesBuilder listTasksAssignedToUser ({required String tenantId, required String businessId, required String userId, }) {
-    return ListTasksAssignedToUserVariablesBuilder(dataConnect, tenantId: tenantId,businessId: businessId,userId: userId,);
-  }
-  
-  
-  ListTransactionsByBusinessVariablesBuilder listTransactionsByBusiness ({required String tenantId, required String businessId, }) {
-    return ListTransactionsByBusinessVariablesBuilder(dataConnect, tenantId: tenantId,businessId: businessId,);
-  }
-  
-  
-  ListTransactionsByTypeVariablesBuilder listTransactionsByType ({required String tenantId, required String businessId, required TransactionType type, }) {
-    return ListTransactionsByTypeVariablesBuilder(dataConnect, tenantId: tenantId,businessId: businessId,type: type,);
-  }
-  
-  
-  ListEmployeesByBusinessVariablesBuilder listEmployeesByBusiness ({required String tenantId, required String businessId, }) {
-    return ListEmployeesByBusinessVariablesBuilder(dataConnect, tenantId: tenantId,businessId: businessId,);
-  }
-  
-  
-  ListDocumentsByBusinessVariablesBuilder listDocumentsByBusiness ({required String tenantId, required String businessId, }) {
-    return ListDocumentsByBusinessVariablesBuilder(dataConnect, tenantId: tenantId,businessId: businessId,);
-  }
-  
-  
-  ListActivityLogsByUserVariablesBuilder listActivityLogsByUser ({required String tenantId, required String businessId, required String userId, }) {
-    return ListActivityLogsByUserVariablesBuilder(dataConnect, tenantId: tenantId,businessId: businessId,userId: userId,);
-  }
-  
-  
-  ListActivityLogsByBusinessVariablesBuilder listActivityLogsByBusiness ({required String tenantId, required String businessId, }) {
-    return ListActivityLogsByBusinessVariablesBuilder(dataConnect, tenantId: tenantId,businessId: businessId,);
-  }
-  
-  
-  GetUserByIdVariablesBuilder getUserById ({required String id, }) {
-    return GetUserByIdVariablesBuilder(dataConnect, id: id,);
-  }
-  
-  
-  ListNotificationsVariablesBuilder listNotifications ({required String tenantId, required String businessId, required String userId, }) {
-    return ListNotificationsVariablesBuilder(dataConnect, tenantId: tenantId,businessId: businessId,userId: userId,);
-  }
-  
-  
-  ListPendingMirrorOutboxVariablesBuilder listPendingMirrorOutbox () {
-    return ListPendingMirrorOutboxVariablesBuilder(dataConnect, );
-  }
-  
+  BootstrapWorkspaceVariablesBuilder bootstrapWorkspace({
+    required String tenantId,
+    required String businessId,
+    required String userId,
+    required String name,
+    required String businessSector,
+    required String location,
+    required String region,
+    required String ownerEmail,
+    required String fullName,
+    required String code,
+  }) {
+    return BootstrapWorkspaceVariablesBuilder(
+      dataConnect,
+      tenantId: tenantId,
+      businessId: businessId,
+      userId: userId,
+      name: name,
+      businessSector: businessSector,
+      location: location,
+      region: region,
+      ownerEmail: ownerEmail,
+      fullName: fullName,
+      code: code,
+    );
+  }
+
+  CreateTenantVariablesBuilder createTenant({
+    required String name,
+    required String businessSector,
+    required String location,
+    required String ownerEmail,
+  }) {
+    return CreateTenantVariablesBuilder(
+      dataConnect,
+      name: name,
+      businessSector: businessSector,
+      location: location,
+      ownerEmail: ownerEmail,
+    );
+  }
+
+  UpdateTenantVariablesBuilder updateTenant({required String id}) {
+    return UpdateTenantVariablesBuilder(dataConnect, id: id);
+  }
+
+  DeleteTenantVariablesBuilder deleteTenant({required String id}) {
+    return DeleteTenantVariablesBuilder(dataConnect, id: id);
+  }
+
+  CreateUserVariablesBuilder createUser({
+    required String id,
+    required String tenantId,
+    required String businessId,
+    required String email,
+    required String role,
+  }) {
+    return CreateUserVariablesBuilder(
+      dataConnect,
+      id: id,
+      tenantId: tenantId,
+      businessId: businessId,
+      email: email,
+      role: role,
+    );
+  }
+
+  UpdateUserVariablesBuilder updateUser({required String id}) {
+    return UpdateUserVariablesBuilder(dataConnect, id: id);
+  }
+
+  DeleteUserVariablesBuilder deleteUser({required String id}) {
+    return DeleteUserVariablesBuilder(dataConnect, id: id);
+  }
+
+  ClearLegacyAccessCodeVariablesBuilder clearLegacyAccessCode({
+    required String id,
+  }) {
+    return ClearLegacyAccessCodeVariablesBuilder(dataConnect, id: id);
+  }
+
+  CreateBusinessVariablesBuilder createBusiness({
+    required String tenantId,
+    required String name,
+    required String location,
+    required String code,
+  }) {
+    return CreateBusinessVariablesBuilder(
+      dataConnect,
+      tenantId: tenantId,
+      name: name,
+      location: location,
+      code: code,
+    );
+  }
+
+  UpdateBusinessVariablesBuilder updateBusiness({required String id}) {
+    return UpdateBusinessVariablesBuilder(dataConnect, id: id);
+  }
+
+  UpsertBusinessSettingsVariablesBuilder upsertBusinessSettings({
+    required String tenantId,
+    required String businessId,
+    required String currency,
+    required String timezone,
+    required String fiscalYearStart,
+    required double taxRate,
+    required int lowStockThreshold,
+  }) {
+    return UpsertBusinessSettingsVariablesBuilder(
+      dataConnect,
+      tenantId: tenantId,
+      businessId: businessId,
+      currency: currency,
+      timezone: timezone,
+      fiscalYearStart: fiscalYearStart,
+      taxRate: taxRate,
+      lowStockThreshold: lowStockThreshold,
+    );
+  }
+
+  DeleteBusinessVariablesBuilder deleteBusiness({required String id}) {
+    return DeleteBusinessVariablesBuilder(dataConnect, id: id);
+  }
+
+  ProvisionEmployeeUserVariablesBuilder provisionEmployeeUser({
+    required String tenantId,
+    required String businessId,
+    required String email,
+    required String role,
+    required String fullName,
+    required String accessCodeHash,
+  }) {
+    return ProvisionEmployeeUserVariablesBuilder(
+      dataConnect,
+      tenantId: tenantId,
+      businessId: businessId,
+      email: email,
+      role: role,
+      fullName: fullName,
+      accessCodeHash: accessCodeHash,
+    );
+  }
+
+  CompleteAssignedTaskVariablesBuilder completeAssignedTask({
+    required String taskId,
+    required String userId,
+    required String tenantId,
+    required String businessId,
+  }) {
+    return CompleteAssignedTaskVariablesBuilder(
+      dataConnect,
+      taskId: taskId,
+      userId: userId,
+      tenantId: tenantId,
+      businessId: businessId,
+    );
+  }
+
+  CreateProductVariablesBuilder createProduct({
+    required String tenantId,
+    required String businessId,
+    required String name,
+    required int quantity,
+    required double sellingPrice,
+    required String createdBy,
+  }) {
+    return CreateProductVariablesBuilder(
+      dataConnect,
+      tenantId: tenantId,
+      businessId: businessId,
+      name: name,
+      quantity: quantity,
+      sellingPrice: sellingPrice,
+      createdBy: createdBy,
+    );
+  }
+
+  UpdateProductVariablesBuilder updateProduct({required String id}) {
+    return UpdateProductVariablesBuilder(dataConnect, id: id);
+  }
+
+  DeleteProductVariablesBuilder deleteProduct({required String id}) {
+    return DeleteProductVariablesBuilder(dataConnect, id: id);
+  }
+
+  CreateTransactionVariablesBuilder createTransaction({
+    required String tenantId,
+    required String businessId,
+    required TransactionType type,
+    required double amount,
+    required Timestamp date,
+    required String recordedBy,
+  }) {
+    return CreateTransactionVariablesBuilder(
+      dataConnect,
+      tenantId: tenantId,
+      businessId: businessId,
+      type: type,
+      amount: amount,
+      date: date,
+      recordedBy: recordedBy,
+    );
+  }
+
+  UpdateTransactionVariablesBuilder updateTransaction({required String id}) {
+    return UpdateTransactionVariablesBuilder(dataConnect, id: id);
+  }
+
+  DeleteTransactionVariablesBuilder deleteTransaction({required String id}) {
+    return DeleteTransactionVariablesBuilder(dataConnect, id: id);
+  }
+
+  CreateTaskCommentVariablesBuilder createTaskComment({
+    required String tenantId,
+    required String businessId,
+    required String taskId,
+    required String userId,
+    required String content,
+  }) {
+    return CreateTaskCommentVariablesBuilder(
+      dataConnect,
+      tenantId: tenantId,
+      businessId: businessId,
+      taskId: taskId,
+      userId: userId,
+      content: content,
+    );
+  }
+
+  UpdateTaskCommentVariablesBuilder updateTaskComment({required String id}) {
+    return UpdateTaskCommentVariablesBuilder(dataConnect, id: id);
+  }
+
+  DeleteTaskCommentVariablesBuilder deleteTaskComment({required String id}) {
+    return DeleteTaskCommentVariablesBuilder(dataConnect, id: id);
+  }
+
+  CreateEmployeeWithAccessVariablesBuilder createEmployeeWithAccess({
+    required String tenantId,
+    required String businessId,
+    required String fullName,
+    required String position,
+    required String userRole,
+    required String email,
+    required String accessCodeHash,
+  }) {
+    return CreateEmployeeWithAccessVariablesBuilder(
+      dataConnect,
+      tenantId: tenantId,
+      businessId: businessId,
+      fullName: fullName,
+      position: position,
+      userRole: userRole,
+      email: email,
+      accessCodeHash: accessCodeHash,
+    );
+  }
+
+  UpdateEmployeeWithAccessVariablesBuilder updateEmployeeWithAccess({
+    required String id,
+    required String tenantId,
+    required String businessId,
+    required String currentEmail,
+    required String fullName,
+    required String position,
+    required String userRole,
+    required String email,
+  }) {
+    return UpdateEmployeeWithAccessVariablesBuilder(
+      dataConnect,
+      id: id,
+      tenantId: tenantId,
+      businessId: businessId,
+      currentEmail: currentEmail,
+      fullName: fullName,
+      position: position,
+      userRole: userRole,
+      email: email,
+    );
+  }
+
+  DeleteEmployeeWithAccessVariablesBuilder deleteEmployeeWithAccess({
+    required String id,
+    required String tenantId,
+    required String businessId,
+    required String currentEmail,
+  }) {
+    return DeleteEmployeeWithAccessVariablesBuilder(
+      dataConnect,
+      id: id,
+      tenantId: tenantId,
+      businessId: businessId,
+      currentEmail: currentEmail,
+    );
+  }
+
+  CreateEmployeeVariablesBuilder createEmployee({
+    required String tenantId,
+    required String businessId,
+    required String fullName,
+    required String position,
+  }) {
+    return CreateEmployeeVariablesBuilder(
+      dataConnect,
+      tenantId: tenantId,
+      businessId: businessId,
+      fullName: fullName,
+      position: position,
+    );
+  }
+
+  UpdateEmployeeVariablesBuilder updateEmployee({required String id}) {
+    return UpdateEmployeeVariablesBuilder(dataConnect, id: id);
+  }
+
+  DeleteEmployeeVariablesBuilder deleteEmployee({required String id}) {
+    return DeleteEmployeeVariablesBuilder(dataConnect, id: id);
+  }
+
+  CreateCustomerVariablesBuilder createCustomer({
+    required String tenantId,
+    required String businessId,
+    required String customerName,
+  }) {
+    return CreateCustomerVariablesBuilder(
+      dataConnect,
+      tenantId: tenantId,
+      businessId: businessId,
+      customerName: customerName,
+    );
+  }
+
+  UpdateCustomerVariablesBuilder updateCustomer({required String id}) {
+    return UpdateCustomerVariablesBuilder(dataConnect, id: id);
+  }
+
+  DeleteCustomerVariablesBuilder deleteCustomer({required String id}) {
+    return DeleteCustomerVariablesBuilder(dataConnect, id: id);
+  }
+
+  CreateSupplierVariablesBuilder createSupplier({
+    required String tenantId,
+    required String businessId,
+    required String supplierName,
+  }) {
+    return CreateSupplierVariablesBuilder(
+      dataConnect,
+      tenantId: tenantId,
+      businessId: businessId,
+      supplierName: supplierName,
+    );
+  }
+
+  UpdateSupplierVariablesBuilder updateSupplier({required String id}) {
+    return UpdateSupplierVariablesBuilder(dataConnect, id: id);
+  }
+
+  DeleteSupplierVariablesBuilder deleteSupplier({required String id}) {
+    return DeleteSupplierVariablesBuilder(dataConnect, id: id);
+  }
+
+  CreateDocumentVariablesBuilder createDocument({
+    required String tenantId,
+    required String businessId,
+    required String title,
+    required String documentType,
+    required String fileUrl,
+    required String uploadedBy,
+  }) {
+    return CreateDocumentVariablesBuilder(
+      dataConnect,
+      tenantId: tenantId,
+      businessId: businessId,
+      title: title,
+      documentType: documentType,
+      fileUrl: fileUrl,
+      uploadedBy: uploadedBy,
+    );
+  }
+
+  UpdateDocumentVariablesBuilder updateDocument({required String id}) {
+    return UpdateDocumentVariablesBuilder(dataConnect, id: id);
+  }
+
+  DeleteDocumentVariablesBuilder deleteDocument({required String id}) {
+    return DeleteDocumentVariablesBuilder(dataConnect, id: id);
+  }
+
+  CreateActivityLogVariablesBuilder createActivityLog({
+    required String tenantId,
+    required String businessId,
+    required String userId,
+    required String userName,
+    required String actionType,
+    required String module,
+  }) {
+    return CreateActivityLogVariablesBuilder(
+      dataConnect,
+      tenantId: tenantId,
+      businessId: businessId,
+      userId: userId,
+      userName: userName,
+      actionType: actionType,
+      module: module,
+    );
+  }
+
+  CreateAiQueryVariablesBuilder createAiQuery({
+    required String tenantId,
+    required String businessId,
+    required String userId,
+    required String queryText,
+  }) {
+    return CreateAiQueryVariablesBuilder(
+      dataConnect,
+      tenantId: tenantId,
+      businessId: businessId,
+      userId: userId,
+      queryText: queryText,
+    );
+  }
+
+  UpdateAiQueryVariablesBuilder updateAiQuery({required String id}) {
+    return UpdateAiQueryVariablesBuilder(dataConnect, id: id);
+  }
+
+  DeleteAiQueryVariablesBuilder deleteAiQuery({required String id}) {
+    return DeleteAiQueryVariablesBuilder(dataConnect, id: id);
+  }
+
+  CreateNotificationVariablesBuilder createNotification({
+    required String tenantId,
+    required String businessId,
+    required String userId,
+    required String message,
+    required bool isRead,
+  }) {
+    return CreateNotificationVariablesBuilder(
+      dataConnect,
+      tenantId: tenantId,
+      businessId: businessId,
+      userId: userId,
+      message: message,
+      isRead: isRead,
+    );
+  }
+
+  UpdateNotificationVariablesBuilder updateNotification({required String id}) {
+    return UpdateNotificationVariablesBuilder(dataConnect, id: id);
+  }
+
+  DeleteNotificationVariablesBuilder deleteNotification({required String id}) {
+    return DeleteNotificationVariablesBuilder(dataConnect, id: id);
+  }
+
+  CreateTaskVariablesBuilder createTask({
+    required String tenantId,
+    required String businessId,
+    required String title,
+    required TaskStatus status,
+    required Timestamp dueDate,
+    required String createdBy,
+  }) {
+    return CreateTaskVariablesBuilder(
+      dataConnect,
+      tenantId: tenantId,
+      businessId: businessId,
+      title: title,
+      status: status,
+      dueDate: dueDate,
+      createdBy: createdBy,
+    );
+  }
+
+  UpdateTaskVariablesBuilder updateTask({required String id}) {
+    return UpdateTaskVariablesBuilder(dataConnect, id: id);
+  }
+
+  DeleteTaskVariablesBuilder deleteTask({required String id}) {
+    return DeleteTaskVariablesBuilder(dataConnect, id: id);
+  }
+
+  CreateMirrorOutboxVariablesBuilder createMirrorOutbox({
+    required String tenantId,
+    required String businessId,
+    required String entityType,
+    required String operation,
+    required String recordId,
+    required dynamic payload,
+  }) {
+    return CreateMirrorOutboxVariablesBuilder(
+      dataConnect,
+      tenantId: tenantId,
+      businessId: businessId,
+      entityType: entityType,
+      operation: operation,
+      recordId: recordId,
+      payload: payload,
+    );
+  }
+
+  UpdateMirrorOutboxVariablesBuilder updateMirrorOutbox({
+    required String id,
+    required String status,
+    required int attempts,
+    required Timestamp nextAttemptAt,
+  }) {
+    return UpdateMirrorOutboxVariablesBuilder(
+      dataConnect,
+      id: id,
+      status: status,
+      attempts: attempts,
+      nextAttemptAt: nextAttemptAt,
+    );
+  }
+
+  ListTenantsVariablesBuilder listTenants() {
+    return ListTenantsVariablesBuilder(dataConnect);
+  }
+
+  ListUsersVariablesBuilder listUsers() {
+    return ListUsersVariablesBuilder(dataConnect);
+  }
+
+  ListLegacyAccessCodesVariablesBuilder listLegacyAccessCodes() {
+    return ListLegacyAccessCodesVariablesBuilder(dataConnect);
+  }
+
+  ListBusinessesVariablesBuilder listBusinesses({required String tenantId}) {
+    return ListBusinessesVariablesBuilder(dataConnect, tenantId: tenantId);
+  }
+
+  GetUserByEmailVariablesBuilder getUserByEmail({required String email}) {
+    return GetUserByEmailVariablesBuilder(dataConnect, email: email);
+  }
+
+  GetBusinessByIdVariablesBuilder getBusinessById({required String id}) {
+    return GetBusinessByIdVariablesBuilder(dataConnect, id: id);
+  }
+
+  GetBusinessSettingsVariablesBuilder getBusinessSettings({
+    required String tenantId,
+    required String businessId,
+  }) {
+    return GetBusinessSettingsVariablesBuilder(
+      dataConnect,
+      tenantId: tenantId,
+      businessId: businessId,
+    );
+  }
+
+  GetBusinessByCodeVariablesBuilder getBusinessByCode({required String code}) {
+    return GetBusinessByCodeVariablesBuilder(dataConnect, code: code);
+  }
+
+  GetBusinessesByNameVariablesBuilder getBusinessesByName({
+    required String name,
+  }) {
+    return GetBusinessesByNameVariablesBuilder(dataConnect, name: name);
+  }
+
+  VerifyEmployeeAccessVariablesBuilder verifyEmployeeAccess({
+    required String fullName,
+    required String role,
+    required String accessCodeHash,
+    required String tenantId,
+    required String businessId,
+  }) {
+    return VerifyEmployeeAccessVariablesBuilder(
+      dataConnect,
+      fullName: fullName,
+      role: role,
+      accessCodeHash: accessCodeHash,
+      tenantId: tenantId,
+      businessId: businessId,
+    );
+  }
+
+  VerifyUserLoginVariablesBuilder verifyUserLogin({
+    required String email,
+    required String fullName,
+    required String role,
+    required String accessCodeHash,
+    required String tenantId,
+    required String businessId,
+  }) {
+    return VerifyUserLoginVariablesBuilder(
+      dataConnect,
+      email: email,
+      fullName: fullName,
+      role: role,
+      accessCodeHash: accessCodeHash,
+      tenantId: tenantId,
+      businessId: businessId,
+    );
+  }
+
+  ListProductsByBusinessVariablesBuilder listProductsByBusiness({
+    required String tenantId,
+    required String businessId,
+  }) {
+    return ListProductsByBusinessVariablesBuilder(
+      dataConnect,
+      tenantId: tenantId,
+      businessId: businessId,
+    );
+  }
+
+  ListCustomersByBusinessVariablesBuilder listCustomersByBusiness({
+    required String tenantId,
+    required String businessId,
+  }) {
+    return ListCustomersByBusinessVariablesBuilder(
+      dataConnect,
+      tenantId: tenantId,
+      businessId: businessId,
+    );
+  }
+
+  GetCustomerForCompanyVariablesBuilder getCustomerForCompany({
+    required String id,
+    required String tenantId,
+    required String businessId,
+  }) {
+    return GetCustomerForCompanyVariablesBuilder(
+      dataConnect,
+      id: id,
+      tenantId: tenantId,
+      businessId: businessId,
+    );
+  }
+
+  ListSaleCustomersByBusinessVariablesBuilder listSaleCustomersByBusiness({
+    required String tenantId,
+    required String businessId,
+  }) {
+    return ListSaleCustomersByBusinessVariablesBuilder(
+      dataConnect,
+      tenantId: tenantId,
+      businessId: businessId,
+    );
+  }
+
+  ListTaskAssigneesByBusinessVariablesBuilder listTaskAssigneesByBusiness({
+    required String tenantId,
+    required String businessId,
+  }) {
+    return ListTaskAssigneesByBusinessVariablesBuilder(
+      dataConnect,
+      tenantId: tenantId,
+      businessId: businessId,
+    );
+  }
+
+  ListUsersByBusinessVariablesBuilder listUsersByBusiness({
+    required String tenantId,
+    required String businessId,
+  }) {
+    return ListUsersByBusinessVariablesBuilder(
+      dataConnect,
+      tenantId: tenantId,
+      businessId: businessId,
+    );
+  }
+
+  ListSuppliersByBusinessVariablesBuilder listSuppliersByBusiness({
+    required String tenantId,
+    required String businessId,
+  }) {
+    return ListSuppliersByBusinessVariablesBuilder(
+      dataConnect,
+      tenantId: tenantId,
+      businessId: businessId,
+    );
+  }
+
+  ListTasksByBusinessVariablesBuilder listTasksByBusiness({
+    required String tenantId,
+    required String businessId,
+  }) {
+    return ListTasksByBusinessVariablesBuilder(
+      dataConnect,
+      tenantId: tenantId,
+      businessId: businessId,
+    );
+  }
+
+  ListTasksAssignedToUserVariablesBuilder listTasksAssignedToUser({
+    required String tenantId,
+    required String businessId,
+    required String userId,
+  }) {
+    return ListTasksAssignedToUserVariablesBuilder(
+      dataConnect,
+      tenantId: tenantId,
+      businessId: businessId,
+      userId: userId,
+    );
+  }
+
+  ListTransactionsByBusinessVariablesBuilder listTransactionsByBusiness({
+    required String tenantId,
+    required String businessId,
+  }) {
+    return ListTransactionsByBusinessVariablesBuilder(
+      dataConnect,
+      tenantId: tenantId,
+      businessId: businessId,
+    );
+  }
+
+  ListTransactionsByTypeVariablesBuilder listTransactionsByType({
+    required String tenantId,
+    required String businessId,
+    required TransactionType type,
+  }) {
+    return ListTransactionsByTypeVariablesBuilder(
+      dataConnect,
+      tenantId: tenantId,
+      businessId: businessId,
+      type: type,
+    );
+  }
+
+  ListEmployeesByBusinessVariablesBuilder listEmployeesByBusiness({
+    required String tenantId,
+    required String businessId,
+  }) {
+    return ListEmployeesByBusinessVariablesBuilder(
+      dataConnect,
+      tenantId: tenantId,
+      businessId: businessId,
+    );
+  }
+
+  ListDocumentsByBusinessVariablesBuilder listDocumentsByBusiness({
+    required String tenantId,
+    required String businessId,
+  }) {
+    return ListDocumentsByBusinessVariablesBuilder(
+      dataConnect,
+      tenantId: tenantId,
+      businessId: businessId,
+    );
+  }
+
+  ListActivityLogsByUserVariablesBuilder listActivityLogsByUser({
+    required String tenantId,
+    required String businessId,
+    required String userId,
+  }) {
+    return ListActivityLogsByUserVariablesBuilder(
+      dataConnect,
+      tenantId: tenantId,
+      businessId: businessId,
+      userId: userId,
+    );
+  }
+
+  ListActivityLogsByBusinessVariablesBuilder listActivityLogsByBusiness({
+    required String tenantId,
+    required String businessId,
+  }) {
+    return ListActivityLogsByBusinessVariablesBuilder(
+      dataConnect,
+      tenantId: tenantId,
+      businessId: businessId,
+    );
+  }
+
+  GetUserByIdVariablesBuilder getUserById({required String id}) {
+    return GetUserByIdVariablesBuilder(dataConnect, id: id);
+  }
+
+  ListNotificationsVariablesBuilder listNotifications({
+    required String tenantId,
+    required String businessId,
+    required String userId,
+  }) {
+    return ListNotificationsVariablesBuilder(
+      dataConnect,
+      tenantId: tenantId,
+      businessId: businessId,
+      userId: userId,
+    );
+  }
+
+  ListPendingMirrorOutboxVariablesBuilder listPendingMirrorOutbox() {
+    return ListPendingMirrorOutboxVariablesBuilder(dataConnect);
+  }
 
   static ConnectorConfig connectorConfig = ConnectorConfig(
     'us-east4',
@@ -651,19 +1076,20 @@ class ExampleConnector {
 
   ExampleConnector({required this.dataConnect});
   static ExampleConnector get instance {
-    
     CacheSettings cacheSettings = CacheSettings(
-      maxAge: Duration(milliseconds:0),
+      maxAge: Duration(milliseconds: 0),
       storage: CacheStorage.persistent,
     );
-    
+
     return ExampleConnector(
-        dataConnect: FirebaseDataConnect.instanceFor(
-            connectorConfig: connectorConfig,
-            
-            cacheSettings: cacheSettings,
-            
-            sdkType: CallerSDKType.generated));
+      dataConnect: FirebaseDataConnect.instanceFor(
+        connectorConfig: connectorConfig,
+
+        cacheSettings: cacheSettings,
+
+        sdkType: CallerSDKType.generated,
+      ),
+    );
   }
 
   FirebaseDataConnect dataConnect;

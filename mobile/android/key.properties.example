@@ -1,0 +1,5 @@
+# Copy to key.properties (ignored by git) and keep the keystore outside source control.
+storeFile=/absolute/path/to/smarterp-upload-key.jks
+storePassword=replace-with-secret
+keyAlias=smarterp-upload
+keyPassword=replace-with-secret

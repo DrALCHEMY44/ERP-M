@@ -59,8 +59,35 @@ query getBusinessById($id: String!)
     id
     tenantId
     name
+    location
+    businessType
+    entityType
+    city
+    region
+    phone
+    email
+    taxId
+    description
+    logoUrl
     createdAt
     code
+  }
+}
+
+query getBusinessSettings($tenantId: String!, $businessId: String!)
+@auth(level: NO_ACCESS) {
+  businessSettings(
+    where: { tenantId: { eq: $tenantId }, businessId: { eq: $businessId } }
+    limit: 1
+  ) {
+    businessId
+    tenantId
+    currency
+    timezone
+    fiscalYearStart
+    taxRate
+    lowStockThreshold
+    updatedAt
   }
 }
 
@@ -153,6 +180,7 @@ query listProductsByBusiness($tenantId: String!, $businessId: String!)
     sellingPrice
     expiryDate
     lowStockLevel
+    status
     createdBy
     createdAt
     updatedAt
@@ -173,7 +201,48 @@ query listCustomersByBusiness($tenantId: String!, $businessId: String!)
     location
     totalOrders
     totalSpent
+    notes
     createdAt
+    tenantId
+    businessId
+  }
+}
+
+query getCustomerForCompany($id: String!, $tenantId: String!, $businessId: String!)
+@auth(level: NO_ACCESS) {
+  customer(first: {
+    where: {
+      id: { eq: $id }
+      tenantId: { eq: $tenantId }
+      businessId: { eq: $businessId }
+    }
+  }) {
+    id
+  }
+}
+
+query listSaleCustomersByBusiness($tenantId: String!, $businessId: String!)
+@auth(level: NO_ACCESS) {
+  customers(
+    where: { tenantId: { eq: $tenantId }, businessId: { eq: $businessId } }
+  ) {
+    id
+    customerName
+    tenantId
+    businessId
+  }
+}
+
+query listTaskAssigneesByBusiness($tenantId: String!, $businessId: String!)
+@auth(level: NO_ACCESS) {
+  users(
+    where: { tenantId: { eq: $tenantId }, businessId: { eq: $businessId } }
+  ) {
+    id
+    email
+    role
+    fullName
+    department
     tenantId
     businessId
   }
@@ -206,6 +275,10 @@ query listSuppliersByBusiness($tenantId: String!, $businessId: String!)
     supplierName
     phoneNumber
     email
+    location
+    productsSupplied
+    paymentStatus
+    notes
     createdAt
     tenantId
     businessId
@@ -228,6 +301,7 @@ query listTasksByBusiness($tenantId: String!, $businessId: String!)
       email
       role
       fullName
+      department
     }
     createdBy
     createdAt
@@ -252,7 +326,7 @@ query listTasksAssignedToUser($tenantId: String!, $businessId: String!, $userId:
     status
     priority
     dueDate
-    assignedTo { id email role fullName }
+    assignedTo { id email role fullName department }
     createdBy
     createdAt
     updatedAt
@@ -271,6 +345,7 @@ query listTransactionsByBusiness($tenantId: String!, $businessId: String!)
     amount
     date
     category
+    description
     receiptUrl
     recordedBy
     createdAt
@@ -296,6 +371,7 @@ query listTransactionsByType(
     amount
     date
     category
+    description
     receiptUrl
     recordedBy
     createdAt
@@ -315,12 +391,15 @@ query listEmployeesByBusiness($tenantId: String!, $businessId: String!)
     role
     salary
     department
+    email
+    contact
     startDate
     status
+    attendance
+    salaryPaymentStatus
     createdAt
     tenantId
     businessId
-    code
   }
 }
 
@@ -333,6 +412,7 @@ query listDocumentsByBusiness($tenantId: String!, $businessId: String!)
     title
     documentType
     fileUrl
+    description
     uploadedBy
     uploadedAt
     tenantId

@@ -1,6 +1,7 @@
 # Basic Usage
 
 ```dart
+ExampleConnector.instance.BootstrapWorkspace(bootstrapWorkspaceVariables).execute();
 ExampleConnector.instance.CreateTenant(createTenantVariables).execute();
 ExampleConnector.instance.UpdateTenant(updateTenantVariables).execute();
 ExampleConnector.instance.DeleteTenant(deleteTenantVariables).execute();
@@ -10,7 +11,6 @@ ExampleConnector.instance.DeleteUser(deleteUserVariables).execute();
 ExampleConnector.instance.ClearLegacyAccessCode(clearLegacyAccessCodeVariables).execute();
 ExampleConnector.instance.CreateBusiness(createBusinessVariables).execute();
 ExampleConnector.instance.UpdateBusiness(updateBusinessVariables).execute();
-ExampleConnector.instance.DeleteBusiness(deleteBusinessVariables).execute();
 
 ```
 

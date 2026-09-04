@@ -1,4 +1,4 @@
-import type { AuthorizedProfile } from "./firebase-token"
+import type { AuthorizedProfile } from "./auth"
 
 export const ROLES = [
   "Platform Super Admin", "Business Owner", "Manager", "Accountant",
@@ -13,6 +13,8 @@ export type Permission =
   | "employees:read" | "employees:write" | "customers:read" | "customers:write"
   | "suppliers:read" | "suppliers:write" | "documents:read" | "documents:write"
   | "reports:read" | "audit:read" | "ai:use"
+  | "hr:read" | "hr:write" | "payroll:read" | "payroll:write" | "payroll:approve"
+  | "accounting:read" | "accounting:write" | "accounting:close"
 
 const ALL_COMPANY: Permission[] = [
   "company:manage", "users:manage", "inventory:read", "inventory:write",
@@ -20,14 +22,16 @@ const ALL_COMPANY: Permission[] = [
   "tasks:read", "tasks:write", "employees:read", "employees:write",
   "customers:read", "customers:write", "suppliers:read", "suppliers:write",
   "documents:read", "documents:write", "reports:read", "audit:read", "ai:use",
+  "hr:read", "hr:write", "payroll:read", "payroll:write", "payroll:approve",
+  "accounting:read", "accounting:write", "accounting:close",
 ]
 
 export const ROLE_PERMISSIONS: Record<Role, ReadonlySet<Permission>> = {
   "Platform Super Admin": new Set(["platform:manage"]),
   "Business Owner": new Set(ALL_COMPANY),
-  Manager: new Set(ALL_COMPANY.filter((p) => !["company:manage", "users:manage", "employees:write"].includes(p))),
-  Accountant: new Set(["sales:read", "sales:write", "expenses:read", "expenses:write", "documents:read", "reports:read", "ai:use"]),
-  "HR Officer": new Set(["employees:read", "employees:write", "tasks:read", "tasks:write", "documents:read", "documents:write", "reports:read", "ai:use"]),
+  Manager: new Set(ALL_COMPANY.filter((p) => !["company:manage", "users:manage", "employees:write", "hr:write", "payroll:read", "payroll:write", "payroll:approve", "accounting:write", "accounting:close"].includes(p))),
+  Accountant: new Set(["sales:read", "sales:write", "expenses:read", "expenses:write", "documents:read", "reports:read", "ai:use", "accounting:read", "accounting:write", "accounting:close", "payroll:read"]),
+  "HR Officer": new Set(["employees:read", "employees:write", "tasks:read", "tasks:write", "documents:read", "documents:write", "reports:read", "ai:use", "hr:read", "hr:write", "payroll:read", "payroll:write"]),
   Staff: new Set(["inventory:read", "sales:read", "tasks:read", "documents:read", "ai:use"]),
   Viewer: new Set(["inventory:read", "sales:read", "tasks:read", "documents:read", "reports:read", "ai:use"]),
 }

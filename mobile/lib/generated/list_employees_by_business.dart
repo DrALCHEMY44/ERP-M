@@ -5,16 +5,34 @@ class ListEmployeesByBusinessVariablesBuilder {
   String businessId;
 
   final FirebaseDataConnect _dataConnect;
-  ListEmployeesByBusinessVariablesBuilder(this._dataConnect, {required  this.tenantId,required  this.businessId,});
-  Deserializer<ListEmployeesByBusinessData> dataDeserializer = (dynamic json)  => ListEmployeesByBusinessData.fromJson(jsonDecode(json));
-  Serializer<ListEmployeesByBusinessVariables> varsSerializer = (ListEmployeesByBusinessVariables vars) => jsonEncode(vars.toJson());
-  Future<QueryResult<ListEmployeesByBusinessData, ListEmployeesByBusinessVariables>> execute({QueryFetchPolicy fetchPolicy = QueryFetchPolicy.preferCache}) {
+  ListEmployeesByBusinessVariablesBuilder(
+    this._dataConnect, {
+    required this.tenantId,
+    required this.businessId,
+  });
+  Deserializer<ListEmployeesByBusinessData> dataDeserializer = (dynamic json) =>
+      ListEmployeesByBusinessData.fromJson(jsonDecode(json));
+  Serializer<ListEmployeesByBusinessVariables> varsSerializer =
+      (ListEmployeesByBusinessVariables vars) => jsonEncode(vars.toJson());
+  Future<
+    QueryResult<ListEmployeesByBusinessData, ListEmployeesByBusinessVariables>
+  >
+  execute({QueryFetchPolicy fetchPolicy = QueryFetchPolicy.preferCache}) {
     return ref().execute(fetchPolicy: fetchPolicy);
   }
 
-  QueryRef<ListEmployeesByBusinessData, ListEmployeesByBusinessVariables> ref() {
-    ListEmployeesByBusinessVariables vars= ListEmployeesByBusinessVariables(tenantId: tenantId,businessId: businessId,);
-    return _dataConnect.query("listEmployeesByBusiness", dataDeserializer, varsSerializer, vars);
+  QueryRef<ListEmployeesByBusinessData, ListEmployeesByBusinessVariables>
+  ref() {
+    ListEmployeesByBusinessVariables vars = ListEmployeesByBusinessVariables(
+      tenantId: tenantId,
+      businessId: businessId,
+    );
+    return _dataConnect.query(
+      "listEmployeesByBusiness",
+      dataDeserializer,
+      varsSerializer,
+      vars,
+    );
   }
 }
 
@@ -26,53 +44,93 @@ class ListEmployeesByBusinessEmployees {
   final String? role;
   final double? salary;
   final String? department;
+  final String? email;
+  final String? contact;
   final DateTime? startDate;
   final String? status;
+  final double? attendance;
+  final String? salaryPaymentStatus;
   final Timestamp createdAt;
   final String tenantId;
   final String businessId;
-  final String? code;
-  ListEmployeesByBusinessEmployees.fromJson(dynamic json):
-  
-  id = nativeFromJson<String>(json['id']),
-  fullName = nativeFromJson<String>(json['fullName']),
-  position = nativeFromJson<String>(json['position']),
-  role = json['role'] == null ? null : nativeFromJson<String>(json['role']),
-  salary = json['salary'] == null ? null : nativeFromJson<double>(json['salary']),
-  department = json['department'] == null ? null : nativeFromJson<String>(json['department']),
-  startDate = json['startDate'] == null ? null : nativeFromJson<DateTime>(json['startDate']),
-  status = json['status'] == null ? null : nativeFromJson<String>(json['status']),
-  createdAt = Timestamp.fromJson(json['createdAt']),
-  tenantId = nativeFromJson<String>(json['tenantId']),
-  businessId = nativeFromJson<String>(json['businessId']),
-  code = json['code'] == null ? null : nativeFromJson<String>(json['code']);
+  ListEmployeesByBusinessEmployees.fromJson(dynamic json)
+    : id = nativeFromJson<String>(json['id']),
+      fullName = nativeFromJson<String>(json['fullName']),
+      position = nativeFromJson<String>(json['position']),
+      role = json['role'] == null ? null : nativeFromJson<String>(json['role']),
+      salary = json['salary'] == null
+          ? null
+          : nativeFromJson<double>(json['salary']),
+      department = json['department'] == null
+          ? null
+          : nativeFromJson<String>(json['department']),
+      email = json['email'] == null
+          ? null
+          : nativeFromJson<String>(json['email']),
+      contact = json['contact'] == null
+          ? null
+          : nativeFromJson<String>(json['contact']),
+      startDate = json['startDate'] == null
+          ? null
+          : nativeFromJson<DateTime>(json['startDate']),
+      status = json['status'] == null
+          ? null
+          : nativeFromJson<String>(json['status']),
+      attendance = json['attendance'] == null
+          ? null
+          : nativeFromJson<double>(json['attendance']),
+      salaryPaymentStatus = json['salaryPaymentStatus'] == null
+          ? null
+          : nativeFromJson<String>(json['salaryPaymentStatus']),
+      createdAt = Timestamp.fromJson(json['createdAt']),
+      tenantId = nativeFromJson<String>(json['tenantId']),
+      businessId = nativeFromJson<String>(json['businessId']);
   @override
   bool operator ==(Object other) {
-    if(identical(this, other)) {
+    if (identical(this, other)) {
       return true;
     }
-    if(other.runtimeType != runtimeType) {
+    if (other.runtimeType != runtimeType) {
       return false;
     }
 
-    final ListEmployeesByBusinessEmployees otherTyped = other as ListEmployeesByBusinessEmployees;
-    return id == otherTyped.id && 
-    fullName == otherTyped.fullName && 
-    position == otherTyped.position && 
-    role == otherTyped.role && 
-    salary == otherTyped.salary && 
-    department == otherTyped.department && 
-    startDate == otherTyped.startDate && 
-    status == otherTyped.status && 
-    createdAt == otherTyped.createdAt && 
-    tenantId == otherTyped.tenantId && 
-    businessId == otherTyped.businessId && 
-    code == otherTyped.code;
-    
+    final ListEmployeesByBusinessEmployees otherTyped =
+        other as ListEmployeesByBusinessEmployees;
+    return id == otherTyped.id &&
+        fullName == otherTyped.fullName &&
+        position == otherTyped.position &&
+        role == otherTyped.role &&
+        salary == otherTyped.salary &&
+        department == otherTyped.department &&
+        email == otherTyped.email &&
+        contact == otherTyped.contact &&
+        startDate == otherTyped.startDate &&
+        status == otherTyped.status &&
+        attendance == otherTyped.attendance &&
+        salaryPaymentStatus == otherTyped.salaryPaymentStatus &&
+        createdAt == otherTyped.createdAt &&
+        tenantId == otherTyped.tenantId &&
+        businessId == otherTyped.businessId;
   }
+
   @override
-  int get hashCode => Object.hashAll([id.hashCode, fullName.hashCode, position.hashCode, role.hashCode, salary.hashCode, department.hashCode, startDate.hashCode, status.hashCode, createdAt.hashCode, tenantId.hashCode, businessId.hashCode, code.hashCode]);
-  
+  int get hashCode => Object.hashAll([
+    id.hashCode,
+    fullName.hashCode,
+    position.hashCode,
+    role.hashCode,
+    salary.hashCode,
+    department.hashCode,
+    email.hashCode,
+    contact.hashCode,
+    startDate.hashCode,
+    status.hashCode,
+    attendance.hashCode,
+    salaryPaymentStatus.hashCode,
+    createdAt.hashCode,
+    tenantId.hashCode,
+    businessId.hashCode,
+  ]);
 
   Map<String, dynamic> toJson() {
     Map<String, dynamic> json = {};
@@ -88,18 +146,27 @@ class ListEmployeesByBusinessEmployees {
     if (department != null) {
       json['department'] = nativeToJson<String?>(department);
     }
+    if (email != null) {
+      json['email'] = nativeToJson<String?>(email);
+    }
+    if (contact != null) {
+      json['contact'] = nativeToJson<String?>(contact);
+    }
     if (startDate != null) {
       json['startDate'] = nativeToJson<DateTime?>(startDate);
     }
     if (status != null) {
       json['status'] = nativeToJson<String?>(status);
     }
+    if (attendance != null) {
+      json['attendance'] = nativeToJson<double?>(attendance);
+    }
+    if (salaryPaymentStatus != null) {
+      json['salaryPaymentStatus'] = nativeToJson<String?>(salaryPaymentStatus);
+    }
     json['createdAt'] = createdAt.toJson();
     json['tenantId'] = nativeToJson<String>(tenantId);
     json['businessId'] = nativeToJson<String>(businessId);
-    if (code != null) {
-      json['code'] = nativeToJson<String?>(code);
-    }
     return json;
   }
 
@@ -110,39 +177,41 @@ class ListEmployeesByBusinessEmployees {
     this.role,
     this.salary,
     this.department,
+    this.email,
+    this.contact,
     this.startDate,
     this.status,
+    this.attendance,
+    this.salaryPaymentStatus,
     required this.createdAt,
     required this.tenantId,
     required this.businessId,
-    this.code,
   });
 }
 
 @immutable
 class ListEmployeesByBusinessData {
   final List<ListEmployeesByBusinessEmployees> employees;
-  ListEmployeesByBusinessData.fromJson(dynamic json):
-  
-  employees = (json['employees'] as List<dynamic>)
-        .map((e) => ListEmployeesByBusinessEmployees.fromJson(e))
-        .toList();
+  ListEmployeesByBusinessData.fromJson(dynamic json)
+    : employees = (json['employees'] as List<dynamic>)
+          .map((e) => ListEmployeesByBusinessEmployees.fromJson(e))
+          .toList();
   @override
   bool operator ==(Object other) {
-    if(identical(this, other)) {
+    if (identical(this, other)) {
       return true;
     }
-    if(other.runtimeType != runtimeType) {
+    if (other.runtimeType != runtimeType) {
       return false;
     }
 
-    final ListEmployeesByBusinessData otherTyped = other as ListEmployeesByBusinessData;
+    final ListEmployeesByBusinessData otherTyped =
+        other as ListEmployeesByBusinessData;
     return employees == otherTyped.employees;
-    
   }
+
   @override
   int get hashCode => employees.hashCode;
-  
 
   Map<String, dynamic> toJson() {
     Map<String, dynamic> json = {};
@@ -150,37 +219,36 @@ class ListEmployeesByBusinessData {
     return json;
   }
 
-  ListEmployeesByBusinessData({
-    required this.employees,
-  });
+  ListEmployeesByBusinessData({required this.employees});
 }
 
 @immutable
 class ListEmployeesByBusinessVariables {
   final String tenantId;
   final String businessId;
-  @Deprecated('fromJson is deprecated for Variable classes as they are no longer required for deserialization.')
-  ListEmployeesByBusinessVariables.fromJson(Map<String, dynamic> json):
-  
-  tenantId = nativeFromJson<String>(json['tenantId']),
-  businessId = nativeFromJson<String>(json['businessId']);
+  @Deprecated(
+    'fromJson is deprecated for Variable classes as they are no longer required for deserialization.',
+  )
+  ListEmployeesByBusinessVariables.fromJson(Map<String, dynamic> json)
+    : tenantId = nativeFromJson<String>(json['tenantId']),
+      businessId = nativeFromJson<String>(json['businessId']);
   @override
   bool operator ==(Object other) {
-    if(identical(this, other)) {
+    if (identical(this, other)) {
       return true;
     }
-    if(other.runtimeType != runtimeType) {
+    if (other.runtimeType != runtimeType) {
       return false;
     }
 
-    final ListEmployeesByBusinessVariables otherTyped = other as ListEmployeesByBusinessVariables;
-    return tenantId == otherTyped.tenantId && 
-    businessId == otherTyped.businessId;
-    
+    final ListEmployeesByBusinessVariables otherTyped =
+        other as ListEmployeesByBusinessVariables;
+    return tenantId == otherTyped.tenantId &&
+        businessId == otherTyped.businessId;
   }
+
   @override
   int get hashCode => Object.hashAll([tenantId.hashCode, businessId.hashCode]);
-  
 
   Map<String, dynamic> toJson() {
     Map<String, dynamic> json = {};
@@ -194,4 +262,3 @@ class ListEmployeesByBusinessVariables {
     required this.businessId,
   });
 }
-

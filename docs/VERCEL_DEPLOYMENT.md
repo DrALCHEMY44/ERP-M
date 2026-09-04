@@ -1,9 +1,22 @@
 # Vercel deployment
 
-Create a Vercel project with repository root directory `frontend`. Use Node.js 24 (or the platform-supported current LTS), `npm ci`, and `npm run build`. Copy variable names from `frontend/.env.example`; never copy `.env` into source control. Public values are limited to the documented Firebase web identifiers and `NEXT_PUBLIC_APP_URL`. All Admin, database, S3-compatible storage, OpenRouter, rate-limit and cron values are private.
+Create a Vercel project with repository root `frontend`, Node.js 24, `npm ci`,
+and `npm run build`. Copy variable names from `frontend/.env.example`; never
+upload or commit the local `.env` file. `NEXT_PUBLIC_APP_URL` is public. Neon
+database credentials, the Neon Auth cookie secret, storage credentials,
+OpenRouter key, rate-limit secret, and cron secret are private.
 
-After variables are configured, run `npm run env:check` in a credentialed deployment environment. Deploy, then request `/api/health`; a `200` means configuration, Firebase Admin initialization, Neon and object storage passed. A `503` exposes only boolean component status.
+Set `NEON_AUTH_BASE_URL` to the branch-specific Auth endpoint and keep
+`NEON_AUTH_COOKIE_SECRET` stable across deployments. In Neon Auth, add the
+deployed HTTPS origin as a trusted origin and configure production email and
+Google OAuth if that login option remains enabled.
 
-The cron in `frontend/vercel.json` invokes `/api/internal/reconcile-outbox` every ten minutes. Vercel must send `Authorization: Bearer <CRON_SECRET>`. Calls without the exact minimum-32-character secret return `401`.
+Run `npm run env:check`, deploy, then request `/api/health`. A `200` response
+must report `configuration`, `neonAuth`, `neon`, and `objectStorage` ready. A
+`503` exposes only component status.
 
-After obtaining the hostname, add only its hostname (no scheme/path) to Firebase Authentication authorized domains and set `NEXT_PUBLIC_APP_URL` and `ALLOWED_ORIGINS` to its HTTPS origin.
+The cron in `frontend/vercel.json` invokes `/api/internal/reconcile-outbox` every
+ten minutes with `Authorization: Bearer <CRON_SECRET>`. Calls without the exact
+minimum-32-character secret return `401`.
+
+The complete sequence and rollback gates are in `DEPLOYMENT.md`.

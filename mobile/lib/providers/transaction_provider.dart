@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 import '../models/expense.dart';
+import '../models/inventory_item.dart';
 import '../models/sale.dart';
 import '../services/api_service.dart';
 import '../services/auth_service.dart';
@@ -21,6 +22,13 @@ class TransactionProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  void reset() {
+    _sales.clear();
+    _expenses.clear();
+    _isLoading = false;
+    notifyListeners();
+  }
+
   Future<Map<String, dynamic>> _dataOperation(
     String operation, [
     Map<String, dynamic> variables = const {},
@@ -36,39 +44,94 @@ class TransactionProvider with ChangeNotifier {
     if (AuthService.currentUser == null) return;
     setLoading(true);
     try {
-      final response = await _dataOperation('listTransactionsByBusiness');
-      final data = response['data'] as Map<String, dynamic>;
-      final rows = data['transactions'] as List<dynamic>? ?? [];
       _sales.clear();
       _expenses.clear();
-      for (final value in rows) {
-        final row = value as Map<String, dynamic>;
-        final date = DateTime.parse(row['date'] as String);
-        final amount = (row['amount'] as num).toDouble();
-        if (row['type'] == 'SALE') {
+      if (AuthService.hasPermission('viewSales')) {
+        final response = await ApiService.request(
+          '/api/sales',
+          retryTransient: true,
+        );
+        final salesRows = response['sales'] as List<dynamic>? ?? [];
+        for (final value in salesRows) {
+          final row = value as Map<String, dynamic>;
+          final lines = row['productsSold'] as List<dynamic>? ?? [];
+          final saleLines = lines
+              .map((value) {
+                final item = value as Map<String, dynamic>;
+                return SaleLine(
+                  productId: item['productId']?.toString() ?? '',
+                  productName: item['productName']?.toString() ?? 'Product',
+                  quantity: (item['quantity'] as num?)?.toInt() ?? 0,
+                  priceAtSale: (item['priceAtSale'] as num?)?.toDouble() ?? 0,
+                  unitId: item['unitId']?.toString(),
+                  unitName: item['unitName']?.toString(),
+                  conversionFactor:
+                      (item['conversionFactor'] as num?)?.toInt() ?? 1,
+                );
+              })
+              .toList(growable: false);
+          final names = lines
+              .map((line) {
+                final item = line as Map<String, dynamic>;
+                final name = item['productName'] as String?;
+                final unitName = item['unitName'] as String?;
+                final lineQuantity = (item['quantity'] as num?)?.toInt();
+                if (name == null) return null;
+                return unitName == null
+                    ? name
+                    : '$name ($lineQuantity $unitName)';
+              })
+              .whereType<String>()
+              .join(', ');
+          final quantity = lines.fold<int>(
+            0,
+            (sum, line) =>
+                sum +
+                ((line as Map<String, dynamic>)['quantity'] as num).toInt(),
+          );
           _sales.add(
             Sale(
               id: row['id'] as String,
               tenantId: row['tenantId'] as String,
               businessId: row['businessId'] as String,
-              itemName: row['category'] as String? ?? 'Sale',
-              quantity: 1,
-              totalAmount: amount,
-              date: date,
+              itemName: names.isEmpty ? 'Sale' : names,
+              quantity: quantity,
+              totalAmount: (row['totalAmount'] as num).toDouble(),
+              date: DateTime.parse(row['saleDate'] as String),
               recordedBy: row['recordedBy'] as String,
+              paymentMethod: row['paymentMethod']?.toString() ?? 'Cash',
+              customerId: row['customerId']?.toString(),
+              items: saleLines,
             ),
           );
-        } else if (row['type'] == 'EXPENSE') {
+        }
+      }
+      if (AuthService.hasPermission('viewExpenses')) {
+        final response = await ApiService.request(
+          '/api/data',
+          method: 'POST',
+          body: {
+            'operation': 'listTransactionsByType',
+            'variables': {'type': 'EXPENSE'},
+          },
+          retryTransient: true,
+        );
+        final expenseData = response['data'] as Map<String, dynamic>;
+        final expenseRows = expenseData['transactions'] as List<dynamic>? ?? [];
+        for (final value in expenseRows) {
+          final row = value as Map<String, dynamic>;
           _expenses.add(
             Expense(
               id: row['id'] as String,
               tenantId: row['tenantId'] as String,
               businessId: row['businessId'] as String,
               category: row['category'] as String? ?? 'Other',
-              description: 'Operational expense',
-              amount: amount,
-              date: date,
+              description:
+                  row['description'] as String? ?? 'Operational expense',
+              amount: (row['amount'] as num).toDouble(),
+              date: DateTime.parse(row['date'] as String),
               recordedBy: row['recordedBy'] as String,
+              receiptUrl: row['receiptUrl']?.toString(),
             ),
           );
         }
@@ -82,9 +145,31 @@ class TransactionProvider with ChangeNotifier {
     String productId,
     int quantity,
     CoreProvider core,
-    InventoryProvider inventory,
-  ) async {
+    InventoryProvider inventory, {
+    ProductUnit? unit,
+  }) async {
+    return recordSaleItems(
+      [
+        {
+          'productId': productId,
+          'quantity': quantity,
+          if (unit != null) 'unitId': unit.id,
+        },
+      ],
+      core,
+      inventory,
+    );
+  }
+
+  Future<bool> recordSaleItems(
+    List<Map<String, dynamic>> items,
+    CoreProvider core,
+    InventoryProvider inventory, {
+    String paymentMethod = 'CASH',
+    String? customerId,
+  }) async {
     if (!AuthService.hasPermission('manageSales')) return false;
+    if (items.isEmpty) throw const ApiException('Add at least one product.');
     setLoading(true);
     try {
       await ApiService.request(
@@ -93,10 +178,10 @@ class TransactionProvider with ChangeNotifier {
         body: {
           'idempotencyKey':
               '${AuthService.currentUser!.id}-${DateTime.now().microsecondsSinceEpoch}',
-          'paymentMethod': 'CASH',
-          'items': [
-            {'productId': productId, 'quantity': quantity},
-          ],
+          'paymentMethod': paymentMethod,
+          if (customerId != null && customerId.isNotEmpty)
+            'customerId': customerId,
+          'items': items,
         },
       );
       await Future.wait([loadData(), inventory.loadData()]);
@@ -110,21 +195,32 @@ class TransactionProvider with ChangeNotifier {
     String category,
     String description,
     double amount,
-    CoreProvider core,
-  ) async {
+    CoreProvider core, {
+    DateTime? date,
+    String? receiptUrl,
+  }) async {
     if (!AuthService.hasPermission('manageExpenses')) return false;
     setLoading(true);
     try {
       await _dataOperation('CreateTransaction', {
         'type': 'EXPENSE',
         'amount': amount,
-        'date': DateTime.now().toUtc().toIso8601String(),
+        'date': (date ?? DateTime.now()).toUtc().toIso8601String(),
         'category': category,
+        'description': description,
+        'receiptUrl': receiptUrl,
       });
       await loadData();
       return true;
     } finally {
       setLoading(false);
     }
+  }
+
+  Future<bool> deleteExpense(String expenseId) async {
+    if (!AuthService.hasPermission('manageExpenses')) return false;
+    await _dataOperation('DeleteTransaction', {'id': expenseId});
+    await loadData();
+    return true;
   }
 }

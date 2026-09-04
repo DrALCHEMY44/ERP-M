@@ -2,7 +2,7 @@
 "use client"
 
 import * as React from "react"
-import { Plus, Search, Truck, Phone, Mail, MapPin, Loader2, Trash2, Filter, DollarSign, LogIn } from "lucide-react"
+import { Plus, Search, Truck, Phone, Mail, MapPin, Loader2, Trash2, LogIn } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -16,7 +16,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { useDataConnect } from "@/hooks/use-dataconnect"
+import { useNeonData } from "@/hooks/use-neon-data"
 import { listSuppliersByBusinessQuery, createSupplierMutation, updateSupplierMutation, deleteSupplierMutation } from "@/lib/data-service"
 import { useAuth } from "@/hooks/use-auth"
 import { Supplier } from "@/lib/types"
@@ -24,8 +24,8 @@ import { SupplierDialog } from "@/components/suppliers/supplier-dialog"
 import { useToast } from "@/hooks/use-toast"
 
 export default function SuppliersPage() {
-  const { user, profile } = useAuth();
-  const { data: suppliersData, loading, unauthenticated, refetch } = useDataConnect({
+  const { profile } = useAuth();
+  const { data: suppliersData, loading, unauthenticated, refetch } = useNeonData({
     query: listSuppliersByBusinessQuery,
     variables: { tenantId: profile?.tenantId, businessId: profile?.businessId },
     skip: !profile?.tenantId || !profile?.businessId,
@@ -42,13 +42,14 @@ export default function SuppliersPage() {
       ...s,
       name: s.supplierName,
       phone: s.phoneNumber || '',
-      location: 'Unknown',
-      productsSupplied: [],
-      paymentStatus: 'Paid'
+      location: s.location || 'Not provided',
+      productsSupplied: (s.productsSupplied || '').split(',').map((value: string) => value.trim()).filter(Boolean),
+      paymentStatus: s.paymentStatus || 'Pending',
+      notes: s.notes || '',
     })) as Supplier[];
   }, [suppliersData]);
 
-  const filteredSuppliers = suppliers.filter(s => 
+  const filteredSuppliers = suppliers.filter(s =>
     s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     s.productsSupplied.some(p => p.toLowerCase().includes(searchQuery.toLowerCase()))
   )
@@ -80,7 +81,11 @@ export default function SuppliersPage() {
           id: selectedSupplier.id,
           supplierName: data.name,
           phoneNumber: data.phone,
-          email: data.email
+          email: data.email,
+          location: data.location,
+          productsSupplied: (data.productsSupplied || []).join(', '),
+          paymentStatus: data.paymentStatus,
+          notes: data.notes,
         });
         toast({ title: "Supplier Updated", description: `${data.name} profile has been saved.` });
       } else {
@@ -89,7 +94,11 @@ export default function SuppliersPage() {
           businessId: profile.businessId,
           supplierName: data.name!,
           phoneNumber: data.phone,
-          email: data.email
+          email: data.email,
+          location: data.location,
+          productsSupplied: (data.productsSupplied || []).join(', '),
+          paymentStatus: data.paymentStatus,
+          notes: data.notes,
         });
         toast({ title: "Supplier Added", description: `${data.name} is now a registered partner.` });
       }
@@ -104,9 +113,9 @@ export default function SuppliersPage() {
     if (confirm("Permanently delete this supplier record?")) {
       try {
         await deleteSupplierMutation({ id });
-        toast({ title: "Deleted", description: "Supplier removed from cloud storage." });
+        toast({ title: "Deleted", description: "Supplier record removed." });
         refetch();
-      } catch (e) {
+      } catch {
         toast({ variant: "destructive", title: "Error", description: "Failed to delete record." });
       }
     }
@@ -126,11 +135,11 @@ export default function SuppliersPage() {
             <p className="text-sm text-muted-foreground">
               Please sign in to view supplier records. All operations require an authenticated session.
             </p>
-            <Link href="/login">
-              <Button className="bg-primary hover:bg-primary/90 text-white font-bold uppercase text-xs tracking-widest">
+            <Button asChild className="bg-primary hover:bg-primary/90 text-white font-bold uppercase text-xs tracking-widest">
+              <Link href="/login">
                 <LogIn className="size-4 mr-2" /> Sign In
-              </Button>
-            </Link>
+              </Link>
+            </Button>
           </CardContent>
         </Card>
       </div>
@@ -160,7 +169,7 @@ export default function SuppliersPage() {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Card className="border-t-4 border-[#3b82f6] shadow-md bg-blue-50/10">
           <CardHeader className="pb-2 p-4">
-            <CardDescription className="text-[10px] font-bold uppercase tracking-widest">Active Partners</CardDescription>
+            <CardDescription className="text-[10px] font-bold uppercase tracking-widest">Registered Partners</CardDescription>
             <CardTitle className="text-2xl font-bold text-blue-700">{suppliers.length}</CardTitle>
           </CardHeader>
         </Card>
@@ -172,8 +181,8 @@ export default function SuppliersPage() {
         </Card>
         <Card className="border-t-4 border-[#10b981] shadow-md bg-emerald-50/10">
           <CardHeader className="pb-2 p-4">
-            <CardDescription className="text-[10px] font-bold uppercase tracking-widest">Supply Health</CardDescription>
-            <CardTitle className="text-2xl font-bold text-emerald-700">Optimal</CardTitle>
+            <CardDescription className="text-[10px] font-bold uppercase tracking-widest">Payments Recorded</CardDescription>
+            <CardTitle className="text-2xl font-bold text-emerald-700">{suppliers.length - pendingPayments} Suppliers</CardTitle>
           </CardHeader>
         </Card>
       </div>
@@ -182,16 +191,13 @@ export default function SuppliersPage() {
         <div className="p-4 border-b flex items-center justify-between">
           <div className="relative w-full max-w-sm">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-            <Input 
-              placeholder="Search by supplier or products..." 
+            <Input
+              placeholder="Search by supplier or products..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-9 bg-muted/20"
             />
           </div>
-          <Button variant="ghost" size="sm" className="uppercase font-bold text-[10px]">
-            <Filter className="size-4 mr-2" /> Filter List
-          </Button>
         </div>
 
         <div className="overflow-x-auto">
@@ -245,7 +251,7 @@ export default function SuppliersPage() {
                     </TableCell>
                     <TableCell>
                       <Badge className={`text-[9px] uppercase font-bold ${
-                        supplier.paymentStatus === 'Paid' ? 'bg-emerald-100 text-emerald-700' : 
+                        supplier.paymentStatus === 'Paid' ? 'bg-emerald-100 text-emerald-700' :
                         supplier.paymentStatus === 'Overdue' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'
                       }`}>
                         {supplier.paymentStatus}
@@ -254,7 +260,7 @@ export default function SuppliersPage() {
                     <TableCell className="text-right">
                        <div className="flex items-center justify-end gap-1">
                         <Button variant="ghost" size="sm" onClick={() => handleEdit(supplier)} className="text-[10px] uppercase font-bold">Edit</Button>
-                        <Button variant="ghost" size="icon" onClick={() => handleDelete(supplier.id!)} className="h-8 w-8 text-destructive">
+                        <Button variant="ghost" size="icon" onClick={() => handleDelete(supplier.id!)} className="h-8 w-8 text-destructive" aria-label={`Delete ${supplier.name}`}>
                           <Trash2 className="size-4" />
                         </Button>
                        </div>
@@ -273,7 +279,7 @@ export default function SuppliersPage() {
         </div>
       </div>
 
-      <SupplierDialog 
+      <SupplierDialog
         supplier={selectedSupplier}
         open={isDialogOpen}
         onOpenChange={setIsDialogOpen}
