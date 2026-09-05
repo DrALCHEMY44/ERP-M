@@ -3,23 +3,7 @@
 import * as React from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import {
-  Building2,
-  Loader2,
-  ArrowRight,
-  ArrowLeft,
-  User,
-  Mail,
-  Lock,
-  Eye,
-  EyeOff,
-  MapPin,
-  Briefcase,
-  Globe,
-  CheckCircle2,
-  ChevronRight,
-  ShieldCheck,
-} from "lucide-react"
+import { Loader2, ArrowRight, ArrowLeft, User, Mail, MapPin, Briefcase, CheckCircle2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -33,6 +17,8 @@ import {
 import { authClient } from "@/lib/auth/client"
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/hooks/use-auth"
+import { AuthFrame, AuthMessage, authInputClass } from "@/components/auth/auth-frame"
+import { PasswordField } from "@/components/auth/password-field"
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -65,11 +51,11 @@ const CAMEROON_REGIONS = [
 ]
 
 const PIPELINE_STAGES = [
-  "Securing your credentials...",
-  "Creating your tenant workspace...",
-  "Setting up your business profile...",
-  "Provisioning your admin account...",
-  "Finalizing your workspace...",
+  "Creating your account…",
+  "Creating your business workspace…",
+  "Adding your business details…",
+  "Setting up your account access…",
+  "Getting your dashboard ready…",
 ]
 
 interface Step1Data {
@@ -90,8 +76,6 @@ export default function RegisterPage() {
   const [password, setPassword] = React.useState("")
   const [confirmPassword, setConfirmPassword] = React.useState("")
   const [invitationToken, setInvitationToken] = React.useState("")
-  const [showPassword, setShowPassword] = React.useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = React.useState(false)
 
   // Password criteria checklist
   const criteria = React.useMemo(() => {
@@ -117,6 +101,15 @@ export default function RegisterPage() {
   const [pipelineProgress, setPipelineProgress] = React.useState(0)
   const [isComplete, setIsComplete] = React.useState(false)
   const [errors, setErrors] = React.useState<Record<string, string>>({})
+
+  const headingRef = React.useRef<HTMLHeadingElement>(null)
+  const previousStep = React.useRef(step)
+  React.useEffect(() => {
+    if (previousStep.current !== step) {
+      headingRef.current?.focus()
+      previousStep.current = step
+    }
+  }, [step])
 
   const router = useRouter()
   const { toast } = useToast()
@@ -160,7 +153,7 @@ export default function RegisterPage() {
 
     // Enforce criteria matching mockup
     if (!criteria.length || !criteria.uppercase || !criteria.number) {
-      newErrors.password = "Password does not meet criteria checklist"
+      newErrors.password = "Use at least 8 characters, one uppercase letter and one number."
     }
 
     if (password !== confirmPassword)
@@ -171,6 +164,7 @@ export default function RegisterPage() {
       return
     }
 
+    setErrors({})
     setStep1Data({ fullName: fullName.trim(), email: email.trim(), password })
     setStep(2)
   }
@@ -288,387 +282,111 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen w-full flex flex-col justify-between bg-[#f8fafc] text-foreground p-6 font-sans">
-      {/* Top Header Row */}
-      <div className="w-full max-w-7xl mx-auto flex items-center justify-between py-4">
-        <div className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-blue-500/20">
-            <Building2 className="size-4" />
-          </div>
-          <span className="font-bold tracking-tight text-slate-800 text-lg">SmartERP</span>
+    <AuthFrame mode="register">
+      {isComplete ? (
+        <div className="py-16 text-center" role="status">
+          <span className="mx-auto grid size-16 place-items-center rounded-2xl bg-emerald-100 text-emerald-700"><CheckCircle2 className="size-8" aria-hidden="true" /></span>
+          <h1 className="mt-6 text-3xl font-bold tracking-tight">{invitationToken ? "You're part of the team" : "Your workspace is ready"}</h1>
+          <p className="mt-3 text-sm leading-6 text-slate-600">Taking you to your dashboard…</p>
+          <Button asChild className="mt-6 h-12 rounded-xl"><Link href="/dashboard">Open dashboard<ArrowRight className="size-4" aria-hidden="true" /></Link></Button>
         </div>
-      </div>
-
-      {/* Main card section */}
-      <div className="flex-1 flex flex-col items-center justify-center py-8">
-
-        {/* Step Indicator Header */}
-        <div className="w-full max-w-[390px] mb-6">
-          <div className="flex items-center justify-center gap-3">
-            {/* Step 1 */}
-            <div className="flex flex-col items-center gap-1">
-              <div className={`h-6 w-6 rounded-full flex items-center justify-center text-[10px] font-bold transition-all ${
-                step === 1
-                  ? "bg-blue-600 text-white shadow-md shadow-blue-500/30"
-                  : "bg-emerald-500 text-white"
-              }`}>
-                {step > 1 ? <CheckCircle2 className="size-3.5" /> : "1"}
-              </div>
-              <span className={`text-[9px] font-bold uppercase tracking-wider ${
-                step === 1 ? "text-blue-600" : "text-emerald-500"
-              }`}>Account</span>
-            </div>
-
-            {/* Connection Line */}
-            <div className={`flex-1 h-0.5 max-w-[80px] rounded-full transition-all ${
-              step > 1 ? "bg-emerald-500" : "bg-slate-200"
-            }`} />
-
-            {/* Step 2 */}
-            <div className="flex flex-col items-center gap-1">
-              <div className={`h-6 w-6 rounded-full flex items-center justify-center text-[10px] font-bold transition-all ${
-                step === 2
-                  ? "bg-blue-600 text-white shadow-md shadow-blue-500/30"
-                  : "bg-slate-200 text-slate-400"
-              }`}>
-                2
-              </div>
-              <span className={`text-[9px] font-bold uppercase tracking-wider ${
-                step === 2 ? "text-blue-600" : "text-slate-400"
-              }`}>{invitationToken ? "Invitation" : "Workspace"}</span>
-            </div>
+      ) : (
+        <>
+          <ol aria-label="Registration progress" className="mb-8 flex items-center gap-3 text-sm">
+            <li aria-current={step === 1 ? "step" : undefined} className={step === 1 ? "flex items-center gap-2 font-semibold text-blue-700" : "flex items-center gap-2 text-slate-600"}>
+              <span className={step > 1 ? "grid size-8 place-items-center rounded-full bg-emerald-100 text-emerald-700" : "grid size-8 place-items-center rounded-full bg-blue-600 text-white"}>{step > 1 ? <CheckCircle2 className="size-4" aria-hidden="true" /> : "1"}</span>
+              Account
+            </li>
+            <span className="h-px min-w-4 flex-1 bg-slate-200" aria-hidden="true" />
+            <li aria-current={step === 2 ? "step" : undefined} className={step === 2 ? "flex items-center gap-2 font-semibold text-blue-700" : "flex items-center gap-2 text-slate-500"}>
+              <span className={step === 2 ? "grid size-8 place-items-center rounded-full bg-blue-600 text-white" : "grid size-8 place-items-center rounded-full bg-slate-200 text-slate-600"}>2</span>
+              {invitationToken ? "Invitation" : "Business"}
+            </li>
+          </ol>
+          <div className="mb-7">
+            {step === 2 && !user && <button type="button" onClick={() => { setErrors({}); setStep(1) }} disabled={isLoading} className="mb-4 inline-flex min-h-11 items-center gap-2 rounded-lg text-sm font-medium text-slate-600 hover:text-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 disabled:opacity-50"><ArrowLeft className="size-4" aria-hidden="true" />Back to account details</button>}
+            <h1 ref={headingRef} tabIndex={-1} className="text-3xl font-bold tracking-tight outline-none sm:text-4xl">{step === 1 ? "Create your account" : invitationToken ? "Join your workspace" : "Tell us about your business"}</h1>
+            <p className="mt-3 text-sm leading-6 text-slate-600">{step === 1 ? "First, the details you'll use to sign in." : invitationToken ? "Confirm your account to accept your team invitation." : "Set up a shared home for your products, sales and team."}</p>
           </div>
-        </div>
 
-        {/* Card */}
-        <div className="w-full max-w-[390px] bg-[#0d111c] border border-slate-800/60 rounded-3xl p-8 shadow-2xl shadow-slate-950/20 text-white relative overflow-hidden">
+          {Object.keys(errors).length > 0 && <div className="mb-5"><AuthMessage>{errors.form || "Please check the highlighted fields below."}</AuthMessage></div>}
 
-          {/* Completion Overlay */}
-          {isComplete && (
-            <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-[#0d111c]/95 backdrop-blur-sm">
-              <div className="h-16 w-16 rounded-full bg-gradient-to-r from-emerald-500 to-green-500 flex items-center justify-center shadow-xl shadow-emerald-500/40 animate-bounce">
-                <CheckCircle2 className="size-8 text-white" />
+          {step === 1 ? (
+            <form onSubmit={handleStep1Continue} className="space-y-5">
+              <div className="space-y-2">
+                <Label htmlFor="reg-name" className="text-sm font-medium text-slate-700">Full name</Label>
+                <div className="relative"><User className="pointer-events-none absolute left-3.5 top-4 size-4 text-slate-400" aria-hidden="true" /><Input id="reg-name" name="name" autoComplete="name" placeholder="Your full name" value={fullName} onChange={(e) => setFullName(e.target.value)} className={authInputClass + " pl-11"} aria-invalid={!!errors.fullName} aria-describedby={errors.fullName ? "reg-name-error" : undefined} required /></div>
+                {errors.fullName && <p id="reg-name-error" className="text-sm text-red-700">{errors.fullName}</p>}
               </div>
-              <h3 className="text-lg font-bold text-white mt-4">Workspace Ready!</h3>
-              <p className="text-xs text-emerald-400/60 mt-1">Redirecting to your dashboard...</p>
-              <div className="mt-3 flex items-center gap-1.5 text-slate-500">
-                <Loader2 className="size-3 animate-spin text-slate-400" />
-                <span className="text-[10px] font-medium">Launching SmartERP</span>
+              <div className="space-y-2">
+                <Label htmlFor="reg-email" className="text-sm font-medium text-slate-700">Email address</Label>
+                <div className="relative"><Mail className="pointer-events-none absolute left-3.5 top-4 size-4 text-slate-400" aria-hidden="true" /><Input id="reg-email" name="email" type="email" autoComplete="email" autoCapitalize="none" spellCheck={false} placeholder="name@company.com" value={email} onChange={(e) => setEmail(e.target.value)} className={authInputClass + " pl-11"} aria-invalid={!!errors.email} aria-describedby={errors.email ? "reg-email-error" : undefined} required /></div>
+                {errors.email && <p id="reg-email-error" className="text-sm text-red-700">{errors.email}</p>}
               </div>
-            </div>
+              <div className="space-y-2">
+                <Label htmlFor="reg-pass" className="text-sm font-medium text-slate-700">Password</Label>
+                <PasswordField id="reg-pass" name="password" autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} aria-invalid={!!errors.password} aria-describedby={errors.password ? "password-requirements reg-pass-error" : "password-requirements"} required />
+                {errors.password && <p id="reg-pass-error" className="text-sm text-red-700">{errors.password}</p>}
+                <ul id="password-requirements" className="grid gap-1 pt-1 text-xs leading-5">
+                  {[[criteria.length, "At least 8 characters"], [criteria.uppercase, "One uppercase letter"], [criteria.number, "One number"]].map(([met, label]) => <li key={String(label)} className={met ? "flex items-center gap-2 text-emerald-700" : "flex items-center gap-2 text-slate-500"}><CheckCircle2 className="size-3.5 shrink-0" aria-hidden="true" /><span className="sr-only">{met ? "Met: " : "Required: "}</span>{label}</li>)}
+                </ul>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="reg-confirm" className="text-sm font-medium text-slate-700">Confirm password</Label>
+                <PasswordField id="reg-confirm" name="passwordConfirmation" visibilityLabel="confirmation password" autoComplete="new-password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} aria-invalid={!!errors.confirmPassword} aria-describedby={errors.confirmPassword ? "reg-confirm-error" : undefined} required />
+                {errors.confirmPassword && <p id="reg-confirm-error" className="text-sm text-red-700">{errors.confirmPassword}</p>}
+              </div>
+              <Button type="submit" className="h-12 w-full rounded-xl bg-blue-600 text-sm font-semibold text-white hover:bg-blue-700">Continue<ArrowRight className="size-4" aria-hidden="true" /></Button>
+            </form>
+          ) : (
+            <form onSubmit={handleStep2Submit} className="space-y-5" aria-busy={isLoading}>
+              {invitationToken ? (
+                <div className="rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm leading-6 text-blue-900">{"You're joining as "}<span className="break-words font-semibold">{step1Data?.email}</span>. Your invitation includes your workspace and team role.</div>
+              ) : (
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="biz-name" className="text-sm font-medium text-slate-700">Business name</Label>
+                    <div className="relative"><Briefcase className="pointer-events-none absolute left-3.5 top-4 size-4 text-slate-400" aria-hidden="true" /><Input id="biz-name" name="businessName" autoComplete="organization" placeholder="Your business name" value={businessName} onChange={(e) => setBusinessName(e.target.value)} className={authInputClass + " pl-11"} required disabled={isLoading} aria-invalid={!!errors.businessName} aria-describedby={errors.businessName ? "biz-name-error" : undefined} /></div>
+                    {errors.businessName && <p id="biz-name-error" className="text-sm text-red-700">{errors.businessName}</p>}
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="biz-sector" className="text-sm font-medium text-slate-700">Business sector</Label>
+                    <Select value={sector} onValueChange={setSector} disabled={isLoading}>
+                      <SelectTrigger id="biz-sector" className={authInputClass + " text-left [&>span]:truncate"} aria-invalid={!!errors.sector} aria-describedby={errors.sector ? "biz-sector-error" : undefined}><SelectValue placeholder="Select your sector" /></SelectTrigger>
+                      <SelectContent>{BUSINESS_SECTORS.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+                    </Select>
+                    {errors.sector && <p id="biz-sector-error" className="text-sm text-red-700">{errors.sector}</p>}
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="biz-city" className="text-sm font-medium text-slate-700">City / Location</Label>
+                    <div className="relative"><MapPin className="pointer-events-none absolute left-3.5 top-4 size-4 text-slate-400" aria-hidden="true" /><Input id="biz-city" name="city" autoComplete="address-level2" placeholder="e.g. Douala" value={city} onChange={(e) => setCity(e.target.value)} className={authInputClass + " pl-11"} required disabled={isLoading} aria-invalid={!!errors.city} aria-describedby={errors.city ? "biz-city-error" : undefined} /></div>
+                    {errors.city && <p id="biz-city-error" className="text-sm text-red-700">{errors.city}</p>}
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="biz-region" className="text-sm font-medium text-slate-700">Region</Label>
+                    <Select value={region} onValueChange={setRegion} disabled={isLoading}>
+                      <SelectTrigger id="biz-region" className={authInputClass + " text-left"} aria-invalid={!!errors.region} aria-describedby={errors.region ? "biz-region-error" : undefined}><SelectValue placeholder="Select your region" /></SelectTrigger>
+                      <SelectContent>{CAMEROON_REGIONS.map((r) => <SelectItem key={r} value={r}>{r}</SelectItem>)}</SelectContent>
+                    </Select>
+                    {errors.region && <p id="biz-region-error" className="text-sm text-red-700">{errors.region}</p>}
+                  </div>
+                </>
+              )}
+              {isLoading && pipelineStage && (
+                <div role="status" className="space-y-3 rounded-xl border border-blue-200 bg-blue-50 p-4">
+                  <p className="flex items-center gap-2 text-sm text-blue-900"><Loader2 className="size-4 shrink-0 animate-spin" aria-hidden="true" />{pipelineStage}</p>
+                  <div role="progressbar" aria-label="Workspace setup" aria-valuemin={0} aria-valuemax={PIPELINE_STAGES.length} aria-valuenow={pipelineProgress} className="h-1.5 overflow-hidden rounded-full bg-blue-100"><div className="h-full rounded-full bg-blue-600 transition-all motion-reduce:transition-none" style={{ width: `${(pipelineProgress / PIPELINE_STAGES.length) * 100}%` }} /></div>
+                  <p className="text-xs leading-5 text-blue-800">Please keep this page open while we finish.</p>
+                </div>
+              )}
+              <Button type="submit" disabled={isLoading} className="h-12 w-full rounded-xl bg-blue-600 text-sm font-semibold text-white hover:bg-blue-700">
+                {isLoading ? <><Loader2 className="size-4 animate-spin" aria-hidden="true" />{invitationToken ? "Joining workspace…" : "Creating workspace…"}</> : <>{invitationToken ? "Accept invitation" : "Create workspace"}<ArrowRight className="size-4" aria-hidden="true" /></>}
+              </Button>
+            </form>
           )}
-
-          {/* Form Content */}
-          <div>
-            {step === 1 ? (
-              <form onSubmit={handleStep1Continue} className="space-y-4">
-                <div className="space-y-1 mb-6">
-                  <h2 className="text-xl font-bold tracking-tight">Create your account</h2>
-                  <p className="text-[11px] text-slate-400">Start with your personal credentials.</p>
-                </div>
-
-                {/* Full Name */}
-                <div className="space-y-1.5">
-                  <Label htmlFor="reg-name" className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
-                    Full name
-                  </Label>
-                  <div className="relative">
-                    <User className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-slate-500" />
-                    <Input
-                      id="reg-name"
-                      placeholder="Jean-Pierre Kamga"
-                      value={fullName}
-                      onChange={(e) => setFullName(e.target.value)}
-                      className="pl-11 h-11 bg-[#161f30] border-slate-800/80 text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 rounded-xl text-sm"
-                      required
-                    />
-                  </div>
-                  {errors.fullName && <p className="text-[10px] text-red-400">{errors.fullName}</p>}
-                </div>
-
-                {/* Email */}
-                <div className="space-y-1.5">
-                  <Label htmlFor="reg-email" className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
-                    Email address
-                  </Label>
-                  <div className="relative">
-                    <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-slate-500" />
-                    <Input
-                      id="reg-email"
-                      type="email"
-                      placeholder="jp@business.cm"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="pl-11 h-11 bg-[#161f30] border-slate-800/80 text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 rounded-xl text-sm"
-                      required
-                    />
-                  </div>
-                  {errors.email && <p className="text-[10px] text-red-400">{errors.email}</p>}
-                </div>
-
-                {/* Password */}
-                <div className="space-y-1.5">
-                  <Label htmlFor="reg-pass" className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
-                    Password
-                  </Label>
-                  <div className="relative">
-                    <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-slate-500" />
-                    <Input
-                      id="reg-pass"
-                      type={showPassword ? "text" : "password"}
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="pl-11 pr-11 h-11 bg-[#161f30] border-slate-800/80 text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 rounded-xl text-sm"
-                      required
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      aria-label={showPassword ? "Hide password" : "Show password"}
-                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-350"
-                    >
-                      {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
-                    </button>
-                  </div>
-                </div>
-
-                {/* Confirm Password */}
-                <div className="space-y-1.5">
-                  <Label htmlFor="reg-confirm" className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
-                    Confirm password
-                  </Label>
-                  <div className="relative">
-                    <ShieldCheck className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-slate-500" />
-                    <Input
-                      id="reg-confirm"
-                      type={showConfirmPassword ? "text" : "password"}
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      className="pl-11 pr-11 h-11 bg-[#161f30] border-slate-800/80 text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 rounded-xl text-sm"
-                      required
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      aria-label={showConfirmPassword ? "Hide confirmation password" : "Show confirmation password"}
-                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-350"
-                    >
-                      {showConfirmPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
-                    </button>
-                  </div>
-                  {errors.confirmPassword && <p className="text-[10px] text-red-400">{errors.confirmPassword}</p>}
-                </div>
-
-                {/* Password Criteria checklist */}
-                <div className="space-y-1 pt-1 text-[11px]">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className={`size-3.5 transition-colors ${criteria.length ? "text-emerald-500" : "text-slate-700"}`} />
-                    <span className={criteria.length ? "text-emerald-400" : "text-slate-500"}>At least 8 characters</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className={`size-3.5 transition-colors ${criteria.uppercase ? "text-emerald-500" : "text-slate-700"}`} />
-                    <span className={criteria.uppercase ? "text-emerald-400" : "text-slate-500"}>One uppercase letter</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className={`size-3.5 transition-colors ${criteria.number ? "text-emerald-500" : "text-slate-700"}`} />
-                    <span className={criteria.number ? "text-emerald-400" : "text-slate-500"}>One number</span>
-                  </div>
-                </div>
-
-                <Button
-                  type="submit"
-                  className="w-full h-11 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold uppercase tracking-wider text-xs shadow-lg shadow-blue-600/10 transition-all rounded-xl border-0 flex items-center justify-center gap-1 mt-6"
-                >
-                  Continue
-                  <ArrowRight className="size-4" />
-                </Button>
-              </form>
-            ) : (
-              <form onSubmit={handleStep2Submit} className="space-y-4">
-                <div className="flex items-center gap-2.5 mb-6">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (isLoading) return
-                      setStep(1)
-                    }}
-                    className="h-7 w-7 rounded-lg bg-slate-800 border border-slate-700/60 flex items-center justify-center text-slate-400 hover:text-white transition-all shrink-0"
-                    disabled={isLoading}
-                  >
-                    <ArrowLeft className="size-3.5" />
-                  </button>
-                  <div className="space-y-0.5">
-                    <h2 className="text-xl font-bold tracking-tight">
-                      {invitationToken ? "Accept your invitation" : "Configure your workspace"}
-                    </h2>
-                    <p className="text-[11px] text-slate-400">
-                      {invitationToken ? "Confirm your account to join the assigned workspace." : "Tell us about your business."}
-                    </p>
-                  </div>
-                </div>
-
-                {errors.form && <p className="text-[11px] text-red-400">{errors.form}</p>}
-
-                {invitationToken ? (
-                  <div className="rounded-xl border border-blue-500/20 bg-blue-500/10 p-4 text-xs leading-5 text-blue-100">
-                    You were invited as <span className="font-semibold">{step1Data?.email}</span>. Your workspace, business, and role will be assigned automatically.
-                  </div>
-                ) : <>
-                {/* Business Name */}
-                <div className="space-y-1.5">
-                  <Label htmlFor="biz-name" className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
-                    Business name
-                  </Label>
-                  <div className="relative">
-                    <Briefcase className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-slate-500" />
-                    <Input
-                      id="biz-name"
-                      placeholder="Kamga Enterprises SARL"
-                      value={businessName}
-                      onChange={(e) => setBusinessName(e.target.value)}
-                      className="pl-11 h-11 bg-[#161f30] border-slate-800/80 text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 rounded-xl text-sm"
-                      required
-                      disabled={isLoading}
-                    />
-                  </div>
-                  {errors.businessName && <p className="text-[10px] text-red-400">{errors.businessName}</p>}
-                </div>
-
-                {/* Business Sector */}
-                <div className="space-y-1.5">
-                  <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
-                    Business sector
-                  </Label>
-                  <Select
-                    value={sector}
-                    onValueChange={(v) => setSector(v)}
-                    disabled={isLoading}
-                  >
-                    <SelectTrigger className="h-11 bg-[#161f30] border-slate-800/80 text-white rounded-xl focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
-                      <div className="flex items-center gap-2.5">
-                        <Globe className="size-4 text-slate-500 shrink-0" />
-                        <SelectValue placeholder="Information Technology" />
-                      </div>
-                    </SelectTrigger>
-                    <SelectContent className="bg-[#0f172a] border-slate-800 rounded-xl">
-                      {BUSINESS_SECTORS.map((s) => (
-                        <SelectItem
-                          key={s}
-                          value={s}
-                          className="text-slate-300 focus:bg-slate-800 focus:text-white rounded-lg cursor-pointer"
-                        >
-                          {s}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  {errors.sector && <p className="text-[10px] text-red-400">{errors.sector}</p>}
-                </div>
-
-                {/* City / Location */}
-                <div className="space-y-1.5">
-                  <Label htmlFor="biz-city" className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
-                    City / Location
-                  </Label>
-                  <div className="relative">
-                    <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-slate-500" />
-                    <Input
-                      id="biz-city"
-                      placeholder="Douala"
-                      value={city}
-                      onChange={(e) => setCity(e.target.value)}
-                      className="pl-11 h-11 bg-[#161f30] border-slate-800/80 text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 rounded-xl text-sm"
-                      required
-                      disabled={isLoading}
-                    />
-                  </div>
-                  {errors.city && <p className="text-[10px] text-red-400">{errors.city}</p>}
-                </div>
-
-                {/* Region */}
-                <div className="space-y-1.5">
-                  <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
-                    Region
-                  </Label>
-                  <Select
-                    value={region}
-                    onValueChange={(v) => setRegion(v)}
-                    disabled={isLoading}
-                  >
-                    <SelectTrigger className="h-11 bg-[#161f30] border-slate-800/80 text-white rounded-xl focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
-                      <div className="flex items-center gap-2.5">
-                        <MapPin className="size-4 text-slate-500 shrink-0" />
-                        <SelectValue placeholder="Littoral Region" />
-                      </div>
-                    </SelectTrigger>
-                    <SelectContent className="bg-[#0f172a] border-slate-800 rounded-xl">
-                      {CAMEROON_REGIONS.map((r) => (
-                        <SelectItem
-                          key={r}
-                          value={r}
-                          className="text-slate-300 focus:bg-slate-800 focus:text-white rounded-lg cursor-pointer"
-                        >
-                          {r}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  {errors.region && <p className="text-[10px] text-red-400">{errors.region}</p>}
-                </div>
-                </>}
-
-                {/* Pipeline Progress Indicator */}
-                {isLoading && pipelineStage && (
-                  <div className="rounded-xl bg-slate-900 border border-slate-800 p-3.5 mt-4 space-y-2">
-                    <div className="flex items-center gap-2">
-                      <Loader2 className="size-3.5 text-blue-500 animate-spin shrink-0" />
-                      <p className="text-[10px] text-slate-300 font-medium truncate">{pipelineStage}</p>
-                    </div>
-                    <div className="h-1 w-full bg-slate-850 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full transition-all duration-700"
-                        style={{ width: `${(pipelineProgress / PIPELINE_STAGES.length) * 100}%` }}
-                      />
-                    </div>
-                  </div>
-                )}
-
-                <Button
-                  type="submit"
-                  disabled={isLoading}
-                  className="w-full h-11 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold uppercase tracking-wider text-xs shadow-lg shadow-blue-600/10 transition-all rounded-xl border-0 flex items-center justify-center gap-1 mt-6"
-                >
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="size-4 animate-spin mr-2" />
-                      {invitationToken ? "Accepting Invitation..." : "Creating Workspace..."}
-                    </>
-                  ) : (
-                    <>
-                      {invitationToken ? "Accept Invitation" : "Launch Workspace"}
-                      <ChevronRight className="ml-2 size-4" />
-                    </>
-                  )}
-                </Button>
-              </form>
-            )}
-          </div>
-        </div>
-
-        <div className="text-center text-xs text-slate-500 mt-8">
-          Already have an account?{" "}
-          <Link href="/login" className="text-blue-500 font-bold hover:underline">
-            Login here
-          </Link>
-        </div>
-      </div>
-
-      {/* Bottom Footer Row */}
-      <div className="w-full text-center py-4 border-t border-slate-200">
-        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">
-          Tenant-isolated • Private object storage • Role-based access
-        </p>
-      </div>
-    </div>
+          <p className="mt-6 text-center text-sm text-slate-600">Already have an account? <Link href="/login" className="font-semibold text-blue-700 hover:underline">Sign in</Link></p>
+        </>
+      )}
+    </AuthFrame>
   )
 }

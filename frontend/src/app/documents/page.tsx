@@ -2,7 +2,6 @@
 
 import * as React from "react"
 import {
-  FileText,
   Search,
   Plus,
   Download,
@@ -29,6 +28,7 @@ import { listDocumentsByBusinessQuery, createDocumentMutation, deleteDocumentMut
 import { BusinessDocument } from "@/lib/types"
 import { useToast } from "@/hooks/use-toast"
 import { DocumentDialog } from "@/components/documents/document-dialog"
+import { DocumentPreview } from "@/components/documents/document-preview"
 
 export default function DocumentsPage() {
   const { profile, user } = useAuth();
@@ -292,17 +292,10 @@ export default function DocumentsPage() {
           {filteredDocs.length > 0 ? (
             filteredDocs.map((doc) => (
               <Card key={doc.id} className="group hover:border-primary/50 transition-all shadow-sm overflow-hidden flex flex-col">
+                <DocumentPreview url={doc.fileUrl} name={doc.name} onOpen={() => void handleView(doc.fileUrl)} />
                 <div className="p-4 flex-1">
                   <div className="flex items-start justify-between mb-3">
-                    <button
-                      type="button"
-                      className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary border cursor-pointer hover:bg-primary/20 transition-colors"
-                      onClick={() => handleView(doc.fileUrl)}
-                      title="Click to view"
-                      aria-label={`View ${doc.name}`}
-                    >
-                      <FileText className="size-6" />
-                    </button>
+                    <span className="text-xs font-medium text-muted-foreground">{doc.type}</span>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="icon" className="h-8 w-8" aria-label={`Actions for ${doc.name}`}>

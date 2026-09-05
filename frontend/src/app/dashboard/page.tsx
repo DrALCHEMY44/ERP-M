@@ -57,7 +57,7 @@ export default function DashboardPage() {
   const canReadSuppliers = ["Business Owner", "Manager"].includes(role || "");
   const canReadAudit = ["Business Owner", "Manager"].includes(role || "");
 
-  const { data: salesDataResult, loading: salesLoading, unauthenticated } = useNeonData({
+  const { data: salesDataResult, loading: salesLoading, unauthenticated, error: salesError, refetch: refetchSales } = useNeonData({
     query: getSalesQuery,
     skip: !profile || !profile.tenantId || !profile.businessId || !canReadSales,
     refreshInterval: 5000
@@ -131,6 +131,33 @@ export default function DashboardPage() {
   const logs = React.useMemo(() => (logsData?.activityLogs || []) as unknown as ActivityLog[], [logsData]);
   const employeesCount = employeesData?.employees?.length || 0;
   const suppliersCount = suppliersData?.suppliers?.length || 0;
+
+  const operationalMetrics = React.useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(today.getDate() + 1);
+    const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+    const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, 1);
+    const inPeriod = (date: string, start: Date, end: Date) => {
+      const value = new Date(date);
+      return value >= start && value < end;
+    };
+    const todaySales = sales.filter(sale => inPeriod(sale.saleDate, today, tomorrow));
+    const monthSales = sales.filter(sale => inPeriod(sale.saleDate, monthStart, nextMonth));
+    const monthRevenue = monthSales.reduce((sum, sale) => sum + sale.totalAmount, 0);
+    const activeProducts = products.filter(product => product.status === 'active');
+    const openTasks = tasks.filter(task => !['Completed', 'Cancelled'].includes(task.status));
+    const money = (amount: number) => `${amount.toLocaleString(undefined, { maximumFractionDigits: 0 })} FCFA`;
+    return [
+      { title: 'Sales today', value: money(todaySales.reduce((sum, sale) => sum + sale.totalAmount, 0)), detail: `${todaySales.length} recorded sales today`, allowed: canReadSales, ready: !!salesDataResult, icon: ShoppingCart },
+      { title: 'Revenue this month', value: money(monthRevenue), detail: `${monthSales.length} sales this calendar month`, allowed: canReadSales, ready: !!salesDataResult, icon: TrendingUp },
+      { title: 'Average sale', value: monthSales.length ? money(monthRevenue / monthSales.length) : '—', detail: 'Average transaction value this month', allowed: canReadSales, ready: !!salesDataResult, icon: Receipt },
+      { title: 'Inventory at cost', value: money(activeProducts.reduce((sum, product) => sum + Math.max(0, product.quantity) * product.costPrice, 0)), detail: 'Active stock × current unit cost', allowed: canReadInventory, ready: !!productsData, icon: Truck },
+      { title: 'Out of stock', value: activeProducts.filter(product => product.quantity <= 0).length.toLocaleString(), detail: 'Active products with no available stock', allowed: canReadInventory, ready: !!productsData, icon: AlertTriangle },
+      { title: 'Open tasks', value: openTasks.length.toLocaleString(), detail: `${openTasks.filter(task => ['Overdue', 'Late'].includes(task.status) || new Date(task.dueDate) < today).length} overdue · excludes completed and cancelled`, allowed: canReadTasks, ready: !!tasksData, icon: Briefcase },
+    ].filter(metric => metric.allowed);
+  }, [sales, products, tasks, canReadSales, canReadInventory, canReadTasks, salesDataResult, productsData, tasksData]);
 
   const [aiSummary, setAiSummary] = React.useState<string | null>(null);
   const [isAiLoading, setIsAiLoading] = React.useState(false);
@@ -240,24 +267,25 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
+      {salesError && <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950"><p>{salesDataResult ? 'Sales could not refresh. Showing the last loaded figures.' : 'Sales could not load. Sales figures are unavailable until the connection recovers.'}</p><Button variant="outline" disabled={salesLoading} onClick={() => void refetchSales()}>Retry sales</Button></div>}
       <section className="relative overflow-hidden rounded-3xl border border-blue-400/20 bg-gradient-to-br from-slate-950 via-blue-950 to-indigo-900 p-6 md:p-8 text-white shadow-xl shadow-blue-950/10">
         <div className="pointer-events-none absolute -right-20 -top-24 size-72 rounded-full bg-indigo-500/20 blur-3xl" />
         <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-6">
           <div className="space-y-2">
-            <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-blue-200">
+            <div className="flex items-center gap-2 text-xs font-semibold text-blue-100">
               <span className="size-2 rounded-full bg-emerald-400 shadow-[0_0_12px_rgba(52,211,153,.8)]" />
               Live business command center
               {isSyncing && <Loader2 className="size-3 animate-spin" />}
             </div>
             <h1 className="text-2xl md:text-4xl font-bold tracking-tight font-headline">Welcome back, {profile?.fullName?.split(' ')[0] || 'there'}</h1>
             <p className="max-w-xl text-sm text-slate-300">Monitor cash flow, stock, people and execution from one synchronized workspace.</p>
-            <div className="flex flex-wrap gap-2 pt-2 text-[10px] font-bold uppercase tracking-wider text-blue-100">
+            <div className="flex flex-wrap gap-2 pt-2 text-xs font-semibold text-blue-100">
               <span className="rounded-full bg-white/10 px-3 py-1.5">{profile?.role || 'Member'}</span>
-              <span className="rounded-full bg-white/10 px-3 py-1.5">{profile?.businessCode || profile?.tenantId}</span>
+              {profile?.businessCode && <span className="rounded-full bg-white/10 px-3 py-1.5">{profile.businessCode}</span>}
             </div>
           </div>
           <div className="flex items-center gap-2">
-           <Button variant="secondary" size="sm" className="h-10 border-0 bg-white text-blue-950 hover:bg-blue-50 text-[10px] font-bold uppercase tracking-widest shadow-lg" onClick={fetchAiSummary} disabled={isAiLoading || isSyncing}>
+           <Button variant="secondary" size="sm" className="h-11 border-0 bg-white text-sm font-semibold text-blue-950 shadow-lg hover:bg-blue-50" onClick={fetchAiSummary} disabled={isAiLoading || isSyncing}>
             {isAiLoading ? <Loader2 className="size-3 mr-2 animate-spin" /> : <Sparkles className="size-3 mr-2" />}
             {t('dashboard.refreshAi')}
           </Button>
@@ -268,7 +296,7 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           title={t('dashboard.totalSales')}
-          value={!canReadSales ? "Restricted" : salesLoading ? "---" : `${stats.totalSalesAmount.toLocaleString()} FCFA`}
+          value={!canReadSales ? "Restricted" : !salesDataResult ? "—" : `${stats.totalSalesAmount.toLocaleString()} FCFA`}
           icon={ShoppingCart}
           description={canReadSales ? "All recorded sales" : "Not available to this role"}
           className="border-t-4 border-[#10b981] shadow-md"
@@ -282,7 +310,7 @@ export default function DashboardPage() {
         />
         <StatCard
           title={t('dashboard.netProfit')}
-          value={!canReadSales || !canReadExpenses ? "Restricted" : isSyncing ? "---" : `${stats.netProfit.toLocaleString()} FCFA`}
+          value={!canReadSales || !canReadExpenses ? "Restricted" : !salesDataResult || !expensesDataResult ? "—" : `${stats.netProfit.toLocaleString()} FCFA`}
           icon={TrendingUp}
           description={canReadSales && canReadExpenses ? "Sales minus expenses" : "Requires sales and expense access"}
           className="border-t-4 border-[#3b82f6] shadow-md"
@@ -296,6 +324,13 @@ export default function DashboardPage() {
         />
       </div>
 
+      <section className="space-y-4" aria-labelledby="daily-overview">
+        <div><h2 id="daily-overview" className="text-lg font-semibold">Daily business overview</h2><p className="text-sm text-muted-foreground">Sales momentum, stock availability and work that needs attention.</p></div>
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          {operationalMetrics.map(metric => <StatCard key={metric.title} title={metric.title} value={metric.ready ? metric.value : '—'} description={metric.ready ? metric.detail : 'Waiting for business data'} icon={metric.icon} />)}
+        </div>
+      </section>
+
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
         {[
           { icon: Users, label: t('common.employees'), value: employeesCount, loading: employeesLoading, allowed: canReadEmployees },
@@ -306,7 +341,7 @@ export default function DashboardPage() {
           <div key={idx} className="bg-card border p-3 rounded-xl shadow-sm">
             <div className="flex items-center gap-2 mb-1">
               <item.icon className="size-3 text-muted-foreground" />
-              <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">{item.label}</span>
+              <span className="text-xs font-semibold text-muted-foreground">{item.label}</span>
             </div>
             <p className="text-lg font-bold">{item.loading ? "..." : item.value}</p>
           </div>
@@ -314,25 +349,25 @@ export default function DashboardPage() {
         {canReadTasks && <div className="bg-card border p-3 rounded-xl shadow-sm col-span-2 hidden lg:block">
            <div className="flex items-center gap-2 mb-1">
             <Briefcase className="size-3 text-muted-foreground" />
-            <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">{t('dashboard.lateTasks')}</span>
+            <span className="text-xs font-semibold text-muted-foreground">{t('dashboard.lateTasks')}</span>
           </div>
           <p className="text-lg font-bold text-destructive">{isSyncing ? "..." : stats.taskStats.overdue}</p>
         </div>}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        <div className="lg:col-span-8 space-y-6">
-          <Card className="bg-primary/5 border-primary/20 shadow-sm overflow-hidden">
+        <div className="lg:col-span-8 flex min-w-0 flex-col gap-6">
+          <Card className="order-2 bg-primary/5 border-primary/20 shadow-sm overflow-hidden">
             <CardHeader className="pb-3 border-b border-primary/10 bg-primary/10">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-sm font-bold flex items-center gap-2 text-primary">
                   <Sparkles className="size-4" />
                   {t('dashboard.aiInsights')}
                 </CardTitle>
-                <Badge variant="outline" className="text-[9px] uppercase tracking-tighter bg-white/50">Contextual Analysis</Badge>
+                <Badge variant="outline" className="bg-white/50 text-xs font-medium">Contextual analysis</Badge>
               </div>
             </CardHeader>
-            <CardContent className="pt-4">
+            <CardContent className="max-h-80 overflow-y-auto pt-4">
               {isAiLoading ? (
                 <div className="space-y-3 py-2">
                   <Skeleton className="h-4 w-full" />
@@ -348,7 +383,7 @@ export default function DashboardPage() {
           <Card className="shadow-sm">
             <CardHeader>
               <CardTitle className="text-lg font-bold">{t('dashboard.revenueTrend')}</CardTitle>
-              <CardDescription className="text-xs uppercase font-bold tracking-tighter">Current-week daily sales (FCFA)</CardDescription>
+              <CardDescription className="text-sm">Current-week daily sales (FCFA)</CardDescription>
             </CardHeader>
             <CardContent className="h-[300px] w-full">
               {!canReadSales ? (
@@ -401,7 +436,7 @@ export default function DashboardPage() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="font-bold truncate">{sale.totalAmount.toLocaleString()} FCFA</p>
-                        <p className="text-muted-foreground text-[9px] uppercase font-medium">{sale.paymentMethod || 'Other'} • {new Date(sale.saleDate).toLocaleDateString()}</p>
+                        <p className="text-xs text-muted-foreground">{sale.paymentMethod || 'Other'} • {new Date(sale.saleDate).toLocaleDateString()}</p>
                       </div>
                     </div>
                   ))
@@ -425,11 +460,11 @@ export default function DashboardPage() {
                   logs.slice(0, 6).map((log) => (
                     <div key={log.id} className="flex items-start gap-3 text-xs border-b pb-3 last:border-0 last:pb-0">
                       <div className="mt-0.5 shrink-0">
-                         <Badge variant="outline" className="text-[8px] px-1 h-4 font-bold uppercase">{log.actionType}</Badge>
+                         <Badge variant="outline" className="h-5 px-1.5 text-[11px] font-semibold">{log.actionType}</Badge>
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="font-medium truncate text-[11px]">{log.description}</p>
-                        <p className="text-muted-foreground text-[9px] uppercase font-bold">{log.userName} • {new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                        <p className="truncate text-sm font-medium">{log.description}</p>
+                        <p className="text-xs text-muted-foreground">{log.userName} • {new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
                       </div>
                     </div>
                   ))
@@ -483,6 +518,7 @@ function AIInsightsRenderer({ content }: { content: string }) {
         }
 
         // 2. Render List Items
+        if (/^([-*_])\1{2,}$/.test(trimmed)) return null;
         if (trimmed.startsWith('-') || trimmed.startsWith('•') || trimmed.startsWith('*')) {
           // Filter out italic indicators or generic bullets
           const listText = trimmed.replace(/^[-•*]\s*/, '');

@@ -8,7 +8,7 @@ const contentSecurityPolicy = [
   "img-src 'self' data: blob: https:",
   "font-src 'self' data:",
   "connect-src 'self'",
-  "frame-src https://accounts.google.com",
+  "frame-src https://accounts.google.com blob:",
   "object-src 'none'",
   "base-uri 'self'",
   "form-action 'self'",

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../services/auth_service.dart';
 import '../models/app_user.dart';
@@ -6,7 +7,7 @@ import '../providers/core_provider.dart';
 import '../providers/inventory_provider.dart';
 import '../providers/transaction_provider.dart';
 import '../providers/task_provider.dart';
-import 'dart:ui';
+import '../widgets/auth_layout.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -17,31 +18,41 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
-
+  final _errorKey = GlobalKey();
   final _fullNameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _businessNameController = TextEditingController();
   final _accessCodeController = TextEditingController();
-
   String _selectedRoleProfile = 'Staff';
   bool _useEmployeeAccess = false;
   bool _isLoadingState = false;
   bool _obscurePassword = true;
-
-  final List<String> _roleOptions = ['Manager', 'Staff'];
-  bool get _usesEmployeeCode => _useEmployeeAccess;
+  String? _error;
 
   Future<void> _forgotPassword() async {
     final email = TextEditingController(text: _emailController.text.trim());
+    final resetFormKey = GlobalKey<FormState>();
     final send = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: const Text('Reset password'),
-        content: TextField(
-          controller: email,
-          keyboardType: TextInputType.emailAddress,
-          decoration: const InputDecoration(labelText: 'Account email'),
+        content: Form(
+          key: resetFormKey,
+          child: TextFormField(
+            controller: email,
+            autofocus: true,
+            keyboardType: TextInputType.emailAddress,
+            autofillHints: const [AutofillHints.email],
+            decoration: const InputDecoration(labelText: 'Account email'),
+            validator: (value) =>
+                value == null ||
+                    !RegExp(
+                      r'^[^\s@]+@[^\s@]+\.[^\s@]+$',
+                    ).hasMatch(value.trim())
+                ? 'Enter a valid email address'
+                : null,
+          ),
         ),
         actions: [
           TextButton(
@@ -49,36 +60,51 @@ class _LoginScreenState extends State<LoginScreen> {
             child: const Text('Cancel'),
           ),
           FilledButton(
-            onPressed: () => Navigator.pop(dialogContext, true),
+            onPressed: () {
+              if (resetFormKey.currentState!.validate()) {
+                Navigator.pop(dialogContext, true);
+              }
+            },
             child: const Text('Send reset email'),
           ),
         ],
       ),
     );
-    if (send == true && email.text.contains('@')) {
-      try {
-        await AuthService.requestPasswordReset(email.text);
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
-                'If the account exists, a reset link has been sent.',
-              ),
-            ),
-          );
-        }
-      } catch (error) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(error.toString()),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
-      }
-    }
+    final resetEmail = email.text.trim();
+    // The dialog's TextField remains mounted during its dismissal animation.
+    await Future<void>.delayed(const Duration(milliseconds: 250));
     email.dispose();
+    if (send != true || !mounted) return;
+    setState(() {
+      _isLoadingState = true;
+      _error = null;
+    });
+    try {
+      await AuthService.requestPasswordReset(resetEmail);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('If the account exists, a reset link has been sent.'),
+          ),
+        );
+      }
+    } catch (error) {
+      if (mounted) _showError(error);
+    } finally {
+      if (mounted) setState(() => _isLoadingState = false);
+    }
+  }
+
+  void _showError(Object error) {
+    setState(() => _error = error.toString().replaceFirst('Exception: ', ''));
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && _errorKey.currentContext != null) {
+        Scrollable.ensureVisible(
+          _errorKey.currentContext!,
+          duration: const Duration(milliseconds: 200),
+        );
+      }
+    });
   }
 
   @override
@@ -101,9 +127,6 @@ class _LoginScreenState extends State<LoginScreen> {
     final taskProvider = Provider.of<TaskProvider>(context, listen: false);
 
     if (AuthService.currentUser?.role == UserRole.platformSuperAdmin) {
-      // Platform administrators have no tenant context. Keeping tenant data
-      // from a previous login would both leak stale UI state and cause tenant
-      // API calls to fail before the SaaS control center can open.
       core.reset();
       inventory.reset();
       transaction.reset();
@@ -124,319 +147,259 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _handleLogin() async {
-    if (_formKey.currentState!.validate()) {
-      setState(() => _isLoadingState = true);
-      try {
-        final user = await AuthService.login(
-          useEmployeeAccess: _useEmployeeAccess,
-          roleProfile: _selectedRoleProfile,
-          fullName: _fullNameController.text.trim(),
-          email: _emailController.text.trim(),
-          password: _passwordController.text.trim(),
-          businessName: _businessNameController.text.trim(),
-          accessCode: _accessCodeController.text.trim(),
-        );
+    if (_isLoadingState || !_formKey.currentState!.validate()) return;
+    FocusScope.of(context).unfocus();
+    setState(() {
+      _isLoadingState = true;
+      _error = null;
+    });
+    try {
+      final user = await AuthService.login(
+        useEmployeeAccess: _useEmployeeAccess,
+        roleProfile: _selectedRoleProfile,
+        fullName: _fullNameController.text.trim(),
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+        businessName: _businessNameController.text.trim(),
+        accessCode: _accessCodeController.text.trim(),
+      );
+      if (!mounted) return;
+      if (user != null) {
+        await _loadAllProviderData();
         if (!mounted) return;
-        if (user != null) {
-          await _loadAllProviderData();
-          if (!mounted) return;
-          Navigator.pushReplacementNamed(
-            context,
-            user.role == UserRole.platformSuperAdmin
-                ? '/admin/dashboard'
-                : user.role == UserRole.staff
-                ? '/tasks'
-                : '/dashboard',
-          );
-        }
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                'Login failed: ${e.toString().replaceAll('Exception: ', '')}',
-              ),
-              backgroundColor: Colors.red,
-              behavior: SnackBarBehavior.floating,
-            ),
-          );
-        }
-      } finally {
-        if (mounted) {
-          setState(() => _isLoadingState = false);
-        }
+        TextInput.finishAutofillContext();
+        Navigator.pushReplacementNamed(
+          context,
+          user.role == UserRole.platformSuperAdmin
+              ? '/admin/dashboard'
+              : user.role == UserRole.staff
+              ? '/tasks'
+              : '/dashboard',
+        );
       }
+    } catch (error) {
+      if (mounted) _showError(error);
+    } finally {
+      if (mounted) setState(() => _isLoadingState = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final size = MediaQuery.of(context).size;
-
-    return Scaffold(
-      body: Stack(
-        children: [
-          // Background Gradient
-          Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  theme.colorScheme.primary.withValues(alpha: 0.05),
-                  theme.colorScheme.surface,
-                  theme.colorScheme.secondary.withValues(alpha: 0.05),
+    return AuthLayout(
+      title: 'Welcome back',
+      subtitle:
+          'Sign in to your business workspace and pick up where you left off.',
+      child: AutofillGroup(
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text('Sign-in method', style: theme.textTheme.titleSmall),
+              const SizedBox(height: 10),
+              SegmentedButton<bool>(
+                segments: const [
+                  ButtonSegment(value: false, label: Text('Email')),
+                  ButtonSegment(value: true, label: Text('Team code')),
                 ],
+                selected: {_useEmployeeAccess},
+                showSelectedIcon: false,
+                style: SegmentedButton.styleFrom(
+                  minimumSize: const Size(0, 48),
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                ),
+                onSelectionChanged: _isLoadingState
+                    ? null
+                    : (value) {
+                        _formKey.currentState?.reset();
+                        setState(() {
+                          _useEmployeeAccess = value.first;
+                          _error = null;
+                        });
+                      },
               ),
-            ),
-          ),
-
-          // Glassmorphism login card
-          SafeArea(
-            child: Center(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(24.0),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(32),
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                    child: Container(
-                      width: size.width > 600 ? 500 : double.infinity,
-                      padding: const EdgeInsets.all(32),
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.surface.withValues(alpha: 0.7),
-                        borderRadius: BorderRadius.circular(32),
-                        border: Border.all(
-                          color: theme.colorScheme.outlineVariant.withValues(
-                            alpha: 0.5,
-                          ),
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.05),
-                            blurRadius: 24,
-                            offset: const Offset(0, 8),
-                          ),
-                        ],
-                      ),
-                      child: Form(
-                        key: _formKey,
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            // Brand Header
-                            Center(
-                              child: Container(
-                                padding: const EdgeInsets.all(16),
-                                decoration: BoxDecoration(
-                                  color: theme.colorScheme.primary.withValues(
-                                    alpha: 0.1,
-                                  ),
-                                  shape: BoxShape.circle,
-                                ),
-                                child: Icon(
-                                  Icons.business_center_rounded,
-                                  size: 48,
-                                  color: theme.colorScheme.primary,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 24),
-                            Text(
-                              'Welcome to SmartERP',
-                              textAlign: TextAlign.center,
-                              style: theme.textTheme.headlineSmall?.copyWith(
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              'AI-Powered SME Operations Platform',
-                              textAlign: TextAlign.center,
-                              style: theme.textTheme.bodyMedium?.copyWith(
-                                color: Colors.grey.shade500,
-                              ),
-                            ),
-                            const SizedBox(height: 32),
-
-                            const SizedBox(height: 24),
-
-                            DropdownButtonFormField<bool>(
-                              initialValue: _useEmployeeAccess,
-                              decoration: const InputDecoration(
-                                labelText: 'Sign-in method',
-                                prefixIcon: Icon(Icons.login_outlined),
-                              ),
-                              items: const [
-                                DropdownMenuItem(
-                                  value: false,
-                                  child: Text('Email and password'),
-                                ),
-                                DropdownMenuItem(
-                                  value: true,
-                                  child: Text('Team access code'),
-                                ),
-                              ],
-                              onChanged: (value) => setState(
-                                () => _useEmployeeAccess = value ?? false,
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-
-                            if (_usesEmployeeCode) ...[
-                              DropdownButtonFormField<String>(
-                                initialValue: _selectedRoleProfile,
-                                decoration: const InputDecoration(
-                                  labelText: 'Team role',
-                                  prefixIcon: Icon(Icons.badge_outlined),
-                                ),
-                                items: _roleOptions
-                                    .map(
-                                      (role) => DropdownMenuItem(
-                                        value: role,
-                                        child: Text(role),
-                                      ),
-                                    )
-                                    .toList(),
-                                onChanged: (value) => setState(
-                                  () => _selectedRoleProfile = value ?? 'Staff',
-                                ),
-                              ),
-                              const SizedBox(height: 16),
-                              TextFormField(
-                                controller: _fullNameController,
-                                decoration: const InputDecoration(
-                                  labelText: 'Full Name',
-                                  prefixIcon: Icon(Icons.badge_outlined),
-                                ),
-                                validator: (value) =>
-                                    value == null || value.trim().isEmpty
-                                    ? 'Please enter your registered name'
-                                    : null,
-                              ),
-                              const SizedBox(height: 16),
-                              TextFormField(
-                                controller: _businessNameController,
-                                textCapitalization: TextCapitalization.words,
-                                decoration: const InputDecoration(
-                                  labelText: 'Registered Business Name',
-                                  hintText: 'Enter the exact business name',
-                                  prefixIcon: Icon(Icons.domain_outlined),
-                                ),
-                                validator: (value) =>
-                                    value == null || value.trim().isEmpty
-                                    ? 'Business name is required'
-                                    : null,
-                              ),
-                              const SizedBox(height: 16),
-                              TextFormField(
-                                controller: _accessCodeController,
-                                textCapitalization:
-                                    TextCapitalization.characters,
-                                decoration: InputDecoration(
-                                  labelText: 'Access Code',
-                                  hintText: 'EMP-XXXXXX-XXXXXXXX',
-                                  prefixIcon: const Icon(Icons.key_outlined),
-                                ),
-                                validator: (value) =>
-                                    value == null || value.trim().isEmpty
-                                    ? 'Your unique access code is required'
-                                    : null,
-                              ),
-                            ] else ...[
-                              TextFormField(
-                                controller: _emailController,
-                                keyboardType: TextInputType.emailAddress,
-                                decoration: const InputDecoration(
-                                  labelText: 'Email Address',
-                                  prefixIcon: Icon(Icons.email_outlined),
-                                ),
-                                validator: (value) =>
-                                    value == null || !value.contains('@')
-                                    ? 'Invalid registered email address'
-                                    : null,
-                              ),
-                              const SizedBox(height: 16),
-                              TextFormField(
-                                controller: _passwordController,
-                                obscureText: _obscurePassword,
-                                decoration: InputDecoration(
-                                  labelText: 'Password',
-                                  prefixIcon: const Icon(Icons.lock_outline),
-                                  suffixIcon: IconButton(
-                                    icon: Icon(
-                                      _obscurePassword
-                                          ? Icons.visibility
-                                          : Icons.visibility_off,
-                                    ),
-                                    onPressed: () => setState(
-                                      () =>
-                                          _obscurePassword = !_obscurePassword,
-                                    ),
-                                  ),
-                                ),
-                                validator: (value) =>
-                                    value == null || value.isEmpty
-                                    ? 'Please enter your password'
-                                    : null,
-                              ),
-                              Align(
-                                alignment: Alignment.centerRight,
-                                child: TextButton(
-                                  onPressed: _forgotPassword,
-                                  child: const Text('Forgot password?'),
-                                ),
-                              ),
-                            ],
-                            const SizedBox(height: 32),
-
-                            _isLoadingState
-                                ? const Center(
-                                    child: CircularProgressIndicator(),
-                                  )
-                                : FilledButton(
-                                    onPressed: _handleLogin,
-                                    style: FilledButton.styleFrom(
-                                      padding: const EdgeInsets.symmetric(
-                                        vertical: 16,
-                                      ),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(16),
-                                      ),
-                                    ),
-                                    child: const Text(
-                                      'Sign In',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 16,
-                                        letterSpacing: 1.1,
-                                      ),
-                                    ),
-                                  ),
-                            const SizedBox(height: 24),
-
-                            Center(
-                              child: TextButton(
-                                onPressed: () =>
-                                    Navigator.pushNamed(context, '/register'),
-                                child: const Text(
-                                  'Don\'t have an account? Register',
-                                  style: TextStyle(fontWeight: FontWeight.w600),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
+              const SizedBox(height: 12),
+              Text(
+                _useEmployeeAccess
+                    ? 'Managers and staff: use the details shared by your business owner.'
+                    : 'Use your email and password. Your assigned role opens the right workspace.',
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
                 ),
               ),
-            ),
+              const SizedBox(height: 24),
+              AbsorbPointer(
+                absorbing: _isLoadingState,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    if (_useEmployeeAccess) ...[
+                      DropdownButtonFormField<String>(
+                        key: const ValueKey('team-role'),
+                        initialValue: _selectedRoleProfile,
+                        isExpanded: true,
+                        decoration: const InputDecoration(
+                          labelText: 'Team role',
+                          prefixIcon: Icon(Icons.badge_outlined),
+                        ),
+                        items: const [
+                          DropdownMenuItem(
+                            value: 'Manager',
+                            child: Text('Manager'),
+                          ),
+                          DropdownMenuItem(
+                            value: 'Staff',
+                            child: Text('Staff'),
+                          ),
+                        ],
+                        onChanged: (value) => setState(
+                          () => _selectedRoleProfile = value ?? 'Staff',
+                        ),
+                      ),
+                      const SizedBox(height: 18),
+                      TextFormField(
+                        controller: _fullNameController,
+                        textCapitalization: TextCapitalization.words,
+                        textInputAction: TextInputAction.next,
+                        autofillHints: const [AutofillHints.name],
+                        decoration: const InputDecoration(
+                          labelText: 'Full name',
+                          prefixIcon: Icon(Icons.person_outline_rounded),
+                        ),
+                        validator: (value) =>
+                            value == null || value.trim().isEmpty
+                            ? 'Please enter your registered name'
+                            : null,
+                      ),
+                      const SizedBox(height: 18),
+                      TextFormField(
+                        controller: _businessNameController,
+                        textCapitalization: TextCapitalization.words,
+                        textInputAction: TextInputAction.next,
+                        decoration: const InputDecoration(
+                          labelText: 'Business name',
+                          helperText:
+                              'Use the exact name given by your business owner.',
+                          prefixIcon: Icon(Icons.domain_outlined),
+                        ),
+                        validator: (value) =>
+                            value == null || value.trim().isEmpty
+                            ? 'Business name is required'
+                            : null,
+                      ),
+                      const SizedBox(height: 18),
+                      TextFormField(
+                        controller: _accessCodeController,
+                        autocorrect: false,
+                        enableSuggestions: false,
+                        textCapitalization: TextCapitalization.characters,
+                        textInputAction: TextInputAction.done,
+                        onFieldSubmitted: (_) => _handleLogin(),
+                        decoration: const InputDecoration(
+                          labelText: 'Access code',
+                          hintText: 'EMP-XXXXXX-XXXXXXXX',
+                          prefixIcon: Icon(Icons.key_outlined),
+                        ),
+                        validator: (value) =>
+                            value == null || value.trim().isEmpty
+                            ? 'Your unique access code is required'
+                            : null,
+                      ),
+                    ] else ...[
+                      TextFormField(
+                        key: const ValueKey('login-email'),
+                        controller: _emailController,
+                        keyboardType: TextInputType.emailAddress,
+                        textInputAction: TextInputAction.next,
+                        autofillHints: const [
+                          AutofillHints.username,
+                          AutofillHints.email,
+                        ],
+                        autocorrect: false,
+                        decoration: const InputDecoration(
+                          labelText: 'Email address',
+                          hintText: 'you@business.com',
+                          prefixIcon: Icon(Icons.email_outlined),
+                        ),
+                        validator: (value) =>
+                            value == null ||
+                                !RegExp(
+                                  r'^[^\s@]+@[^\s@]+\.[^\s@]+$',
+                                ).hasMatch(value.trim())
+                            ? 'Invalid registered email address'
+                            : null,
+                      ),
+                      const SizedBox(height: 18),
+                      TextFormField(
+                        controller: _passwordController,
+                        obscureText: _obscurePassword,
+                        enableSuggestions: false,
+                        autocorrect: false,
+                        autofillHints: const [AutofillHints.password],
+                        textInputAction: TextInputAction.done,
+                        onFieldSubmitted: (_) => _handleLogin(),
+                        decoration: InputDecoration(
+                          labelText: 'Password',
+                          prefixIcon: const Icon(Icons.lock_outline),
+                          suffixIcon: IconButton(
+                            tooltip: _obscurePassword
+                                ? 'Show password'
+                                : 'Hide password',
+                            icon: Icon(
+                              _obscurePassword
+                                  ? Icons.visibility_outlined
+                                  : Icons.visibility_off_outlined,
+                            ),
+                            onPressed: () => setState(
+                              () => _obscurePassword = !_obscurePassword,
+                            ),
+                          ),
+                        ),
+                        validator: (value) => value == null || value.isEmpty
+                            ? 'Please enter your password'
+                            : null,
+                      ),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: TextButton(
+                          onPressed: _isLoadingState ? null : _forgotPassword,
+                          child: const Text('Forgot password?'),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+              if (_error != null) ...[
+                AuthErrorMessage(key: _errorKey, message: _error!),
+                const SizedBox(height: 16),
+              ],
+              FilledButton(
+                onPressed: _isLoadingState ? null : _handleLogin,
+                child: AuthSubmitLabel(
+                  loading: _isLoadingState,
+                  label: 'Sign in',
+                  loadingLabel: 'Signing in…',
+                ),
+              ),
+              const SizedBox(height: 20),
+              const Divider(),
+              const SizedBox(height: 12),
+              TextButton(
+                onPressed: _isLoadingState
+                    ? null
+                    : () => Navigator.pushNamed(context, '/register'),
+                child: const Text(
+                  'New business? Create an account',
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

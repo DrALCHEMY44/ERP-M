@@ -3,11 +3,12 @@
 import * as React from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { Building2, Loader2, Lock } from "lucide-react"
+import { ArrowLeft, ArrowRight, Loader2 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { AuthFrame, AuthMessage } from "@/components/auth/auth-frame"
+import { PasswordField } from "@/components/auth/password-field"
 import { useToast } from "@/hooks/use-toast"
 import { authClient } from "@/lib/auth/client"
 
@@ -15,20 +16,31 @@ export default function ResetPasswordPage() {
   const [password, setPassword] = React.useState("")
   const [confirmation, setConfirmation] = React.useState("")
   const [loading, setLoading] = React.useState(false)
+  const [error, setError] = React.useState("")
+  const [token, setToken] = React.useState<string | null>(null)
+  const [linkChecked, setLinkChecked] = React.useState(false)
   const router = useRouter()
   const { toast } = useToast()
 
+  React.useEffect(() => {
+    const resetToken = new URLSearchParams(window.location.search).get("token")
+    setToken(resetToken)
+    setLinkChecked(true)
+    if (!resetToken) setError("This reset link is incomplete. Return to sign in and request a new password reset email.")
+  }, [])
+
   const submit = async (event: React.FormEvent) => {
     event.preventDefault()
+    if (loading) return
     if (password.length < 8 || password !== confirmation) {
-      toast({ variant: "destructive", title: "Check your password", description: "Use at least 8 characters and make both entries match." })
+      setError("Use at least 8 characters and make both passwords match.")
       return
     }
-    const token = new URLSearchParams(window.location.search).get("token")
     if (!token) {
-      toast({ variant: "destructive", title: "Invalid reset link", description: "Request a new password-reset email from the sign-in page." })
+      setError("This reset link is incomplete. Return to sign in and request a new password reset email.")
       return
     }
+    setError("")
     setLoading(true)
     try {
       const result = await authClient.resetPassword({ newPassword: password, token })
@@ -36,32 +48,31 @@ export default function ResetPasswordPage() {
       toast({ title: "Password updated", description: "You can now sign in with your new password." })
       router.replace("/login")
     } catch (error) {
-      toast({ variant: "destructive", title: "Reset failed", description: error instanceof Error ? error.message : "Request a new reset link." })
+      setError(error instanceof Error ? error.message : "We couldn't update your password. Request a new reset link and try again.")
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <main className="min-h-screen bg-slate-50 p-6 flex items-center justify-center">
-      <section className="w-full max-w-sm rounded-3xl bg-[#0d111c] p-8 text-white shadow-2xl">
-        <div className="mb-8 flex items-center gap-3">
-          <span className="flex size-9 items-center justify-center rounded-xl bg-blue-600"><Building2 className="size-5" /></span>
-          <div><h1 className="font-bold">Choose a new password</h1><p className="text-xs text-slate-400">This reset link can only be used once.</p></div>
+    <AuthFrame mode="reset">
+      <Link href="/login" className="mb-6 inline-flex min-h-11 items-center gap-2 rounded-lg text-sm font-medium text-slate-600 hover:text-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"><ArrowLeft className="size-4" aria-hidden="true" />Back to sign in</Link>
+      <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Choose a new password</h1>
+      <p className="mb-8 mt-3 text-sm leading-6 text-slate-600">{"Choose a password you haven't used before. You'll use it the next time you sign in."}</p>
+      <form onSubmit={submit} className="space-y-5" aria-busy={loading}>
+        {error && <AuthMessage id="reset-error">{error}</AuthMessage>}
+        <div className="space-y-2">
+          <Label htmlFor="password" className="text-sm font-medium text-slate-700">New password</Label>
+          <PasswordField id="password" name="password" autoComplete="new-password" minLength={8} value={password} onChange={(event) => setPassword(event.target.value)} aria-describedby="password-hint" disabled={loading || !token} required />
+          <p id="password-hint" className="text-xs leading-5 text-slate-500">Use at least 8 characters.</p>
         </div>
-        <form onSubmit={submit} className="space-y-5">
-          <div className="space-y-2">
-            <Label htmlFor="password">New password</Label>
-            <div className="relative"><Lock className="absolute left-3 top-3 size-4 text-slate-500" /><Input id="password" type="password" autoComplete="new-password" minLength={8} value={password} onChange={(event) => setPassword(event.target.value)} className="pl-10 bg-slate-900 border-slate-700" required /></div>
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="confirmation">Confirm password</Label>
-            <Input id="confirmation" type="password" autoComplete="new-password" minLength={8} value={confirmation} onChange={(event) => setConfirmation(event.target.value)} className="bg-slate-900 border-slate-700" required />
-          </div>
-          <Button className="w-full" disabled={loading}>{loading ? <Loader2 className="size-4 animate-spin" /> : "Update password"}</Button>
-        </form>
-        <Link href="/login" className="mt-6 block text-center text-xs text-blue-400 hover:underline">Back to sign in</Link>
-      </section>
-    </main>
+        <div className="space-y-2">
+          <Label htmlFor="confirmation" className="text-sm font-medium text-slate-700">Confirm password</Label>
+          <PasswordField id="confirmation" name="passwordConfirmation" visibilityLabel="confirmation password" autoComplete="new-password" minLength={8} value={confirmation} onChange={(event) => setConfirmation(event.target.value)} disabled={loading || !token} required />
+        </div>
+        <Button type="submit" className="h-12 w-full rounded-xl bg-blue-600 text-sm font-semibold text-white hover:bg-blue-700" disabled={loading || !linkChecked || !token}>{loading ? <><Loader2 className="size-4 animate-spin" aria-hidden="true" />Updating password…</> : <>Update password<ArrowRight className="size-4" aria-hidden="true" /></>}</Button>
+      </form>
+      <p className="mt-6 text-sm leading-6 text-slate-500">Reset links can only be used once. If yours has expired, request a new one from the sign-in page.</p>
+    </AuthFrame>
   )
 }

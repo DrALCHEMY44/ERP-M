@@ -27,7 +27,7 @@ import 'screens/business_profile_screen.dart';
 import 'screens/settings_screen.dart';
 import 'screens/documents_screen.dart';
 import 'screens/finance_screen.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'theme/app_theme.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -59,95 +59,8 @@ class SmartERPApp extends StatelessWidget {
 
       themeMode: themeMode,
 
-      theme: ThemeData(
-        useMaterial3: true,
-        brightness: Brightness.light,
-        scaffoldBackgroundColor: const Color(0xFFF6F8FC),
-        textTheme: GoogleFonts.interTextTheme(ThemeData.light().textTheme),
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF1E3A8A),
-          brightness: Brightness.light,
-          primary: const Color(0xFF1E3A8A),
-          secondary: const Color(0xFF8B5CF6),
-          surface: Colors.white,
-          surfaceContainerHighest: const Color(0xFFF1F5F9),
-        ),
-        cardTheme: CardThemeData(
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-            side: BorderSide(color: Colors.grey.shade200),
-          ),
-        ),
-        appBarTheme: const AppBarTheme(
-          elevation: 0,
-          centerTitle: false,
-          backgroundColor: Color(0xFFF6F8FC),
-          foregroundColor: Color(0xFF0F172A),
-          surfaceTintColor: Colors.transparent,
-        ),
-        navigationBarTheme: NavigationBarThemeData(
-          height: 68,
-          elevation: 0,
-          indicatorColor: const Color(0xFF1E3A8A).withValues(alpha: .12),
-          labelTextStyle: WidgetStatePropertyAll(
-            GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w700),
-          ),
-        ),
-        inputDecorationTheme: InputDecorationTheme(
-          filled: true,
-          fillColor: const Color(0xFFF8FAFC),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(16),
-            borderSide: BorderSide.none,
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(16),
-            borderSide: BorderSide(color: Colors.grey.shade200),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(16),
-            borderSide: const BorderSide(color: Color(0xFF2563EB), width: 2),
-          ),
-        ),
-      ),
-
-      darkTheme: ThemeData(
-        useMaterial3: true,
-        brightness: Brightness.dark,
-        textTheme: GoogleFonts.outfitTextTheme(ThemeData.dark().textTheme),
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF0F172A),
-          brightness: Brightness.dark,
-          primary: const Color(0xFF3B82F6),
-          secondary: const Color(0xFF14B8A6),
-          surface: const Color(0xFF1E293B),
-          surfaceContainerHighest: const Color(0xFF334155),
-        ),
-        cardTheme: CardThemeData(
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-            side: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
-          ),
-        ),
-        inputDecorationTheme: InputDecorationTheme(
-          filled: true,
-          fillColor: const Color(0xFF0F172A),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(16),
-            borderSide: BorderSide.none,
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(16),
-            borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(16),
-            borderSide: const BorderSide(color: Color(0xFF3B82F6), width: 2),
-          ),
-        ),
-      ),
+      theme: AppTheme.light,
+      darkTheme: AppTheme.dark,
 
       home: const SessionGate(),
 

@@ -9,7 +9,6 @@ import {
   Users,
   Briefcase,
   Settings,
-  Building2,
   BarChart3,
   Sparkles,
   UserCircle,
@@ -24,6 +23,7 @@ import {
   CalendarCheck,
   WalletCards,
   BookOpenCheck,
+  ChevronsUpDown,
 } from "lucide-react"
 
 import {
@@ -52,13 +52,17 @@ import { useTranslation } from "@/components/language-provider"
 import { authClient } from "@/lib/auth/client"
 import { useAuth } from "@/hooks/use-auth"
 import { canAccessRoute } from "@/lib/client-access"
+import { cn } from "@/lib/utils"
 
 export function AppSidebar() {
   const pathname = usePathname()
   const router = useRouter()
-  const { state } = useSidebar()
+  const { state, isMobile, setOpenMobile } = useSidebar()
   const { t, language, setLanguage } = useTranslation()
   const { profile, loading: authLoading } = useAuth()
+  const expanded = state !== "collapsed" || isMobile
+  const initials = profile?.fullName?.trim().split(/\s+/).slice(0, 2).map((name) => name[0]).join("").toUpperCase() || "ME"
+  const closeMobileNavigation = () => setOpenMobile(false)
 
   const handleLogout = async () => {
     try {
@@ -74,7 +78,7 @@ export function AppSidebar() {
     {
       label: "Platform Administration",
       items: [
-        { name: "SaaS Dashboard", icon: ShieldCheck, href: "/admin/dashboard", accent: true },
+        { name: "SaaS Dashboard", icon: ShieldCheck, href: "/admin/dashboard" },
         { name: "Platform Users", icon: Users, href: "/admin/users" },
       ]
     },
@@ -82,7 +86,7 @@ export function AppSidebar() {
       label: t('sidebar.core'),
       items: [
         { name: t('common.dashboard'), icon: LayoutDashboard, href: "/dashboard" },
-        { name: t('common.aiAssistant'), icon: Sparkles, href: "/ai-assistant", accent: true },
+        { name: t('common.aiAssistant'), icon: Sparkles, href: "/ai-assistant" },
       ]
     },
     {
@@ -116,13 +120,15 @@ export function AppSidebar() {
         { name: t('common.settings'), icon: Settings, href: "/settings" },
       ]
     }
-  ]
+  ].map((group) => ({ ...group, items: group.items.filter((item) => canOpen(item.href)) }))
+    .filter((group) => group.items.length > 0)
 
   if (authLoading) {
     return (
       <Sidebar collapsible="icon" className="border-r border-sidebar-border">
-        <SidebarContent className="flex items-center justify-center">
-          <Loader2 className="size-4 animate-spin text-muted-foreground" />
+        <SidebarContent className="flex items-center justify-center" role="status">
+          <Loader2 className="size-5 animate-spin text-sidebar-foreground" aria-hidden="true" />
+          <span className="sr-only">Loading navigation</span>
         </SidebarContent>
       </Sidebar>
     );
@@ -130,65 +136,74 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon" className="border-r border-sidebar-border">
-      <SidebarHeader className="h-16 flex items-center px-4 shrink-0">
-        <div className="flex items-center gap-3">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground shrink-0 shadow-sm">
-            <Building2 className="size-5" />
-          </div>
-          {state !== "collapsed" && (
+      <SidebarHeader className="h-[76px] shrink-0 justify-center border-b border-sidebar-border px-4 group-data-[collapsible=icon]:px-3">
+        <Link href={profile?.role === "Platform Super Admin" ? "/admin/dashboard" : "/dashboard"} onClick={closeMobileNavigation} className="flex items-center gap-3 rounded-xl focus-visible:ring-2 focus-visible:ring-sidebar-ring" aria-label="SmartERP home">
+          {!expanded && <span className="text-sm font-semibold text-white">ERP</span>}
+          {expanded && (
             <div className="flex flex-col overflow-hidden">
-              <span className="font-headline font-bold text-sm text-sidebar-foreground uppercase tracking-tighter truncate">SmartERP AI</span>
-              <span className="text-[10px] text-muted-foreground uppercase tracking-widest truncate">{t('sidebar.smeHub')}</span>
+              <span className="truncate font-headline text-lg font-semibold tracking-tight text-white">SmartERP<span className="ml-1 text-blue-300">AI</span></span>
+              <span className="truncate text-xs text-slate-400">{t('sidebar.smeHub')}</span>
             </div>
           )}
-        </div>
+        </Link>
       </SidebarHeader>
 
-      <SidebarContent className="gap-0 py-2">
+      <SidebarContent className="gap-0 py-3">
+        <nav aria-label="Workspace navigation">
         {groups.map((group) => (
-          <SidebarGroup key={group.label} className="py-2">
-            <SidebarGroupLabel className="text-[10px] uppercase font-bold tracking-widest opacity-60 px-4 mb-2">
+          <SidebarGroup key={group.label} className="px-3 py-2">
+            <SidebarGroupLabel className="mb-1 h-7 px-3 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
               {group.label}
             </SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
-                {group.items.filter((item) => canOpen(item.href)).map((item) => (
+                {group.items.map((item) => {
+                  const active = pathname === item.href || pathname.startsWith(`${item.href}/`)
+                  return (
                   <SidebarMenuItem key={item.name}>
                     <SidebarMenuButton
                       asChild
-                      isActive={pathname === item.href}
+                      isActive={active}
                       tooltip={item.name}
-                      className={item.accent ? "text-primary font-bold bg-primary/5" : ""}
+                      className={cn(
+                        "h-11 gap-3 rounded-xl px-3 text-sm text-slate-300 transition-colors hover:bg-white/5 hover:text-white group-data-[collapsible=icon]:!size-10 group-data-[collapsible=icon]:!p-3",
+                        "data-[active=true]:bg-primary data-[active=true]:font-semibold data-[active=true]:text-white",
+                      )}
                     >
-                      <Link href={item.href} className="flex items-center w-full">
-                        <item.icon className="size-4 shrink-0 mr-3" />
+                      <Link href={item.href} onClick={closeMobileNavigation} aria-current={active ? "page" : undefined}>
+                        <item.icon className="size-4 shrink-0" aria-hidden="true" />
                         <span className="truncate">{item.name}</span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
-                ))}
+                  )
+                })}
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
         ))}
+        </nav>
       </SidebarContent>
 
-      <SidebarFooter className="p-4 border-t border-sidebar-border shrink-0">
+      <SidebarFooter className="shrink-0 border-t border-sidebar-border p-3">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="flex items-center gap-3 w-full text-left outline-none hover:opacity-80 transition-opacity">
-              <div className="h-8 w-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold text-xs shrink-0">
-                {profile?.fullName?.substring(0, 2).toUpperCase() || '??'}
+            <button type="button" aria-label="Account and language options" className="flex w-full items-center gap-3 rounded-xl p-2 text-left transition-colors hover:bg-white/5 focus-visible:ring-2 focus-visible:ring-sidebar-ring group-data-[collapsible=icon]:p-0">
+              <div className="flex size-10 shrink-0 items-center justify-center rounded-full border border-slate-600 bg-slate-700 text-sm font-semibold text-white">
+                {initials}
               </div>
-              {state !== "collapsed" && (
-                <div className="flex flex-col flex-1 min-w-0">
-                  <span className="text-xs font-medium truncate">{profile?.fullName || 'User'}</span>
-                  <span className="text-[10px] text-muted-foreground truncate uppercase">{profile?.role || 'Member'}</span>
-                </div>
+              {expanded && (
+                <>
+                  <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+                    <span className="truncate text-sm font-medium text-white">{profile?.fullName || 'Your account'}</span>
+                    <span className="truncate text-xs text-slate-400">{profile?.role || 'Member'}</span>
+                  </div>
+                  <ChevronsUpDown className="size-4 shrink-0 text-slate-400" aria-hidden="true" />
+                </>
               )}
             </button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56" side="right">
+          <DropdownMenuContent align="end" className="w-60 rounded-xl p-1.5" side={isMobile ? "top" : "right"} sideOffset={12}>
             <DropdownMenuItem className="flex items-center gap-2 cursor-pointer" onClick={() => setLanguage(language === 'en' ? 'fr' : 'en')}>
               <Globe className="size-4" />
               <span>{language === 'en' ? 'Français' : 'English'}</span>
@@ -196,7 +211,7 @@ export function AppSidebar() {
             <DropdownMenuSeparator />
             {canOpen("/business-profile") && (
               <DropdownMenuItem asChild className="cursor-pointer">
-                <Link href="/business-profile">{t('common.profile')}</Link>
+                <Link href="/business-profile" onClick={closeMobileNavigation}>{t('common.profile')}</Link>
               </DropdownMenuItem>
             )}
             <DropdownMenuItem className="cursor-pointer text-destructive" onClick={handleLogout}>{t('common.logout')}</DropdownMenuItem>

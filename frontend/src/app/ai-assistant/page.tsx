@@ -4,9 +4,9 @@
 import * as React from "react"
 import { Send, Bot, User, Sparkles, ShieldAlert, Loader2, LogIn } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { canAccessRoute } from "@/lib/client-access"
 import { useAuth } from "@/hooks/use-auth"
 import Link from "next/link"
 
@@ -49,9 +49,9 @@ export default function AIAssistantPage() {
     }
   }, [profile, messages.length])
 
-  const handleSend = async () => {
-    if (!input.trim() || isLoading || !profile) return
-    const userMsg = input.trim()
+  const handleSend = async (question = input) => {
+    if (!question.trim() || isLoading || !profile) return
+    const userMsg = question.trim()
     setInput("")
     setMessages((prev) => [...prev, { role: "user", content: userMsg }])
     setIsLoading(true)
@@ -140,27 +140,33 @@ export default function AIAssistantPage() {
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-10rem)] max-w-4xl mx-auto space-y-4">
+    <div className="mx-auto flex min-h-[600px] w-full max-w-6xl flex-col gap-5 lg:h-[calc(100dvh-9rem)]">
       <div className="flex flex-col gap-1">
         <h1 className="text-2xl md:text-3xl font-bold tracking-tight flex items-center gap-2">
           <Sparkles className="size-6 text-primary" />
-          AI Business Intelligence
+          Your business assistant
         </h1>
-        <p className="text-xs text-muted-foreground">
-          Context-aware assistant for your Cameroonian SME • Role: <span className="font-semibold text-foreground">{profile.role}</span>
+        <p className="text-sm text-muted-foreground">
+          Turn your business records into answers and practical next steps.
         </p>
       </div>
 
-      <Alert className="bg-primary/5 border-primary/20 py-3">
-        <ShieldAlert className="size-4 text-primary" />
-        <AlertTitle className="text-primary text-xs font-bold uppercase tracking-widest">Security Protocol Active</AlertTitle>
-        <AlertDescription className="text-[10px] uppercase font-bold text-muted-foreground mt-1">
-          Read-Only Assistant • Multi-Tenant Isolated • Permission Aware • Resilient OpenRouter Pipeline
-        </AlertDescription>
-      </Alert>
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4" aria-label="Suggested questions">
+        {[
+          { route: '/sales', title: 'Sales performance', question: 'Summarize my sales this month and identify the strongest products.' },
+          { route: '/inventory', title: 'Stock to watch', question: 'Which products are low on stock and should I restock first?' },
+          { route: '/expenses', title: 'Understand spending', question: 'Break down my expenses this month by category.' },
+          { route: '/tasks', title: 'Team priorities', question: 'Which tasks are overdue or need attention today?' },
+        ].filter(item => canAccessRoute(item.route, profile.role)).map(item => (
+          <button key={item.route} type="button" disabled={isLoading} onClick={() => void handleSend(item.question)} className="rounded-xl border bg-card p-4 text-left transition-colors hover:border-primary/40 hover:bg-primary/5 disabled:opacity-50">
+            <span className="block text-sm font-semibold">{item.title}</span>
+            <span className="mt-1 block text-xs leading-5 text-muted-foreground">{item.question}</span>
+          </button>
+        ))}
+      </div>
 
       <div className="flex-1 bg-card border rounded-2xl shadow-lg flex flex-col overflow-hidden min-h-0">
-        <ScrollArea className="flex-1 p-4 md:p-6" ref={scrollRef}>
+        <ScrollArea className="min-h-[260px] flex-1 p-4 md:p-6" ref={scrollRef}>
           <div className="space-y-6">
             {messages.map((msg, i) => (
               <div key={i} className={`flex gap-3 ${msg.role === 'assistant' ? 'justify-start' : 'justify-end'}`}>
@@ -201,24 +207,26 @@ export default function AIAssistantPage() {
             onSubmit={(e) => { e.preventDefault(); handleSend(); }}
             className="flex gap-2"
           >
-            <Input
-              placeholder="Ask me: 'What are my total sales?' or 'Show low stock items'..."
+            <Textarea
+              aria-label="Your question"
+              placeholder="Ask a question about your business…"
               value={input}
               maxLength={2000}
               onChange={(e) => setInput(e.target.value)}
-              className="bg-background rounded-full px-6 shadow-inner h-12 border-primary/20 focus-visible:ring-primary"
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' && !event.shiftKey && !event.nativeEvent.isComposing) {
+                  event.preventDefault(); void handleSend();
+                }
+              }}
+              className="min-h-14 max-h-40 resize-y rounded-xl bg-background px-4 py-3"
             />
             <Button size="icon" className="rounded-full shrink-0 shadow-lg h-12 w-12 bg-primary hover:bg-primary/90" disabled={isLoading || !input.trim()} aria-label="Send message">
               {isLoading ? <Loader2 className="size-5 animate-spin" /> : <Send className="size-5" />}
             </Button>
           </form>
-          <div className="flex items-center justify-center gap-4 mt-3">
-             <p className="text-[8px] text-muted-foreground uppercase tracking-widest font-bold">
-               Tenant: {profile.tenantId}
-             </p>
-             <p className="text-[8px] text-primary uppercase tracking-widest font-bold">
-               Tenant-scoped query logging
-             </p>
+          <div className="mt-3 flex flex-wrap justify-between gap-2 text-xs text-muted-foreground">
+             <p>Answers use records available to your role. Verify important figures.</p>
+             <p>Enter to send · Shift + Enter for a new line</p>
           </div>
         </div>
       </div>

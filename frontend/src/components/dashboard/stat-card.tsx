@@ -18,28 +18,30 @@ interface StatCardProps {
 
 export function StatCard({ title, value, description, icon: Icon, trend, className }: StatCardProps) {
   return (
-    <Card className={cn("overflow-hidden transition-all hover:shadow-md border-sidebar-border/10 flex flex-col h-full", className)}>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 md:p-4">
-        <CardTitle className="text-[9px] md:text-xs font-bold uppercase tracking-widest text-muted-foreground line-clamp-1">{title}</CardTitle>
-        <div className="rounded-md bg-primary/10 p-1 md:p-1.5 text-primary shrink-0">
-          <Icon className="h-3 w-3 md:h-4 md:w-4" />
+    <Card className={cn("flex h-full min-w-0 flex-col", className)}>
+      <CardHeader className="flex flex-row items-start justify-between gap-3 space-y-0 p-4 pb-3 sm:p-5 sm:pb-3">
+        <CardTitle className="pt-1 text-sm font-medium leading-snug tracking-normal text-muted-foreground">{title}</CardTitle>
+        <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+          <Icon className="size-4" aria-hidden="true" />
         </div>
       </CardHeader>
-      <CardContent className="p-3 md:p-4 pt-0 mt-auto">
-        <div className="text-base md:text-2xl font-bold tracking-tight truncate">
+      <CardContent className="mt-auto p-4 pt-0 sm:p-5 sm:pt-0">
+        <div className="break-words text-2xl font-semibold tabular-nums leading-tight tracking-tight xl:text-3xl">
           {value}
         </div>
         {(description || trend) && (
-          <div className="mt-1 flex items-center gap-1.5 text-[8px] md:text-xs">
+          <div className="mt-3 flex flex-wrap items-baseline gap-x-2 gap-y-1 text-xs leading-relaxed">
             {trend && (
               <span className={cn(
-                "font-bold shrink-0",
-                trend.isPositive ? "text-emerald-600" : "text-destructive"
+                "shrink-0 font-semibold",
+                trend.isPositive ? "text-emerald-700" : "text-destructive"
               )}>
-                {trend.isPositive ? "↑" : "↓"} {trend.value}%
+                <span aria-hidden="true">{trend.isPositive ? "↑" : "↓"} </span>
+                <span className="sr-only">{trend.isPositive ? "Increase" : "Decrease"} of </span>
+                {trend.value}%
               </span>
             )}
-            <span className="text-muted-foreground truncate opacity-80">{description || trend?.label}</span>
+            <span className="text-muted-foreground">{description || trend?.label}</span>
           </div>
         )}
       </CardContent>

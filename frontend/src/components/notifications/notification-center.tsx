@@ -57,5 +57,52 @@ export function NotificationCenter(){
   }
   const unread=items.filter(item=>!item.is_read).length
   const markAll=async()=>{for(const item of items.filter(x=>!x.is_read))await mark(item.id)}
-  return <Popover><PopoverTrigger asChild><Button variant="ghost" size="icon" className="relative h-9 w-9" aria-label={`Notifications${unread ? `, ${unread} unread` : ""}`}><Bell className="size-5 text-muted-foreground"/>{unread>0&&<span className="absolute right-0.5 top-0.5 grid min-w-4 h-4 place-items-center rounded-full bg-red-500 px-1 text-[9px] font-bold text-white ring-2 ring-background">{unread>9?"9+":unread}</span>}</Button></PopoverTrigger><PopoverContent align="end" className="w-80 p-0"><div className="flex items-center justify-between border-b p-4"><div><p className="text-sm font-bold">Notifications</p><p className="text-[10px] uppercase tracking-wider text-muted-foreground">Company announcements</p></div>{unread>0&&<Button variant="ghost" size="sm" onClick={markAll} className="h-7 text-[10px]"><CheckCheck className="mr-1 size-3"/>Read all</Button>}</div><ScrollArea className="h-80">{loading&&!items.length?<div className="grid h-32 place-items-center"><Loader2 className="size-5 animate-spin"/></div>:!items.length?<div className="flex h-40 flex-col items-center justify-center text-muted-foreground"><Bell className="size-8 opacity-30"/><p className="mt-2 text-xs">No notifications</p></div>:items.slice(0,20).map(item=><button key={item.id} onClick={()=>void mark(item.id)} className={`flex w-full gap-3 border-b p-4 text-left transition hover:bg-muted/40 ${!item.is_read?"bg-primary/5":""}`}><span className={`mt-0.5 grid size-8 shrink-0 place-items-center rounded-lg ${item.priority==="URGENT"?"bg-red-100 text-red-600":"bg-blue-100 text-blue-600"}`}>{item.priority==="URGENT"?<AlertTriangle className="size-4"/>:<Megaphone className="size-4"/>}</span><span className="min-w-0 flex-1"><span className="flex items-start justify-between gap-2"><b className="truncate text-xs">{item.title}</b>{!item.is_read&&<i className="mt-1 size-1.5 shrink-0 rounded-full bg-primary"/>}</span><span className="mt-1 line-clamp-2 text-[11px] leading-4 text-muted-foreground">{item.message}</span><span className="mt-2 block text-[9px] text-muted-foreground">{item.created_by_name} • {new Date(item.created_at).toLocaleDateString()}</span></span></button>)}</ScrollArea><div className="border-t p-2"><Button asChild variant="ghost" className="w-full text-xs"><Link href="/announcements">View all announcements</Link></Button></div></PopoverContent></Popover>
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button variant="ghost" size="icon" className="relative" aria-label={`Notifications${unread ? `, ${unread} unread` : ""}`}>
+          <Bell className="size-5 text-muted-foreground" aria-hidden="true" />
+          {unread > 0 && <span className="absolute right-0.5 top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-destructive px-1 text-[10px] font-semibold text-white ring-2 ring-card">{unread > 9 ? "9+" : unread}</span>}
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent align="end" sideOffset={12} className="w-[360px] max-w-[calc(100vw-2rem)] overflow-hidden rounded-2xl p-0 shadow-lg">
+        <div className="flex items-center justify-between gap-3 border-b p-4">
+          <div>
+            <p className="font-semibold">Notifications</p>
+            <p className="mt-1 text-xs text-muted-foreground">Updates from your team</p>
+          </div>
+          {unread > 0 && <Button variant="ghost" size="sm" onClick={markAll} className="text-xs"><CheckCheck aria-hidden="true" />Read all</Button>}
+        </div>
+        <ScrollArea className="h-80">
+          {loading && !items.length ? (
+            <div className="flex h-40 flex-col items-center justify-center gap-3 text-muted-foreground" role="status">
+              <Loader2 className="size-5 animate-spin" aria-hidden="true" />
+              <p className="text-sm">Loading notifications…</p>
+            </div>
+          ) : !items.length ? (
+            <div className="flex h-64 flex-col items-center justify-center px-6 text-center">
+              <div className="flex size-12 items-center justify-center rounded-2xl bg-muted text-muted-foreground"><Bell className="size-6" aria-hidden="true" /></div>
+              <p className="mt-4 text-sm font-semibold">No announcements yet</p>
+              <p className="mt-1 text-sm leading-relaxed text-muted-foreground">New updates from your team will appear here.</p>
+            </div>
+          ) : items.slice(0, 20).map((item) => (
+            <button type="button" key={item.id} onClick={() => void mark(item.id)} className={`flex w-full gap-3 border-b p-4 text-left transition-colors hover:bg-muted/60 ${!item.is_read ? "bg-primary/5" : ""}`}>
+              <span className={`mt-0.5 grid size-9 shrink-0 place-items-center rounded-xl ${item.priority === "URGENT" ? "bg-red-50 text-red-700" : "bg-blue-50 text-blue-700"}`}>
+                {item.priority === "URGENT" ? <AlertTriangle className="size-4" aria-label="Urgent" /> : <Megaphone className="size-4" aria-hidden="true" />}
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="flex items-start justify-between gap-2">
+                  <span className="text-sm font-semibold leading-snug">{item.title}</span>
+                  {!item.is_read && <span className="mt-1.5 size-2 shrink-0 rounded-full bg-primary"><span className="sr-only">Unread</span></span>}
+                </span>
+                <span className="mt-1 line-clamp-2 text-sm leading-relaxed text-muted-foreground">{item.message}</span>
+                <span className="mt-2 block text-xs text-muted-foreground">{item.created_by_name} · {new Date(item.created_at).toLocaleDateString()}</span>
+              </span>
+            </button>
+          ))}
+        </ScrollArea>
+        <div className="border-t p-2"><Button asChild variant="ghost" className="w-full text-sm"><Link href="/announcements">View all announcements</Link></Button></div>
+      </PopoverContent>
+    </Popover>
+  )
 }

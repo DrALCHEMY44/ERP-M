@@ -4,34 +4,39 @@
 
 @layer base {
   :root {
-    --background: 220 33% 98%;
-    --foreground: 224 71.4% 4.1%;
+    --background: 220 43% 97%;
+    --foreground: 222 47% 11%;
     --card: 0 0% 100%;
-    --card-foreground: 224 71.4% 4.1%;
+    --card-foreground: 222 47% 11%;
     --popover: 0 0% 100%;
-    --popover-foreground: 224 71.4% 4.1%;
+    --popover-foreground: 222 47% 11%;
     --primary: 221 83% 53%;
     --primary-foreground: 210 20% 98%;
-    --secondary: 220 14% 96%;
-    --secondary-foreground: 220.9 39.3% 11%;
-    --muted: 220 14% 96%;
-    --muted-foreground: 220 8.9% 46.1%;
-    --accent: 221 83% 53%;
-    --accent-foreground: 210 20% 98%;
-    --destructive: 0 84.2% 60.2%;
+    --secondary: 214 32% 95%;
+    --secondary-foreground: 222 47% 11%;
+    --muted: 214 32% 95%;
+    --muted-foreground: 215 19% 40%;
+    --accent: 214 100% 96%;
+    --accent-foreground: 224 76% 40%;
+    --destructive: 0 72% 45%;
     --destructive-foreground: 210 20% 98%;
-    --border: 220 13% 91%;
-    --input: 220 13% 91%;
+    --border: 214 28% 89%;
+    --input: 214 24% 82%;
     --ring: 221 83% 53%;
-    --radius: 0.75rem;
-    --sidebar-background: 224 71% 4%;
-    --sidebar-foreground: 240 5% 96%;
+    --radius: 1rem;
+    --sidebar-background: 222 47% 11%;
+    --sidebar-foreground: 214 32% 91%;
     --sidebar-primary: 221 83% 53%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 4% 16%;
-    --sidebar-accent-foreground: 240 5% 96%;
-    --sidebar-border: 240 4% 16%;
-    --sidebar-ring: 221 83% 53%;
+    --sidebar-accent: 217 33% 19%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 217 33% 23%;
+    --sidebar-ring: 213 94% 68%;
+    --chart-1: 221 83% 53%;
+    --chart-2: 160 84% 30%;
+    --chart-3: 38 92% 50%;
+    --chart-4: 263 70% 50%;
+    --chart-5: 199 89% 40%;
   }
 }
 
@@ -41,18 +46,29 @@
     -webkit-tap-highlight-color: transparent;
   }
   body {
-    @apply bg-background text-foreground font-body antialiased overflow-x-hidden;
+    @apply bg-background text-foreground font-body antialiased;
     position: relative;
     width: 100%;
-    height: 100%;
+    min-height: 100svh;
+    line-height: 1.5;
   }
   h1, h2, h3, h4, h5, h6 {
     @apply font-headline;
   }
 
-  /* Improved touch targets without breaking left-alignment */
-  button, [role="button"], a {
-    @apply min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0 flex items-center;
+  /* Inline links keep their natural flow; interactive components own their layout. */
+  :where(a, button, input, textarea, select, [role="button"], [tabindex]):focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 3px;
+  }
+
+  button, [role="button"] {
+    touch-action: manipulation;
+  }
+
+  ::selection {
+    background: hsl(var(--primary) / 0.16);
+    color: hsl(var(--foreground));
   }
 
   /* Custom scrollbar for mobile tables */
@@ -72,7 +88,28 @@
 }
 
 @layer components {
+  .skip-link {
+    @apply fixed left-4 top-4 z-[100] -translate-y-24 rounded-xl bg-primary px-4 py-3 font-medium text-white shadow-lg focus:translate-y-0;
+  }
+
   .mobile-safe-area {
     padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+@media (pointer: coarse) {
+  button:not([role="checkbox"]):not([role="switch"]):not([data-sidebar="rail"]),
+  [role="combobox"],
+  [data-sidebar="menu-button"] {
+    min-height: 44px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

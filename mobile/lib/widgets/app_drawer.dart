@@ -247,8 +247,9 @@ class AppDrawer extends StatelessWidget {
       );
     }
 
-    int selectedIdx = items.indexWhere((item) => item.route == currentRoute);
-    if (selectedIdx == -1) selectedIdx = 0; // Default to Dashboard
+    final selectedItem = items.indexWhere((item) => item.route == currentRoute);
+    final int? selectedIdx = selectedItem < 0 ? null : selectedItem;
+    final businessCode = user?.businessCode?.trim();
 
     return NavigationDrawer(
       selectedIndex: selectedIdx,
@@ -273,18 +274,14 @@ class AppDrawer extends StatelessWidget {
       },
       children: [
         const Padding(
-          padding: EdgeInsets.fromLTRB(28, 12, 28, 8),
+          padding: EdgeInsets.fromLTRB(28, 20, 28, 8),
           child: Text(
-            'SMARTERP WORKSPACE',
-            style: TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.w800,
-              letterSpacing: 1.4,
-            ),
+            'SmartERP workspace',
+            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800),
           ),
         ),
         Padding(
-          padding: const EdgeInsets.fromLTRB(28, 32, 16, 20),
+          padding: const EdgeInsets.fromLTRB(28, 16, 16, 20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -324,43 +321,45 @@ class AppDrawer extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.secondaryContainer.withValues(
-                    alpha: 0.5,
+              if (businessCode != null && businessCode.isNotEmpty) ...[
+                const SizedBox(height: 16),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 9,
                   ),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: theme.colorScheme.secondaryContainer,
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.domain,
-                      size: 16,
-                      color: theme.colorScheme.onSecondaryContainer,
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.secondaryContainer.withValues(
+                      alpha: 0.5,
                     ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        'Business Code: ${user?.businessCode ?? user?.tenantId ?? "N/A"}',
-                        style: theme.textTheme.labelSmall?.copyWith(
-                          color: theme.colorScheme.onSecondaryContainer,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        overflow: TextOverflow.ellipsis,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: theme.colorScheme.secondaryContainer,
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.domain,
+                        size: 18,
+                        color: theme.colorScheme.onSecondaryContainer,
                       ),
-                    ),
-                  ],
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Business code: $businessCode',
+                          style: theme.textTheme.labelMedium?.copyWith(
+                            color: theme.colorScheme.onSecondaryContainer,
+                            fontWeight: FontWeight.w700,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
+              ],
             ],
           ),
         ),

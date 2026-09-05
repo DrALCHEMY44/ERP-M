@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
 import '../providers/core_provider.dart';
 import '../providers/inventory_provider.dart';
 import '../providers/transaction_provider.dart';
@@ -59,6 +60,11 @@ class _DashboardScreenState extends State<DashboardScreen>
     final taskProvider = Provider.of<TaskProvider>(context);
 
     final user = AuthService.currentUser;
+    final businessCode = user?.businessCode?.trim();
+    final workspaceDetails = [
+      user?.role.displayName ?? 'Member',
+      if (businessCode != null && businessCode.isNotEmpty) businessCode,
+    ].join(' • ');
     final canViewInventory = AuthService.hasPermission('viewInventory');
     final canViewSales = AuthService.hasPermission('viewSales');
     final canViewExpenses = AuthService.hasPermission('viewExpenses');
@@ -189,12 +195,8 @@ class _DashboardScreenState extends State<DashboardScreen>
                 style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18),
               ),
               Text(
-                'BUSINESS COMMAND CENTER',
-                style: TextStyle(
-                  fontWeight: FontWeight.w700,
-                  fontSize: 8,
-                  letterSpacing: 1.4,
-                ),
+                'Your business workspace',
+                style: TextStyle(fontWeight: FontWeight.w500, fontSize: 11),
               ),
             ],
           ),
@@ -244,546 +246,605 @@ class _DashboardScreenState extends State<DashboardScreen>
             child: SingleChildScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.symmetric(vertical: 8.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 20),
-                    padding: const EdgeInsets.all(22),
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          Color(0xFF172554),
-                          Color(0xFF1E3A8A),
-                          Color(0xFF4F46E5),
-                        ],
-                      ),
-                      borderRadius: BorderRadius.circular(26),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFF1E3A8A).withValues(alpha: .22),
-                          blurRadius: 24,
-                          offset: const Offset(0, 12),
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 1120),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 20),
+                        padding: const EdgeInsets.all(22),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              Color(0xFF172554),
+                              Color(0xFF1E3A8A),
+                              Color(0xFF4F46E5),
+                            ],
+                          ),
+                          borderRadius: BorderRadius.circular(26),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(
+                                0xFF1E3A8A,
+                              ).withValues(alpha: .22),
+                              blurRadius: 24,
+                              offset: const Offset(0, 12),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Expanded(
-                              child: Text(
-                                'Welcome back, ${user?.name.split(" ")[0] ?? "User"}',
-                                style: theme.textTheme.headlineSmall?.copyWith(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w900,
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    'Welcome back, ${user?.name.split(" ")[0] ?? "User"}',
+                                    style: theme.textTheme.headlineSmall
+                                        ?.copyWith(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.w900,
+                                        ),
+                                  ),
+                                ),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 6,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withValues(alpha: .12),
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: const Row(
+                                    children: [
+                                      Icon(
+                                        Icons.cloud_done_outlined,
+                                        size: 14,
+                                        color: Color(0xFF86EFAC),
+                                      ),
+                                      SizedBox(width: 5),
+                                      Text(
+                                        'Synced',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w800,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 7),
+                            Text(
+                              workspaceDetails,
+                              style: const TextStyle(
+                                color: Color(0xFFCBD5E1),
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+                            Row(
+                              children: [
+                                if (canViewInventory)
+                                  _heroMetric(
+                                    '${inventory.inventory.length}',
+                                    'Products',
+                                  ),
+                                if (canViewTasks)
+                                  _heroMetric(
+                                    '${taskProvider.tasks.length}',
+                                    'Tasks',
+                                  ),
+                                _heroMetric(
+                                  '${core.unreadNotifications.length}',
+                                  'Alerts',
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 32),
+
+                      // Financial Stats Cards
+                      if (canViewSales || canViewExpenses)
+                        SizedBox(
+                          height: 140,
+                          child: ListView(
+                            scrollDirection: Axis.horizontal,
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            children: [
+                              if (canViewSales)
+                                _statCard(
+                                  'Revenue',
+                                  _formatMoney(totalSales),
+                                  Icons.trending_up,
+                                  Colors.green,
+                                  theme,
+                                  0,
+                                ),
+                              if (canViewExpenses)
+                                _statCard(
+                                  'Expenses',
+                                  _formatMoney(totalExpenses),
+                                  Icons.trending_down,
+                                  Colors.red,
+                                  theme,
+                                  100,
+                                ),
+                              if (canViewSales && canViewExpenses)
+                                _statCard(
+                                  'Net Profit',
+                                  _formatMoney(netProfit),
+                                  netProfit >= 0
+                                      ? Icons.account_balance_wallet
+                                      : Icons.money_off,
+                                  netProfit >= 0
+                                      ? Colors.blue
+                                      : Colors.deepOrange,
+                                  theme,
+                                  200,
+                                ),
+                            ],
+                          ),
+                        ),
+                      if (canViewSales || canViewExpenses)
+                        const SizedBox(height: 32),
+
+                      // Operational Alerts
+                      if (lowStockItems.isNotEmpty ||
+                          overdueTasks.isNotEmpty) ...[
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.error_outline,
+                                color: Colors.orange.shade800,
+                                size: 20,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Operational Alerts',
+                                style: theme.textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.orange.shade800,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+
+                        // Low Stock alerts
+                        for (var item in lowStockItems.take(2))
+                          Container(
+                            margin: const EdgeInsets.symmetric(
+                              horizontal: 20,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color: theme.colorScheme.errorContainer
+                                  .withValues(alpha: 0.3),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: theme.colorScheme.error.withValues(
+                                  alpha: 0.3,
                                 ),
                               ),
                             ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                                vertical: 6,
+                            child: ListTile(
+                              leading: Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: Colors.red.withValues(alpha: 0.1),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(
+                                  Icons.warning_amber_rounded,
+                                  color: Colors.red,
+                                ),
                               ),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: .12),
-                                borderRadius: BorderRadius.circular(20),
+                              title: Text(
+                                item.name,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
-                              child: const Row(
-                                children: [
-                                  Icon(
-                                    Icons.cloud_done_outlined,
-                                    size: 14,
-                                    color: Color(0xFF86EFAC),
-                                  ),
-                                  SizedBox(width: 5),
-                                  Text(
-                                    'LIVE',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.w800,
-                                    ),
-                                  ),
-                                ],
+                              subtitle: Text(
+                                'Only ${item.stockLevel} left (Threshold: ${item.lowStockLevel})',
                               ),
+                              trailing:
+                                  AuthService.hasPermission('manageInventory')
+                                  ? FilledButton.tonal(
+                                      style: FilledButton.styleFrom(
+                                        visualDensity: VisualDensity.compact,
+                                      ),
+                                      onPressed: () => Navigator.pushNamed(
+                                        context,
+                                        '/inventory',
+                                      ),
+                                      child: const Text('Receive'),
+                                    )
+                                  : null,
                             ),
-                          ],
-                        ),
-                        const SizedBox(height: 7),
-                        Text(
-                          '${user?.role.displayName ?? "Member"} • ${user?.businessCode}',
-                          style: const TextStyle(
-                            color: Color(0xFFCBD5E1),
-                            fontWeight: FontWeight.w500,
                           ),
-                        ),
-                        const SizedBox(height: 20),
-                        Row(
-                          children: [
-                            if (canViewInventory)
-                              _heroMetric(
-                                '${inventory.inventory.length}',
-                                'Products',
-                              ),
-                            if (canViewTasks)
-                              _heroMetric(
-                                '${taskProvider.tasks.length}',
-                                'Tasks',
-                              ),
-                            _heroMetric(
-                              '${core.unreadNotifications.length}',
-                              'Alerts',
+
+                        // Overdue Tasks alert
+                        for (var t in overdueTasks.take(1))
+                          Container(
+                            margin: const EdgeInsets.symmetric(
+                              horizontal: 20,
+                              vertical: 6,
                             ),
-                          ],
-                        ),
+                            decoration: BoxDecoration(
+                              color: Colors.amber.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: Colors.amber.withValues(alpha: 0.3),
+                              ),
+                            ),
+                            child: ListTile(
+                              leading: Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: Colors.amber.withValues(alpha: 0.2),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(
+                                  Icons.alarm,
+                                  color: Colors.amber,
+                                ),
+                              ),
+                              title: Text(
+                                t.title,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              subtitle: Text(
+                                'OVERDUE - Assigned to: ${t.assignedToName}',
+                              ),
+                              trailing: IconButton(
+                                icon: const Icon(
+                                  Icons.arrow_forward_ios,
+                                  size: 16,
+                                ),
+                                onPressed: () =>
+                                    Navigator.pushNamed(context, '/tasks'),
+                              ),
+                            ),
+                          ),
+                        const SizedBox(height: 32),
                       ],
-                    ),
-                  ),
-                  const SizedBox(height: 32),
 
-                  // Financial Stats Cards
-                  if (canViewSales || canViewExpenses)
-                    SizedBox(
-                      height: 140,
-                      child: ListView(
-                        scrollDirection: Axis.horizontal,
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        children: [
-                          if (canViewSales)
-                            _statCard(
-                              'Revenue',
-                              'FCFA ${totalSales.toInt()}',
-                              Icons.trending_up,
-                              Colors.green,
-                              theme,
-                              0,
-                            ),
-                          if (canViewExpenses)
-                            _statCard(
-                              'Expenses',
-                              'FCFA ${totalExpenses.toInt()}',
-                              Icons.trending_down,
-                              Colors.red,
-                              theme,
-                              100,
-                            ),
-                          if (canViewSales && canViewExpenses)
-                            _statCard(
-                              'Net Profit',
-                              'FCFA ${netProfit.toInt()}',
-                              netProfit >= 0
-                                  ? Icons.account_balance_wallet
-                                  : Icons.money_off,
-                              netProfit >= 0 ? Colors.blue : Colors.deepOrange,
-                              theme,
-                              200,
-                            ),
-                        ],
-                      ),
-                    ),
-                  if (canViewSales || canViewExpenses)
-                    const SizedBox(height: 32),
-
-                  // Operational Alerts
-                  if (lowStockItems.isNotEmpty || overdueTasks.isNotEmpty) ...[
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.error_outline,
-                            color: Colors.orange.shade800,
-                            size: 20,
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Operational Alerts',
-                            style: theme.textTheme.titleMedium?.copyWith(
+                      // Visual Chart
+                      if (AuthService.hasPermission('viewReports')) ...[
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                          child: Text(
+                            'Performance Overview',
+                            style: theme.textTheme.titleLarge?.copyWith(
                               fontWeight: FontWeight.bold,
-                              color: Colors.orange.shade800,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-
-                    // Low Stock alerts
-                    for (var item in lowStockItems.take(2))
-                      Container(
-                        margin: const EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: theme.colorScheme.errorContainer.withValues(
-                            alpha: 0.3,
-                          ),
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(
-                            color: theme.colorScheme.error.withValues(
-                              alpha: 0.3,
                             ),
                           ),
                         ),
-                        child: ListTile(
-                          leading: Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: Colors.red.withValues(alpha: 0.1),
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(
-                              Icons.warning_amber_rounded,
-                              color: Colors.red,
-                            ),
+                        const SizedBox(height: 16),
+                        Container(
+                          height: 220,
+                          margin: const EdgeInsets.symmetric(horizontal: 20),
+                          padding: const EdgeInsets.all(24),
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.surface,
+                            borderRadius: BorderRadius.circular(24),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.03),
+                                blurRadius: 20,
+                                offset: const Offset(0, 10),
+                              ),
+                            ],
                           ),
-                          title: Text(
-                            item.name,
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          subtitle: Text(
-                            'Only ${item.stockLevel} left (Threshold: ${item.lowStockLevel})',
-                          ),
-                          trailing: AuthService.hasPermission('manageInventory')
-                              ? FilledButton.tonal(
-                                  style: FilledButton.styleFrom(
-                                    visualDensity: VisualDensity.compact,
+                          child:
+                              transaction.sales.isEmpty &&
+                                  transaction.expenses.isEmpty
+                              ? Center(
+                                  child: Text(
+                                    'No transaction data yet.',
+                                    style: theme.textTheme.bodyMedium?.copyWith(
+                                      color: Colors.grey,
+                                    ),
                                   ),
-                                  onPressed: () => Navigator.pushNamed(
-                                    context,
-                                    '/inventory',
-                                  ),
-                                  child: const Text('Receive'),
                                 )
-                              : null,
-                        ),
-                      ),
-
-                    // Overdue Tasks alert
-                    for (var t in overdueTasks.take(1))
-                      Container(
-                        margin: const EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.amber.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(
-                            color: Colors.amber.withValues(alpha: 0.3),
-                          ),
-                        ),
-                        child: ListTile(
-                          leading: Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: Colors.amber.withValues(alpha: 0.2),
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(Icons.alarm, color: Colors.amber),
-                          ),
-                          title: Text(
-                            t.title,
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          subtitle: Text(
-                            'OVERDUE - Assigned to: ${t.assignedToName}',
-                          ),
-                          trailing: IconButton(
-                            icon: const Icon(Icons.arrow_forward_ios, size: 16),
-                            onPressed: () =>
-                                Navigator.pushNamed(context, '/tasks'),
-                          ),
-                        ),
-                      ),
-                    const SizedBox(height: 32),
-                  ],
-
-                  // Visual Chart
-                  if (AuthService.hasPermission('viewReports')) ...[
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                      child: Text(
-                        'Performance Overview',
-                        style: theme.textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Container(
-                      height: 220,
-                      margin: const EdgeInsets.symmetric(horizontal: 20),
-                      padding: const EdgeInsets.all(24),
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.surface,
-                        borderRadius: BorderRadius.circular(24),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.03),
-                            blurRadius: 20,
-                            offset: const Offset(0, 10),
-                          ),
-                        ],
-                      ),
-                      child:
-                          transaction.sales.isEmpty &&
-                              transaction.expenses.isEmpty
-                          ? Center(
-                              child: Text(
-                                'No transaction data yet.',
-                                style: theme.textTheme.bodyMedium?.copyWith(
-                                  color: Colors.grey,
-                                ),
-                              ),
-                            )
-                          : BarChart(
-                              BarChartData(
-                                alignment: BarChartAlignment.spaceAround,
-                                maxY:
-                                    (totalSales > totalExpenses
-                                        ? totalSales
-                                        : totalExpenses) *
-                                    1.3,
-                                barTouchData: BarTouchData(
-                                  enabled: true,
-                                  touchTooltipData: BarTouchTooltipData(
-                                    getTooltipItem:
-                                        (group, groupIndex, rod, rodIndex) {
-                                          return BarTooltipItem(
-                                            'FCFA ${rod.toY.toInt()}',
-                                            const TextStyle(
-                                              color: Colors.white,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          );
-                                        },
-                                  ),
-                                ),
-                                titlesData: FlTitlesData(
-                                  show: true,
-                                  bottomTitles: AxisTitles(
-                                    sideTitles: SideTitles(
-                                      showTitles: true,
-                                      getTitlesWidget:
-                                          (double value, TitleMeta meta) {
-                                            final style = theme
-                                                .textTheme
-                                                .labelMedium
-                                                ?.copyWith(
+                              : BarChart(
+                                  BarChartData(
+                                    alignment: BarChartAlignment.spaceAround,
+                                    maxY:
+                                        (totalSales > totalExpenses
+                                            ? totalSales
+                                            : totalExpenses) *
+                                        1.3,
+                                    barTouchData: BarTouchData(
+                                      enabled: true,
+                                      touchTooltipData: BarTouchTooltipData(
+                                        getTooltipItem:
+                                            (group, groupIndex, rod, rodIndex) {
+                                              return BarTooltipItem(
+                                                _formatMoney(rod.toY),
+                                                const TextStyle(
+                                                  color: Colors.white,
                                                   fontWeight: FontWeight.bold,
+                                                ),
+                                              );
+                                            },
+                                      ),
+                                    ),
+                                    titlesData: FlTitlesData(
+                                      show: true,
+                                      bottomTitles: AxisTitles(
+                                        sideTitles: SideTitles(
+                                          showTitles: true,
+                                          getTitlesWidget:
+                                              (double value, TitleMeta meta) {
+                                                final style = theme
+                                                    .textTheme
+                                                    .labelMedium
+                                                    ?.copyWith(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    );
+                                                String text = value.toInt() == 0
+                                                    ? 'Revenue'
+                                                    : 'Expenses';
+                                                return SideTitleWidget(
+                                                  meta: meta,
+                                                  space: 8,
+                                                  child: Text(
+                                                    text,
+                                                    style: style,
+                                                  ),
                                                 );
-                                            String text = value.toInt() == 0
-                                                ? 'Revenue'
-                                                : 'Expenses';
-                                            return SideTitleWidget(
-                                              meta: meta,
-                                              space: 8,
-                                              child: Text(text, style: style),
-                                            );
-                                          },
+                                              },
+                                        ),
+                                      ),
+                                      leftTitles: const AxisTitles(
+                                        sideTitles: SideTitles(
+                                          showTitles: false,
+                                        ),
+                                      ),
+                                      rightTitles: const AxisTitles(
+                                        sideTitles: SideTitles(
+                                          showTitles: false,
+                                        ),
+                                      ),
+                                      topTitles: const AxisTitles(
+                                        sideTitles: SideTitles(
+                                          showTitles: false,
+                                        ),
+                                      ),
                                     ),
-                                  ),
-                                  leftTitles: const AxisTitles(
-                                    sideTitles: SideTitles(showTitles: false),
-                                  ),
-                                  rightTitles: const AxisTitles(
-                                    sideTitles: SideTitles(showTitles: false),
-                                  ),
-                                  topTitles: const AxisTitles(
-                                    sideTitles: SideTitles(showTitles: false),
-                                  ),
-                                ),
-                                gridData: FlGridData(
-                                  show: true,
-                                  drawVerticalLine: false,
-                                  horizontalInterval:
-                                      (totalSales > totalExpenses
-                                                  ? totalSales
-                                                  : totalExpenses) /
-                                              3 >
-                                          0
-                                      ? (totalSales > totalExpenses
-                                                ? totalSales
-                                                : totalExpenses) /
-                                            3
-                                      : 100,
-                                  getDrawingHorizontalLine: (value) => FlLine(
-                                    color: theme.colorScheme.outlineVariant
-                                        .withValues(alpha: 0.5),
-                                    strokeWidth: 1,
-                                    dashArray: [5, 5],
-                                  ),
-                                ),
-                                borderData: FlBorderData(show: false),
-                                barGroups: [
-                                  BarChartGroupData(
-                                    x: 0,
-                                    barRods: [
-                                      BarChartRodData(
-                                        toY: totalSales,
-                                        gradient: const LinearGradient(
-                                          colors: [
-                                            Colors.green,
-                                            Colors.lightGreenAccent,
-                                          ],
-                                          begin: Alignment.bottomCenter,
-                                          end: Alignment.topCenter,
-                                        ),
-                                        width: 40,
-                                        borderRadius:
-                                            const BorderRadius.vertical(
-                                              top: Radius.circular(8),
-                                            ),
-                                        backDrawRodData:
-                                            BackgroundBarChartRodData(
-                                              show: true,
-                                              toY:
-                                                  (totalSales > totalExpenses
+                                    gridData: FlGridData(
+                                      show: true,
+                                      drawVerticalLine: false,
+                                      horizontalInterval:
+                                          (totalSales > totalExpenses
                                                       ? totalSales
-                                                      : totalExpenses) *
-                                                  1.3,
-                                              color: theme
-                                                  .colorScheme
-                                                  .surfaceContainerHighest,
+                                                      : totalExpenses) /
+                                                  3 >
+                                              0
+                                          ? (totalSales > totalExpenses
+                                                    ? totalSales
+                                                    : totalExpenses) /
+                                                3
+                                          : 100,
+                                      getDrawingHorizontalLine: (value) =>
+                                          FlLine(
+                                            color: theme
+                                                .colorScheme
+                                                .outlineVariant
+                                                .withValues(alpha: 0.5),
+                                            strokeWidth: 1,
+                                            dashArray: [5, 5],
+                                          ),
+                                    ),
+                                    borderData: FlBorderData(show: false),
+                                    barGroups: [
+                                      BarChartGroupData(
+                                        x: 0,
+                                        barRods: [
+                                          BarChartRodData(
+                                            toY: totalSales,
+                                            gradient: const LinearGradient(
+                                              colors: [
+                                                Colors.green,
+                                                Colors.lightGreenAccent,
+                                              ],
+                                              begin: Alignment.bottomCenter,
+                                              end: Alignment.topCenter,
                                             ),
+                                            width: 40,
+                                            borderRadius:
+                                                const BorderRadius.vertical(
+                                                  top: Radius.circular(8),
+                                                ),
+                                            backDrawRodData:
+                                                BackgroundBarChartRodData(
+                                                  show: true,
+                                                  toY:
+                                                      (totalSales >
+                                                              totalExpenses
+                                                          ? totalSales
+                                                          : totalExpenses) *
+                                                      1.3,
+                                                  color: theme
+                                                      .colorScheme
+                                                      .surfaceContainerHighest,
+                                                ),
+                                          ),
+                                        ],
+                                      ),
+                                      BarChartGroupData(
+                                        x: 1,
+                                        barRods: [
+                                          BarChartRodData(
+                                            toY: totalExpenses,
+                                            gradient: const LinearGradient(
+                                              colors: [
+                                                Colors.red,
+                                                Colors.orangeAccent,
+                                              ],
+                                              begin: Alignment.bottomCenter,
+                                              end: Alignment.topCenter,
+                                            ),
+                                            width: 40,
+                                            borderRadius:
+                                                const BorderRadius.vertical(
+                                                  top: Radius.circular(8),
+                                                ),
+                                            backDrawRodData:
+                                                BackgroundBarChartRodData(
+                                                  show: true,
+                                                  toY:
+                                                      (totalSales >
+                                                              totalExpenses
+                                                          ? totalSales
+                                                          : totalExpenses) *
+                                                      1.3,
+                                                  color: theme
+                                                      .colorScheme
+                                                      .surfaceContainerHighest,
+                                                ),
+                                          ),
+                                        ],
                                       ),
                                     ],
                                   ),
-                                  BarChartGroupData(
-                                    x: 1,
-                                    barRods: [
-                                      BarChartRodData(
-                                        toY: totalExpenses,
-                                        gradient: const LinearGradient(
-                                          colors: [
-                                            Colors.red,
-                                            Colors.orangeAccent,
-                                          ],
-                                          begin: Alignment.bottomCenter,
-                                          end: Alignment.topCenter,
-                                        ),
-                                        width: 40,
-                                        borderRadius:
-                                            const BorderRadius.vertical(
-                                              top: Radius.circular(8),
-                                            ),
-                                        backDrawRodData:
-                                            BackgroundBarChartRodData(
-                                              show: true,
-                                              toY:
-                                                  (totalSales > totalExpenses
-                                                      ? totalSales
-                                                      : totalExpenses) *
-                                                  1.3,
-                                              color: theme
-                                                  .colorScheme
-                                                  .surfaceContainerHighest,
-                                            ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-                    ),
-                    const SizedBox(height: 32),
-                  ],
-
-                  // Quick Actions Grid
-                  if (quickActions.isNotEmpty) ...[
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                      child: Text(
-                        'Quick Actions',
-                        style: theme.textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
+                                ),
                         ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    GridView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2,
-                            mainAxisSpacing: 16,
-                            crossAxisSpacing: 16,
-                            childAspectRatio: 1.8,
-                          ),
-                      itemCount: quickActions.length,
-                      itemBuilder: (context, index) {
-                        final action = quickActions[index];
-                        return TweenAnimationBuilder(
-                          duration: Duration(milliseconds: 400 + (index * 100)),
-                          curve: Curves.easeOutBack,
-                          tween: Tween<double>(begin: 0.8, end: 1.0),
-                          builder: (context, val, child) =>
-                              Transform.scale(scale: val, child: child),
-                          child: InkWell(
-                            onTap: () =>
-                                Navigator.pushNamed(context, action.route),
-                            borderRadius: BorderRadius.circular(20),
-                            child: Ink(
-                              decoration: BoxDecoration(
-                                color: theme.colorScheme.surface,
-                                borderRadius: BorderRadius.circular(20),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: action.color.withValues(alpha: 0.1),
-                                    blurRadius: 15,
-                                    offset: const Offset(0, 5),
-                                  ),
-                                ],
-                                border: Border.all(
-                                  color: action.color.withValues(alpha: 0.2),
-                                ),
-                              ),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.all(10),
-                                    decoration: BoxDecoration(
-                                      color: action.color.withValues(
-                                        alpha: 0.1,
-                                      ),
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: Icon(
-                                      action.icon,
-                                      color: action.color,
-                                      size: 20,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: Text(
-                                      action.label,
-                                      style: TextStyle(
-                                        color: theme.colorScheme.onSurface,
-                                        fontWeight: FontWeight.w700,
-                                        fontSize: 14,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
+                        const SizedBox(height: 32),
+                      ],
+
+                      // Quick Actions Grid
+                      if (quickActions.isNotEmpty) ...[
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                          child: Text(
+                            'Quick Actions',
+                            style: theme.textTheme.titleLarge?.copyWith(
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 32),
-                  ],
-                ],
+                        ),
+                        const SizedBox(height: 16),
+                        LayoutBuilder(
+                          builder: (context, constraints) {
+                            final columns = constraints.maxWidth >= 760 ? 3 : 2;
+                            final ratio = constraints.maxWidth >= 760
+                                ? 2.6
+                                : constraints.maxWidth < 390
+                                ? 1.45
+                                : 1.75;
+
+                            return GridView.builder(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 20,
+                              ),
+                              gridDelegate:
+                                  SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount: columns,
+                                    mainAxisSpacing: 16,
+                                    crossAxisSpacing: 16,
+                                    childAspectRatio: ratio,
+                                  ),
+                              itemCount: quickActions.length,
+                              itemBuilder: (context, index) {
+                                final action = quickActions[index];
+                                return TweenAnimationBuilder(
+                                  duration: Duration(
+                                    milliseconds: 400 + (index * 100),
+                                  ),
+                                  curve: Curves.easeOutBack,
+                                  tween: Tween<double>(begin: 0.8, end: 1.0),
+                                  builder: (context, val, child) =>
+                                      Transform.scale(scale: val, child: child),
+                                  child: InkWell(
+                                    onTap: () => Navigator.pushNamed(
+                                      context,
+                                      action.route,
+                                    ),
+                                    borderRadius: BorderRadius.circular(20),
+                                    child: Ink(
+                                      decoration: BoxDecoration(
+                                        color: theme.colorScheme.surface,
+                                        borderRadius: BorderRadius.circular(20),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: action.color.withValues(
+                                              alpha: 0.1,
+                                            ),
+                                            blurRadius: 15,
+                                            offset: const Offset(0, 5),
+                                          ),
+                                        ],
+                                        border: Border.all(
+                                          color: action.color.withValues(
+                                            alpha: 0.2,
+                                          ),
+                                        ),
+                                      ),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Container(
+                                            padding: const EdgeInsets.all(10),
+                                            decoration: BoxDecoration(
+                                              color: action.color.withValues(
+                                                alpha: 0.1,
+                                              ),
+                                              shape: BoxShape.circle,
+                                            ),
+                                            child: Icon(
+                                              action.icon,
+                                              color: action.color,
+                                              size: 20,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 12),
+                                          Expanded(
+                                            child: Text(
+                                              action.label,
+                                              style: TextStyle(
+                                                color:
+                                                    theme.colorScheme.onSurface,
+                                                fontWeight: FontWeight.w700,
+                                                fontSize: 14,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 32),
+                      ],
+                    ],
+                  ),
+                ),
               ),
             ),
           ),
@@ -821,17 +882,21 @@ class _DashboardScreenState extends State<DashboardScreen>
           ),
         ),
         Text(
-          label.toUpperCase(),
+          label,
           style: const TextStyle(
             color: Color(0xFF93C5FD),
             fontWeight: FontWeight.w700,
-            fontSize: 9,
-            letterSpacing: .8,
+            fontSize: 11,
           ),
         ),
       ],
     ),
   );
+
+  String _formatMoney(double value) {
+    final amount = NumberFormat.decimalPattern('en').format(value.round());
+    return 'FCFA $amount';
+  }
 
   Widget _statCard(
     String title,

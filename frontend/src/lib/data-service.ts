@@ -167,7 +167,7 @@ export async function getReportSummaryQuery(): Promise<{ data: ReportSummary }> 
 export async function getSalesQuery(): Promise<{ data: { sales: unknown[] } }> {
   if (typeof window === "undefined") throw new Error("Sales must be requested from the browser")
   const response = await fetch("/api/sales")
-  const body = await response.json()
-  if (!response.ok) throw new Error(body.error || "Could not load sales")
+  const body = await response.json().catch(() => ({}))
+  if (!response.ok) throw new ApiOperationError(typeof body.error === "string" ? body.error : "Could not load sales", response.status)
   return { data: body }
 }

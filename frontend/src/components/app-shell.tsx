@@ -16,13 +16,39 @@ import { useToast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
 import { canAccessRoute } from "@/lib/client-access"
 
+const pageNames: Record<string, string> = {
+  "/admin/dashboard": "Platform overview",
+  "/admin/users": "Platform users",
+  "/dashboard": "Overview",
+  "/inventory": "Inventory",
+  "/sales": "Sales",
+  "/expenses": "Expenses",
+  "/finance": "Finance",
+  "/accounting": "Accounting",
+  "/tasks": "Tasks",
+  "/announcements": "Announcements",
+  "/employees": "Team members",
+  "/hr": "HR operations",
+  "/payroll": "Payroll",
+  "/customers": "Customers",
+  "/suppliers": "Suppliers",
+  "/reports": "Reports",
+  "/documents": "Documents",
+  "/activity-logs": "Activity log",
+  "/settings": "Settings",
+  "/business-profile": "Business profile",
+  "/ai-assistant": "AI assistant",
+}
+
 function AppContent({ children }: Readonly<{ children: React.ReactNode }>) {
   const pathname = usePathname()
   const router = useRouter()
   const { toast } = useToast()
   const [isRefreshing, setIsRefreshing] = React.useState(false)
   const { user, loading: authLoading, profile } = useAuth()
-  const isAuthPage = ["/", "/login", "/register", "/create-business", "/join-business"].includes(pathname)
+  const isAuthPage = ["/", "/login", "/register", "/reset-password", "/create-business", "/join-business"].includes(pathname)
+  const pageTitle = Object.entries(pageNames).find(([route]) => pathname === route || pathname.startsWith(`${route}/`))?.[1] || "Workspace"
+  const initials = profile?.fullName?.trim().split(/\s+/).slice(0, 2).map((name) => name[0]).join("").toUpperCase() || "ME"
 
   React.useEffect(() => {
     if (authLoading) return
@@ -57,12 +83,16 @@ function AppContent({ children }: Readonly<{ children: React.ReactNode }>) {
     window.location.reload()
   }
 
-  if (authLoading) {
+  // Public entry and authentication pages should render immediately while the
+  // session check runs in the background. Only protected workspace routes need
+  // to block on authentication/profile resolution.
+  if (authLoading && !isAuthPage) {
     return (
-      <div className="flex h-screen items-center justify-center bg-background">
-        <div className="flex flex-col items-center gap-2">
-          <Loader2 className="size-8 animate-spin text-primary" />
-          <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Initializing SmartERP AI…</p>
+      <div className="flex min-h-svh items-center justify-center bg-background p-6" role="status" aria-live="polite">
+        <div className="flex max-w-sm flex-col items-center text-center">
+          <p className="text-xl font-semibold tracking-tight">Opening your workspace</p>
+          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">Getting your account and business ready.</p>
+          <Loader2 className="mt-6 size-5 animate-spin text-primary" aria-hidden="true" />
         </div>
       </div>
     )
@@ -77,51 +107,48 @@ function AppContent({ children }: Readonly<{ children: React.ReactNode }>) {
         </>
       ) : (
         <SidebarProvider defaultOpen>
+          <a href="#main-content" className="skip-link">Skip to content</a>
           <AppSidebar />
           <SidebarInset>
-            <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center justify-between gap-2 border-b bg-card/50 px-4 backdrop-blur-sm">
-              <div className="flex items-center gap-2">
-                <SidebarTrigger className="-ml-1" />
-                <Separator orientation="vertical" className="mr-2 h-4" />
-                <div className="mr-2 flex items-center gap-0.5">
-                  <Button variant="ghost" size="icon" className="size-8 text-muted-foreground hover:text-primary" onClick={() => window.history.back()} title="Go back" aria-label="Go back">
-                    <ArrowLeft className="size-4" />
-                  </Button>
-                  <Button variant="ghost" size="icon" className="size-8 text-muted-foreground hover:text-primary" onClick={() => window.history.forward()} title="Go forward" aria-label="Go forward">
-                    <ArrowRight className="size-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className={cn("size-8 text-muted-foreground hover:text-primary", isRefreshing && "text-primary")}
-                    onClick={handleRefresh}
-                    disabled={isRefreshing}
-                    title="Refresh workspace"
-                    aria-label="Refresh workspace"
-                  >
-                    {isRefreshing ? <Loader2 className="size-4 animate-spin" /> : <RotateCw className="size-4" />}
-                  </Button>
-                </div>
-                <Separator orientation="vertical" className="mr-2 hidden h-4 sm:block" />
-                <div className="flex flex-col overflow-hidden">
-                  <span className="truncate text-[9px] font-bold uppercase tracking-widest text-muted-foreground md:text-[10px]">
-                    Tenant: {profile?.businessCode || profile?.tenantId || "Syncing…"}
-                  </span>
-                  <span className="max-w-[120px] truncate text-xs font-bold text-primary md:max-w-none">
-                    {profile?.fullName ? `SME Hub • ${profile.fullName.split(" ")[0]}` : "SmartERP Workspace"}
-                  </span>
+            <header className="sticky top-0 z-10 flex h-[76px] shrink-0 items-center justify-between gap-3 border-b border-border/80 bg-card/95 px-3 backdrop-blur-md sm:px-6 lg:px-8">
+              <div className="flex min-w-0 items-center gap-3">
+                <SidebarTrigger className="text-muted-foreground" />
+                <Separator orientation="vertical" className="hidden h-7 sm:block" />
+                <div className="min-w-0">
+                  <p className="truncate text-xs leading-relaxed text-muted-foreground">
+                    {profile?.role === "Platform Super Admin" ? "Platform administration" : "Business workspace"}
+                  </p>
+                  <p className="truncate text-sm font-semibold sm:text-base">{pageTitle}</p>
                 </div>
               </div>
-              <div className="flex items-center gap-2 md:gap-3">
-                <Separator orientation="vertical" className="h-6" />
+              <div className="flex shrink-0 items-center gap-1 sm:gap-2">
+                <div className="hidden items-center lg:flex">
+                  <Button variant="ghost" size="icon" className="text-muted-foreground" onClick={() => window.history.back()} title="Go back" aria-label="Go back">
+                    <ArrowLeft className="size-4" />
+                  </Button>
+                  <Button variant="ghost" size="icon" className="text-muted-foreground" onClick={() => window.history.forward()} title="Go forward" aria-label="Go forward">
+                    <ArrowRight className="size-4" />
+                  </Button>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className={cn("text-muted-foreground", isRefreshing && "text-primary")}
+                  onClick={handleRefresh}
+                  disabled={isRefreshing}
+                  title="Refresh workspace"
+                  aria-label={isRefreshing ? "Refreshing workspace" : "Refresh workspace"}
+                >
+                  {isRefreshing ? <Loader2 className="size-4 animate-spin" /> : <RotateCw className="size-4" />}
+                </Button>
                 <NotificationCenter />
-                <Separator orientation="vertical" className="hidden h-6 md:block" />
-                <div className="flex size-8 shrink-0 items-center justify-center rounded-full border border-primary/20 bg-primary/10 text-xs font-bold text-primary">
-                  {profile?.fullName?.substring(0, 2).toUpperCase() || "??"}
+                <Separator orientation="vertical" className="mx-2 hidden h-8 sm:block" />
+                <div className="hidden size-10 shrink-0 items-center justify-center rounded-full border border-primary/15 bg-primary/10 text-sm font-semibold text-primary sm:flex" title={profile?.fullName || "Your account"}>
+                  {initials}
                 </div>
               </div>
             </header>
-            <main className="flex-1 overflow-x-hidden p-4 md:p-6 lg:p-8">
+            <main id="main-content" tabIndex={-1} className="min-w-0 flex-1 scroll-mt-24 px-4 py-6 focus:outline-none sm:px-6 lg:px-8 lg:py-8">
               <div className="mx-auto w-full max-w-7xl">{children}</div>
             </main>
           </SidebarInset>

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server"
 import { z } from "zod"
 import { requirePermission } from "@/lib/server/authorization"
 import { adminDatabase, authorizeRequest } from "@/lib/server/auth"
-import { db } from "@/lib/server/neon"
+import { db, isTransientDatabaseError, withTransientDatabaseRetry } from "@/lib/server/neon"
 import { recordSale } from "@/lib/server/sales"
 import { requireTrustedMutationOrigin } from "@/lib/server/origin"
 
@@ -31,14 +31,14 @@ export async function GET(request: Request) {
     const profile = await authorizeRequest(request)
     requirePermission(profile, "sales:read")
     const sql = db()
-    const rows = await sql`SELECT s.id,s.tenant_id,s.business_id,s.customer_id,s.payment_method,
+    const rows = await withTransientDatabaseRetry(async () => sql`SELECT s.id,s.tenant_id,s.business_id,s.customer_id,s.payment_method,
       s.total_amount,s.recorded_by,s.created_at,sl.product_id,sl.quantity,sl.unit_price,
       sl.unit_id,sl.unit_name,sl.conversion_factor,p.name AS product_name
       FROM sales s
       LEFT JOIN sale_lines sl ON sl.sale_id=s.id AND sl.tenant_id=s.tenant_id AND sl.business_id=s.business_id
       LEFT JOIN products p ON p.id=sl.product_id AND p.tenant_id=sl.tenant_id AND p.business_id=sl.business_id
       WHERE s.tenant_id=${profile.tenantId} AND s.business_id=${profile.businessId}
-      ORDER BY s.created_at DESC`
+      ORDER BY s.created_at DESC`)
     const grouped = new Map<string, Record<string, unknown> & { productsSold: Array<Record<string, unknown>> }>()
     for (const row of rows) {
       const id = String(row.id)
@@ -72,6 +72,12 @@ export async function GET(request: Request) {
     }
     return NextResponse.json({ sales: [...grouped.values()] })
   } catch (error) {
+    if (isTransientDatabaseError(error)) {
+      return NextResponse.json(
+        { error: "Sales are temporarily unavailable. Please retry shortly." },
+        { status: 503, headers: { "Retry-After": "2" } },
+      )
+    }
     const message = error instanceof Error ? error.message : "Could not load sales"
     const status = message.startsWith("Forbidden") ? 403 : message.includes("authentication") ? 401 : 500
     return NextResponse.json({ error: message }, { status })
