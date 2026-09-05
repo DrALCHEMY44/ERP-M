@@ -152,7 +152,7 @@ export function AppSidebar() {
         <nav aria-label="Workspace navigation">
         {groups.map((group) => (
           <SidebarGroup key={group.label} className="px-3 py-2">
-            <SidebarGroupLabel className="mb-1 h-7 px-3 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+            <SidebarGroupLabel className="mb-1 h-7 px-3 text-xs font-medium text-slate-400">
               {group.label}
             </SidebarGroupLabel>
             <SidebarGroupContent>
@@ -166,8 +166,8 @@ export function AppSidebar() {
                       isActive={active}
                       tooltip={item.name}
                       className={cn(
-                        "h-11 gap-3 rounded-xl px-3 text-sm text-slate-300 transition-colors hover:bg-white/5 hover:text-white group-data-[collapsible=icon]:!size-10 group-data-[collapsible=icon]:!p-3",
-                        "data-[active=true]:bg-primary data-[active=true]:font-semibold data-[active=true]:text-white",
+                        "h-11 gap-3 rounded-lg px-3 text-sm text-slate-300 transition-colors hover:bg-white/5 hover:text-white group-data-[collapsible=icon]:!size-10 group-data-[collapsible=icon]:!p-3",
+                        "data-[active=true]:bg-sidebar-accent data-[active=true]:font-semibold data-[active=true]:text-white data-[active=true]:shadow-[inset_3px_0_0_#93b4ff]",
                       )}
                     >
                       <Link href={item.href} onClick={closeMobileNavigation} aria-current={active ? "page" : undefined}>

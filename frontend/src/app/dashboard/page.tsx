@@ -268,24 +268,23 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6">
       {salesError && <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950"><p>{salesDataResult ? 'Sales could not refresh. Showing the last loaded figures.' : 'Sales could not load. Sales figures are unavailable until the connection recovers.'}</p><Button variant="outline" disabled={salesLoading} onClick={() => void refetchSales()}>Retry sales</Button></div>}
-      <section className="relative overflow-hidden rounded-3xl border border-blue-400/20 bg-gradient-to-br from-slate-950 via-blue-950 to-indigo-900 p-6 md:p-8 text-white shadow-xl shadow-blue-950/10">
-        <div className="pointer-events-none absolute -right-20 -top-24 size-72 rounded-full bg-indigo-500/20 blur-3xl" />
-        <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+      <section className="border-b pb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="space-y-2">
-            <div className="flex items-center gap-2 text-xs font-semibold text-blue-100">
-              <span className="size-2 rounded-full bg-emerald-400 shadow-[0_0_12px_rgba(52,211,153,.8)]" />
-              Live business command center
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              Business overview
               {isSyncing && <Loader2 className="size-3 animate-spin" />}
             </div>
-            <h1 className="text-2xl md:text-4xl font-bold tracking-tight font-headline">Welcome back, {profile?.fullName?.split(' ')[0] || 'there'}</h1>
-            <p className="max-w-xl text-sm text-slate-300">Monitor cash flow, stock, people and execution from one synchronized workspace.</p>
-            <div className="flex flex-wrap gap-2 pt-2 text-xs font-semibold text-blue-100">
-              <span className="rounded-full bg-white/10 px-3 py-1.5">{profile?.role || 'Member'}</span>
-              {profile?.businessCode && <span className="rounded-full bg-white/10 px-3 py-1.5">{profile.businessCode}</span>}
+            <h1 className="text-2xl md:text-3xl font-semibold tracking-tight">Welcome back, {profile?.fullName?.split(' ')[0] || 'there'}</h1>
+            <p className="max-w-xl text-sm text-muted-foreground">A clear view of your sales, stock and team.</p>
+            <div className="flex flex-wrap items-center gap-3 pt-1 text-xs text-muted-foreground">
+              <span>{profile?.role || 'Member'}</span>
+              {profile?.businessCode && <span className="border-l pl-3">Workspace {profile.businessCode}</span>}
             </div>
           </div>
-          <div className="flex items-center gap-2">
-           <Button variant="secondary" size="sm" className="h-11 border-0 bg-white text-sm font-semibold text-blue-950 shadow-lg hover:bg-blue-50" onClick={fetchAiSummary} disabled={isAiLoading || isSyncing}>
+          <div className="flex flex-wrap items-center gap-2">
+           {canReadSales && <Button asChild><Link href="/sales"><ShoppingCart className="size-4" />View sales</Link></Button>}
+           <Button variant="outline" className="h-11" onClick={fetchAiSummary} disabled={isAiLoading || isSyncing}>
             {isAiLoading ? <Loader2 className="size-3 mr-2 animate-spin" /> : <Sparkles className="size-3 mr-2" />}
             {t('dashboard.refreshAi')}
           </Button>
@@ -299,72 +298,37 @@ export default function DashboardPage() {
           value={!canReadSales ? "Restricted" : !salesDataResult ? "—" : `${stats.totalSalesAmount.toLocaleString()} FCFA`}
           icon={ShoppingCart}
           description={canReadSales ? "All recorded sales" : "Not available to this role"}
-          className="border-t-4 border-[#10b981] shadow-md"
         />
         <StatCard
           title={t('dashboard.totalExpenses')}
           value={!canReadExpenses ? "Restricted" : expensesLoading ? "---" : `${stats.totalExpensesAmount.toLocaleString()} FCFA`}
           icon={Receipt}
           description={canReadExpenses ? "All recorded expenses" : "Not available to this role"}
-          className="border-t-4 border-[#f59e0b] shadow-md"
         />
         <StatCard
           title={t('dashboard.netProfit')}
           value={!canReadSales || !canReadExpenses ? "Restricted" : !salesDataResult || !expensesDataResult ? "—" : `${stats.netProfit.toLocaleString()} FCFA`}
           icon={TrendingUp}
           description={canReadSales && canReadExpenses ? "Sales minus expenses" : "Requires sales and expense access"}
-          className="border-t-4 border-[#3b82f6] shadow-md"
         />
         <StatCard
           title={t('dashboard.lowStock')}
           value={!canReadInventory ? "Restricted" : productsLoading ? "---" : stats.lowStockCount}
           icon={AlertTriangle}
-          className="border-t-4 border-[#ef4444] shadow-md"
           description={canReadInventory ? `${products.length} ${t('common.inventory')}` : "Not available to this role"}
         />
       </div>
 
-      <section className="space-y-4" aria-labelledby="daily-overview">
-        <div><h2 id="daily-overview" className="text-lg font-semibold">Daily business overview</h2><p className="text-sm text-muted-foreground">Sales momentum, stock availability and work that needs attention.</p></div>
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {operationalMetrics.map(metric => <StatCard key={metric.title} title={metric.title} value={metric.ready ? metric.value : '—'} description={metric.ready ? metric.detail : 'Waiting for business data'} icon={metric.icon} />)}
-        </div>
-      </section>
-
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
-        {[
-          { icon: Users, label: t('common.employees'), value: employeesCount, loading: employeesLoading, allowed: canReadEmployees },
-          { icon: UserCircle, label: t('common.customers'), value: customers.length, loading: customersLoading, allowed: canReadCustomers },
-          { icon: Truck, label: t('common.suppliers'), value: suppliersCount, loading: suppliersLoading, allowed: canReadSuppliers },
-          { icon: Briefcase, label: t('common.tasks'), value: tasks.length, loading: tasksLoading, allowed: canReadTasks },
-        ].filter((item) => item.allowed).map((item, idx) => (
-          <div key={idx} className="bg-card border p-3 rounded-xl shadow-sm">
-            <div className="flex items-center gap-2 mb-1">
-              <item.icon className="size-3 text-muted-foreground" />
-              <span className="text-xs font-semibold text-muted-foreground">{item.label}</span>
-            </div>
-            <p className="text-lg font-bold">{item.loading ? "..." : item.value}</p>
-          </div>
-        ))}
-        {canReadTasks && <div className="bg-card border p-3 rounded-xl shadow-sm col-span-2 hidden lg:block">
-           <div className="flex items-center gap-2 mb-1">
-            <Briefcase className="size-3 text-muted-foreground" />
-            <span className="text-xs font-semibold text-muted-foreground">{t('dashboard.lateTasks')}</span>
-          </div>
-          <p className="text-lg font-bold text-destructive">{isSyncing ? "..." : stats.taskStats.overdue}</p>
-        </div>}
-      </div>
-
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         <div className="lg:col-span-8 flex min-w-0 flex-col gap-6">
-          <Card className="order-2 bg-primary/5 border-primary/20 shadow-sm overflow-hidden">
-            <CardHeader className="pb-3 border-b border-primary/10 bg-primary/10">
+          <Card className="order-2 overflow-hidden">
+            <CardHeader className="pb-4 border-b">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-bold flex items-center gap-2 text-primary">
+                <CardTitle className="text-base font-semibold flex items-center gap-2">
                   <Sparkles className="size-4" />
                   {t('dashboard.aiInsights')}
                 </CardTitle>
-                <Badge variant="outline" className="bg-white/50 text-xs font-medium">Contextual analysis</Badge>
+                <Badge variant="outline" className="text-xs font-normal">AI summary</Badge>
               </div>
             </CardHeader>
             <CardContent className="max-h-80 overflow-y-auto pt-4">
@@ -388,6 +352,8 @@ export default function DashboardPage() {
             <CardContent className="h-[300px] w-full">
               {!canReadSales ? (
                 <div className="grid h-full place-items-center text-sm text-muted-foreground">Sales analytics are not available to this role.</div>
+              ) : !salesDataResult ? (
+                <div className="grid h-full place-items-center text-sm text-muted-foreground">{salesLoading ? 'Loading sales…' : 'Sales data is unavailable. Use Retry sales above.'}</div>
               ) : (
                <ChartContainer
                   config={{
@@ -415,7 +381,7 @@ export default function DashboardPage() {
         <div className="lg:col-span-4 space-y-6">
           <Card className="shadow-sm h-fit">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-bold uppercase">{t('dashboard.recentSales')}</CardTitle>
+              <CardTitle className="text-base font-semibold">{t('dashboard.recentSales')}</CardTitle>
               <Button asChild variant="ghost" size="icon" className="h-6 w-6">
                 <Link href="/sales" aria-label="View all sales"><ArrowRight className="size-4" /></Link>
               </Button>
@@ -427,7 +393,7 @@ export default function DashboardPage() {
                 ) : salesLoading ? (
                   Array(5).fill(0).map((_, i) => <Skeleton key={i} className="h-10 w-full" />)
                 ) : sales.length === 0 ? (
-                  <p className="text-xs text-muted-foreground text-center py-6 italic">No transactions recorded yet.</p>
+                  <p className="text-xs text-muted-foreground text-center py-6 italic">{salesDataResult ? 'No transactions recorded yet.' : 'Sales could not load. Please retry.'}</p>
                 ) : (
                   sales.slice(0, 5).map((sale) => (
                     <div key={sale.id} className="flex items-center gap-3 text-sm border-b pb-3 last:border-0 last:pb-0">
@@ -447,7 +413,7 @@ export default function DashboardPage() {
 
           <Card className="shadow-sm h-fit">
              <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-bold uppercase">{t('dashboard.recentActivity')}</CardTitle>
+              <CardTitle className="text-base font-semibold">{t('dashboard.recentActivity')}</CardTitle>
               <History className="size-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -474,6 +440,38 @@ export default function DashboardPage() {
           </Card>
         </div>
       </div>
+
+      <section className="space-y-4" aria-labelledby="daily-overview">
+        <div><h2 id="daily-overview" className="text-lg font-semibold">Daily business overview</h2><p className="text-sm text-muted-foreground">Sales momentum, stock availability and work that needs attention.</p></div>
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          {operationalMetrics.map(metric => <StatCard key={metric.title} title={metric.title} value={metric.ready ? metric.value : '—'} description={metric.ready ? metric.detail : 'Waiting for business data'} icon={metric.icon} />)}
+        </div>
+      </section>
+
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+        {[
+          { icon: Users, label: t('common.employees'), value: employeesCount, loading: employeesLoading, allowed: canReadEmployees },
+          { icon: UserCircle, label: t('common.customers'), value: customers.length, loading: customersLoading, allowed: canReadCustomers },
+          { icon: Truck, label: t('common.suppliers'), value: suppliersCount, loading: suppliersLoading, allowed: canReadSuppliers },
+          { icon: Briefcase, label: t('common.tasks'), value: tasks.length, loading: tasksLoading, allowed: canReadTasks },
+        ].filter((item) => item.allowed).map((item, idx) => (
+          <div key={idx} className="border-b p-3">
+            <div className="flex items-center gap-2 mb-1">
+              <item.icon className="size-3 text-muted-foreground" />
+              <span className="text-xs font-semibold text-muted-foreground">{item.label}</span>
+            </div>
+            <p className="text-lg font-bold">{item.loading ? "..." : item.value}</p>
+          </div>
+        ))}
+        {canReadTasks && <div className="border-b p-3 col-span-2">
+           <div className="flex items-center gap-2 mb-1">
+            <Briefcase className="size-3 text-muted-foreground" />
+            <span className="text-xs font-semibold text-muted-foreground">{t('dashboard.lateTasks')}</span>
+          </div>
+          <p className="text-lg font-bold text-destructive">{isSyncing ? "..." : stats.taskStats.overdue}</p>
+        </div>}
+      </div>
+
     </div>
   )
 }

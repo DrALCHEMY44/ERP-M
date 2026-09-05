@@ -8,12 +8,12 @@ abstract final class AppTheme {
   static ThemeData _build(Brightness brightness) {
     final dark = brightness == Brightness.dark;
     final surface = dark ? const Color(0xFF172338) : Colors.white;
-    final background = dark ? const Color(0xFF0B1220) : const Color(0xFFF5F7FB);
+    final background = dark ? const Color(0xFF0B1220) : const Color(0xFFF9FAFB);
     final border = dark ? const Color(0xFF314158) : const Color(0xFFE2E8F0);
     final scheme = ColorScheme.fromSeed(
-      seedColor: const Color(0xFF2563EB),
+      seedColor: const Color(0xFF2256C3),
       brightness: brightness,
-      primary: dark ? const Color(0xFF93B4FF) : const Color(0xFF2563EB),
+      primary: dark ? const Color(0xFF93B4FF) : const Color(0xFF2256C3),
       onPrimary: dark ? const Color(0xFF102650) : Colors.white,
       secondary: dark ? const Color(0xFF5EEAD4) : const Color(0xFF0F766E),
       surface: surface,
@@ -26,39 +26,43 @@ abstract final class AppTheme {
           ? const Color(0xFF26364D)
           : const Color(0xFFF1F5F9),
     );
-    final base = ThemeData(useMaterial3: true, colorScheme: scheme);
+    final base = ThemeData(
+      useMaterial3: true,
+      colorScheme: scheme,
+      fontFamily: 'Arial',
+    );
     final text = base.textTheme;
     final shape = RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(14),
+      borderRadius: BorderRadius.circular(10),
     );
 
     return base.copyWith(
       scaffoldBackgroundColor: background,
       textTheme: text.copyWith(
         headlineLarge: text.headlineLarge?.copyWith(
-          fontWeight: FontWeight.w800,
+          fontWeight: FontWeight.w600,
           letterSpacing: -1,
         ),
         headlineMedium: text.headlineMedium?.copyWith(
-          fontWeight: FontWeight.w800,
+          fontWeight: FontWeight.w600,
           letterSpacing: -.8,
         ),
         headlineSmall: text.headlineSmall?.copyWith(
-          fontWeight: FontWeight.w700,
+          fontWeight: FontWeight.w600,
           letterSpacing: -.5,
         ),
-        titleLarge: text.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+        titleLarge: text.titleLarge?.copyWith(fontWeight: FontWeight.w600),
         titleMedium: text.titleMedium?.copyWith(fontWeight: FontWeight.w600),
         bodyLarge: text.bodyLarge?.copyWith(height: 1.5),
         bodyMedium: text.bodyMedium?.copyWith(height: 1.5),
-        labelLarge: text.labelLarge?.copyWith(fontWeight: FontWeight.w700),
+        labelLarge: text.labelLarge?.copyWith(fontWeight: FontWeight.w600),
       ),
       cardTheme: CardThemeData(
         color: surface,
         elevation: 0,
         margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(12),
           side: BorderSide(color: border),
         ),
       ),
@@ -71,8 +75,8 @@ abstract final class AppTheme {
         surfaceTintColor: Colors.transparent,
         titleTextStyle: text.titleLarge?.copyWith(
           color: scheme.onSurface,
-          fontSize: 20,
-          fontWeight: FontWeight.w700,
+          fontSize: 18,
+          fontWeight: FontWeight.w600,
         ),
       ),
       navigationBarTheme: NavigationBarThemeData(
@@ -97,23 +101,23 @@ abstract final class AppTheme {
         prefixIconColor: scheme.onSurfaceVariant,
         suffixIconColor: scheme.onSurfaceVariant,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(10),
           borderSide: BorderSide(color: border),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(10),
           borderSide: BorderSide(color: border),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(10),
           borderSide: BorderSide(color: scheme.primary, width: 2),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(10),
           borderSide: BorderSide(color: scheme.error),
         ),
         focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(10),
           borderSide: BorderSide(color: scheme.error, width: 2),
         ),
       ),
@@ -165,7 +169,7 @@ abstract final class AppTheme {
       ),
       dialogTheme: DialogThemeData(
         backgroundColor: surface,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
     );
   }

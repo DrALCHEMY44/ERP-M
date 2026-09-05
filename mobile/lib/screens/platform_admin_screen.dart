@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import '../services/platform_api.dart';
 import '../services/api_config.dart';
 import '../widgets/app_drawer.dart';
+import '../widgets/metric_grid.dart';
+import 'package:intl/intl.dart';
 
 class PlatformAdminScreen extends StatefulWidget {
   final int initialTab;
@@ -1349,16 +1351,18 @@ class _PlatformAdminScreenState extends State<PlatformAdminScreen>
     final totals = _overview['totals'] as Map<String, dynamic>? ?? const {};
     return Scaffold(
       appBar: AppBar(
-        title: const Text('SaaS Control Center'),
+        title: const Text('Platform administration'),
         actions: [
           IconButton(
             onPressed: _loading ? null : _load,
+            tooltip: 'Refresh platform data',
             icon: const Icon(Icons.refresh),
           ),
         ],
         bottom: TabBar(
           controller: _tabs,
           isScrollable: true,
+          tabAlignment: TabAlignment.start,
           tabs: const [
             Tab(text: 'Overview'),
             Tab(text: 'Workspaces'),
@@ -1376,10 +1380,25 @@ class _PlatformAdminScreenState extends State<PlatformAdminScreen>
           ? const Center(child: CircularProgressIndicator())
           : _error != null
           ? Center(
-              child: FilledButton.icon(
-                onPressed: _load,
-                icon: const Icon(Icons.refresh),
-                label: Text(_error!),
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'Platform data could not load',
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(_error!, textAlign: TextAlign.center),
+                    const SizedBox(height: 20),
+                    OutlinedButton.icon(
+                      onPressed: _load,
+                      icon: const Icon(Icons.refresh),
+                      label: const Text('Try again'),
+                    ),
+                  ],
+                ),
               ),
             )
           : TabBarView(
@@ -1394,34 +1413,82 @@ class _PlatformAdminScreenState extends State<PlatformAdminScreen>
     );
   }
 
-  Widget _overviewTab(Map<String, dynamic> totals) => ListView(
-    padding: const EdgeInsets.all(16),
-    children: [
-      Wrap(
-        spacing: 10,
-        runSpacing: 10,
-        children: [
-          _metric('Workspaces', totals['tenants']),
-          _metric('Users', totals['users']),
-          _metric('MRR', '${totals['mrrFcfa'] ?? 0} FCFA'),
-          _metric('Outstanding', '${totals['outstandingFcfa'] ?? 0} FCFA'),
-          _metric('Documents', totals['documents']),
-          _metric('Open support', totals['openSupportCases']),
-        ],
+  String _amount(dynamic value) =>
+      '${NumberFormat.decimalPattern('en').format((value is num ? value : num.tryParse('$value')) ?? 0)} FCFA';
+
+  Widget _overviewTab(Map<String, dynamic> totals) => LayoutBuilder(
+    builder: (context, constraints) => ListView(
+      padding: EdgeInsets.symmetric(
+        horizontal: constraints.maxWidth > 1040
+            ? (constraints.maxWidth - 1000) / 2
+            : 20,
+        vertical: 24,
       ),
-      const SizedBox(height: 18),
-      FilledButton.icon(
-        onPressed: _saving ? null : _createTenant,
-        icon: const Icon(Icons.add_business),
-        label: const Text('Create workspace'),
-      ),
-      const SizedBox(height: 10),
-      OutlinedButton.icon(
-        onPressed: _saving ? null : _announce,
-        icon: const Icon(Icons.campaign),
-        label: const Text('Publish platform announcement'),
-      ),
-    ],
+      children: [
+        Text(
+          'Platform overview',
+          style: Theme.of(context).textTheme.headlineSmall,
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'Workspaces, revenue and requests that need attention.',
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
+        ),
+        const SizedBox(height: 24),
+        MetricGrid(
+          metrics: [
+            WorkspaceMetric(
+              label: 'Workspaces',
+              value: '${totals['tenants'] ?? 0}',
+            ),
+            WorkspaceMetric(
+              label: 'Registered users',
+              value: '${totals['users'] ?? 0}',
+            ),
+            WorkspaceMetric(
+              label: 'Monthly recurring revenue',
+              value: _amount(totals['mrrFcfa']),
+            ),
+            WorkspaceMetric(
+              label: 'Outstanding balance',
+              value: _amount(totals['outstandingFcfa']),
+            ),
+            WorkspaceMetric(
+              label: 'Documents',
+              value: '${totals['documents'] ?? 0}',
+            ),
+            WorkspaceMetric(
+              label: 'Open support cases',
+              value: '${totals['openSupportCases'] ?? 0}',
+            ),
+          ],
+        ),
+        const SizedBox(height: 32),
+        Text(
+          'Workspace operations',
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
+        const SizedBox(height: 16),
+        Wrap(
+          spacing: 12,
+          runSpacing: 12,
+          children: [
+            FilledButton.icon(
+              onPressed: _saving ? null : _createTenant,
+              icon: const Icon(Icons.add),
+              label: const Text('Create workspace'),
+            ),
+            OutlinedButton.icon(
+              onPressed: _saving ? null : _announce,
+              icon: const Icon(Icons.campaign_outlined),
+              label: const Text('Publish announcement'),
+            ),
+          ],
+        ),
+      ],
+    ),
   );
 
   Widget _tenantTab() => ListView(
@@ -1753,25 +1820,5 @@ class _PlatformAdminScreenState extends State<PlatformAdminScreen>
         ),
       ),
     ],
-  );
-
-  Widget _metric(String label, dynamic value) => SizedBox(
-    width: 165,
-    child: Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(label, style: const TextStyle(fontSize: 11)),
-            const SizedBox(height: 5),
-            Text(
-              '${value ?? 0}',
-              style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 18),
-            ),
-          ],
-        ),
-      ),
-    ),
   );
 }

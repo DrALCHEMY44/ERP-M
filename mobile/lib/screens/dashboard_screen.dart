@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+import '../widgets/metric_grid.dart';
 import '../providers/core_provider.dart';
 import '../providers/inventory_provider.dart';
 import '../providers/transaction_provider.dart';
@@ -93,52 +94,36 @@ class _DashboardScreenState extends State<DashboardScreen>
     final List<_QuickActionData> quickActions = [];
     if (AuthService.hasPermission('manageSales')) {
       quickActions.add(
-        _QuickActionData(
-          'Record Sale',
-          Icons.add_shopping_cart,
-          Colors.green,
-          '/sales',
-        ),
+        _QuickActionData('Record sale', Icons.add_shopping_cart, '/sales'),
       );
     }
     if (AuthService.hasPermission('manageExpenses')) {
       quickActions.add(
         _QuickActionData(
-          'Record Expense',
+          'Record expense',
           Icons.remove_circle_outline,
-          Colors.red,
           '/expenses',
         ),
       );
     }
     if (AuthService.hasPermission('manageTasks')) {
       quickActions.add(
-        _QuickActionData(
-          'New Task',
-          Icons.add_task,
-          Colors.orange,
-          '/assign-task',
-        ),
+        _QuickActionData('New task', Icons.add_task, '/assign-task'),
       );
     }
     if (AuthService.hasPermission('useAi')) {
       quickActions.add(
-        _QuickActionData(
-          'AI Assistant',
-          Icons.psychology,
-          Colors.purple,
-          '/ai-assistant',
-        ),
+        _QuickActionData('AI assistant', Icons.psychology, '/ai-assistant'),
       );
     }
     if (AuthService.hasPermission('viewCustomers')) {
       quickActions.add(
-        _QuickActionData('Customers', Icons.people, Colors.blue, '/customers'),
+        _QuickActionData('Customers', Icons.people, '/customers'),
       );
     }
     if (AuthService.hasPermission('viewEmployees')) {
       quickActions.add(
-        _QuickActionData('Employees', Icons.badge, Colors.indigo, '/employees'),
+        _QuickActionData('Employees', Icons.badge, '/employees'),
       );
     }
 
@@ -192,7 +177,7 @@ class _DashboardScreenState extends State<DashboardScreen>
             children: [
               Text(
                 'SmartERP',
-                style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18),
+                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 18),
               ),
               Text(
                 'Your business workspace',
@@ -252,84 +237,26 @@ class _DashboardScreenState extends State<DashboardScreen>
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 20),
-                        padding: const EdgeInsets.all(22),
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: [
-                              Color(0xFF172554),
-                              Color(0xFF1E3A8A),
-                              Color(0xFF4F46E5),
-                            ],
-                          ),
-                          borderRadius: BorderRadius.circular(26),
-                          boxShadow: [
-                            BoxShadow(
-                              color: const Color(
-                                0xFF1E3A8A,
-                              ).withValues(alpha: .22),
-                              blurRadius: 24,
-                              offset: const Offset(0, 12),
-                            ),
-                          ],
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 16,
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    'Welcome back, ${user?.name.split(" ")[0] ?? "User"}',
-                                    style: theme.textTheme.headlineSmall
-                                        ?.copyWith(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.w900,
-                                        ),
-                                  ),
-                                ),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 10,
-                                    vertical: 6,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withValues(alpha: .12),
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                                  child: const Row(
-                                    children: [
-                                      Icon(
-                                        Icons.cloud_done_outlined,
-                                        size: 14,
-                                        color: Color(0xFF86EFAC),
-                                      ),
-                                      SizedBox(width: 5),
-                                      Text(
-                                        'Synced',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.w800,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
+                            Text(
+                              'Welcome back, ${user?.name.split(" ")[0] ?? "there"}',
+                              style: theme.textTheme.headlineSmall,
                             ),
-                            const SizedBox(height: 7),
+                            const SizedBox(height: 8),
                             Text(
                               workspaceDetails,
-                              style: const TextStyle(
-                                color: Color(0xFFCBD5E1),
-                                fontWeight: FontWeight.w500,
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                color: theme.colorScheme.onSurfaceVariant,
                               ),
                             ),
-                            const SizedBox(height: 20),
+                            const SizedBox(height: 24),
                             Row(
                               children: [
                                 if (canViewInventory)
@@ -348,49 +275,34 @@ class _DashboardScreenState extends State<DashboardScreen>
                                 ),
                               ],
                             ),
+                            const SizedBox(height: 20),
+                            const Divider(),
                           ],
                         ),
                       ),
-                      const SizedBox(height: 32),
 
-                      // Financial Stats Cards
                       if (canViewSales || canViewExpenses)
-                        SizedBox(
-                          height: 140,
-                          child: ListView(
-                            scrollDirection: Axis.horizontal,
-                            padding: const EdgeInsets.symmetric(horizontal: 20),
-                            children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: MetricGrid(
+                            metrics: [
                               if (canViewSales)
-                                _statCard(
-                                  'Revenue',
-                                  _formatMoney(totalSales),
-                                  Icons.trending_up,
-                                  Colors.green,
-                                  theme,
-                                  0,
+                                WorkspaceMetric(
+                                  label: 'Revenue',
+                                  value: _formatMoney(totalSales),
+                                  detail: 'All recorded sales',
                                 ),
                               if (canViewExpenses)
-                                _statCard(
-                                  'Expenses',
-                                  _formatMoney(totalExpenses),
-                                  Icons.trending_down,
-                                  Colors.red,
-                                  theme,
-                                  100,
+                                WorkspaceMetric(
+                                  label: 'Expenses',
+                                  value: _formatMoney(totalExpenses),
+                                  detail: 'All recorded expenses',
                                 ),
                               if (canViewSales && canViewExpenses)
-                                _statCard(
-                                  'Net Profit',
-                                  _formatMoney(netProfit),
-                                  netProfit >= 0
-                                      ? Icons.account_balance_wallet
-                                      : Icons.money_off,
-                                  netProfit >= 0
-                                      ? Colors.blue
-                                      : Colors.deepOrange,
-                                  theme,
-                                  200,
+                                WorkspaceMetric(
+                                  label: 'Net profit',
+                                  value: _formatMoney(netProfit),
+                                  detail: 'Sales minus expenses',
                                 ),
                             ],
                           ),
@@ -530,7 +442,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 20.0),
                           child: Text(
-                            'Performance Overview',
+                            'Revenue and expenses',
                             style: theme.textTheme.titleLarge?.copyWith(
                               fontWeight: FontWeight.bold,
                             ),
@@ -543,14 +455,10 @@ class _DashboardScreenState extends State<DashboardScreen>
                           padding: const EdgeInsets.all(24),
                           decoration: BoxDecoration(
                             color: theme.colorScheme.surface,
-                            borderRadius: BorderRadius.circular(24),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.03),
-                                blurRadius: 20,
-                                offset: const Offset(0, 10),
-                              ),
-                            ],
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: theme.colorScheme.outlineVariant,
+                            ),
                           ),
                           child:
                               transaction.sales.isEmpty &&
@@ -661,14 +569,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                                         barRods: [
                                           BarChartRodData(
                                             toY: totalSales,
-                                            gradient: const LinearGradient(
-                                              colors: [
-                                                Colors.green,
-                                                Colors.lightGreenAccent,
-                                              ],
-                                              begin: Alignment.bottomCenter,
-                                              end: Alignment.topCenter,
-                                            ),
+                                            color: theme.colorScheme.primary,
                                             width: 40,
                                             borderRadius:
                                                 const BorderRadius.vertical(
@@ -695,14 +596,9 @@ class _DashboardScreenState extends State<DashboardScreen>
                                         barRods: [
                                           BarChartRodData(
                                             toY: totalExpenses,
-                                            gradient: const LinearGradient(
-                                              colors: [
-                                                Colors.red,
-                                                Colors.orangeAccent,
-                                              ],
-                                              begin: Alignment.bottomCenter,
-                                              end: Alignment.topCenter,
-                                            ),
+                                            color: theme
+                                                .colorScheme
+                                                .onSurfaceVariant,
                                             width: 40,
                                             borderRadius:
                                                 const BorderRadius.vertical(
@@ -736,7 +632,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 20.0),
                           child: Text(
-                            'Quick Actions',
+                            'Quick actions',
                             style: theme.textTheme.titleLarge?.copyWith(
                               fontWeight: FontWeight.bold,
                             ),
@@ -745,12 +641,14 @@ class _DashboardScreenState extends State<DashboardScreen>
                         const SizedBox(height: 16),
                         LayoutBuilder(
                           builder: (context, constraints) {
-                            final columns = constraints.maxWidth >= 760 ? 3 : 2;
-                            final ratio = constraints.maxWidth >= 760
-                                ? 2.6
-                                : constraints.maxWidth < 390
-                                ? 1.45
-                                : 1.75;
+                            final columns =
+                                MediaQuery.textScalerOf(context).scale(14) > 20
+                                ? 1
+                                : constraints.maxWidth >= 760
+                                ? 3
+                                : 2;
+                            final actionHeight =
+                                80 + MediaQuery.textScalerOf(context).scale(36);
 
                             return GridView.builder(
                               shrinkWrap: true,
@@ -763,73 +661,42 @@ class _DashboardScreenState extends State<DashboardScreen>
                                     crossAxisCount: columns,
                                     mainAxisSpacing: 16,
                                     crossAxisSpacing: 16,
-                                    childAspectRatio: ratio,
+                                    mainAxisExtent: actionHeight,
                                   ),
                               itemCount: quickActions.length,
                               itemBuilder: (context, index) {
                                 final action = quickActions[index];
-                                return TweenAnimationBuilder(
-                                  duration: Duration(
-                                    milliseconds: 400 + (index * 100),
+                                return Material(
+                                  color: theme.colorScheme.surface,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    side: BorderSide(
+                                      color: theme.colorScheme.outlineVariant,
+                                    ),
                                   ),
-                                  curve: Curves.easeOutBack,
-                                  tween: Tween<double>(begin: 0.8, end: 1.0),
-                                  builder: (context, val, child) =>
-                                      Transform.scale(scale: val, child: child),
+                                  clipBehavior: Clip.antiAlias,
                                   child: InkWell(
                                     onTap: () => Navigator.pushNamed(
                                       context,
                                       action.route,
                                     ),
-                                    borderRadius: BorderRadius.circular(20),
-                                    child: Ink(
-                                      decoration: BoxDecoration(
-                                        color: theme.colorScheme.surface,
-                                        borderRadius: BorderRadius.circular(20),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: action.color.withValues(
-                                              alpha: 0.1,
-                                            ),
-                                            blurRadius: 15,
-                                            offset: const Offset(0, 5),
-                                          ),
-                                        ],
-                                        border: Border.all(
-                                          color: action.color.withValues(
-                                            alpha: 0.2,
-                                          ),
-                                        ),
-                                      ),
-                                      child: Row(
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(16),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         mainAxisAlignment:
                                             MainAxisAlignment.center,
                                         children: [
-                                          Container(
-                                            padding: const EdgeInsets.all(10),
-                                            decoration: BoxDecoration(
-                                              color: action.color.withValues(
-                                                alpha: 0.1,
-                                              ),
-                                              shape: BoxShape.circle,
-                                            ),
-                                            child: Icon(
-                                              action.icon,
-                                              color: action.color,
-                                              size: 20,
-                                            ),
+                                          Icon(
+                                            action.icon,
+                                            size: 22,
+                                            color: theme.colorScheme.primary,
                                           ),
-                                          const SizedBox(width: 12),
-                                          Expanded(
-                                            child: Text(
-                                              action.label,
-                                              style: TextStyle(
-                                                color:
-                                                    theme.colorScheme.onSurface,
-                                                fontWeight: FontWeight.w700,
-                                                fontSize: 14,
-                                              ),
-                                            ),
+                                          const SizedBox(height: 10),
+                                          Text(
+                                            action.label,
+                                            style: theme.textTheme.titleSmall,
                                           ),
                                         ],
                                       ),
@@ -873,20 +740,11 @@ class _DashboardScreenState extends State<DashboardScreen>
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          value,
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.w900,
-            fontSize: 20,
-          ),
-        ),
+        Text(value, style: Theme.of(context).textTheme.titleLarge),
         Text(
           label,
-          style: const TextStyle(
-            color: Color(0xFF93C5FD),
-            fontWeight: FontWeight.w700,
-            fontSize: 11,
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
         ),
       ],
@@ -897,90 +755,14 @@ class _DashboardScreenState extends State<DashboardScreen>
     final amount = NumberFormat.decimalPattern('en').format(value.round());
     return 'FCFA $amount';
   }
-
-  Widget _statCard(
-    String title,
-    String value,
-    IconData icon,
-    MaterialColor color,
-    ThemeData theme,
-    int delay,
-  ) {
-    return TweenAnimationBuilder(
-      duration: Duration(milliseconds: 500 + delay),
-      curve: Curves.easeOutCubic,
-      tween: Tween<double>(begin: 20.0, end: 0.0),
-      builder: (context, val, child) {
-        return Transform.translate(
-          offset: Offset(val, 0),
-          child: Opacity(opacity: 1 - (val / 20), child: child),
-        );
-      },
-      child: Container(
-        width: 160,
-        margin: const EdgeInsets.only(right: 16),
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: theme.colorScheme.surface,
-          borderRadius: BorderRadius.circular(24),
-          boxShadow: [
-            BoxShadow(
-              color: color.withValues(alpha: 0.08),
-              blurRadius: 20,
-              offset: const Offset(0, 8),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Icon(icon, color: color, size: 22),
-                ),
-              ],
-            ),
-            const Spacer(),
-            FittedBox(
-              fit: BoxFit.scaleDown,
-              child: Text(
-                value,
-                style: theme.textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: -0.5,
-                ),
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              title,
-              style: theme.textTheme.labelMedium?.copyWith(
-                color: Colors.grey.shade600,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 }
 
 class _QuickActionData {
   final String label;
   final IconData icon;
-  final MaterialColor color;
   final String route;
 
-  _QuickActionData(this.label, this.icon, this.color, this.route);
+  _QuickActionData(this.label, this.icon, this.route);
 }
 
 class _NavigationItem {

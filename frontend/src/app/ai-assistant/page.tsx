@@ -2,7 +2,7 @@
 "use client"
 
 import * as React from "react"
-import { Send, Bot, User, Sparkles, ShieldAlert, Loader2, LogIn } from "lucide-react"
+import { Send, Bot, User, ShieldAlert, Loader2, LogIn } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -43,7 +43,7 @@ export default function AIAssistantPage() {
       setMessages([
         {
           role: "assistant",
-          content: `Hello ${firstName}! I am your SmartERP AI assistant. I can analyze your sales, inventory, tasks, and more based on your role as **${profile.role}**. How can I help you today?`,
+          content: `Hello ${firstName}. What would you like to understand about your business? Ask a question below or choose a starting point above.`,
         },
       ])
     }
@@ -93,7 +93,7 @@ export default function AIAssistantPage() {
         {
           role: "assistant",
           content:
-            "I'm sorry, I encountered an error connecting to the intelligence engine. Please check your connection and try again.",
+            "The assistant could not connect. Please check your connection and try again.",
         },
       ])
     } finally {
@@ -142,8 +142,7 @@ export default function AIAssistantPage() {
   return (
     <div className="mx-auto flex min-h-[600px] w-full max-w-6xl flex-col gap-5 lg:h-[calc(100dvh-9rem)]">
       <div className="flex flex-col gap-1">
-        <h1 className="text-2xl md:text-3xl font-bold tracking-tight flex items-center gap-2">
-          <Sparkles className="size-6 text-primary" />
+        <h1 className="text-2xl md:text-3xl font-semibold tracking-tight">
           Your business assistant
         </h1>
         <p className="text-sm text-muted-foreground">
@@ -165,38 +164,34 @@ export default function AIAssistantPage() {
         ))}
       </div>
 
-      <div className="flex-1 bg-card border rounded-2xl shadow-lg flex flex-col overflow-hidden min-h-0">
+      <div className="flex-1 bg-card border rounded-xl flex flex-col overflow-hidden min-h-0">
         <ScrollArea className="min-h-[260px] flex-1 p-4 md:p-6" ref={scrollRef}>
           <div className="space-y-6">
             {messages.map((msg, i) => (
               <div key={i} className={`flex gap-3 ${msg.role === 'assistant' ? 'justify-start' : 'justify-end'}`}>
                 {msg.role === 'assistant' && (
-                  <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center shrink-0 shadow-md">
-                    <Bot className="size-5 text-white" />
+                  <div className="h-8 w-8 rounded-lg border flex items-center justify-center shrink-0">
+                    <Bot className="size-4 text-muted-foreground" aria-label="Assistant" />
                   </div>
                 )}
-                <div className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm shadow-sm leading-relaxed ${
+                <div className={`min-w-0 max-w-[85%] break-words rounded-xl px-4 py-3 text-sm leading-7 ${
                   msg.role === 'assistant'
-                    ? 'bg-muted text-foreground rounded-tl-none'
+                    ? 'bg-muted/60 text-foreground'
                     : 'bg-primary text-primary-foreground rounded-tr-none'
                 }`}>
                   <AIResponseRenderer content={msg.content} role={msg.role} />
                 </div>
                 {msg.role === 'user' && (
-                  <div className="h-8 w-8 rounded-lg bg-secondary flex items-center justify-center shrink-0 border shadow-sm">
+                  <div className="h-8 w-8 rounded-lg bg-secondary flex items-center justify-center shrink-0 border">
                     <User className="size-5 text-muted-foreground" />
                   </div>
                 )}
               </div>
             ))}
             {isLoading && (
-              <div className="flex gap-3 justify-start items-center animate-pulse">
-                <div className="h-8 w-8 rounded-lg bg-muted flex items-center justify-center shrink-0" />
-                <div className="flex gap-1">
-                  <span className="h-2 w-2 bg-primary/40 rounded-full animate-bounce" />
-                  <span className="h-2 w-2 bg-primary/40 rounded-full animate-bounce [animation-delay:0.2s]" />
-                  <span className="h-2 w-2 bg-primary/40 rounded-full animate-bounce [animation-delay:0.4s]" />
-                </div>
+              <div role="status" className="flex gap-3 items-center text-sm text-muted-foreground">
+                <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+                Reviewing your business records…
               </div>
             )}
           </div>
@@ -220,7 +215,7 @@ export default function AIAssistantPage() {
               }}
               className="min-h-14 max-h-40 resize-y rounded-xl bg-background px-4 py-3"
             />
-            <Button size="icon" className="rounded-full shrink-0 shadow-lg h-12 w-12 bg-primary hover:bg-primary/90" disabled={isLoading || !input.trim()} aria-label="Send message">
+            <Button size="icon" className="shrink-0 h-14 w-12" disabled={isLoading || !input.trim()} aria-label="Send message">
               {isLoading ? <Loader2 className="size-5 animate-spin" /> : <Send className="size-5" />}
             </Button>
           </form>
@@ -246,7 +241,7 @@ function AIResponseRenderer({ content, role }: { content: string; role: 'assista
         return (
           <strong
             key={`b-${i}`}
-            className={`font-bold ${role === 'user' ? 'text-white' : 'text-primary'}`}
+            className={`font-semibold ${role === 'user' ? 'text-white' : 'text-foreground'}`}
           >
             {innerText}
           </strong>

@@ -21,7 +21,7 @@ export function StatCard({ title, value, description, icon: Icon, trend, classNa
     <Card className={cn("flex h-full min-w-0 flex-col", className)}>
       <CardHeader className="flex flex-row items-start justify-between gap-3 space-y-0 p-4 pb-3 sm:p-5 sm:pb-3">
         <CardTitle className="pt-1 text-sm font-medium leading-snug tracking-normal text-muted-foreground">{title}</CardTitle>
-        <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+        <div className="flex size-6 shrink-0 items-center justify-center text-muted-foreground">
           <Icon className="size-4" aria-hidden="true" />
         </div>
       </CardHeader>
