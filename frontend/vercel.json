@@ -14,7 +14,7 @@
   "crons": [
     {
       "path": "/api/internal/reconcile-outbox",
-      "schedule": "*/10 * * * *"
+      "schedule": "0 3 * * *"
     },
     {
       "path": "/api/internal/ai-maintenance",

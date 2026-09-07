@@ -15,8 +15,14 @@ Run `npm run env:check`, deploy, then request `/api/health`. A `200` response
 must report `configuration`, `neonAuth`, `neon`, and `objectStorage` ready. A
 `503` exposes only component status.
 
-The cron in `frontend/vercel.json` invokes `/api/internal/reconcile-outbox` every
-ten minutes with `Authorization: Bearer <CRON_SECRET>`. Calls without the exact
-minimum-32-character secret return `401`.
+The cron in `frontend/vercel.json` invokes `/api/internal/reconcile-outbox` daily
+with schedule `0 3 * * *` (03:00 UTC), using `Authorization: Bearer <CRON_SECRET>`.
+This schedule supports personal testing on Vercel Hobby, which allows only daily
+cron jobs and does not guarantee minute-precise execution. Background recovery
+may therefore wait until the next day's run. AI maintenance remains daily.
+For a commercial deployment on an appropriate paid plan, restore reconciliation
+to `*/10 * * * *` for more frequent recovery. See
+[Vercel cron limits](https://vercel.com/docs/cron-jobs/usage-and-pricing).
+Calls without the exact minimum-32-character secret return `401`.
 
 The complete sequence and rollback gates are in `DEPLOYMENT.md`.
