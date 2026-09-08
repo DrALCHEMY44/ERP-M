@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 
 class ApiConfig {
+  static const String _productionBaseUrl = 'https://erp-m.vercel.app';
+
   static const String _configuredBaseUrl = String.fromEnvironment(
     'API_BASE_URL',
   );
@@ -8,14 +10,12 @@ class ApiConfig {
   static String get baseUrl {
     final value = _configuredBaseUrl.trim();
     if (value.isEmpty) {
-      if (const bool.fromEnvironment('dart.vm.product')) {
-        throw StateError(
-          'API_BASE_URL is required for release builds and must be an HTTPS URL.',
-        );
-      }
-      // Chrome runs on the host machine; 10.0.2.2 is only the Android
-      // emulator's alias for that host.
-      return kIsWeb ? 'http://localhost:9002' : 'http://10.0.2.2:9002';
+      // A normal Flutter run on a physical phone must work without silently
+      // targeting the Android emulator's host alias (10.0.2.2). Web debug
+      // keeps using the local Next.js server; native builds use production.
+      return kIsWeb && !const bool.fromEnvironment('dart.vm.product')
+          ? 'http://localhost:9002'
+          : _productionBaseUrl;
     }
 
     final uri = Uri.tryParse(value);

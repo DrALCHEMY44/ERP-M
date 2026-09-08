@@ -99,6 +99,12 @@ class _SalesScreenState extends State<SalesScreen> {
             orElse: () => product.baseUnitDefinition,
           );
           final available = product.stockLevel ~/ unit.conversionFactor;
+          final selectedLineIndex = cart.indexWhere(
+            (line) => line.product.id == product.id && line.unit.id == unit.id,
+          );
+          final selectedLine = selectedLineIndex < 0
+              ? null
+              : cart[selectedLineIndex];
           final total = cart.fold<double>(0, (sum, line) => sum + line.total);
           return Padding(
             padding: EdgeInsets.fromLTRB(
@@ -152,6 +158,14 @@ class _SalesScreenState extends State<SalesScreen> {
                                 )
                                 .baseUnitDefinition
                                 .id;
+                            final selected = cart.indexWhere(
+                              (line) =>
+                                  line.product.id == selectedProductId &&
+                                  line.unit.id == selectedUnitId,
+                            );
+                            quantity.text = selected < 0
+                                ? '1'
+                                : cart[selected].quantity.toString();
                           }),
                         ),
                         const SizedBox(height: 10),
@@ -176,9 +190,17 @@ class _SalesScreenState extends State<SalesScreen> {
                                       ),
                                     )
                                     .toList(),
-                                onChanged: (value) => setSheetState(
-                                  () => selectedUnitId = value ?? unit.id,
-                                ),
+                                onChanged: (value) => setSheetState(() {
+                                  selectedUnitId = value ?? unit.id;
+                                  final selected = cart.indexWhere(
+                                    (line) =>
+                                        line.product.id == product.id &&
+                                        line.unit.id == selectedUnitId,
+                                  );
+                                  quantity.text = selected < 0
+                                      ? '1'
+                                      : cart[selected].quantity.toString();
+                                }),
                               ),
                             ),
                             const SizedBox(width: 10),
@@ -187,6 +209,38 @@ class _SalesScreenState extends State<SalesScreen> {
                               child: TextField(
                                 controller: quantity,
                                 keyboardType: TextInputType.number,
+                                onChanged: (value) {
+                                  final count = int.tryParse(value);
+                                  if (count == null || count <= 0) return;
+                                  final otherBaseQuantity = cart
+                                      .asMap()
+                                      .entries
+                                      .where(
+                                        (entry) =>
+                                            entry.key != selectedLineIndex &&
+                                            entry.value.product.id ==
+                                                product.id,
+                                      )
+                                      .fold<int>(
+                                        0,
+                                        (sum, entry) =>
+                                            sum + entry.value.baseQuantity,
+                                      );
+                                  if (otherBaseQuantity +
+                                          count * unit.conversionFactor >
+                                      product.stockLevel) {
+                                    return;
+                                  }
+                                  if (selectedLineIndex >= 0) {
+                                    setSheetState(() {
+                                      cart[selectedLineIndex] = _CartLine(
+                                        product,
+                                        unit,
+                                        count,
+                                      );
+                                    });
+                                  }
+                                },
                                 decoration: InputDecoration(
                                   labelText: 'Qty',
                                   helperText: '$available max',
@@ -200,10 +254,17 @@ class _SalesScreenState extends State<SalesScreen> {
                           onPressed: () {
                             final count = int.tryParse(quantity.text) ?? 0;
                             final already = cart
-                                .where((line) => line.product.id == product.id)
+                                .asMap()
+                                .entries
+                                .where(
+                                  (entry) =>
+                                      entry.key != selectedLineIndex &&
+                                      entry.value.product.id == product.id,
+                                )
                                 .fold<int>(
                                   0,
-                                  (sum, line) => sum + line.baseQuantity,
+                                  (sum, entry) =>
+                                      sum + entry.value.baseQuantity,
                                 );
                             if (count <= 0 ||
                                 already + count * unit.conversionFactor >
@@ -227,7 +288,7 @@ class _SalesScreenState extends State<SalesScreen> {
                                 cart[existing] = _CartLine(
                                   product,
                                   unit,
-                                  cart[existing].quantity + count,
+                                  count,
                                 );
                               } else {
                                 cart.add(_CartLine(product, unit, count));
@@ -236,7 +297,37 @@ class _SalesScreenState extends State<SalesScreen> {
                             });
                           },
                           icon: const Icon(Icons.add_shopping_cart),
-                          label: const Text('Add line'),
+                          label: Text(
+                            selectedLine == null ? 'Add line' : 'Update line',
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        DecoratedBox(
+                          decoration: BoxDecoration(
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.primaryContainer,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 10,
+                            ),
+                            child: Row(
+                              children: [
+                                const Expanded(
+                                  child: Text('Selected line total'),
+                                ),
+                                Text(
+                                  'FCFA ${((int.tryParse(quantity.text) ?? 0) * (unit.sellingPrice ?? product.price * unit.conversionFactor)).toStringAsFixed(0)}',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
                         const Divider(height: 28),
                         if (cart.isEmpty)

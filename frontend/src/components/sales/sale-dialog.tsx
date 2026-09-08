@@ -188,8 +188,14 @@ export function SaleDialog({
                 </Button>
               </div>
 
-              {fields.map((field, index) => (
-                <div key={field.id} className="grid grid-cols-12 gap-2 items-end">
+              {fields.map((field, index) => {
+                const line = watchProducts[index]
+                const quantity = Number(line?.quantity) || 0
+                const unitPrice = Number(line?.priceAtSale) || 0
+                const lineTotal = quantity * unitPrice
+
+                return <div key={field.id} className="rounded-lg border bg-muted/20 p-3">
+                  <div className="grid grid-cols-12 gap-2 items-end">
                   <div className="col-span-6">
                     <FormField
                       control={form.control}
@@ -249,7 +255,7 @@ export function SaleDialog({
                       render={({ field }) => (
                         <FormItem>
                           <FormControl>
-                            <Input type="number" {...field} placeholder="Price" />
+                            <Input type="number" {...field} placeholder="Unit price" aria-label={`Unit price for sale item ${index + 1}`} />
                           </FormControl>
                         </FormItem>
                       )}
@@ -267,8 +273,13 @@ export function SaleDialog({
                       <Trash2 className="size-4" />
                     </Button>
                   </div>
+                  </div>
+                  <div className="mt-2 flex items-center justify-between text-xs">
+                    <span className="text-muted-foreground">Line total · {quantity.toLocaleString()} × {unitPrice.toLocaleString()} FCFA</span>
+                    <span className="font-semibold text-foreground">{lineTotal.toLocaleString()} FCFA</span>
+                  </div>
                 </div>
-              ))}
+              })}
             </div>
 
             <div className="bg-muted p-4 rounded-lg flex justify-between items-center">

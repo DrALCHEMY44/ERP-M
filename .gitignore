@@ -58,6 +58,7 @@ firestore-debug.log
 node_modules/
 .next/
 out/
+mobile/.gradle-home/
 
 # Firebase Data Connect local database and generated emulator caches.
 # Data Connect now lives under backend/, so ignore this directory at any depth.

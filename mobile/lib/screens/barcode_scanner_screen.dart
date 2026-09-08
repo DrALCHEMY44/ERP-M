@@ -30,7 +30,14 @@ class _BarcodeScannerScreenState extends State<BarcodeScannerScreen> {
     final value = rawValue?.trim();
     if (_completed || value == null || value.isEmpty) return;
     _completed = true;
-    await _controller.stop();
+    try {
+      // Stop the native camera before removing this route. This prevents a
+      // second detection while the inventory form is being opened.
+      await _controller.stop();
+    } catch (_) {
+      // Route removal still releases the preview if the camera was already
+      // stopped by the platform lifecycle.
+    }
     if (mounted) Navigator.of(context).pop(value);
   }
 
@@ -75,7 +82,12 @@ class _BarcodeScannerScreenState extends State<BarcodeScannerScreen> {
 
   @override
   void dispose() {
-    _controller.dispose();
+    // MobileScanner disposes its barcode stream while its element is removed.
+    // Disposing an externally-owned controller synchronously here can notify
+    // that stream during widget teardown and cause Flutter's
+    // `_dependents.isEmpty` assertion. Queue it after the route subtree has
+    // finished disposal instead.
+    Future<void>.microtask(_controller.dispose);
     super.dispose();
   }
 

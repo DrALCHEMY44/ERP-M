@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
@@ -9,6 +10,27 @@ import 'session_store.dart';
 class AuthService {
   static AppUser? _currentUser;
   static String get _apiBaseUrl => ApiConfig.baseUrl;
+
+  static Future<http.Response> _post(
+    String path, {
+    required Map<String, String> headers,
+    required Object body,
+  }) async {
+    final uri = Uri.parse('$_apiBaseUrl$path');
+    try {
+      return await http
+          .post(uri, headers: headers, body: body)
+          .timeout(const Duration(seconds: 30));
+    } on TimeoutException {
+      throw ApiException(
+        'SmartERP did not respond in time (${uri.host}). Check your connection and try again.',
+      );
+    } on http.ClientException catch (error) {
+      throw ApiException(
+        'Could not connect securely to ${uri.host}: ${error.message}',
+      );
+    }
+  }
 
   // Web app permissions mapping
   static const Map<UserRole, List<String>> rolePermissions = {
@@ -152,20 +174,18 @@ class AuthService {
     required String email,
     required String password,
   }) async {
-    final response = await http
-        .post(
-          Uri.parse('$_apiBaseUrl/api/auth/sign-up/email'),
-          headers: const {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-          },
-          body: jsonEncode({
-            'name': name.trim(),
-            'email': email.trim().toLowerCase(),
-            'password': password,
-          }),
-        )
-        .timeout(const Duration(seconds: 20));
+    final response = await _post(
+      '/api/auth/sign-up/email',
+      headers: const {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: jsonEncode({
+        'name': name.trim(),
+        'email': email.trim().toLowerCase(),
+        'password': password,
+      }),
+    );
     if (response.statusCode >= 200 && response.statusCode < 300) {
       await _storeAuthToken(response);
       return;
@@ -185,37 +205,33 @@ class AuthService {
     // A previous attempt may have created the Neon identity before workspace
     // bootstrap failed. Sign in with the supplied credentials so registration
     // can safely resume instead of leaving the owner permanently stuck.
-    final signInResponse = await http
-        .post(
-          Uri.parse('$_apiBaseUrl/api/auth/sign-in/email'),
-          headers: const {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-          },
-          body: jsonEncode({
-            'email': email.trim().toLowerCase(),
-            'password': password,
-            'rememberMe': true,
-          }),
-        )
-        .timeout(const Duration(seconds: 20));
+    final signInResponse = await _post(
+      '/api/auth/sign-in/email',
+      headers: const {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: jsonEncode({
+        'email': email.trim().toLowerCase(),
+        'password': password,
+        'rememberMe': true,
+      }),
+    );
     await _storeAuthToken(signInResponse);
   }
 
   static Future<void> requestPasswordReset(String email) async {
-    final response = await http
-        .post(
-          Uri.parse('$_apiBaseUrl/api/auth/request-password-reset'),
-          headers: const {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-          },
-          body: jsonEncode({
-            'email': email.trim().toLowerCase(),
-            'redirectTo': '$_apiBaseUrl/reset-password',
-          }),
-        )
-        .timeout(const Duration(seconds: 20));
+    final response = await _post(
+      '/api/auth/request-password-reset',
+      headers: const {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: jsonEncode({
+        'email': email.trim().toLowerCase(),
+        'redirectTo': '$_apiBaseUrl/reset-password',
+      }),
+    );
     if (response.statusCode < 200 || response.statusCode >= 300) {
       final data = _decode(response);
       throw Exception(
@@ -241,8 +257,8 @@ class AuthService {
         throw Exception('Business name and access code are required.');
       }
 
-      final response = await http.post(
-        Uri.parse('$_apiBaseUrl/api/auth/employee-token'),
+      final response = await _post(
+        '/api/auth/employee-token',
         headers: const {'Content-Type': 'application/json'},
         body: jsonEncode({
           'fullName': normalizedName,
@@ -260,20 +276,18 @@ class AuthService {
       return _currentUser;
     }
 
-    final signInResponse = await http
-        .post(
-          Uri.parse('$_apiBaseUrl/api/auth/sign-in/email'),
-          headers: const {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-          },
-          body: jsonEncode({
-            'email': email.trim().toLowerCase(),
-            'password': password,
-            'rememberMe': true,
-          }),
-        )
-        .timeout(const Duration(seconds: 20));
+    final signInResponse = await _post(
+      '/api/auth/sign-in/email',
+      headers: const {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: jsonEncode({
+        'email': email.trim().toLowerCase(),
+        'password': password,
+        'rememberMe': true,
+      }),
+    );
     await _storeAuthToken(signInResponse);
     await refreshCurrentUser();
     return _currentUser;
