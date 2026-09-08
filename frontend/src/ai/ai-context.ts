@@ -34,6 +34,7 @@ export interface TenantContext {
   inventory?: InventorySummary;
   financials?: FinancialSummary;
   transactions?: TransactionRecord[];
+  latestSale?: LatestSaleSummary;
   customers?: CustomerSummary[];
   suppliers?: SupplierSummary[];
   employees?: EmployeeSummary[];
@@ -87,6 +88,15 @@ interface TransactionRecord {
   amount: number; // integer FCFA
   date: string;
   category: string | null;
+}
+
+/** Server-recorded timestamp for the most recent completed sale.
+ * This gives the assistant an explicit, auditable answer for questions such
+ * as "when was the last sale?" rather than relying on it to infer recency
+ * from a general transaction list. */
+interface LatestSaleSummary {
+  recordedAt: string;
+  amount: number;
 }
 
 interface CustomerSummary {
@@ -287,6 +297,16 @@ export async function fetchTenantContext(
   // --- Transactions & Financials ---
   if (canAccess(role, 'transactions') || canAccess(role, 'financials')) {
     const transactions = extractResult(transactionsResult)?.data?.transactions ?? [];
+    const latestSale = transactions.find((transaction: any) => transaction.type === 'SALE');
+
+    if (latestSale && canAccess(role, 'transactions')) {
+      context.latestSale = {
+        // `date` is assigned by PostgreSQL at sale recording time, not by the
+        // browser or phone. Keep the full ISO timestamp for an exact answer.
+        recordedAt: new Date(String(latestSale.date)).toISOString(),
+        amount: fcfa(latestSale.amount),
+      };
+    }
 
     if (canAccess(role, 'transactions')) {
       const visibleTransactions = role === 'Manager'

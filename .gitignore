@@ -71,3 +71,11 @@ mobile/.gradle-home/
 .env
 .env*.local
 .env_copy
+
+# Locally generated SmartERP architecture/security analysis handouts.
+docs/SMARTERP_*_PRESENTATION.html
+docs/SMARTERP_*_PRESENTATION.pdf
+docs/SMARTERP_*_CONFIGURATION.html
+docs/SMARTERP_*_CONFIGURATION.pdf
+docs/SMARTERP_SECURITY_ARCHITECTURE_REPORT.html
+docs/SMARTERP_SECURITY_ARCHITECTURE_REPORT.pdf

@@ -20,6 +20,13 @@ class SalesScreen extends StatefulWidget {
 }
 
 class _SalesScreenState extends State<SalesScreen> {
+  String _recordedAt(DateTime value) {
+    final local = value.toLocal();
+    String twoDigits(int number) => number.toString().padLeft(2, '0');
+    return '${local.year}-${twoDigits(local.month)}-${twoDigits(local.day)} '
+        '${twoDigits(local.hour)}:${twoDigits(local.minute)}';
+  }
+
   void _message(String text, {bool error = false}) {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
@@ -85,6 +92,81 @@ class _SalesScreenState extends State<SalesScreen> {
       isScrollControlled: true,
       builder: (sheetContext) => StatefulBuilder(
         builder: (context, setSheetState) {
+          Future<void> scanAnotherProduct() async {
+            final barcode = await Navigator.of(sheetContext).push<String>(
+              MaterialPageRoute(
+                builder: (_) =>
+                    const BarcodeScannerScreen(title: 'Scan another product'),
+              ),
+            );
+            if (barcode == null || !sheetContext.mounted) return;
+
+            try {
+              final match = await inventory.lookupBarcode(barcode);
+              if (!sheetContext.mounted) return;
+              if (match == null) {
+                ScaffoldMessenger.of(sheetContext).showSnackBar(
+                  const SnackBar(
+                    content: Text(
+                      'This barcode is not registered in inventory.',
+                    ),
+                  ),
+                );
+                return;
+              }
+
+              final usedBaseQuantity = cart
+                  .where((line) => line.product.id == match.product.id)
+                  .fold<int>(0, (sum, line) => sum + line.baseQuantity);
+              if (usedBaseQuantity + match.unit.conversionFactor >
+                  match.product.stockLevel) {
+                ScaffoldMessenger.of(sheetContext).showSnackBar(
+                  const SnackBar(
+                    content: Text(
+                      'There is not enough stock for one more of this item.',
+                    ),
+                  ),
+                );
+                return;
+              }
+
+              setSheetState(() {
+                final lineIndex = cart.indexWhere(
+                  (line) =>
+                      line.product.id == match.product.id &&
+                      line.unit.id == match.unit.id,
+                );
+                if (lineIndex >= 0) {
+                  final line = cart[lineIndex];
+                  cart[lineIndex] = _CartLine(
+                    line.product,
+                    line.unit,
+                    line.quantity + 1,
+                  );
+                } else {
+                  cart.add(_CartLine(match.product, match.unit, 1));
+                }
+                // Keep the latest scanned item selected so its quantity can
+                // be adjusted without changing any existing cart line.
+                selectedProductId = match.product.id;
+                selectedUnitId = match.unit.id;
+                final selectedLine = cart.firstWhere(
+                  (line) =>
+                      line.product.id == match.product.id &&
+                      line.unit.id == match.unit.id,
+                );
+                quantity.text = selectedLine.quantity.toString();
+              });
+            } catch (error) {
+              if (!sheetContext.mounted) return;
+              ScaffoldMessenger.of(sheetContext).showSnackBar(
+                SnackBar(
+                  content: Text('Could not add scanned product: $error'),
+                ),
+              );
+            }
+          }
+
           final product = products.firstWhere(
             (item) => item.id == selectedProductId,
           );
@@ -98,13 +180,29 @@ class _SalesScreenState extends State<SalesScreen> {
             (item) => item.id == selectedUnitId,
             orElse: () => product.baseUnitDefinition,
           );
-          final available = product.stockLevel ~/ unit.conversionFactor;
           final selectedLineIndex = cart.indexWhere(
             (line) => line.product.id == product.id && line.unit.id == unit.id,
           );
           final selectedLine = selectedLineIndex < 0
               ? null
               : cart[selectedLineIndex];
+          final quantityInCartForProduct = cart
+              .where((line) => line.product.id == product.id)
+              .fold<int>(0, (sum, line) => sum + line.baseQuantity);
+          final otherQuantityInCart = cart
+              .asMap()
+              .entries
+              .where(
+                (entry) =>
+                    entry.key != selectedLineIndex &&
+                    entry.value.product.id == product.id,
+              )
+              .fold<int>(0, (sum, entry) => sum + entry.value.baseQuantity);
+          // When editing the selected line, its own quantity can be replaced,
+          // so it remains part of the maximum available for that line.
+          final available =
+              (product.stockLevel - otherQuantityInCart) ~/
+              unit.conversionFactor;
           final total = cart.fold<double>(0, (sum, line) => sum + line.total);
           return Padding(
             padding: EdgeInsets.fromLTRB(
@@ -135,282 +233,354 @@ class _SalesScreenState extends State<SalesScreen> {
                   ),
                   const SizedBox(height: 8),
                   Expanded(
-                    child: ListView(
-                      children: [
-                        DropdownButtonFormField<String>(
-                          initialValue: selectedProductId,
-                          decoration: const InputDecoration(
-                            labelText: 'Product',
-                          ),
-                          items: products
-                              .map(
-                                (item) => DropdownMenuItem(
-                                  value: item.id,
-                                  child: Text(item.name),
-                                ),
-                              )
-                              .toList(),
-                          onChanged: (value) => setSheetState(() {
-                            selectedProductId = value ?? products.first.id;
-                            selectedUnitId = products
-                                .firstWhere(
-                                  (item) => item.id == selectedProductId,
+                    child: Scrollbar(
+                      thumbVisibility: true,
+                      child: ListView(
+                        padding: const EdgeInsets.only(right: 4),
+                        children: [
+                          DropdownButtonFormField<String>(
+                            initialValue: selectedProductId,
+                            decoration: const InputDecoration(
+                              labelText: 'Add product manually',
+                              prefixIcon: Icon(Icons.inventory_2_outlined),
+                            ),
+                            items: products
+                                .map(
+                                  (item) => DropdownMenuItem(
+                                    value: item.id,
+                                    child: Text(
+                                      '${item.name} · ${item.stockLevel} ${item.unit} in stock',
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
                                 )
-                                .baseUnitDefinition
-                                .id;
-                            final selected = cart.indexWhere(
-                              (line) =>
-                                  line.product.id == selectedProductId &&
-                                  line.unit.id == selectedUnitId,
-                            );
-                            quantity.text = selected < 0
-                                ? '1'
-                                : cart[selected].quantity.toString();
-                          }),
-                        ),
-                        const SizedBox(height: 10),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: DropdownButtonFormField<String>(
-                                key: ValueKey(
-                                  '$selectedProductId:$selectedUnitId',
-                                ),
-                                initialValue: selectedUnitId,
-                                decoration: const InputDecoration(
-                                  labelText: 'Selling unit',
-                                ),
-                                items: units
-                                    .map(
-                                      (item) => DropdownMenuItem(
-                                        value: item.id,
-                                        child: Text(
-                                          '${item.unitName} (×${item.conversionFactor})',
+                                .toList(),
+                            onChanged: (value) => setSheetState(() {
+                              selectedProductId = value ?? products.first.id;
+                              selectedUnitId = products
+                                  .firstWhere(
+                                    (item) => item.id == selectedProductId,
+                                  )
+                                  .baseUnitDefinition
+                                  .id;
+                              final selected = cart.indexWhere(
+                                (line) =>
+                                    line.product.id == selectedProductId &&
+                                    line.unit.id == selectedUnitId,
+                              );
+                              quantity.text = selected < 0
+                                  ? '1'
+                                  : cart[selected].quantity.toString();
+                            }),
+                          ),
+                          const SizedBox(height: 10),
+                          DecoratedBox(
+                            decoration: BoxDecoration(
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.surfaceContainerHighest,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 10,
+                              ),
+                              child: Row(
+                                children: [
+                                  const Icon(
+                                    Icons.inventory_2_outlined,
+                                    size: 19,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      'Current stock: ${product.stockLevel} ${product.unit}',
+                                    ),
+                                  ),
+                                  if (quantityInCartForProduct > 0)
+                                    Text(
+                                      '$quantityInCartForProduct in cart',
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: DropdownButtonFormField<String>(
+                                  key: ValueKey(
+                                    '$selectedProductId:$selectedUnitId',
+                                  ),
+                                  initialValue: selectedUnitId,
+                                  decoration: const InputDecoration(
+                                    labelText: 'Selling unit',
+                                  ),
+                                  items: units
+                                      .map(
+                                        (item) => DropdownMenuItem(
+                                          value: item.id,
+                                          child: Text(
+                                            '${item.unitName} (×${item.conversionFactor})',
+                                          ),
                                         ),
+                                      )
+                                      .toList(),
+                                  onChanged: (value) => setSheetState(() {
+                                    selectedUnitId = value ?? unit.id;
+                                    final selected = cart.indexWhere(
+                                      (line) =>
+                                          line.product.id == product.id &&
+                                          line.unit.id == selectedUnitId,
+                                    );
+                                    quantity.text = selected < 0
+                                        ? '1'
+                                        : cart[selected].quantity.toString();
+                                  }),
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              SizedBox(
+                                width: 110,
+                                child: TextField(
+                                  controller: quantity,
+                                  keyboardType: TextInputType.number,
+                                  onChanged: (value) {
+                                    final count = int.tryParse(value);
+                                    if (count == null || count <= 0) return;
+                                    final otherBaseQuantity = cart
+                                        .asMap()
+                                        .entries
+                                        .where(
+                                          (entry) =>
+                                              entry.key != selectedLineIndex &&
+                                              entry.value.product.id ==
+                                                  product.id,
+                                        )
+                                        .fold<int>(
+                                          0,
+                                          (sum, entry) =>
+                                              sum + entry.value.baseQuantity,
+                                        );
+                                    if (otherBaseQuantity +
+                                            count * unit.conversionFactor >
+                                        product.stockLevel) {
+                                      return;
+                                    }
+                                    if (selectedLineIndex >= 0) {
+                                      setSheetState(() {
+                                        cart[selectedLineIndex] = _CartLine(
+                                          product,
+                                          unit,
+                                          count,
+                                        );
+                                      });
+                                    }
+                                  },
+                                  decoration: InputDecoration(
+                                    labelText: 'Qty',
+                                    helperText:
+                                        '$available ${unit.unitName} max',
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 10),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: OutlinedButton.icon(
+                                  onPressed: () {
+                                    final count =
+                                        int.tryParse(quantity.text) ?? 0;
+                                    final already = cart
+                                        .asMap()
+                                        .entries
+                                        .where(
+                                          (entry) =>
+                                              entry.key != selectedLineIndex &&
+                                              entry.value.product.id ==
+                                                  product.id,
+                                        )
+                                        .fold<int>(
+                                          0,
+                                          (sum, entry) =>
+                                              sum + entry.value.baseQuantity,
+                                        );
+                                    if (count <= 0 ||
+                                        already +
+                                                count * unit.conversionFactor >
+                                            product.stockLevel) {
+                                      ScaffoldMessenger.of(
+                                        sheetContext,
+                                      ).showSnackBar(
+                                        const SnackBar(
+                                          content: Text(
+                                            'Enter a valid quantity within available stock.',
+                                          ),
+                                        ),
+                                      );
+                                      return;
+                                    }
+                                    setSheetState(() {
+                                      final existing = cart.indexWhere(
+                                        (line) =>
+                                            line.product.id == product.id &&
+                                            line.unit.id == unit.id,
+                                      );
+                                      if (existing >= 0) {
+                                        cart[existing] = _CartLine(
+                                          product,
+                                          unit,
+                                          count,
+                                        );
+                                      } else {
+                                        cart.add(
+                                          _CartLine(product, unit, count),
+                                        );
+                                      }
+                                      quantity.text = '1';
+                                    });
+                                  },
+                                  icon: Icon(
+                                    selectedLine == null
+                                        ? Icons.add_shopping_cart
+                                        : Icons.edit_outlined,
+                                  ),
+                                  label: Text(
+                                    selectedLine == null
+                                        ? 'Add line'
+                                        : 'Update line',
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: FilledButton.icon(
+                                  onPressed: scanAnotherProduct,
+                                  icon: const Icon(Icons.qr_code_scanner),
+                                  label: const Text('Scan barcode'),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          DecoratedBox(
+                            decoration: BoxDecoration(
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.primaryContainer,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 10,
+                              ),
+                              child: Row(
+                                children: [
+                                  const Expanded(
+                                    child: Text('Selected line total'),
+                                  ),
+                                  Text(
+                                    'FCFA ${((int.tryParse(quantity.text) ?? 0) * (unit.sellingPrice ?? product.price * unit.conversionFactor)).toStringAsFixed(0)}',
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          const Divider(height: 28),
+                          if (cart.isEmpty)
+                            const Center(
+                              child: Padding(
+                                padding: EdgeInsets.all(20),
+                                child: Text('Add at least one product.'),
+                              ),
+                            )
+                          else
+                            ...cart.asMap().entries.map((entry) {
+                              final line = entry.value;
+                              return Card(
+                                child: ListTile(
+                                  title: Text(line.product.name),
+                                  subtitle: Text(
+                                    '${line.quantity} ${line.unit.unitName} × FCFA ${line.unitPrice.toStringAsFixed(0)}',
+                                  ),
+                                  trailing: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                        'FCFA ${line.total.toStringAsFixed(0)}',
+                                      ),
+                                      IconButton(
+                                        onPressed: () => setSheetState(
+                                          () => cart.removeAt(entry.key),
+                                        ),
+                                        icon: const Icon(Icons.close),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            }),
+                          const Divider(height: 28),
+                          DropdownButtonFormField<String>(
+                            initialValue: payment,
+                            decoration: const InputDecoration(
+                              labelText: 'Payment method',
+                            ),
+                            items:
+                                const {
+                                      'CASH': 'Cash',
+                                      'MOBILE_MONEY': 'Mobile Money',
+                                      'BANK_TRANSFER': 'Bank transfer',
+                                      'CREDIT': 'Credit',
+                                    }.entries
+                                    .map(
+                                      (entry) => DropdownMenuItem(
+                                        value: entry.key,
+                                        child: Text(entry.value),
                                       ),
                                     )
                                     .toList(),
-                                onChanged: (value) => setSheetState(() {
-                                  selectedUnitId = value ?? unit.id;
-                                  final selected = cart.indexWhere(
-                                    (line) =>
-                                        line.product.id == product.id &&
-                                        line.unit.id == selectedUnitId,
-                                  );
-                                  quantity.text = selected < 0
-                                      ? '1'
-                                      : cart[selected].quantity.toString();
-                                }),
-                              ),
+                            onChanged: (value) =>
+                                setSheetState(() => payment = value ?? 'CASH'),
+                          ),
+                          const SizedBox(height: 10),
+                          DropdownButtonFormField<String?>(
+                            initialValue: customerId,
+                            decoration: const InputDecoration(
+                              labelText: 'Customer (optional)',
                             ),
-                            const SizedBox(width: 10),
-                            SizedBox(
-                              width: 110,
-                              child: TextField(
-                                controller: quantity,
-                                keyboardType: TextInputType.number,
-                                onChanged: (value) {
-                                  final count = int.tryParse(value);
-                                  if (count == null || count <= 0) return;
-                                  final otherBaseQuantity = cart
-                                      .asMap()
-                                      .entries
-                                      .where(
-                                        (entry) =>
-                                            entry.key != selectedLineIndex &&
-                                            entry.value.product.id ==
-                                                product.id,
-                                      )
-                                      .fold<int>(
-                                        0,
-                                        (sum, entry) =>
-                                            sum + entry.value.baseQuantity,
-                                      );
-                                  if (otherBaseQuantity +
-                                          count * unit.conversionFactor >
-                                      product.stockLevel) {
-                                    return;
-                                  }
-                                  if (selectedLineIndex >= 0) {
-                                    setSheetState(() {
-                                      cart[selectedLineIndex] = _CartLine(
-                                        product,
-                                        unit,
-                                        count,
-                                      );
-                                    });
-                                  }
-                                },
-                                decoration: InputDecoration(
-                                  labelText: 'Qty',
-                                  helperText: '$available max',
-                                ),
+                            items: [
+                              const DropdownMenuItem<String?>(
+                                value: null,
+                                child: Text('Walk-in customer'),
                               ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 10),
-                        OutlinedButton.icon(
-                          onPressed: () {
-                            final count = int.tryParse(quantity.text) ?? 0;
-                            final already = cart
-                                .asMap()
-                                .entries
-                                .where(
-                                  (entry) =>
-                                      entry.key != selectedLineIndex &&
-                                      entry.value.product.id == product.id,
-                                )
-                                .fold<int>(
-                                  0,
-                                  (sum, entry) =>
-                                      sum + entry.value.baseQuantity,
-                                );
-                            if (count <= 0 ||
-                                already + count * unit.conversionFactor >
-                                    product.stockLevel) {
-                              ScaffoldMessenger.of(sheetContext).showSnackBar(
-                                const SnackBar(
-                                  content: Text(
-                                    'Enter a valid quantity within available stock.',
+                              ...customers.map(
+                                (item) => DropdownMenuItem<String?>(
+                                  value: item['id']?.toString(),
+                                  child: Text(
+                                    item['customerName']?.toString() ??
+                                        'Customer',
                                   ),
                                 ),
-                              );
-                              return;
-                            }
-                            setSheetState(() {
-                              final existing = cart.indexWhere(
-                                (line) =>
-                                    line.product.id == product.id &&
-                                    line.unit.id == unit.id,
-                              );
-                              if (existing >= 0) {
-                                cart[existing] = _CartLine(
-                                  product,
-                                  unit,
-                                  count,
-                                );
-                              } else {
-                                cart.add(_CartLine(product, unit, count));
-                              }
-                              quantity.text = '1';
-                            });
-                          },
-                          icon: const Icon(Icons.add_shopping_cart),
-                          label: Text(
-                            selectedLine == null ? 'Add line' : 'Update line',
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        DecoratedBox(
-                          decoration: BoxDecoration(
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.primaryContainer,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 10,
-                            ),
-                            child: Row(
-                              children: [
-                                const Expanded(
-                                  child: Text('Selected line total'),
-                                ),
-                                Text(
-                                  'FCFA ${((int.tryParse(quantity.text) ?? 0) * (unit.sellingPrice ?? product.price * unit.conversionFactor)).toStringAsFixed(0)}',
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        const Divider(height: 28),
-                        if (cart.isEmpty)
-                          const Center(
-                            child: Padding(
-                              padding: EdgeInsets.all(20),
-                              child: Text('Add at least one product.'),
-                            ),
-                          )
-                        else
-                          ...cart.asMap().entries.map((entry) {
-                            final line = entry.value;
-                            return Card(
-                              child: ListTile(
-                                title: Text(line.product.name),
-                                subtitle: Text(
-                                  '${line.quantity} ${line.unit.unitName} × FCFA ${line.unitPrice.toStringAsFixed(0)}',
-                                ),
-                                trailing: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text(
-                                      'FCFA ${line.total.toStringAsFixed(0)}',
-                                    ),
-                                    IconButton(
-                                      onPressed: () => setSheetState(
-                                        () => cart.removeAt(entry.key),
-                                      ),
-                                      icon: const Icon(Icons.close),
-                                    ),
-                                  ],
-                                ),
                               ),
-                            );
-                          }),
-                        const Divider(height: 28),
-                        DropdownButtonFormField<String>(
-                          initialValue: payment,
-                          decoration: const InputDecoration(
-                            labelText: 'Payment method',
+                            ],
+                            onChanged: (value) =>
+                                setSheetState(() => customerId = value),
                           ),
-                          items:
-                              const {
-                                    'CASH': 'Cash',
-                                    'MOBILE_MONEY': 'Mobile Money',
-                                    'BANK_TRANSFER': 'Bank transfer',
-                                    'CREDIT': 'Credit',
-                                  }.entries
-                                  .map(
-                                    (entry) => DropdownMenuItem(
-                                      value: entry.key,
-                                      child: Text(entry.value),
-                                    ),
-                                  )
-                                  .toList(),
-                          onChanged: (value) =>
-                              setSheetState(() => payment = value ?? 'CASH'),
-                        ),
-                        const SizedBox(height: 10),
-                        DropdownButtonFormField<String?>(
-                          initialValue: customerId,
-                          decoration: const InputDecoration(
-                            labelText: 'Customer (optional)',
-                          ),
-                          items: [
-                            const DropdownMenuItem<String?>(
-                              value: null,
-                              child: Text('Walk-in customer'),
-                            ),
-                            ...customers.map(
-                              (item) => DropdownMenuItem<String?>(
-                                value: item['id']?.toString(),
-                                child: Text(
-                                  item['customerName']?.toString() ??
-                                      'Customer',
-                                ),
-                              ),
-                            ),
-                          ],
-                          onChanged: (value) =>
-                              setSheetState(() => customerId = value),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                   const SizedBox(height: 10),
@@ -487,7 +657,9 @@ class _SalesScreenState extends State<SalesScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text('Sale ${sale.id}'),
-              Text('${sale.date.toLocal()} • ${sale.paymentMethod}'),
+              Text(
+                'Recorded ${_recordedAt(sale.date)} • ${sale.paymentMethod}',
+              ),
               const Divider(),
               ...sale.items.map<Widget>(
                 (line) => ListTile(
@@ -594,7 +766,7 @@ class _SalesScreenState extends State<SalesScreen> {
                         overflow: TextOverflow.ellipsis,
                       ),
                       subtitle: Text(
-                        '${sale.paymentMethod} • ${sale.date.toLocal().toString().split('.').first}',
+                        '${sale.paymentMethod} • Recorded ${_recordedAt(sale.date)}',
                       ),
                       trailing: Text(
                         'FCFA ${sale.totalAmount.toStringAsFixed(0)}',
