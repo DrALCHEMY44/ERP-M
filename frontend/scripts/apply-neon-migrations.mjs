@@ -26,6 +26,7 @@ const migrations = [
   "../migrations/013_saas_control_plane.sql",
   "../migrations/014_platform_user_administration.sql",
   "../migrations/015_barcode_product_units.sql",
+  "../migrations/016_companion_sale_scanner.sql",
 ]
 const client = new Client(process.env.DATABASE_URL)
 try {

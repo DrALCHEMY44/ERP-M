@@ -5,7 +5,8 @@ import * as React from "react"
 import { useForm, useFieldArray, useWatch } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
-import { Plus, Trash2 } from "lucide-react"
+import { Loader2, Plus, QrCode, Smartphone, Trash2 } from "lucide-react"
+import QRCode from "react-qr-code"
 import {
   Dialog,
   DialogContent,
@@ -36,6 +37,7 @@ import { Customer, Product, Sale } from "@/lib/types"
 
 const saleItemSchema = z.object({
   productId: z.string().min(1, "Product is required"),
+  unitId: z.string().optional(),
   quantity: z.coerce.number().min(1, "At least 1 item"),
   priceAtSale: z.coerce.number().min(0),
 })
@@ -51,7 +53,7 @@ type SaleFormValues = z.infer<typeof saleSchema>
 interface SaleDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  onSave: (sale: Partial<Sale>) => void
+  onSave: (sale: Partial<Sale>) => Promise<void> | void
   products: Product[]
   customers: Customer[]
   productsLoading?: boolean
@@ -84,8 +86,67 @@ export function SaleDialog({
 
   const watchProducts = useWatch({ control: form.control, name: "productsSold" })
   const totalAmount = watchProducts.reduce((acc, item) => acc + (item.quantity * item.priceAtSale), 0)
+  const [scanner, setScanner] = React.useState<{
+    sessionId: string
+    pairingCode: string
+    expiresAt: string
+    items: Array<{ productId: string; unitId: string; productName: string; unitName: string; quantity: number; unitPrice: number }>
+  } | null>(null)
+  const [scannerLoading, setScannerLoading] = React.useState(false)
+  const scannerKeys = React.useRef(new Set<string>())
 
-  const onSubmit = (values: SaleFormValues) => {
+  const syncScanner = React.useCallback(async (sessionId: string) => {
+    const response = await fetch("/api/sales/scanner?sessionId=" + encodeURIComponent(sessionId), { cache: "no-store" })
+    const body = await response.json()
+    if (!response.ok) throw new Error(body.error || "Could not refresh the phone scanner")
+    const items = Array.isArray(body.items) ? body.items : []
+    const nextKeys = new Set<string>(items.map((item: { productId: string; unitId: string }) => item.productId + ":" + item.unitId))
+    const localItems = form.getValues("productsSold").filter((item) => !scannerKeys.current.has(item.productId + ":" + (item.unitId || "")))
+    const scannerItems = items.map((item: { productId: string; unitId: string; quantity: number; unitPrice: number }) => ({
+      productId: item.productId, unitId: item.unitId, quantity: item.quantity, priceAtSale: item.unitPrice,
+    }))
+    form.setValue("productsSold", [...localItems.filter((item) => item.productId), ...scannerItems], { shouldValidate: true })
+    scannerKeys.current = nextKeys
+    setScanner((current) => current ? { ...current, expiresAt: body.expiresAt, items } : current)
+  }, [form])
+
+  React.useEffect(() => {
+    if (!scanner?.sessionId || !open) return
+    const timer = window.setInterval(() => {
+      syncScanner(scanner.sessionId).catch(() => undefined)
+    }, 2000)
+    return () => window.clearInterval(timer)
+  }, [open, scanner?.sessionId, syncScanner])
+
+  const connectPhoneScanner = async () => {
+    setScannerLoading(true)
+    try {
+      const response = await fetch("/api/sales/scanner", {
+        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "create" }),
+      })
+      const body = await response.json()
+      if (!response.ok) throw new Error(body.error || "Could not create scanner session")
+      setScanner({ ...body, items: [] })
+    } catch (error) {
+      form.setError("root", { message: error instanceof Error ? error.message : "Could not connect the phone scanner." })
+    } finally {
+      setScannerLoading(false)
+    }
+  }
+
+  const disconnectPhoneScanner = async (status: "COMPLETED" | "CANCELLED" = "CANCELLED") => {
+    if (!scanner) return
+    await fetch("/api/sales/scanner", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "close", sessionId: scanner.sessionId, status }),
+    }).catch(() => undefined)
+    const remote = scannerKeys.current
+    form.setValue("productsSold", form.getValues("productsSold").filter((item) => !remote.has(item.productId + ":" + (item.unitId || ""))))
+    scannerKeys.current = new Set()
+    setScanner(null)
+  }
+
+  const onSubmit = async (values: SaleFormValues) => {
     if (!profile?.tenantId || !profile.businessId) {
       form.setError("root", { message: "Your account is not connected to a company." })
       return
@@ -100,10 +161,11 @@ export function SaleDialog({
       return
     }
 
-    onSave({
+    await onSave({
       ...values,
       totalAmount,
     } as Sale)
+    await disconnectPhoneScanner("COMPLETED")
     form.reset()
     onOpenChange(false)
   }
@@ -178,15 +240,31 @@ export function SaleDialog({
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <h4 className="text-sm font-semibold">Products</h4>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => append({ productId: "", quantity: 1, priceAtSale: 0 })}
-                >
-                  <Plus className="size-4 mr-1" /> Add Item
-                </Button>
+                <div className="flex gap-2">
+                  <Button type="button" variant="outline" size="sm" onClick={() => append({ productId: "", quantity: 1, priceAtSale: 0 })}>
+                    <Plus className="size-4 mr-1" /> Add Item
+                  </Button>
+                  {!scanner && <Button type="button" variant="outline" size="sm" disabled={scannerLoading} onClick={connectPhoneScanner}>
+                    {scannerLoading ? <Loader2 className="size-4 mr-1 animate-spin" /> : <QrCode className="size-4 mr-1" />} Connect phone
+                  </Button>}
+                </div>
               </div>
+
+              {scanner && (
+                <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+                    <div className="rounded-md bg-white p-2"><QRCode value={scanner.pairingCode} size={132} /></div>
+                    <div className="flex-1 space-y-1">
+                      <p className="flex items-center gap-2 text-sm font-semibold"><Smartphone className="size-4 text-blue-700" /> Phone scanner connected</p>
+                      <p className="text-xs text-muted-foreground">In the mobile app, open Web sale scanner and scan this QR code. Each product scan is added to this cart automatically.</p>
+                      <p className="text-xs font-medium">Expires {new Date(scanner.expiresAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} · {scanner.items.length} scanned line{scanner.items.length === 1 ? "" : "s"}</p>
+                      <Button type="button" variant="ghost" size="sm" className="h-7 px-0 text-xs text-destructive" onClick={() => disconnectPhoneScanner()}>
+                        Disconnect phone scanner
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {fields.map((field, index) => {
                 const line = watchProducts[index]
@@ -210,7 +288,7 @@ export function SaleDialog({
                                 form.setValue(`productsSold.${index}.priceAtSale`, prod.sellingPrice)
                               }
                             }}
-                            defaultValue={field.value}
+                            value={field.value}
                           >
                             <FormControl>
                               <SelectTrigger>
