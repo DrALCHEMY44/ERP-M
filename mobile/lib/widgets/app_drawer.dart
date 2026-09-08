@@ -71,6 +71,17 @@ class AppDrawer extends StatelessWidget {
       );
     }
 
+    if (AuthService.hasPermission('manageSales')) {
+      items.add(
+        _DrawerItemData(
+          icon: Icons.qr_code_scanner_outlined,
+          selectedIcon: Icons.qr_code_scanner,
+          label: 'Web Sale Scanner',
+          route: '/web-sale-scanner',
+        ),
+      );
+    }
+
     if (AuthService.hasPermission('viewExpenses')) {
       items.add(
         _DrawerItemData(

@@ -11,6 +11,7 @@ import 'screens/registration_screen.dart';
 import 'screens/dashboard_screen.dart';
 import 'screens/inventory_screen.dart';
 import 'screens/sales_screen.dart';
+import 'screens/web_sale_scanner_screen.dart';
 import 'screens/expenses_screen.dart';
 import 'screens/tasks_list_screen.dart';
 import 'screens/task_assignment_screen.dart';
@@ -71,6 +72,7 @@ class SmartERPApp extends StatelessWidget {
         '/dashboard': (context) => const DashboardScreen(),
         '/inventory': (context) => const InventoryScreen(),
         '/sales': (context) => const SalesScreen(),
+        '/web-sale-scanner': (context) => const WebSaleScannerScreen(),
         '/expenses': (context) => const ExpensesScreen(),
         '/tasks': (context) => const TasksListScreen(),
         '/assign-task': (context) => const TaskAssignmentScreen(),
