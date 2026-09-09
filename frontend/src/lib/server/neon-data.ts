@@ -442,8 +442,11 @@ class NeonDataService {
         data = await transaction(async (client) => {
           const employee = await client.query("UPDATE employees SET full_name=$1,position=$2,role=$3,salary=$4,department=$5,email=$6,contact=$7,start_date=$8,status=$9,attendance=$10,salary_payment_status=$11 WHERE id=$12 AND tenant_id=$13 AND business_id=$14 AND lower(email)=lower($15) RETURNING *", [variables.fullName, variables.position, text(variables.role), number(variables.salary), text(variables.department), variables.email, text(variables.contact), text(variables.startDate), text(variables.status), number(variables.attendance), text(variables.salaryPaymentStatus), variables.id, tenantId, businessId, variables.currentEmail])
           if (employee.rowCount !== 1) throw new Error("Employee login binding changed")
-          const user = await client.query("UPDATE users SET email=$1,role=$2,full_name=$3,department=$4,phone_number=$5 WHERE tenant_id=$6 AND business_id=$7 AND lower(email)=lower($8) RETURNING *", [variables.email, variables.userRole, variables.fullName, text(variables.department), text(variables.contact), tenantId, businessId, variables.currentEmail])
+          const user = await client.query("UPDATE users SET email=$1,role=$2,full_name=$3,department=$4,phone_number=$5,access_code_hash=COALESCE($6,access_code_hash) WHERE tenant_id=$7 AND business_id=$8 AND lower(email)=lower($9) RETURNING *", [variables.email, variables.userRole, variables.fullName, text(variables.department), text(variables.contact), text(variables.accessCodeHash), tenantId, businessId, variables.currentEmail])
           if (user.rowCount !== 1) throw new Error("Employee login profile is missing or duplicated")
+          if (variables.accessCodeHash) {
+            await client.query("UPDATE app_auth_sessions SET revoked_at=NOW() WHERE user_id=$1 AND revoked_at IS NULL", [user.rows[0].id])
+          }
           return { employee_update: camelEmployee(employee.rows[0] as Row), user_updateMany: 1 }
         })
         break

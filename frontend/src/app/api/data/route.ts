@@ -124,7 +124,7 @@ export async function POST(request: Request) {
       if (!allowedRoles.includes(userRole)) {
         return NextResponse.json({ error: "This role cannot assign the requested employee access" }, { status: 403 })
       }
-      if (input.operation === "CreateEmployeeWithAccess") {
+      if (input.operation === "CreateEmployeeWithAccess" || typeof variables.accessCode === "string") {
         const accessCode = typeof variables.accessCode === "string" ? variables.accessCode : ""
         delete variables.accessCode
         if (accessCode.length < 16) {

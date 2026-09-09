@@ -6,6 +6,7 @@ import { neonDataService } from "./neon-data"
 
 const APP_SESSION_PREFIX = "erp_session_"
 const APP_SESSION_TTL_DAYS = 30
+export const EMPLOYEE_SESSION_COOKIE = "smarterp_employee_session"
 
 export function adminDatabase() {
   return neonDataService()
@@ -63,6 +64,13 @@ function toAuthorizedProfile(profile: StoredProfile, authUserId: string | null):
 
 function tokenHash(token: string) {
   return createHash("sha256").update(token).digest("hex")
+}
+
+export function employeeSessionFromCookie(request: Request) {
+  const cookieHeader = request.headers.get("cookie") || ""
+  const entry = cookieHeader.split(";").map((value) => value.trim())
+    .find((value) => value.startsWith(EMPLOYEE_SESSION_COOKIE + "="))
+  return entry ? decodeURIComponent(entry.slice(EMPLOYEE_SESSION_COOKIE.length + 1)) : ""
 }
 
 function requestIp(request: Request) {
@@ -238,8 +246,9 @@ export async function claimPlatformWorkspaceInvite(identity: VerifiedIdentity, i
 export async function authorizeRequest(request: Request): Promise<AuthorizedProfile> {
   const authorization = request.headers.get("authorization")
   const bearer = authorization?.startsWith("Bearer ") ? authorization.slice(7).trim() : ""
-  if (bearer.startsWith(APP_SESSION_PREFIX)) {
-    const profile = await profileForAppSession(bearer)
+  const employeeSession = bearer.startsWith(APP_SESSION_PREFIX) ? bearer : employeeSessionFromCookie(request)
+  if (employeeSession.startsWith(APP_SESSION_PREFIX)) {
+    const profile = await profileForAppSession(employeeSession)
     if (!profile) throw new Error("Employee session is invalid or expired")
     await requireActiveProfile(profile)
     return profile

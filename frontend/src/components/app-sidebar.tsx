@@ -66,6 +66,7 @@ export function AppSidebar() {
 
   const handleLogout = async () => {
     try {
+      await fetch("/api/auth/employee-sign-out", { method: "POST" }).catch(() => undefined)
       await authClient.signOut()
       router.push("/login")
     } catch (error) {

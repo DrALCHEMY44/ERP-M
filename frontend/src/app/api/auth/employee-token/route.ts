@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { z } from "zod"
 
-import { adminDatabase, issueAppSession } from "@/lib/server/auth"
+import { adminDatabase, EMPLOYEE_SESSION_COOKIE, issueAppSession } from "@/lib/server/auth"
 import { consumeRateLimit } from "@/lib/server/rate-limit"
 import { verifySecret } from "@/lib/server/secret-hash"
 
@@ -30,14 +30,22 @@ export async function POST(request: Request) {
         businessId: business.id,
       })
       for (const account of users.data.users) {
-        if (account.fullName?.trim() !== input.fullName || account.role !== expectedRole || !account.accessCodeHash) continue
+        if (account.fullName?.trim().toLocaleLowerCase() !== input.fullName.trim().toLocaleLowerCase() || account.role !== expectedRole || !account.accessCodeHash) continue
         if (!await verifySecret(input.accessCode, account.accessCodeHash)) continue
         const session = await issueAppSession(account.id, request)
-        return NextResponse.json({
+        const response = NextResponse.json({
           token: session.token,
           expiresAt: session.expiresAt.toISOString(),
           user: { ...account, businessCode: business.code, accessCodeHash: undefined },
         })
+        response.cookies.set(EMPLOYEE_SESSION_COOKIE, session.token, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: "lax",
+          path: "/",
+          expires: session.expiresAt,
+        })
+        return response
       }
     }
     return NextResponse.json({ error: "The supplied employee credentials are incorrect." }, { status: 401 })

@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Plus, Search, Building, Loader2, Trash2, Calendar, Mail, Phone, LogIn } from "lucide-react"
+import { Clipboard, KeyRound, Plus, Search, Building, Loader2, Trash2, Calendar, Mail, Phone, LogIn } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -19,6 +19,7 @@ import { useAuth } from "@/hooks/use-auth"
 import { Employee } from "@/lib/types"
 import { useToast } from "@/hooks/use-toast"
 import { EmployeeDialog } from "@/components/employees/employee-dialog"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 
 export default function EmployeesPage() {
   const { profile } = useAuth();
@@ -54,6 +55,7 @@ export default function EmployeesPage() {
   const [isDialogOpen, setIsDialogOpen] = React.useState(false)
   const [selectedEmployee, setSelectedEmployee] = React.useState<Employee | null>(null)
   const [searchQuery, setSearchQuery] = React.useState("")
+  const [revealedCode, setRevealedCode] = React.useState<{ employeeName: string; code: string } | null>(null)
 
   const filteredEmployees = employees.filter(emp =>
     emp.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -131,9 +133,9 @@ export default function EmployeesPage() {
 
         toast({
           title: "Employee access created",
-          description: `${employeeData.fullName} can sign in to ${profile.businessCode || "this business"} with code ${employeeCode}.`,
-          duration: 12000,
+          description: `${employeeData.fullName} can now use a team code to sign in.`,
         });
+        setRevealedCode({ employeeName: employeeData.fullName || "This employee", code: employeeCode })
       }
       await refetch();
     } catch (e) {
@@ -143,6 +145,33 @@ export default function EmployeesPage() {
         title: "Employee Not Saved",
         description: e instanceof Error ? e.message : "Could not save employee data.",
       });
+    }
+  }
+
+  const handleRegenerateCode = async (employee: Employee) => {
+    if (!profile?.tenantId || !profile.businessId) return
+    const employeeCode = `EMP-${crypto.randomUUID().replaceAll("-", "").slice(0, 16).toUpperCase()}`
+    try {
+      await updateEmployeeWithAccessMutation({
+        id: employee.id || "",
+        fullName: employee.fullName,
+        position: employee.position,
+        role: employee.role,
+        department: employee.department,
+        salary: employee.salary,
+        email: employee.email,
+        contact: employee.contact,
+        startDate: employee.startDate,
+        status: employee.employmentStatus,
+        attendance: employee.attendance,
+        salaryPaymentStatus: employee.salaryPaymentStatus,
+        userRole: employee.role === "Manager" ? "Manager" : "Staff",
+        accessCode: employeeCode,
+      })
+      setRevealedCode({ employeeName: employee.fullName, code: employeeCode })
+      toast({ title: "New access code generated", description: "The previous employee code no longer works." })
+    } catch (error) {
+      toast({ variant: "destructive", title: "Code not generated", description: error instanceof Error ? error.message : "Could not generate a new access code." })
     }
   }
 
@@ -289,6 +318,7 @@ export default function EmployeesPage() {
                     <div className="flex items-center gap-1">
                       {(profile?.role === "Business Owner" || emp.role !== "Manager") && (
                         <>
+                          <Button variant="outline" size="sm" onClick={() => handleRegenerateCode(emp)} className="text-[10px] font-bold uppercase tracking-widest h-8 px-3"><KeyRound className="mr-1 size-3" />New code</Button>
                           <Button variant="outline" size="sm" onClick={() => handleEdit(emp)} className="text-[10px] font-bold uppercase tracking-widest h-8 px-3">Edit</Button>
                           <Button variant="ghost" size="icon" onClick={() => handleDelete(emp)} className="h-8 w-8 text-destructive hover:bg-destructive/10" aria-label={`Delete ${emp.fullName}`}>
                             <Trash2 className="size-3.5" />
@@ -319,6 +349,25 @@ export default function EmployeesPage() {
         onSave={handleSave}
         allowManagerRole={profile?.role === "Business Owner"}
       />
+      <Dialog open={Boolean(revealedCode)} onOpenChange={(open) => !open && setRevealedCode(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Employee access code</DialogTitle>
+            <DialogDescription>Share this code securely with {revealedCode?.employeeName}. It is shown only now and cannot be retrieved later.</DialogDescription>
+          </DialogHeader>
+          <div className="rounded-xl border bg-slate-50 p-4">
+            <p className="select-all break-all font-mono text-base font-bold tracking-wide text-slate-900">{revealedCode?.code}</p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRevealedCode(null)}>Done</Button>
+            <Button onClick={async () => {
+              if (!revealedCode) return
+              await navigator.clipboard.writeText(revealedCode.code)
+              toast({ title: "Code copied", description: "Paste it into a secure message for the employee." })
+            }}><Clipboard className="mr-2 size-4" />Copy code</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

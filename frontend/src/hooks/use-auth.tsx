@@ -41,8 +41,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const user = useMemo<AuthUser | null>(() => {
     const identity = session.data?.user;
-    if (!identity) return null;
-    return {
+    if (identity) return {
       id: identity.id,
       uid: identity.id,
       email: identity.email,
@@ -50,7 +49,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       photoURL: identity.image || null,
       emailVerified: Boolean(identity.emailVerified),
     };
-  }, [session.data?.user]);
+    if (!profile) return null;
+    return {
+      id: profile.id,
+      uid: profile.id,
+      email: profile.email,
+      displayName: profile.fullName || null,
+      photoURL: null,
+      emailVerified: false,
+    };
+  }, [profile, session.data?.user]);
 
   const fetchProfile = useCallback(async (): Promise<"resolved" | "retry"> => {
     try {
@@ -64,7 +72,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (response.status === 401 || response.status === 403) {
         setProfile(null);
         setProfileResolved(true);
-        await recoverAuthenticationSession();
+        if (session.data?.user) await recoverAuthenticationSession();
         return "resolved";
       }
       if (response.status === 503) return "retry";
@@ -78,27 +86,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // redirect an authenticated user into registration. The effect retries.
       return "retry";
     }
-  }, []);
+  }, [session.data?.user]);
 
   const refetchProfile = useCallback(async () => {
     await session.refetch();
-    if (user) {
-      setProfileLoading(true);
-      await fetchProfile();
-      setProfileLoading(false);
-    }
-  }, [fetchProfile, session, user]);
+    setProfileLoading(true);
+    await fetchProfile();
+    setProfileLoading(false);
+  }, [fetchProfile, session]);
 
   useEffect(() => {
     let active = true;
     let retryTimer: ReturnType<typeof setTimeout> | undefined;
     let attempt = 0;
     const load = async () => {
-      if (!user) {
-        setProfile(null);
-        setProfileResolved(true);
-        return;
-      }
       setProfileLoading(true);
       const result = await fetchProfile();
       if (!active) return;
@@ -115,10 +116,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       active = false;
       if (retryTimer) clearTimeout(retryTimer);
     };
-  }, [fetchProfile, user]);
+  }, [fetchProfile, session.data?.user?.id]);
 
   return (
-    <AuthContext.Provider value={{ user, profile, loading: session.isPending || profileLoading || Boolean(user && !profileResolved), refetchProfile }}>
+    <AuthContext.Provider value={{ user, profile, loading: session.isPending || profileLoading || !profileResolved, refetchProfile }}>
       {children}
     </AuthContext.Provider>
   );
